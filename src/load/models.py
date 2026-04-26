@@ -1,5 +1,5 @@
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, Text, UniqueConstraint
+from sqlalchemy import Column, Integer, Text, UniqueConstraint, ForeignKey
 
 Base = declarative_base()
 
@@ -19,3 +19,28 @@ class Speech(Base):
     __table_args__ = (
         UniqueConstraint("source_file", "speaker", "text", name="uq_speech"),
     )
+
+class Lemma(Base):
+    __tablename__ = "lemmas"
+
+    id = Column(Integer, primary_key=True)
+    lemma = Column(Text, unique=True, nullable=False)
+
+class SpeechTerm(Base):
+    __tablename__ = "speech_terms"
+
+    id = Column(Integer, primary_key=True)
+
+    speech_id = Column(
+        Integer,
+        ForeignKey("speeches.id"),
+        nullable=False
+    )
+
+    lemma_id = Column(
+        Integer,
+        ForeignKey("lemmas.id"),
+        nullable=False
+    )
+
+    count = Column(Integer, nullable=False, default=1)

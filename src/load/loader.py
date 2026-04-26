@@ -12,7 +12,6 @@ def create_tables():
 
 
 def load_jsonl_to_database():
-    create_tables()
 
     input_file = Path(OUTPUT_DIR_PROCESSED) / "parsed_speeches.jsonl"
     session = SessionLocal()

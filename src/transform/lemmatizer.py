@@ -15,15 +15,15 @@ def lemmatize_text(text):
 
     for word in est_text.words:
         lemma = word.lemma[0]
-        if lemma:
+        if lemma and lemma.isalpha():
             lemmas.append(lemma.lower())
 
     return " ".join(lemmas)
 
 
-
-def build_missing_lemmas(batch_size = 500):
+def build_missing_lemmas(batch_size=500):
     session = SessionLocal()
+
     speeches = (
         session.query(Speech)
         .filter(
@@ -34,10 +34,13 @@ def build_missing_lemmas(batch_size = 500):
     )
 
     count = 0
+
     for speech in speeches:
         try:
             speech.text_lemmas = lemmatize_text(speech.text)
+
             count += 1
+
             if count % batch_size == 0:
                 session.commit()
                 print(f"Committed {count} speeches")
@@ -48,5 +51,4 @@ def build_missing_lemmas(batch_size = 500):
 
     session.commit()
     print(f"Final commit: {count} speeches processed")
-
     session.close()
