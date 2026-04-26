@@ -14,6 +14,7 @@ class Speech(Base):
     source_url = Column(Text, nullable=False)
     speaker = Column(Text, nullable=False)
     text = Column(Text, nullable=False)
+    text_lemmas = Column(Text, nullable=True)
 
     __table_args__ = (
         UniqueConstraint("source_file", "speaker", "text", name="uq_speech"),
