@@ -1,10 +1,49 @@
 from sqlalchemy import func, or_
+from datetime import datetime, timedelta
 
 from config import STOPWORDS
 from src.load.database import SessionLocal
 from src.load.models import Speech, SpeechTerm, Lemma
 from src.transform.lemmatizer import lemmatize_text
 
+
+def fill_missing_periods(results, interval, label):
+    if not results:
+        return []
+
+    data = {period: int(count) for period, count in results}
+
+    periods = list(data.keys())
+
+    if interval == "monthly":
+        start = datetime.strptime(periods[0], "%Y-%m")
+        end = datetime.strptime(periods[-1], "%Y-%m")
+
+        filled = []
+
+        current = start
+        while current <= end:
+            period = current.strftime("%Y-%m")
+
+            filled.append({
+                label: period,
+                "count": data.get(period, 0)
+            })
+
+            if current.month == 12:
+                current = current.replace(year=current.year + 1, month=1)
+            else:
+                current = current.replace(month=current.month + 1)
+
+        return filled
+
+    return [
+        {
+            label: period,
+            "count": count
+        }
+        for period, count in results
+    ]
 
 def parse_query_groups(query):
     """
@@ -144,6 +183,11 @@ def keyword_activity(query: str, interval: str = "weekly"):
             .order_by(date_group)
             .all()
         )
+
+        if interval == "monthly":
+            return fill_missing_periods(
+                results, interval, label
+            )
 
         return [
             {
