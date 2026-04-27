@@ -10,7 +10,19 @@ function App() {
   const [activity, setActivity] = useState([]);
   const [speakers, setSpeakers] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
-
+  const tooltipStyle = {
+  contentStyle: {
+    backgroundColor: darkMode ? "#1f2937" : "#ffffff",
+    color: darkMode ? "#f9fafb" : "#111827",
+    border: darkMode ? "1px solid #4b5563" : "1px solid #d1d5db",
+  },
+  labelStyle: {
+    color: darkMode ? "#f9fafb" : "#111827",
+  },
+  itemStyle: {
+    color: darkMode ? "#f9fafb" : "#111827",
+  },
+};
 
   async function handleSearch(e) {
   e.preventDefault();
@@ -77,7 +89,7 @@ function App() {
           <LineChart data={activity}>
             <XAxis dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"} />
             <YAxis />
-            <Tooltip />
+            <Tooltip {...tooltipStyle}/>
             <Line type="monotone" dataKey="count" />
           </LineChart>
         </ResponsiveContainer>
@@ -89,7 +101,7 @@ function App() {
           <BarChart data={speakers}>
             <XAxis dataKey="speaker" />
             <YAxis />
-            <Tooltip />
+            <Tooltip {...tooltipStyle}/>
             <Bar dataKey="count" />
           </BarChart>
         </ResponsiveContainer>
