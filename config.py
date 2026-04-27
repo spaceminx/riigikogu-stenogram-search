@@ -38,3 +38,10 @@ END_DATE = "2026-02-01"
 
 START_HOUR = 9
 END_HOUR = 16
+
+STOPWORDS = {
+    "ja", "ning","ega","ehk","nii", "või", "et", "on", "oli", "olema",
+    "see", "seda", "selle", "siis", "ka", "kui",
+    "me", "ma", "sa", "ta", "nad",
+    "meie", "teie", "mina", "sina", "nemad"
+}
