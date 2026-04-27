@@ -29,7 +29,7 @@ def search(
 @router.get("/search/activity")
 def search_activity(
         q: str = Query(..., min_length=1),
-        interval: str = Query("weekly")
+        interval: str = Query("monthly")
 ):
     return {
         "query": q,

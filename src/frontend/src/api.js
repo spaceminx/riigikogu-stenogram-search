@@ -5,7 +5,7 @@ export async function fetchSearch(query, limit = 50) {
   return res.json();
 }
 
-export async function fetchActivity(query, interval = "weekly") {
+export async function fetchActivity(query, interval = "monthly") {
   const res = await fetch(
       `${BASE_URL}/search/activity?q=${encodeURIComponent(query)}&interval=${interval}`
   );
