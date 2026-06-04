@@ -1,0 +1,52 @@
+name: Riigikogu Daily Data Pipeline
+
+on:
+  schedule:
+    # Pipeline runs at 03:00 AM
+    - cron: '0 3 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download and parse html files
+        run: |
+          # 1. Run downloader
+          python src/extract/download_html.py
+          
+          # 2. Run parser
+          python src/transform/parse_runner.py
+
+      - name: Commit and push new data
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Add only files, that are related to new data
+          git add data/processed/*.jsonl
+          git add data/sync/*.json
+          
+          # If something new then commit and push
+          if git diff --staged --quiet; then
+            echo "No new data, no commit."
+          else
+            git commit -m "Auto-update: added new stenograms."
+            git push
+          fi

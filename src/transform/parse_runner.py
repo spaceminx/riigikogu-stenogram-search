@@ -69,7 +69,6 @@ def run_parse():
     state = load_parse_state()
     processed_files = set(state["processed_files"])
 
-    output_file = Path(OUTPUT_DIR_PROCESSED) / "parsed_speeches.jsonl"
     html_files = sorted(Path(OUTPUT_DIR_HTML).glob("*.html"))
 
     for html_file in html_files:
@@ -92,7 +91,9 @@ def run_parse():
 
         enriched_speeches = enrich_speeches(speeches, filename)
 
-        append_speeches_jsonl(enriched_speeches, output_file)
+        year = filename[:4]
+        yearly_output_file = Path(OUTPUT_DIR_PROCESSED) / f"{year}.jsonl"
+        append_speeches_jsonl(enriched_speeches, yearly_output_file)
 
         mark_file_processed(state, filename)
         save_parse_state(state)
