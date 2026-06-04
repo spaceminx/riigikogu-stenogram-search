@@ -29,10 +29,10 @@ jobs:
       - name: Download and parse html files
         run: |
           # 1. Run downloader
-          python src/extract/download_html.py
+          python scripts/download_html.py
           
           # 2. Run parser
-          python src/transform/parse_runner.py
+          python scripts/parse_html.py
 
       - name: Commit and push new data
         run: |
