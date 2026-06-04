@@ -27,12 +27,15 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Download and parse html files
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
         run: |
           # 1. Run downloader
-          PYTHONPATH=. python scripts/download_html.py
+          python scripts/download_html.py
           
           # 2. Run parser
-          PYTHONPATH=. python scripts/parse_html.py
+          python scripts/parse_html.py
 
       - name: Commit and push new data
         run: |
