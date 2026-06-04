@@ -13,27 +13,29 @@ def create_tables():
 
 def load_jsonl_to_database():
 
-    input_file = Path(OUTPUT_DIR_PROCESSED) / "parsed_speeches.jsonl"
+    processed_dir = Path(OUTPUT_DIR_PROCESSED)
     session = SessionLocal()
 
-    with open(input_file, "r", encoding="utf-8") as f:
-        for line in f:
-            data = json.loads(line)
+    for input_file in processed_dir.glob("*.jsonl"):
+        print(f"Processing {input_file.name}")
+        with open(input_file, "r", encoding="utf-8") as f:
+            for line in f:
+                data = json.loads(line)
 
-            speech = Speech(
-                date=data["date"],
-                time=data["time"],
-                source_file=data["source_file"],
-                source_url=data["source_url"],
-                speaker=data["speaker"],
-                text=data["text"],
-            )
+                speech = Speech(
+                    date=data["date"],
+                    time=data["time"],
+                    source_file=data["source_file"],
+                    source_url=data["source_url"],
+                    speaker=data["speaker"],
+                    text=data["text"],
+                )
 
-            session.add(speech)
+                session.add(speech)
 
-            try:
-                session.commit()
-            except IntegrityError:
-                session.rollback()
+                try:
+                    session.commit()
+                except IntegrityError:
+                    session.rollback()
 
     session.close()
