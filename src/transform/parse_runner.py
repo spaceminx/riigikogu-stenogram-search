@@ -14,7 +14,7 @@ from src.transform.parse_state import (
     save_parse_state,
     mark_file_processed,
 )
-
+from src.transform.lemmatizer import lemmatize_text
 
 def ensure_parse_dirs():
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
@@ -49,6 +49,8 @@ def enrich_speeches(speeches, filename):
     enriched = []
 
     for speech in speeches:
+        lemmas = lemmatize_text(speech["text"])
+
         enriched.append(
             {
                 "date": date,
@@ -57,6 +59,7 @@ def enrich_speeches(speeches, filename):
                 "source_url": source_url,
                 "speaker": speech["speaker"],
                 "text": speech["text"],
+                "text_lemmas": lemmas,
             }
         )
 
