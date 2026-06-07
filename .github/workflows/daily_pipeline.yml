@@ -26,30 +26,36 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Download and parse html files
+      - name: Run Data Pipeline (Download B2 -> Parse -> Upload B2)
         env:
           PYTHONPATH: ${{ github.workspace }}
-
+          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
         run: |
-          # 1. Run downloader
+          # 1. Download current year history
+          python scripts/download_from_b2.py
+          
+          # 2. Download new HTMLs
           python scripts/download_html.py
           
-          # 2. Run parser
+          # 3. Run parser
           python scripts/parse_html.py
+          
+          # 4. Upload data back to Backblaze cloud
+          python scripts/upload_to_b2.py
+          
 
       - name: Commit and push new data
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Add only files, that are related to new data
-          git add data/processed/*.jsonl
+
           git add data/sync/*.json
           
           # If something new then commit and push
           if git diff --staged --quiet; then
             echo "No new data, no commit."
           else
-            git commit -m "Auto-update: added new stenograms."
+            git commit -m "Auto-update: Synced new stenograms to B2 and updated state files."
             git push
           fi

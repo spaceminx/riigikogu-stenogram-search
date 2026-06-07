@@ -1,5 +1,4 @@
 from estnltk import Text
-import nltk
 
 from src.load.database import SessionLocal
 from src.load.models import Speech
