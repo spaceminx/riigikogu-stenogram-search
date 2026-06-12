@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from bs4 import BeautifulSoup
 
@@ -75,3 +76,6 @@ def run_download(start_date, end_date):
             )
         else:
             print(f"NO STENOGRAM: {item['url']}")
+
+        print("Crawl delay: Waiting 200 seconds before the next requestˇ...")
+        time.sleep(200)
