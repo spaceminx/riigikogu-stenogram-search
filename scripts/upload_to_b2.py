@@ -1,6 +1,9 @@
 import os
 import glob
 import boto3
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def upload_to_b2():
