@@ -10,7 +10,9 @@ from src.extract.downloader import run_download
 
 def main():
     today = date.today()
-    actual_end = today.strftime("%Y-%m-%d")
+    # Since it runs in the morning, the current day hasn't happened yet. Check up to yesterday.
+    actual_end_dt = today - timedelta(days=1)
+    actual_end = actual_end_dt.strftime("%Y-%m-%d")
 
     last_processed_str = load_last_processed_date()
     last_checked_str = load_last_checked_date()
@@ -25,8 +27,8 @@ def main():
 
         # If the last actual stenogram was more than 2 days ago...
         if (today - last_processed_dt).days > 2:
-            # ...start checking from the last checked date minus 24 hours
-            actual_start = (last_checked_dt - timedelta(days=1)).strftime("%Y-%m-%d")
+            # ...start checking from the last checked date (gives a 1-day safety overlap)
+            actual_start = last_checked_dt.strftime("%Y-%m-%d")
 
     print(f"Downloading from: {actual_start} to {actual_end}")
 

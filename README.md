@@ -16,6 +16,18 @@ The project allows users to:
 
 ---
 
+## Tech Stack
+
+- **Frontend**: React, Vite, Recharts
+- **Backend**: Python, FastAPI, SQLite
+- **Data Pipeline**: GitHub Actions, Backblaze B2, BeautifulSoup
+
+## Automated Data Pipeline
+
+The project features a daily data pipeline running via GitHub Actions. It automatically scrapes new transcripts from the Riigikogu website, parses the HTML, and syncs the structured data to Backblaze B2 cloud storage. This ensures the search database is always up to date without manual intervention.
+
+---
+
 # Features
 
 ## Search
