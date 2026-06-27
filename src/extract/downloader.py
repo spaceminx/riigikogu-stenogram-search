@@ -8,6 +8,7 @@ from src.extract.url_generator import generate_stenogram_urls
 from src.extract.download_state import (
     load_last_processed_date,
     save_last_processed_date,
+    save_last_checked_date,
 )
 
 
@@ -76,6 +77,8 @@ def run_download(start_date, end_date):
             )
         else:
             print(f"NO STENOGRAM: {item['url']}")
+
+        save_last_checked_date(item["date"])
 
         print("Crawl delay: Waiting 200 seconds before the next requestˇ...")
         time.sleep(200)

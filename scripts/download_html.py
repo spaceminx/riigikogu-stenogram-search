@@ -1,6 +1,5 @@
 from datetime import date, timedelta, datetime
 from config import START_DATE
-# Assuming we will add two new functions to download_state.py
 from src.extract.download_state import (
     load_last_processed_date,
     load_last_checked_date,
@@ -33,9 +32,6 @@ def main():
 
     # Run the scraper
     run_download(actual_start, actual_end)
-
-    # Update the controlled/checked date after a successful run
-    save_last_checked_date(actual_end)
 
 
 if __name__ == "__main__":
