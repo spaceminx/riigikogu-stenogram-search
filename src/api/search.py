@@ -178,7 +178,7 @@ def keyword_activity(query: str, interval: str = "weekly"):
                 date_group.label("period"),
                 func.count(Speech.id).label("total_count")
             )
-            .join(matched_speeches, Speech.id == matched_speeches.c.speech_id)
+            .join(matched_speeches, Speech.id == list(matched_speeches.c)[0])
             .group_by(date_group)
             .order_by(date_group)
             .all()
