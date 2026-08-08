@@ -44,3 +44,17 @@ class SpeechTerm(Base):
     )
 
     count = Column(Integer, nullable=False, default=1)
+
+class Attendance(Base):
+    __tablename__ = "attendance"
+
+    id = Column(Integer, primary_key=True)
+    session_date = Column(Text, nullable=False)
+    voting_uuid = Column(Text, nullable=False)
+    member_name = Column(Text, nullable=False)
+    faction = Column(Text, nullable=True)
+    status = Column(Text, nullable=False)
+    
+    __table_args__ = (
+        UniqueConstraint("voting_uuid", "member_name", name="uq_attendance"),
+    )

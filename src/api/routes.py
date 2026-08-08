@@ -8,9 +8,15 @@ from src.api.search import (
 router = APIRouter()
 
 
+from src.api.attendance import get_attendance_stats
+
 @router.get("/")
 def root():
     return {"status": "ok"}
+
+@router.get("/attendance/stats")
+def attendance_stats():
+    return get_attendance_stats()
 
 
 @router.get("/search")

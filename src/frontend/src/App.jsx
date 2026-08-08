@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { fetchSearch, fetchActivity, fetchSpeakers } from "./api";
+import { fetchSearch, fetchActivity, fetchSpeakers, fetchAttendance } from "./api";
 import "./App.css";
 
 function formatDateTime(dateStr, timeStr) {
@@ -40,7 +40,45 @@ function App() {
   const [speeches, setSpeeches] = useState([]);
   const [activity, setActivity] = useState([]);
   const [speakers, setSpeakers] = useState([]);
+  const [attendanceStats, setAttendanceStats] = useState([]);
   const [view, setView] = useState("dashboard");
+  const [sortConfig, setSortConfig] = useState({ key: "attendance_percentage", direction: "descending" });
+
+  const requestSort = (key) => {
+    let direction = 'descending';
+    if (sortConfig.key === key && sortConfig.direction === 'descending') {
+      direction = 'ascending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedStats = React.useMemo(() => {
+    let sortableItems = [...attendanceStats];
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [attendanceStats, sortConfig]);
+
+  const handleLoadAttendance = async () => {
+    setView("attendance");
+    if (attendanceStats.length === 0) {
+      try {
+        const data = await fetchAttendance();
+        setAttendanceStats(data);
+      } catch (error) {
+        console.error("Failed to fetch attendance:", error);
+      }
+    }
+  };
   
   const tooltipStyle = {
     contentStyle: {
@@ -161,9 +199,24 @@ function App() {
           </svg>
           Riigikogu Search
         </h1>
+        <div className="nav-links">
+          <button 
+            className={`nav-btn ${view !== "attendance" ? "active" : ""}`} 
+            onClick={() => setView("dashboard")}
+          >
+            Otsing
+          </button>
+          <button 
+            className={`nav-btn ${view === "attendance" ? "active" : ""}`} 
+            onClick={handleLoadAttendance}
+          >
+            Kohalolek
+          </button>
+        </div>
       </div>
 
-      <form onSubmit={handleSearch} className="search-section">
+      {view !== "attendance" && (
+        <form onSubmit={handleSearch} className="search-section">
         <div className="search-groups-container">
           {groups.map((group, gIndex) => (
             <React.Fragment key={gIndex}>
@@ -214,8 +267,9 @@ function App() {
           </button>
         </div>
       </form>
+      )}
 
-      {speeches.length === 0 && activity.length === 0 && (
+      {view !== "attendance" && speeches.length === 0 && activity.length === 0 && (
         <div style={{ textAlign: 'center', marginTop: '4rem', color: '#64748b' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{marginBottom: '1rem', opacity: 0.5}}>
             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -324,6 +378,51 @@ function App() {
                 </a>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {view === "attendance" && (
+        <div className="glass-panel" style={{ marginTop: '0.5rem' }}>
+          <div className="chart-header" style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{ margin: 0 }}>Kohaloleku statistika (2019 - 2026)</h2>
+          </div>
+          
+          <div className="attendance-list">
+            <div className="attendance-header-row">
+              <div className="att-col-rank">#</div>
+              <div className="att-col-name cursor-pointer" onClick={() => requestSort('member_name')}>
+                Saadik {sortConfig.key === 'member_name' ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
+              </div>
+              <div className="att-col-total cursor-pointer" onClick={() => requestSort('total_sessions')}>
+                Istungeid kokku {sortConfig.key === 'total_sessions' ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
+              </div>
+              <div className="att-col-present cursor-pointer" onClick={() => requestSort('present_sessions')}>
+                Kohal oldud {sortConfig.key === 'present_sessions' ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
+              </div>
+              <div className="att-col-percent cursor-pointer" onClick={() => requestSort('attendance_percentage')}>
+                % {sortConfig.key === 'attendance_percentage' ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
+              </div>
+            </div>
+            
+            {sortedStats.length === 0 ? (
+              <p style={{textAlign: 'center', padding: '2rem', color: '#64748b'}}>Laen andmeid...</p>
+            ) : (
+              sortedStats.map((stat, idx) => (
+                <div key={idx} className="attendance-row">
+                  <div className="att-col-rank">{idx + 1}</div>
+                  <div className="att-col-name">{stat.member_name}</div>
+                  <div className="att-col-total">{stat.total_sessions}</div>
+                  <div className="att-col-present">{stat.present_sessions}</div>
+                  <div className="att-col-percent">
+                    <div className="percent-bar-bg">
+                      <div className="percent-bar-fill" style={{width: `${stat.attendance_percentage}%`, backgroundColor: stat.attendance_percentage >= 90 ? '#10b981' : stat.attendance_percentage >= 70 ? '#f59e0b' : '#ef4444'}}></div>
+                    </div>
+                    <span style={{fontWeight: 'bold', marginLeft: '10px', minWidth: '45px', display: 'inline-block'}}>{stat.attendance_percentage}%</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

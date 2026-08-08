@@ -16,3 +16,8 @@ export async function fetchSpeakers(query, limit = 20) {
   const res = await fetch(`${BASE_URL}/search/speakers?q=${encodeURIComponent(query)}&limit=${limit}`);
   return res.json();
 }
+
+export async function fetchAttendance() {
+  const res = await fetch(`${BASE_URL}/attendance/stats`);
+  return res.json();
+}

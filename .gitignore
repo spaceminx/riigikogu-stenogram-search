@@ -1,4 +1,4 @@
-data/raw
+data/processed
 database/*.sqlite
 .env
 .env.*
