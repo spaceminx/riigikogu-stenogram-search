@@ -132,6 +132,7 @@ def fetch_and_process_stenograms():
                                 "source_file": f"{date_formatted}_{time_formatted}.api",
                                 "source_url": verbatim_link,
                                 "speaker": speaker_name,
+                                "speaker_role": speaker_role,
                                 "text": raw_text,
                                 "text_lemmas": lemmas
                             })

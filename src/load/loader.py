@@ -28,6 +28,7 @@ def load_jsonl_to_database():
                     source_file=data["source_file"],
                     source_url=data["source_url"],
                     speaker=data["speaker"],
+                    speaker_role=data.get("speaker_role"),
                     text=data["text"],
                 )
 
