@@ -34,6 +34,13 @@ def split_speaker_role(full_name: str):
     role = " ".join(parts[:i+1]).strip()
     return name, role if role else None
 
+def get_faction_for_date(faction_map, name, date_str):
+    history = faction_map.get(name, [])
+    for h in history:
+        if h['start'] <= date_str <= h['end']:
+            return h['faction']
+    return None
+
 # Basic date generator to chunk requests by month
 def get_month_ranges(start_date, end_date):
     start = datetime.strptime(start_date, "%Y-%m-%d")
@@ -65,6 +72,13 @@ def fetch_and_process_stenograms():
             processed_uuids = set(json.load(f))
     else:
         processed_uuids = set()
+        
+    factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
+    if os.path.exists(factions_file):
+        with open(factions_file, "r") as f:
+            faction_map = json.load(f)
+    else:
+        faction_map = {}
 
     print(f"Starting API fetch from {START_DATE} to {end_date}")
     
@@ -124,6 +138,7 @@ def fetch_and_process_stenograms():
                                 continue
                                 
                             speaker_name, speaker_role = split_speaker_role(speaker_raw)
+                            speaker_faction = get_faction_for_date(faction_map, speaker_name, date_formatted)
                             lemmas = lemmatize_text(raw_text)
                             
                             speeches_to_save.append({
@@ -133,6 +148,7 @@ def fetch_and_process_stenograms():
                                 "source_url": verbatim_link,
                                 "speaker": speaker_name,
                                 "speaker_role": speaker_role,
+                                "speaker_faction": speaker_faction,
                                 "text": raw_text,
                                 "text_lemmas": lemmas
                             })
