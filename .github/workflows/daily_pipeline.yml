@@ -35,11 +35,11 @@ jobs:
           # 1. Download current year history
           python scripts/download_from_b2.py
           
-          # 2. Download new HTMLs
-          python scripts/download_html.py
+          # 2. Fetch member factions
+          python scripts/fetch_factions.py
           
-          # 3. Run parser
-          python scripts/parse_html.py
+          # 3. Fetch and process stenograms from API
+          python scripts/fetch_stenograms_api.py
           
           # 4. Upload data back to Backblaze cloud
           python scripts/upload_to_b2.py
