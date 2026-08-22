@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from config import OUTPUT_DIR_PROCESSED
 
 def fetch_factions():
-    url = "https://api.riigikogu.ee/api/plenary-members"
+    url = "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=13&membership=14&membership=15"
     print(f"Fetching members from {url}...")
     
     resp = requests.get(url)
