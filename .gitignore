@@ -4,3 +4,8 @@ database/*.sqlite
 .env.*
 __pycache__/
 *.pyc
+
+# Local config & agents
+.agents/
+HOSTING.md
+.DS_Store
