@@ -96,10 +96,10 @@ def fetch_and_process_stenograms():
         url = "https://api.riigikogu.ee/api/steno/verbatims"
         
         # Respect rate limits (12 req/min)
-        time.sleep(5.1) 
+        time.sleep(6.1) 
         
         try:
-            resp = requests.get(url, params={"startDate": start, "endDate": end})
+            resp = requests.get(url, params={"startDate": start, "endDate": end}, timeout=30)
             if resp.status_code != 200:
                 print(f"Failed to fetch {start}-{end}: HTTP {resp.status_code}")
                 continue
