@@ -1,0 +1,3192 @@
+{
+  "Jaak Aab": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ],
+  "Merry Aart": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Arto Aas": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-05-21"
+    }
+  ],
+  "Taavi Aas": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-04-25"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-06-04",
+      "end": "2022-06-05"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2022-06-06",
+      "end": "2023-04-01"
+    }
+  ],
+  "Jaak Aaviksoo": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-02",
+      "end": "2015-08-31"
+    }
+  ],
+  "Jüri Adams": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Raivo Aeg": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-02",
+      "end": "2018-07-30"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2018-07-31",
+      "end": "2019-03-30"
+    }
+  ],
+  "Annely Akkermann": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Yoko Alender": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-07-23"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2025-03-25",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-25",
+      "end": "2025-03-25"
+    }
+  ],
+  "Anti Allas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Arvo Aller": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Andres Ammas": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2018-04-04"
+    }
+  ],
+  "Andres Anvelt": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2015-04-08"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2016-11-23"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-11-27",
+      "end": "2018-11-28"
+    }
+  ],
+  "Vladimir Arhipov": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-08",
+      "end": "2024-07-15"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2024-07-15",
+      "end": "2099-12-31"
+    }
+  ],
+  "Tiiu Aro": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2021-03-06",
+      "end": "2021-03-09"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2021-03-09",
+      "end": "2022-07-19"
+    }
+  ],
+  "Krista Aru": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2018-04-08"
+    },
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2018-04-09",
+      "end": "2019-03-30"
+    }
+  ],
+  "Peep Aru": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2016-08-29",
+      "end": "2016-11-23"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2018-05-07",
+      "end": "2019-03-30"
+    }
+  ],
+  "Maire Aunaste": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-02",
+      "end": "2018-07-30"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2018-07-31",
+      "end": "2019-03-30"
+    }
+  ],
+  "Vadim Belobrovtsev": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Deniss Boroditš": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2018-08-01"
+    }
+  ],
+  "Riho Breivel": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Lea Danilson-Järg": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2025-12-09",
+      "end": "2099-12-31"
+    }
+  ],
+  "Dmitri Dmitrijev": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2021-11-22"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2021-11-22",
+      "end": "2023-04-01"
+    }
+  ],
+  "Ivi Eenmaa": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2021-01-27",
+      "end": "2022-10-19"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2021-01-27",
+      "end": "2021-01-27"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2022-10-20",
+      "end": "2023-04-01"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-10-20",
+      "end": "2022-10-20"
+    }
+  ],
+  "Enn Eesmaa": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-07",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ],
+  "Rain Epler": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Peeter Ernits": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-04-01",
+      "end": "2099-12-31"
+    }
+  ],
+  "Urmas Espenberg": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-29",
+      "end": "2020-11-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2020-11-19",
+      "end": "2021-01-27"
+    }
+  ],
+  "Hele Everaus": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-24",
+      "end": "2024-07-29"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-07-29",
+      "end": "2025-03-25"
+    }
+  ],
+  "Ants Frosch": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-13"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-13",
+      "end": "2099-12-31"
+    }
+  ],
+  "Igor Gräzin": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2018-09-05"
+    }
+  ],
+  "Kalle Grünthal": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-06",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-10-18"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-10-18",
+      "end": "2099-12-31"
+    }
+  ],
+  "Helmut Hallemaa": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2016-11-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Andre Hanimägi": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ],
+  "Hannes Hanso": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2015-09-14"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2016-11-24",
+      "end": "2019-03-30"
+    }
+  ],
+  "Anti Haugas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Monika Haukanõmm": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-03-31",
+      "end": "2022-04-01"
+    }
+  ],
+  "Helle-Moonika Helme": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Mart Helme": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Martin Helme": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Heiki Hepner": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-29",
+      "end": "2021-01-27"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2021-06-02",
+      "end": "2023-04-01"
+    }
+  ],
+  "Andres Herkel": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2017-06-12"
+    },
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2017-06-13",
+      "end": "2018-06-12"
+    },
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2018-06-13",
+      "end": "2019-03-30"
+    }
+  ],
+  "Remo Holsmer": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2018-05-07"
+    }
+  ],
+  "Lauri Hussar": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Kaido Höövelson": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Maksim Iljin": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-25",
+      "end": "2025-03-25"
+    }
+  ],
+  "Diana Ingerainen": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-26",
+      "end": "2025-03-26"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2025-03-26",
+      "end": "2099-12-31"
+    }
+  ],
+  "Züleyxa Izmailova": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-05-20",
+      "end": "2023-05-22"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-05-22",
+      "end": "2024-06-12"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-12",
+      "end": "2099-12-31"
+    }
+  ],
+  "Olga Ivanova": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2018-08-22"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-08-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Jüri Jaanson": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-09-08",
+      "end": "2024-09-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-09-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Aleksei Jašin": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-25",
+      "end": "2025-03-25"
+    }
+  ],
+  "Aleksei Jevgrafov": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-06",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Karmen Joller": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2025-03-25"
+    }
+  ],
+  "Maria Jufereva-Skuratovski": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-11-16"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-11-16",
+      "end": "2099-12-31"
+    }
+  ],
+  "Jaak Juske": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-06-13",
+      "end": "2023-04-01"
+    }
+  ],
+  "Toomas Järveoja": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2025-03-25",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-25",
+      "end": "2025-03-25"
+    }
+  ],
+  "Marek Jürgenson": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Toomas Jürgenstein": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-07-19",
+      "end": "2023-04-01"
+    }
+  ],
+  "Ruuben Kaalep": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Mario Kadastik": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Etti Kagarov": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2015-09-15",
+      "end": "2015-09-15"
+    }
+  ],
+  "Tiit Kala": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-29",
+      "end": "2020-11-08"
+    }
+  ],
+  "Raimond Kaljulaid": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Marina Kaljurand": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-06"
+    }
+  ],
+  "Kaja Kallas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-24",
+      "end": "2024-07-25"
+    }
+  ],
+  "Kristina Kallas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-04-18"
+    }
+  ],
+  "Madis Kallas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2024-04-17",
+      "end": "2025-02-17"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2025-02-17",
+      "end": "2025-03-17"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2025-03-17",
+      "end": "2099-12-31"
+    }
+  ],
+  "Siim Kallas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-09-09"
+    }
+  ],
+  "Kalev Kallo": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2020-12-01"
+    }
+  ],
+  "Tiina Kangro": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2016-12-19",
+      "end": "2018-07-30"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2018-07-31",
+      "end": "2018-10-08"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-10-08",
+      "end": "2019-03-30"
+    }
+  ],
+  "Sulev Kannimäe": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2021-01-28",
+      "end": "2023-04-01"
+    }
+  ],
+  "Jaanus Karilaid": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-09-18"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-09-18",
+      "end": "2099-12-31"
+    }
+  ],
+  "Ester Karuse": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ],
+  "Uno Kaskpeit": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-05-27"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-05-27",
+      "end": "2020-03-16"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2020-03-16",
+      "end": "2020-05-18"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2020-05-18",
+      "end": "2020-11-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2020-11-10",
+      "end": "2023-04-01"
+    }
+  ],
+  "Erkki Keldo": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-07-23"
+    }
+  ],
+  "Liina Kersna": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2025-04-16"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2025-04-16",
+      "end": "2099-12-31"
+    }
+  ],
+  "Johannes Kert": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2021-03-05"
+    }
+  ],
+  "Tanel Kiik": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ],
+  "Meelis Kiili": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2026-08-10"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2026-08-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Siim Kiisler": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2019-06-04",
+      "end": "2019-06-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-06-11",
+      "end": "2021-01-27"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-07-19",
+      "end": "2023-04-01"
+    }
+  ],
+  "Kert Kingo": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2025-04-01"
+    }
+  ],
+  "Signe Kivi": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Ando Kiviberg": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-23",
+      "end": "2024-07-23"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2024-07-23",
+      "end": "2099-12-31"
+    }
+  ],
+  "Toomas Kivimägi": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Urmas Klaas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-07"
+    }
+  ],
+  "Mait Klaassen": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    }
+  ],
+  "Aivar Kokk": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Rene Kokk": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Mihhail Korb": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Valeri Korb": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Andrei Korobeinik": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-03-06"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2024-03-06",
+      "end": "2099-12-31"
+    }
+  ],
+  "Siret Kotka": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2021-02-07"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2021-02-08",
+      "end": "2023-04-01"
+    }
+  ],
+  "Kalev Kotkas": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-09-16",
+      "end": "2016-11-23"
+    }
+  ],
+  "Anastassia Kovalenko-Kõlvart": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Heiki Kranich": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Igor Kravtšenko": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Eerik-Niiles Kross": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Urmas Kruuse": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Tarmo Kruusimäe": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-05-09"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-05-09",
+      "end": "2021-03-18"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2021-03-18",
+      "end": "2022-07-19"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2022-07-19",
+      "end": "2023-04-01"
+    }
+  ],
+  "Toomas Kruusimägi": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-10-21",
+      "end": "2022-10-24"
+    }
+  ],
+  "Martin Kukk": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2015-04-08"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2016-07-07"
+    }
+  ],
+  "Leo Kunnas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-14"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-14",
+      "end": "2099-12-31"
+    }
+  ],
+  "Katrin Kuusemäe": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2099-12-31"
+    }
+  ],
+  "Kristjan Kõljalg": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2016-11-23"
+    }
+  ],
+  "Mihhail Kõlvart": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-06"
+    }
+  ],
+  "Kalvi Kõva": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-06-12"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-06-12",
+      "end": "2022-03-23"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-03-23",
+      "end": "2022-03-24"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-03-24",
+      "end": "2023-04-01"
+    }
+  ],
+  "Külliki Kübarsepp": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-01-11"
+    }
+  ],
+  "Helmen Kütt": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Ants Laaneots": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-13"
+    }
+  ],
+  "Kalle Laanet": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-04-01",
+      "end": "2099-12-31"
+    }
+  ],
+  "Lauri Laasi": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2015-11-20"
+    }
+  ],
+  "Lauri Laats": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-03-06"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2024-03-06",
+      "end": "2099-12-31"
+    }
+  ],
+  "Viktoria Ladõnskaja-Kubits": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Hanah Lahe": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2099-12-31"
+    }
+  ],
+  "Alar Laneman": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-14"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-14",
+      "end": "2099-12-31"
+    }
+  ],
+  "Maris Lauri": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Mihkel Lees": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-13",
+      "end": "2024-06-13"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-06-13",
+      "end": "2024-07-23"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-07-23",
+      "end": "2099-12-31"
+    }
+  ],
+  "Johanna-Maria Lehtme": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-05-22"
+    }
+  ],
+  "Heimar Lenk": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Jürgen Ligi": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-07-23"
+    }
+  ],
+  "Madle Lippus": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-04-15",
+      "end": "2024-04-17"
+    }
+  ],
+  "Priit Lomp": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2024-04-17"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2024-04-17",
+      "end": "2025-02-17"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2025-02-17",
+      "end": "2025-03-12"
+    }
+  ],
+  "Oudekki Loone": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-29",
+      "end": "2022-06-03"
+    }
+  ],
+  "Mihhail Lotman": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2019-04-03",
+      "end": "2019-04-07"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-08",
+      "end": "2023-04-01"
+    }
+  ],
+  "Inara Luigas": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2016-12-05",
+      "end": "2019-03-30"
+    }
+  ],
+  "Jüri Luik": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-04-25"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2021-01-27",
+      "end": "2021-06-01"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2021-01-27",
+      "end": "2021-01-27"
+    }
+  ],
+  "Lauri Luik": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2017-01-19"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2017-01-19",
+      "end": "2018-09-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2018-09-11",
+      "end": "2019-03-30"
+    }
+  ],
+  "Tõnis Lukas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Irja Lutsar": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2025-04-21"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2025-04-21",
+      "end": "2099-12-31"
+    }
+  ],
+  "Ain Lutsepp": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Lauri Läänemets": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2025-03-12",
+      "end": "2025-03-17"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-12",
+      "end": "2025-03-12"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2025-03-17",
+      "end": "2099-12-31"
+    }
+  ],
+  "Mart Maastik": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-06",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Aet Maatee": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2016-11-24",
+      "end": "2016-11-24"
+    }
+  ],
+  "Jaak Madison": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-06"
+    }
+  ],
+  "Natalia Malleus": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-29",
+      "end": "2023-04-01"
+    }
+  ],
+  "Tiit Maran": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-06",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Jaanus Marrandi": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Rait Maruste": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2016-09-13",
+      "end": "2016-11-23"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-06-14",
+      "end": "2018-06-15"
+    }
+  ],
+  "Enn Meri": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2018-04-09",
+      "end": "2019-03-30"
+    }
+  ],
+  "Eero Merilind": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-06",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Andres Metsoja": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Kristen Michal": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    }
+  ],
+  "Marko Mihkelson": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Marianne Mikko": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2015-09-15"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-09-16",
+      "end": "2019-03-30"
+    }
+  ],
+  "Sven Mikser": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-06-13"
+    }
+  ],
+  "Madis Milling": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2022-02-03"
+    }
+  ],
+  "Aadu Must": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Kalle Muuli": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-09",
+      "end": "2017-06-13"
+    }
+  ],
+  "Meelis Mälberg": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2016-09-14"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2016-09-15",
+      "end": "2016-12-05"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2016-12-05",
+      "end": "2019-03-30"
+    }
+  ],
+  "Tõnis Mölder": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-09-26"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-09-26",
+      "end": "2099-12-31"
+    }
+  ],
+  "Eiki Nestor": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Andrei Novikov": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2017-11-09"
+    }
+  ],
+  "Mart Nutt": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-29",
+      "end": "2019-06-03"
+    }
+  ],
+  "Alar Nääme": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2016-12-10",
+      "end": "2016-12-11"
+    }
+  ],
+  "Eduard Odinets": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2025-03-12"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    }
+  ],
+  "Jevgeni Ossinovski": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-04-15"
+    }
+  ],
+  "Anneli Ott": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2020-11-26"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2021-11-08",
+      "end": "2023-04-01"
+    }
+  ],
+  "Eevi Paasmäe": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2016-11-23",
+      "end": "2016-12-09"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-06-28",
+      "end": "2018-06-29"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2018-06-29",
+      "end": "2019-03-30"
+    }
+  ],
+  "Ivari Padar": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Urmas Paet": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-06"
+    }
+  ],
+  "Liisa-Ly Pakosta": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-07-23"
+    }
+  ],
+  "Kalle Palling": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-09-30"
+    }
+  ],
+  "Urve Palo": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2015-04-09"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-09-15",
+      "end": "2016-11-23"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-08-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Juhan Parts": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-02",
+      "end": "2015-04-06"
+    },
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-07",
+      "end": "2016-12-15"
+    }
+  ],
+  "Toomas Paur": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2016-12-12",
+      "end": "2019-03-30"
+    }
+  ],
+  "Keit Pentus-Rosimannus": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2021-01-27"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-10-20",
+      "end": "2022-10-21"
+    }
+  ],
+  "Pärtel-Peeter Pere": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-04-15"
+    }
+  ],
+  "Hanno Pevkur": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    }
+  ],
+  "Heljo Pikhof": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Õnne Pillak": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2024-07-23"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-07-23",
+      "end": "2099-12-31"
+    }
+  ],
+  "Barbi Pilvre": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2016-11-23",
+      "end": "2018-11-27"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2018-11-29",
+      "end": "2019-03-30"
+    }
+  ],
+  "Siim Pohlak": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-21"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2024-06-21",
+      "end": "2099-12-31"
+    }
+  ],
+  "Marko Pomerants": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-02",
+      "end": "2015-04-09"
+    },
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2017-06-13",
+      "end": "2018-07-30"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2018-07-31",
+      "end": "2019-03-30"
+    }
+  ],
+  "Anti Poolamets": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Evelin Poolamets": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Heidy Purga": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    }
+  ],
+  "Paul Puustusmaa": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Raivo Põldaru": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Henn Põlluaas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-13"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-13",
+      "end": "2099-12-31"
+    }
+  ],
+  "Peeter Rahnel": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-29",
+      "end": "2022-06-03"
+    }
+  ],
+  "Juku-Kalle Raid": [
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-18",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    }
+  ],
+  "Mati Raidma": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2025-03-25"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2025-03-25",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-25",
+      "end": "2025-03-25"
+    }
+  ],
+  "Katri Raik": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2020-12-30"
+    }
+  ],
+  "Ülle Rajasalu": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2022-02-07",
+      "end": "2022-07-19"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-10-22",
+      "end": "2022-10-23"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2022-10-24",
+      "end": "2023-04-01"
+    }
+  ],
+  "Reili Rand": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    }
+  ],
+  "Laine Randjärv": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-02-05"
+    }
+  ],
+  "Valdo Randpere": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2025-04-16"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2025-04-16",
+      "end": "2099-12-31"
+    }
+  ],
+  "Rein Randver": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2017-11-08",
+      "end": "2018-05-03"
+    }
+  ],
+  "Jüri Ratas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-31",
+      "end": "2024-07-08"
+    }
+  ],
+  "Rein Ratas": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2016-12-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-09-13",
+      "end": "2018-09-14"
+    }
+  ],
+  "Mihkel Raud": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2016-06-16"
+    }
+  ],
+  "Marek Reinaas": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-09-06"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-09-07",
+      "end": "2025-04-21"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2025-04-21",
+      "end": "2099-12-31"
+    }
+  ],
+  "Urmas Reinsalu": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Urmas Reitelmann": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Martin Repinski": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2022-03-22"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-03-22",
+      "end": "2023-04-01"
+    }
+  ],
+  "Mailis Reps": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-04-25"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2020-11-22",
+      "end": "2020-11-25"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2020-11-25",
+      "end": "2021-02-08"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2021-02-08",
+      "end": "2021-07-25"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2021-07-26",
+      "end": "2023-04-01"
+    }
+  ],
+  "Signe Riisalo": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2025-03-25",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-25",
+      "end": "2025-03-25"
+    }
+  ],
+  "Kai Rimmel": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-04-29",
+      "end": "2021-01-27"
+    }
+  ],
+  "Paul-Erik Rummo": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2019-02-06",
+      "end": "2019-02-07"
+    }
+  ],
+  "Maido Ruusmann": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Taavi Rõivas": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-05-27"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2019-05-27",
+      "end": "2020-12-16"
+    }
+  ],
+  "Stig Rästa": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-26",
+      "end": "2025-03-26"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2025-03-26",
+      "end": "2099-12-31"
+    }
+  ],
+  "Indrek Saar": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-06-12"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2019-06-12",
+      "end": "2022-03-14"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-03-14",
+      "end": "2022-03-23"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-03-23",
+      "end": "2022-03-24"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-03-24",
+      "end": "2022-07-18"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2022-07-18",
+      "end": "2023-04-01"
+    }
+  ],
+  "Jüri Saar": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2019-01-14",
+      "end": "2019-03-30"
+    }
+  ],
+  "Üllar Saaremäe": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Arvo Sarapuu": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2016-12-05",
+      "end": "2016-12-06"
+    }
+  ],
+  "Kersti Sarapuu": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-06",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ],
+  "Edgar Savisaar": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2015-03-24",
+      "end": "2015-08-06"
+    }
+  ],
+  "Erki Savisaar": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2021-11-18"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-06-04",
+      "end": "2022-06-05"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2022-06-06",
+      "end": "2023-04-01"
+    }
+  ],
+  "Helir-Valdor Seeder": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Andrus Seeme": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Andre Sepp": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2016-11-23"
+    }
+  ],
+  "Sven Sester": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Priit Sibul": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Pipi-Liis Siemann": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Riina Sikkut": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2025-03-12",
+      "end": "2025-03-12"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2025-03-13",
+      "end": "2099-12-31"
+    }
+  ],
+  "Arno Sild": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2019-04-25",
+      "end": "2019-04-26"
+    }
+  ],
+  "Kadri Simson": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-09-13"
+    }
+  ],
+  "Riina Solman": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2023-04-10",
+      "end": "2025-12-09"
+    }
+  ],
+  "Mark Soosaar": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2016-11-24"
+    }
+  ],
+  "Imre Sooäär": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2020-12-01",
+      "end": "2020-12-07"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2020-12-07",
+      "end": "2021-11-04"
+    }
+  ],
+  "Mihhail Stalnuhhin": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2022-09-12"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-09-12",
+      "end": "2023-04-01"
+    }
+  ],
+  "Kalev Stoicescu": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2026-08-10"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2026-08-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Anne Sulling": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Märt Sults": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Aivar Surva": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2018-08-22",
+      "end": "2019-03-30"
+    }
+  ],
+  "Timo Suslov": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Margit Sutrop": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-07",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Andres Sutt": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2025-03-25"
+    }
+  ],
+  "Neeme Suur": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2015-09-15",
+      "end": "2015-09-15"
+    }
+  ],
+  "Rein Suurkask": [
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2019-05-27",
+      "end": "2019-10-25"
+    }
+  ],
+  "Vladimir Svet": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-07"
+    }
+  ],
+  "Aivar Sõerd": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Kristina Šmigun-Vähi": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Marko Šorin": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-09-16",
+      "end": "2023-04-01"
+    }
+  ],
+  "Kadri Tali": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Peeter Tali": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Tanel Talve": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Artur Talvik": [
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2017-06-12"
+    },
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2017-06-13",
+      "end": "2018-06-12"
+    },
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "start": "2018-06-13",
+      "end": "2018-08-22"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2018-08-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Irina Talviste": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-23",
+      "end": "2024-07-24"
+    }
+  ],
+  "Raimond Tamm": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-23",
+      "end": "2024-07-24"
+    }
+  ],
+  "Raivo Tamm": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Tarmo Tamm": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Karin Tammemägi": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2017-11-14",
+      "end": "2019-03-30"
+    }
+  ],
+  "Rene Tammist": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-04-01",
+      "end": "2022-04-04"
+    }
+  ],
+  "Igor Taro": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2025-03-25"
+    }
+  ],
+  "Tanel Tein": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-18",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-18",
+      "end": "2099-12-31"
+    }
+  ],
+  "Tiit Terik": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2016-11-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Hendrik Johannes Terras": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2025-03-25"
+    }
+  ],
+  "Riho Terras": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-06"
+    }
+  ],
+  "Urve Tiidus": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-18",
+      "end": "2024-04-01"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-04-15",
+      "end": "2024-07-24"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-07-25",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-25",
+      "end": "2024-07-25"
+    }
+  ],
+  "Madis Timpson": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-23",
+      "end": "2024-07-23"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-07-23",
+      "end": "2099-12-31"
+    }
+  ],
+  "Priit Toobal": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2015-11-18"
+    }
+  ],
+  "Yana Toom": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-06"
+    }
+  ],
+  "Vilja Toomast": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Marko Torm": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2020-12-16",
+      "end": "2023-04-01"
+    }
+  ],
+  "Terje Trei": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Margus Tsahkna": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-04-18"
+    }
+  ],
+  "Aleksandr Tšaplõgin": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2099-12-31"
+    }
+  ],
+  "Marika Tuus-Laul": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Toomas Uibo": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-04-11",
+      "end": "2023-09-06"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "start": "2023-09-07",
+      "end": "2099-12-31"
+    }
+  ],
+  "Kristo Enn Vaga": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ],
+  "Ken-Marti Vaher": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-02",
+      "end": "2017-06-01"
+    }
+  ],
+  "Rainer Vakra": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Jaak Valge": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2024-06-13"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-06-13",
+      "end": "2099-12-31"
+    }
+  ],
+  "Einar Vallbaum": [
+    {
+      "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+      "start": "2015-04-09",
+      "end": "2017-06-13"
+    }
+  ],
+  "Viktor Vassiljev": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2023-04-01"
+    }
+  ],
+  "Vladimir Velman": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Aivar Viidik": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2021-01-27",
+      "end": "2021-01-27"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2021-01-27",
+      "end": "2022-07-19"
+    }
+  ],
+  "Toomas Vitsut": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2015-03-30",
+      "end": "2019-03-30"
+    }
+  ],
+  "Hardi Volmer": [
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2015-04-09",
+      "end": "2015-09-15"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "start": "2016-11-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Varro Vooglaid": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2026-05-14"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2026-05-14",
+      "end": "2099-12-31"
+    }
+  ],
+  "Mart Võrklaev": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2023-04-18"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2024-07-24",
+      "end": "2099-12-31"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-07-24",
+      "end": "2024-07-24"
+    }
+  ],
+  "Toomas Väinaste": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2016-11-23",
+      "end": "2019-03-30"
+    }
+  ],
+  "Luisa Värk": [
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-10"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2023-04-10",
+      "end": "2099-12-31"
+    }
+  ]
+}

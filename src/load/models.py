@@ -13,6 +13,8 @@ class Speech(Base):
     source_file = Column(Text, nullable=False)
     source_url = Column(Text, nullable=False)
     speaker = Column(Text, nullable=False)
+    speaker_role = Column(Text, nullable=True)
+    speaker_faction = Column(Text, nullable=True)
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
 
