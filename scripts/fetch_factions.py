@@ -51,8 +51,9 @@ def fetch_factions():
         history.sort(key=lambda x: x['start'])
         faction_map[full_name] = history
         
-    Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
-    out_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
+    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
+    Path(sync_dir).mkdir(parents=True, exist_ok=True)
+    out_file = os.path.join(sync_dir, "factions_map.json")
     
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(faction_map, f, ensure_ascii=False, indent=2)

@@ -61,19 +61,28 @@ def get_month_ranges(start_date, end_date):
 def fetch_and_process_stenograms():
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
     
-    # We will fetch up to today
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    date_ranges = get_month_ranges(START_DATE, end_date)
-    
     # Load state of already processed verbatims (we can use UUIDs or Links)
-    state_file = os.path.join(OUTPUT_DIR_PROCESSED, "api_parse_state.json")
+    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
+    Path(sync_dir).mkdir(parents=True, exist_ok=True)
+    state_file = os.path.join(sync_dir, "api_parse_state.json")
+    
     if os.path.exists(state_file):
         with open(state_file, "r") as f:
             processed_uuids = set(json.load(f))
+            
+        # Incremental run: only fetch the last 14 days
+        run_start_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
     else:
         processed_uuids = set()
+        run_start_date = START_DATE
         
-    factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
+    # We will fetch up to today
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    date_ranges = get_month_ranges(run_start_date, end_date)
+        
+    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
+    factions_file = os.path.join(sync_dir, "factions_map.json")
+    
     if os.path.exists(factions_file):
         with open(factions_file, "r") as f:
             faction_map = json.load(f)
