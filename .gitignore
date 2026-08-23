@@ -1,5 +1,5 @@
 data/processed
-database/*.sqlite
+database/*.sqlite*
 .env
 .env.*
 __pycache__/

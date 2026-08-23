@@ -1,9 +1,11 @@
 import os
 import glob
-import boto3
-from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 
 def upload_to_b2():
