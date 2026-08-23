@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query
+from src.api.attendance import get_attendance_stats
 from src.api.search import (
     search_by_keyword,
     keyword_top_speakers,
@@ -8,11 +9,10 @@ from src.api.search import (
 router = APIRouter()
 
 
-from src.api.attendance import get_attendance_stats
-
 @router.get("/")
 def root():
     return {"status": "ok"}
+
 
 @router.get("/attendance/stats")
 def attendance_stats():
@@ -32,10 +32,11 @@ def search(
         "results": results,
     }
 
+
 @router.get("/search/activity")
 def search_activity(
-        q: str = Query(..., min_length=1),
-        interval: str = Query("monthly")
+    q: str = Query(..., min_length=1),
+    interval: str = Query("monthly")
 ):
     return {
         "query": q,
@@ -43,9 +44,13 @@ def search_activity(
         "activity": keyword_activity(q, interval)
     }
 
+
 @router.get("/search/speakers")
-def search_speakers(q, limit: int = 20):
+def search_speakers(
+    q: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=100),
+):
     return {
         "query": q,
         "speakers": keyword_top_speakers(q, limit)
-    }
+    }
