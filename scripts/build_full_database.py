@@ -25,7 +25,11 @@ def build_full_database(workers: int = None, chunk_size: int = 50):
     jsonl_files = list(processed_dir.glob("*.jsonl"))
     if not jsonl_files:
         print("\n[Step 0/5] No .jsonl files found in data/processed. Downloading from Backblaze B2...")
-        download_all_from_b2()
+        success = download_all_from_b2()
+        jsonl_files = list(processed_dir.glob("*.jsonl"))
+        if not success or not jsonl_files:
+            print("No .jsonl datasets found or downloaded. Please add B2 keys to .env or run scripts/fetch_stenograms_api.py.")
+            return
 
     # Step 1: Create Database Tables
     print("\n[Step 1/5] Creating Database Tables...")
