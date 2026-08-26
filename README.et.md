@@ -1,5 +1,7 @@
 # Riigikogu stenogrammide otsing
 
+[![Riigikogu Daily Data Pipeline](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/daily_pipeline.yml/badge.svg)](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/daily_pipeline.yml)
+
 🇬🇧 [English README](README.md)
 
 Täistekstotsingu ja analüütika rakendus Eesti Riigikogu stenogrammidele.

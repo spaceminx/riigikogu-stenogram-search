@@ -1,5 +1,7 @@
 # Riigikogu Stenogram Search
 
+[![Riigikogu Daily Data Pipeline](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/daily_pipeline.yml/badge.svg)](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/daily_pipeline.yml)
+
 🇪🇪 [Eestikeelne README](README.et.md)
 
 A full-text search and analytics application for Estonian Parliament (Riigikogu) transcripts.
