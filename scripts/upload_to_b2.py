@@ -1,5 +1,6 @@
 import os
 import glob
+import boto3
 
 try:
     from dotenv import load_dotenv
