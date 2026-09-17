@@ -7,13 +7,15 @@ export async function fetchSearch(query, limit = 50) {
 
 export async function fetchActivity(query, interval = "monthly") {
   const res = await fetch(
-      `${BASE_URL}/search/activity?q=${encodeURIComponent(query)}&interval=${interval}`
+    `${BASE_URL}/search/activity?q=${encodeURIComponent(query)}&interval=${interval}`
   );
   return res.json();
 }
 
 export async function fetchSpeakers(query, limit = 20) {
-  const res = await fetch(`${BASE_URL}/search/speakers?q=${encodeURIComponent(query)}&limit=${limit}`);
+  const res = await fetch(
+    `${BASE_URL}/search/speakers?q=${encodeURIComponent(query)}&limit=${limit}`
+  );
   return res.json();
 }
 

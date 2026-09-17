@@ -42,7 +42,7 @@
   padding: 1rem 1.5rem;
   border-radius: 16px;
   border: 1px solid var(--panel-border);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .search-groups-container {
@@ -51,7 +51,7 @@
   align-items: center;
   gap: 0.75rem;
   min-height: 50px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 1rem;
 }
 
@@ -60,7 +60,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(59, 130, 246, 0.08); 
+  background: rgba(59, 130, 246, 0.08);
   border: 1px dashed rgba(59, 130, 246, 0.3);
   padding: 0.5rem;
   border-radius: 12px;
@@ -98,8 +98,14 @@
 }
 
 @keyframes popIn {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .token-pill button {
@@ -149,8 +155,8 @@
 }
 
 .logic-btn {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -172,7 +178,7 @@
 
 .search-select {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   padding: 0 1.5rem;
   border-radius: 9999px;
@@ -198,7 +204,9 @@
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.3);
   height: 42px;
 }
@@ -277,7 +285,9 @@
 }
 
 .speech-card {
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
   background: rgba(25, 33, 50, 0.4);
 }
 
@@ -323,7 +333,7 @@
   background: rgba(15, 23, 42, 0.4);
   padding: 0.5rem;
   border-radius: 9999px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .nav-btn {
@@ -339,7 +349,7 @@
 
 .nav-btn:hover {
   color: var(--text-primary);
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .nav-btn.active {
@@ -390,13 +400,26 @@
   border-bottom: none;
 }
 
-.att-col-rank { width: 50px; color: var(--text-secondary); }
-.att-col-name { flex: 2; font-weight: 500; color: #e2e8f0; }
-.att-col-total { flex: 1; color: #cbd5e1; }
-.att-col-present { flex: 1; color: #cbd5e1; }
-.att-col-percent { 
-  flex: 2; 
-  display: flex; 
+.att-col-rank {
+  width: 50px;
+  color: var(--text-secondary);
+}
+.att-col-name {
+  flex: 2;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+.att-col-total {
+  flex: 1;
+  color: #cbd5e1;
+}
+.att-col-present {
+  flex: 1;
+  color: #cbd5e1;
+}
+.att-col-percent {
+  flex: 2;
+  display: flex;
   align-items: center;
 }
 
@@ -414,7 +437,6 @@
   transition: width 1s ease-out;
 }
 
-
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
@@ -425,7 +447,8 @@
     flex-direction: column;
     align-items: stretch;
   }
-  .search-select, .search-button {
+  .search-select,
+  .search-button {
     width: 100%;
   }
   .speeches-list {
