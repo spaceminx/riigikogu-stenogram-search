@@ -1,5 +1,6 @@
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
 from estnltk import Text
 from sqlalchemy import text
 from tqdm import tqdm
@@ -48,7 +49,9 @@ def _lemmatize_chunk(chunk):
     return results
 
 
-def build_missing_lemmas(max_workers: int = None, chunk_size: int = 50, commit_interval: int = 2000):
+def build_missing_lemmas(
+    max_workers: int = None, chunk_size: int = 50, commit_interval: int = 2000
+):
     if max_workers is None or max_workers <= 0:
         max_workers = get_default_workers()
 
@@ -64,10 +67,7 @@ def build_missing_lemmas(max_workers: int = None, chunk_size: int = 50, commit_i
         print("Querying speeches that require lemmatization...")
         missing_speeches = (
             session.query(Speech.id, Speech.text)
-            .filter(
-                (Speech.text_lemmas.is_(None)) |
-                (Speech.text_lemmas == "")
-            )
+            .filter((Speech.text_lemmas.is_(None)) | (Speech.text_lemmas == ""))
             .all()
         )
 
@@ -77,10 +77,12 @@ def build_missing_lemmas(max_workers: int = None, chunk_size: int = 50, commit_i
             return
 
         print(f"Found {total_count} speeches to lemmatize.")
-        print(f"Launching ProcessPoolExecutor with {max_workers} worker processes (chunk size: {chunk_size})...")
+        print(
+            f"Launching ProcessPoolExecutor with {max_workers} worker processes (chunk size: {chunk_size})..."
+        )
 
         data = [(row[0], row[1]) for row in missing_speeches]
-        chunks = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
+        chunks = [data[i : i + chunk_size] for i in range(0, len(data), chunk_size)]
 
         pending_updates = []
         with ProcessPoolExecutor(max_workers=max_workers) as executor:

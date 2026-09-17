@@ -1,9 +1,10 @@
+from datetime import datetime
+
 from sqlalchemy import func, or_
-from datetime import datetime, timedelta
 
 from config import STOPWORDS
 from src.load.database import SessionLocal
-from src.load.models import Speech, SpeechTerm, Lemma
+from src.load.models import Lemma, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
 
@@ -25,10 +26,7 @@ def fill_missing_periods(results, interval, label):
         while current <= end:
             period = current.strftime("%Y-%m")
 
-            filled.append({
-                label: period,
-                "count": data.get(period, 0)
-            })
+            filled.append({label: period, "count": data.get(period, 0)})
 
             if current.month == 12:
                 current = current.replace(year=current.year + 1, month=1)
@@ -37,13 +35,8 @@ def fill_missing_periods(results, interval, label):
 
         return filled
 
-    return [
-        {
-            label: period,
-            "count": count
-        }
-        for period, count in results
-    ]
+    return [{label: period, "count": count} for period, count in results]
+
 
 def parse_query_groups(query):
     """
@@ -60,6 +53,7 @@ def parse_query_groups(query):
             groups.append(lemmas)
 
     return groups
+
 
 def build_matching_speech_ids_query(session, groups):
     group_queries = []
@@ -86,6 +80,7 @@ def build_matching_speech_ids_query(session, groups):
 
     return union_query.subquery()
 
+
 def build_matching_conditions(session, groups):
     matching_conditions = []
 
@@ -104,7 +99,7 @@ def build_matching_conditions(session, groups):
     return matching_conditions
 
 
-def search_by_keyword(query, limit = 50):
+def search_by_keyword(query, limit=50):
     session = SessionLocal()
 
     try:
@@ -116,17 +111,11 @@ def search_by_keyword(query, limit = 50):
         matching_conditions = build_matching_conditions(session, groups)
 
         results = (
-            session.query(
-                Speech,
-                func.sum(SpeechTerm.count).label("match_count")
-            )
+            session.query(Speech, func.sum(SpeechTerm.count).label("match_count"))
             .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(or_(*matching_conditions))
-            .filter(
-                Lemma.lemma.in_(
-                    [lemma for group in groups for lemma in group])
-            )
+            .filter(Lemma.lemma.in_([lemma for group in groups for lemma in group]))
             .group_by(Speech.id)
             .order_by(Speech.date.desc())
             .limit(limit)
@@ -136,20 +125,20 @@ def search_by_keyword(query, limit = 50):
         output = []
 
         for speech, match_count in results:
-            output.append({
-                "speaker": speech.speaker,
-                "text": speech.text,
-                "count": int(match_count),
-                "date": speech.date,
-                "time": speech.time,
-                "source_url": speech.source_url,
-            })
+            output.append(
+                {
+                    "speaker": speech.speaker,
+                    "text": speech.text,
+                    "count": int(match_count),
+                    "date": speech.date,
+                    "time": speech.time,
+                    "source_url": speech.source_url,
+                }
+            )
         return output
 
     finally:
         session.close()
-
-
 
 
 def keyword_activity(query: str, interval: str = "weekly"):
@@ -174,10 +163,7 @@ def keyword_activity(query: str, interval: str = "weekly"):
         matched_speeches = build_matching_speech_ids_query(session, groups)
 
         results = (
-            session.query(
-                date_group.label("period"),
-                func.count(Speech.id).label("total_count")
-            )
+            session.query(date_group.label("period"), func.count(Speech.id).label("total_count"))
             .join(matched_speeches, Speech.id == list(matched_speeches.c)[0])
             .group_by(date_group)
             .order_by(date_group)
@@ -185,23 +171,15 @@ def keyword_activity(query: str, interval: str = "weekly"):
         )
 
         if interval == "monthly":
-            return fill_missing_periods(
-                results, interval, label
-            )
+            return fill_missing_periods(results, interval, label)
 
-        return [
-            {
-                label: period,
-                "count": int(total_count)
-            }
-            for period, total_count in results
-        ]
+        return [{label: period, "count": int(total_count)} for period, total_count in results]
 
     finally:
         session.close()
 
 
-def keyword_top_speakers(query, limit = 20):
+def keyword_top_speakers(query, limit=20):
     session = SessionLocal()
     try:
         groups = parse_query_groups(query)
@@ -213,10 +191,7 @@ def keyword_top_speakers(query, limit = 20):
         all_lemmas = [lemma for group in groups for lemma in group]
 
         results = (
-            session.query(
-                Speech.speaker,
-                func.sum(SpeechTerm.count).label("total_count")
-            )
+            session.query(Speech.speaker, func.sum(SpeechTerm.count).label("total_count"))
             .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(or_(*matching_conditions))
@@ -228,11 +203,7 @@ def keyword_top_speakers(query, limit = 20):
         )
 
         output = [
-            {
-                "speaker": speaker,
-                "count": int(total_count)
-            }
-            for speaker, total_count in results
+            {"speaker": speaker, "count": int(total_count)} for speaker, total_count in results
         ]
         return output
     finally:

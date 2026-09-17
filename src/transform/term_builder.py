@@ -1,17 +1,14 @@
 from collections import Counter
+
 from sqlalchemy import text
 from tqdm import tqdm
 
 from src.load.database import SessionLocal, engine
-from src.load.models import Speech, SpeechTerm, Lemma
+from src.load.models import Lemma, Speech, SpeechTerm
 
 
 def get_or_create_lemma(session, lemma_text):
-    lemma_obj = (
-        session.query(Lemma)
-        .filter(Lemma.lemma == lemma_text)
-        .first()
-    )
+    lemma_obj = session.query(Lemma).filter(Lemma.lemma == lemma_text).first()
 
     if lemma_obj:
         return lemma_obj
@@ -30,10 +27,7 @@ def create_speech_terms(session, speech_id, text_lemmas):
     lemma_counts = Counter(text_lemmas.split())
 
     for lemma_text, lemma_count in lemma_counts.items():
-        lemma_obj = get_or_create_lemma(
-            session=session,
-            lemma_text=lemma_text
-        )
+        lemma_obj = get_or_create_lemma(session=session, lemma_text=lemma_text)
 
         term = SpeechTerm(
             speech_id=speech_id,
@@ -62,14 +56,9 @@ def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000):
         # Speeches that have text_lemmas but no speech_terms yet
         speeches_query = (
             session.query(Speech.id, Speech.text_lemmas)
-            .outerjoin(
-                SpeechTerm,
-                Speech.id == SpeechTerm.speech_id
-            )
+            .outerjoin(SpeechTerm, Speech.id == SpeechTerm.speech_id)
             .filter(
-                SpeechTerm.id.is_(None),
-                Speech.text_lemmas.isnot(None),
-                Speech.text_lemmas != ""
+                SpeechTerm.id.is_(None), Speech.text_lemmas.isnot(None), Speech.text_lemmas != ""
             )
         )
 
@@ -84,7 +73,7 @@ def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000):
 
         # Step 1: Collect and insert all brand new lemmas in bulk
         new_lemmas = set()
-        for speech_id, text_lemmas in all_speeches:
+        for _, text_lemmas in all_speeches:
             if not text_lemmas:
                 continue
             words = text_lemmas.split()
@@ -94,10 +83,7 @@ def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000):
 
         if new_lemmas:
             print(f"Discovered {len(new_lemmas)} new lemmas. Inserting in bulk...")
-            session.bulk_insert_mappings(
-                Lemma,
-                [{"lemma": l} for l in new_lemmas]
-            )
+            session.bulk_insert_mappings(Lemma, [{"lemma": lem} for lem in new_lemmas])
             session.commit()
             # Refresh lemma_map
             lemma_rows = session.execute(text("SELECT lemma, id FROM lemmas")).all()
@@ -115,11 +101,9 @@ def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000):
                 for lemma_word, count in lemma_counts.items():
                     lid = lemma_map.get(lemma_word)
                     if lid:
-                        terms_buffer.append({
-                            "speech_id": speech_id,
-                            "lemma_id": lid,
-                            "count": count
-                        })
+                        terms_buffer.append(
+                            {"speech_id": speech_id, "lemma_id": lid, "count": count}
+                        )
 
                 if len(terms_buffer) >= terms_batch_size:
                     session.bulk_insert_mappings(SpeechTerm, terms_buffer)

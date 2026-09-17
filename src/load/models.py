@@ -1,5 +1,5 @@
+from sqlalchemy import Column, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, Text, UniqueConstraint, ForeignKey
 
 Base = declarative_base()
 
@@ -18,9 +18,8 @@ class Speech(Base):
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
 
-    __table_args__ = (
-        UniqueConstraint("source_file", "speaker", "text", name="uq_speech"),
-    )
+    __table_args__ = (UniqueConstraint("source_file", "speaker", "text", name="uq_speech"),)
+
 
 class Lemma(Base):
     __tablename__ = "lemmas"
@@ -28,24 +27,18 @@ class Lemma(Base):
     id = Column(Integer, primary_key=True)
     lemma = Column(Text, unique=True, nullable=False)
 
+
 class SpeechTerm(Base):
     __tablename__ = "speech_terms"
 
     id = Column(Integer, primary_key=True)
 
-    speech_id = Column(
-        Integer,
-        ForeignKey("speeches.id"),
-        nullable=False
-    )
+    speech_id = Column(Integer, ForeignKey("speeches.id"), nullable=False)
 
-    lemma_id = Column(
-        Integer,
-        ForeignKey("lemmas.id"),
-        nullable=False
-    )
+    lemma_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
 
     count = Column(Integer, nullable=False, default=1)
+
 
 class Attendance(Base):
     __tablename__ = "attendance"
@@ -56,7 +49,5 @@ class Attendance(Base):
     member_name = Column(Text, nullable=False)
     faction = Column(Text, nullable=True)
     status = Column(Text, nullable=False)
-    
-    __table_args__ = (
-        UniqueConstraint("voting_uuid", "member_name", name="uq_attendance"),
-    )
+
+    __table_args__ = (UniqueConstraint("voting_uuid", "member_name", name="uq_attendance"),)

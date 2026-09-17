@@ -1,17 +1,19 @@
+import argparse
 import os
 import sys
-import argparse
 import time
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pathlib import Path
+
 from config import OUTPUT_DIR_PROCESSED
 from scripts.download_all_from_b2 import download_all_from_b2
+from src.load.indexes import create_indexes
 from src.load.loader import create_tables, load_jsonl_to_database
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
-from src.load.indexes import create_indexes
+
 
 def build_full_database(workers: int = None, chunk_size: int = 50):
     start_total = time.time()
@@ -24,11 +26,15 @@ def build_full_database(workers: int = None, chunk_size: int = 50):
     processed_dir = Path(OUTPUT_DIR_PROCESSED)
     jsonl_files = list(processed_dir.glob("*.jsonl"))
     if not jsonl_files:
-        print("\n[Step 0/5] No .jsonl files found in data/processed. Downloading from Backblaze B2...")
+        print(
+            "\n[Step 0/5] No .jsonl files found in data/processed. Downloading from Backblaze B2..."
+        )
         success = download_all_from_b2()
         jsonl_files = list(processed_dir.glob("*.jsonl"))
         if not success or not jsonl_files:
-            print("No .jsonl datasets found or downloaded. Please add B2 keys to .env or run scripts/fetch_stenograms_api.py.")
+            print(
+                "No .jsonl datasets found or downloaded. Please add B2 keys to .env or run scripts/fetch_stenograms_api.py."
+            )
             return
 
     # Step 1: Create Database Tables
@@ -64,10 +70,20 @@ def build_full_database(workers: int = None, chunk_size: int = 50):
     print(f"DATABASE BUILD COMPLETE in {total_time:.1f} seconds ({total_time / 60:.2f} minutes)!")
     print("=" * 60)
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build complete Riigikogu SQLite database with parallel multiprocessing")
-    parser.add_argument("--workers", type=int, default=None, help="Number of parallel worker processes (default: auto-detect available CPU threads - 2)")
-    parser.add_argument("--chunk-size", type=int, default=50, help="Chunk size for parallel workers (default: 50)")
+    parser = argparse.ArgumentParser(
+        description="Build complete Riigikogu SQLite database with parallel multiprocessing"
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of parallel worker processes (default: auto-detect available CPU threads - 2)",
+    )
+    parser.add_argument(
+        "--chunk-size", type=int, default=50, help="Chunk size for parallel workers (default: 50)"
+    )
     args = parser.parse_args()
 
     build_full_database(workers=args.workers, chunk_size=args.chunk_size)

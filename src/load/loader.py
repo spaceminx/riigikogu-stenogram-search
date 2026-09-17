@@ -1,10 +1,11 @@
 import json
 from pathlib import Path
+
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from config import OUTPUT_DIR_PROCESSED
-from src.load.database import engine, SessionLocal
+from src.load.database import SessionLocal, engine
 from src.load.models import Base, Speech
 
 
@@ -30,7 +31,7 @@ def load_jsonl_to_database(batch_size: int = 2000):
     for input_file in jsonl_files:
         print(f"Processing {input_file.name}...")
         batch = []
-        with open(input_file, "r", encoding="utf-8") as f:
+        with open(input_file, encoding="utf-8") as f:
             for line in f:
                 if not line.strip():
                     continue

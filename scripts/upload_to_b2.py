@@ -1,9 +1,11 @@
-import os
 import glob
+import os
+
 import boto3
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
@@ -11,26 +13,21 @@ except ImportError:
 
 def upload_to_b2():
     # Read app_key info from env
-    key_id = os.environ.get('B2_KEY_ID')
-    app_key = os.environ.get('B2_APP_KEY')
+    key_id = os.environ.get("B2_KEY_ID")
+    app_key = os.environ.get("B2_APP_KEY")
 
     if not key_id or not app_key:
         print("ERROR: Backblaze key not found in environment variables.")
         return
 
-
-    endpoint = 'https://s3.eu-central-003.backblazeb2.com'
-    bucket_name = 'riigikogu-stenograms'
-
+    endpoint = "https://s3.eu-central-003.backblazeb2.com"
+    bucket_name = "riigikogu-stenograms"
 
     print("Connecting to Backblaze B2...")
 
     # S3 client
     s3 = boto3.client(
-        's3',
-        endpoint_url=endpoint,
-        aws_access_key_id=key_id,
-        aws_secret_access_key=app_key
+        "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
     )
 
     # Finding all .jsonl fails

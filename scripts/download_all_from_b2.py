@@ -1,14 +1,14 @@
 import os
-import sys
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     # Basic fallback to read .env if python-dotenv is not installed
     env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
     if os.path.exists(env_path):
-        with open(env_path, "r", encoding="utf-8") as f:
+        with open(env_path, encoding="utf-8") as f:
             for line in f:
                 if line.strip() and not line.startswith("#") and "=" in line:
                     k, v = line.strip().split("=", 1)
@@ -16,8 +16,8 @@ except ImportError:
 
 
 def download_all_from_b2():
-    key_id = os.environ.get('B2_KEY_ID')
-    app_key = os.environ.get('B2_APP_KEY')
+    key_id = os.environ.get("B2_KEY_ID")
+    app_key = os.environ.get("B2_APP_KEY")
 
     if not key_id or not app_key:
         print("=" * 60)
@@ -30,29 +30,27 @@ def download_all_from_b2():
         print("=" * 60)
         return False
 
-    endpoint = 'https://s3.eu-central-003.backblazeb2.com'
-    bucket_name = 'riigikogu-stenograms'
+    endpoint = "https://s3.eu-central-003.backblazeb2.com"
+    bucket_name = "riigikogu-stenograms"
     os.makedirs("data/processed", exist_ok=True)
 
     print("Connecting to Backblaze B2 (private bucket) via S3 API...")
 
     try:
         import boto3
+
         s3 = boto3.client(
-            's3',
-            endpoint_url=endpoint,
-            aws_access_key_id=key_id,
-            aws_secret_access_key=app_key
+            "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
         )
 
         response = s3.list_objects_v2(Bucket=bucket_name)
-        if 'Contents' not in response:
+        if "Contents" not in response:
             print("Bucket is empty!")
             return False
 
-        for obj in response['Contents']:
-            file_name = obj['Key']
-            if file_name.endswith('.jsonl'):
+        for obj in response["Contents"]:
+            file_name = obj["Key"]
+            if file_name.endswith(".jsonl"):
                 local_file_path = os.path.join("data", "processed", file_name)
                 print(f"Downloading {file_name} from {bucket_name}...")
                 s3.download_file(bucket_name, file_name, local_file_path)
@@ -68,5 +66,3 @@ def download_all_from_b2():
 
 if __name__ == "__main__":
     download_all_from_b2()
-
-
