@@ -648,7 +648,7 @@
     {
       "faction": "Eesti Reformierakonna fraktsioon",
       "start": "2025-03-25",
-      "end": "2099-12-31"
+      "end": "2026-09-15"
     },
     {
       "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
@@ -1227,7 +1227,7 @@
     {
       "faction": "Eesti Reformierakonna fraktsioon",
       "start": "2023-04-18",
-      "end": "2099-12-31"
+      "end": "2026-09-15"
     }
   ],
   "Kristjan Kõljalg": [
@@ -1970,6 +1970,11 @@
       "faction": "Eesti Reformierakonna fraktsioon",
       "start": "2023-04-10",
       "end": "2023-04-18"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2026-09-16",
+      "end": "2099-12-31"
     }
   ],
   "Heljo Pikhof": [
@@ -2717,6 +2722,11 @@
       "faction": "Eesti Reformierakonna fraktsioon",
       "start": "2023-04-10",
       "end": "2025-03-25"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2026-09-16",
+      "end": "2099-12-31"
     }
   ],
   "Neeme Suur": [
