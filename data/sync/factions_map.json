@@ -1974,6 +1974,11 @@
     {
       "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
       "start": "2026-09-16",
+      "end": "2026-09-17"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2026-09-17",
       "end": "2099-12-31"
     }
   ],
@@ -2726,6 +2731,11 @@
     {
       "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
       "start": "2026-09-16",
+      "end": "2026-09-17"
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "start": "2026-09-17",
       "end": "2099-12-31"
     }
   ],
