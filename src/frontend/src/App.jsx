@@ -531,7 +531,7 @@ function App() {
                 <a
                   href={speech.source_url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="speech-link"
                 >
                   Ava stenogramm

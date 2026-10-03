@@ -30,7 +30,7 @@ def attendance_stats():
 
 @router.get("/search")
 def search(
-    q: str = Query(..., min_length=1),
+    q: str = Query(..., min_length=1, max_length=1000),
     limit: int = Query(50, ge=1, le=200),
 ):
     try:
@@ -53,7 +53,9 @@ def search(
 
 
 @router.get("/search/activity")
-def search_activity(q: str = Query(..., min_length=1), interval: str = Query("monthly")):
+def search_activity(
+    q: str = Query(..., min_length=1, max_length=1000), interval: str = Query("monthly")
+):
     if interval not in ("daily", "weekly", "monthly"):
         raise HTTPException(
             status_code=400,
@@ -75,7 +77,7 @@ def search_activity(q: str = Query(..., min_length=1), interval: str = Query("mo
 
 @router.get("/search/speakers")
 def search_speakers(
-    q: str = Query(..., min_length=1),
+    q: str = Query(..., min_length=1, max_length=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
     try:
