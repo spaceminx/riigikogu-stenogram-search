@@ -47,7 +47,10 @@ jobs:
           cache-dependency-path: src/frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Security audit
+        run: npm audit --audit-level=high
 
       - name: Run ESLint
         run: npm run lint
@@ -57,3 +60,4 @@ jobs:
 
       - name: Build Frontend
         run: npm run build
+
