@@ -57,6 +57,8 @@ function App() {
   const [speakers, setSpeakers] = useState([]);
   const [attendanceStats, setAttendanceStats] = useState([]);
   const [view, setView] = useState("dashboard");
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState({
     key: "attendance_percentage",
     direction: "descending",
@@ -87,13 +89,20 @@ function App() {
   }, [attendanceStats, sortConfig]);
 
   const handleLoadAttendance = async () => {
+    setErrorMessage(null);
     setView("attendance");
     if (attendanceStats.length === 0) {
+      setLoading(true);
       try {
         const data = await fetchAttendance();
         setAttendanceStats(data);
       } catch (error) {
         console.error("Failed to fetch attendance:", error);
+        setErrorMessage(
+          error.message || "Kohaloleku andmete laadimine ebaõnnestus. Kontrolli serveri ühendust."
+        );
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -166,6 +175,9 @@ function App() {
     const finalQuery = buildBackendQuery();
     if (!finalQuery) return;
 
+    setErrorMessage(null);
+    setLoading(true);
+
     try {
       const searchData = await fetchSearch(finalQuery);
       const activityData = await fetchActivity(finalQuery, interval);
@@ -185,6 +197,12 @@ function App() {
       }
     } catch (error) {
       console.error("Frontend request failed:", error);
+      setErrorMessage(
+        error.message ||
+          "Otsingupäring ebaõnnestus. Kontrolli, kas API server töötab aadressil http://127.0.0.1:8000."
+      );
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -281,6 +299,23 @@ function App() {
         </div>
       </div>
 
+      {errorMessage && (
+        <div className="error-banner">
+          <div className="error-content">
+            <span className="error-icon">!</span>
+            <span>{errorMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="error-dismiss"
+            aria-label="Sulge teade"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
       {view !== "attendance" && (
         <form onSubmit={handleSearch} className="search-section">
           <div className="search-groups-container">
@@ -338,8 +373,8 @@ function App() {
               <option value="weekly">Nädal</option>
               <option value="monthly">Kuu</option>
             </select>
-            <button type="submit" className="search-button">
-              Otsi
+            <button type="submit" className="search-button" disabled={loading}>
+              {loading ? "Otsin..." : "Otsi"}
             </button>
           </div>
         </form>
