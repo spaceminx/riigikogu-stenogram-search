@@ -11,40 +11,55 @@ except ImportError:
     pass
 
 
-def upload_to_b2():
+def upload_to_b2() -> bool:
     # Read app_key info from env
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
     if not key_id or not app_key:
-        print("ERROR: Backblaze key not found in environment variables.")
-        return
+        print("ERROR: Backblaze B2 credentials (B2_KEY_ID, B2_APP_KEY) not found in environment.")
+        return False
 
     endpoint = "https://s3.eu-central-003.backblazeb2.com"
     bucket_name = "riigikogu-stenograms"
 
     print("Connecting to Backblaze B2...")
 
-    # S3 client
-    s3 = boto3.client(
-        "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
-    )
+    try:
+        s3 = boto3.client(
+            "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
+        )
+    except Exception as e:
+        print(f"Error initializing B2 client: {e}")
+        return False
 
-    # Finding all .jsonl fails
+    # Finding all .jsonl files
     files_to_upload = glob.glob("data/processed/*.jsonl")
 
     if not files_to_upload:
-        print("No jsonl found in data/processed/ folder")
-        return
+        print("No .jsonl files found in data/processed/ folder.")
+        return True
+
+    uploaded_count = 0
+    failed_count = 0
 
     for file_path in files_to_upload:
         file_name = os.path.basename(file_path)
         print(f"Uploading file to cloud: {file_name} -> {bucket_name} ...")
 
-        # Uploading
-        s3.upload_file(file_path, bucket_name, file_name)
+        try:
+            s3.upload_file(file_path, bucket_name, file_name)
+            uploaded_count += 1
+        except Exception as e:
+            print(f"Error uploading {file_name} to B2: {e}")
+            failed_count += 1
 
-    print("✅ All files successfully uploaded to cloud!")
+    if failed_count == 0:
+        print(f"All {uploaded_count} files successfully uploaded to {bucket_name}.")
+        return True
+
+    print(f"Upload finished with errors: {uploaded_count} uploaded, {failed_count} failed.")
+    return False
 
 
 if __name__ == "__main__":
