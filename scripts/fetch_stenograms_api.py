@@ -108,16 +108,40 @@ def fetch_and_process_stenograms():
         # Respect rate limits (12 req/min)
         time.sleep(6.1)
 
+        verbatims = None
+        max_retries = 3
+        for attempt in range(1, max_retries + 1):
+            try:
+                resp = requests.get(
+                    url, params={"startDate": start, "endDate": end}, timeout=(5, 30)
+                )
+                if resp.status_code == 200:
+                    verbatims = resp.json()
+                    break
+                if resp.status_code == 429:
+                    print(
+                        f"Warning: Rate limited (429) on {start}-{end}. Waiting 15s (attempt {attempt}/{max_retries})..."
+                    )
+                    time.sleep(15)
+                else:
+                    print(
+                        f"Warning: HTTP {resp.status_code} fetching {start}-{end} (attempt {attempt}/{max_retries})"
+                    )
+            except requests.exceptions.Timeout:
+                print(f"Warning: Timeout fetching {start}-{end} (attempt {attempt}/{max_retries})")
+            except requests.exceptions.RequestException as e:
+                print(
+                    f"Warning: Network error fetching {start}-{end}: {e} (attempt {attempt}/{max_retries})"
+                )
+
+            if attempt < max_retries:
+                time.sleep(5)
+
+        if not isinstance(verbatims, list):
+            print(f"Notice: Skipping {start}-{end} (no valid data received).")
+            continue
+
         try:
-            resp = requests.get(url, params={"startDate": start, "endDate": end}, timeout=30)
-            if resp.status_code != 200:
-                print(f"Failed to fetch {start}-{end}: HTTP {resp.status_code}")
-                continue
-
-            verbatims = resp.json()
-            if not isinstance(verbatims, list):
-                continue
-
             for verbatim in verbatims:
                 verbatim_link = verbatim.get("link", "")
                 # If we don't have a reliable UUID in verbatim root, use the link as the unique ID

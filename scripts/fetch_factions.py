@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -13,12 +14,43 @@ def fetch_factions():
     url = "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=13&membership=14&membership=15"
     print(f"Fetching members from {url}...")
 
-    resp = requests.get(url)
-    if resp.status_code != 200:
-        print(f"Error fetching members: {resp.status_code}")
+    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
+    Path(sync_dir).mkdir(parents=True, exist_ok=True)
+    out_file = os.path.join(sync_dir, "factions_map.json")
+
+    max_retries = 3
+    members = None
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.get(url, timeout=(5, 25))
+            if resp.status_code == 200:
+                members = resp.json()
+                break
+            print(
+                f"Warning: HTTP {resp.status_code} fetching members (attempt {attempt}/{max_retries})"
+            )
+        except requests.exceptions.Timeout:
+            print(
+                f"Warning: Connection timed out to api.riigikogu.ee (attempt {attempt}/{max_retries})"
+            )
+        except requests.exceptions.RequestException as e:
+            print(
+                f"Warning: Network error fetching members ({e}) (attempt {attempt}/{max_retries})"
+            )
+
+        if attempt < max_retries:
+            time.sleep(3 * attempt)
+
+    if members is None:
+        if os.path.exists(out_file):
+            print(
+                f"Notice: Could not refresh factions from API. Using existing cache from {out_file}."
+            )
+            return
+        print(f"Error: Failed to fetch factions from {url} and no cached {out_file} found.")
         return
 
-    members = resp.json()
     faction_map = {}
 
     for m in members:
@@ -48,10 +80,6 @@ def fetch_factions():
         # Sort history by start date just in case
         history.sort(key=lambda x: x["start"])
         faction_map[full_name] = history
-
-    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
-    Path(sync_dir).mkdir(parents=True, exist_ok=True)
-    out_file = os.path.join(sync_dir, "factions_map.json")
 
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(faction_map, f, ensure_ascii=False, indent=2)
