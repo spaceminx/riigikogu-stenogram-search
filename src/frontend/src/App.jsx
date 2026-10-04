@@ -55,6 +55,33 @@ function formatDateTime(dateStr, timeStr) {
   return `${formattedDate}${formattedTime}`;
 }
 
+function formatFactionName(name) {
+  if (!name) return "";
+  const nameMap = {
+    "Eesti Reformierakonna fraktsioon": "Reformierakond",
+    "Eesti Keskerakonna fraktsioon": "Keskerakond",
+    "Eesti Konservatiivse Rahvaerakonna fraktsioon": "EKRE",
+    "Eesti 200 fraktsioon": "Eesti 200",
+    "Isamaa fraktsioon": "Isamaa",
+    "Sotsiaaldemokraatliku Erakonna fraktsioon": "Sotsiaaldemokraadid",
+    "Fraktsiooni mittekuuluvad Riigikogu liikmed": "Fraktsiooni mittekuuluvad",
+  };
+  if (nameMap[name]) return nameMap[name];
+
+  const clean = name.replace(/ fraktsioon$/i, "").replace(/ fraktsiooni$/i, "");
+  const fallbackMap = {
+    "Eesti Reformierakonna": "Reformierakond",
+    "Eesti Reformierakond": "Reformierakond",
+    "Eesti Keskerakonna": "Keskerakond",
+    "Eesti Keskerakond": "Keskerakond",
+    "Eesti Konservatiivse Rahvaerakonna": "EKRE",
+    "Eesti Konservatiivne Rahvaerakond": "EKRE",
+    "Sotsiaaldemokraatliku Erakonna": "Sotsiaaldemokraadid",
+    "Sotsiaaldemokraatlik Erakond": "Sotsiaaldemokraadid",
+  };
+  return fallbackMap[clean] || clean;
+}
+
 function App() {
   const [groups, setGroups] = useState([[]]); // Array of arrays of strings
   const [inputValue, setInputValue] = useState("");
@@ -703,7 +730,7 @@ function App() {
                     <option value="">Kõik fraktsioonid</option>
                     {factionsList.map((fac, idx) => (
                       <option key={idx} value={fac}>
-                        {fac}
+                        {formatFactionName(fac)}
                       </option>
                     ))}
                   </select>
@@ -811,7 +838,7 @@ function App() {
                     <div className="att-col-name">{stat.member_name}</div>
                     <div className="att-col-faction">
                       <span className="faction-badge" title={stat.faction}>
-                        {stat.faction}
+                        {formatFactionName(stat.faction)}
                       </span>
                     </div>
                     <div className="att-col-total">{stat.total_sessions}</div>
@@ -912,7 +939,7 @@ function App() {
                   >
                     <div className="att-col-rank">{idx + 1}</div>
                     <div className="att-col-name">
-                      <span className="faction-title">{stat.faction}</span>
+                      <span className="faction-title">{formatFactionName(stat.faction)}</span>
                       <span className="drilldown-hint">Vaata saadikuid &rarr;</span>
                     </div>
                     <div className="att-col-count">{stat.member_count}</div>
