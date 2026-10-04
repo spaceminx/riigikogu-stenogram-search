@@ -35,7 +35,33 @@ export async function fetchSpeakers(query, limit = 20) {
   return handleResponse(res);
 }
 
-export async function fetchAttendance() {
-  const res = await fetch(`${BASE_URL}/attendance/stats`);
+export async function fetchAttendance({
+  membership = "15",
+  faction = null,
+  activeOnly = false,
+} = {}) {
+  const params = new URLSearchParams();
+  if (membership) params.append("membership", membership);
+  if (faction) params.append("faction", faction);
+  if (activeOnly) params.append("active_only", "true");
+
+  const res = await fetch(`${BASE_URL}/attendance/stats?${params.toString()}`);
+  return handleResponse(res);
+}
+
+export async function fetchFactionAttendance({ membership = "15", activeOnly = false } = {}) {
+  const params = new URLSearchParams();
+  if (membership) params.append("membership", membership);
+  if (activeOnly) params.append("active_only", "true");
+
+  const res = await fetch(`${BASE_URL}/attendance/factions?${params.toString()}`);
+  return handleResponse(res);
+}
+
+export async function fetchFactionsList(membership = "15") {
+  const params = new URLSearchParams();
+  if (membership) params.append("membership", membership);
+
+  const res = await fetch(`${BASE_URL}/attendance/factions/list?${params.toString()}`);
   return handleResponse(res);
 }
