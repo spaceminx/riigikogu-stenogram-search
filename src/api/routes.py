@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
-from src.api.attendance import get_attendance_stats
+from src.api.attendance import (
+    get_attendance_stats,
+    get_faction_attendance_stats,
+    get_factions_list,
+)
 from src.api.search import keyword_activity, keyword_top_speakers, search_by_keyword
 
 router = APIRouter()
@@ -13,13 +17,54 @@ def root():
 
 
 @router.get("/attendance/stats")
-def attendance_stats():
+def attendance_stats(
+    membership: str = Query("15", description="Riigikogu koosseis (14, 15 või all)"),
+    faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
+    active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
+):
     try:
-        return get_attendance_stats()
+        return get_attendance_stats(membership=membership, faction=faction, active_only=active_only)
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
             detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud. Käivita scripts/fetch_attendance.py või scripts/build_full_database.py.",
+        ) from e
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Andmebaasipäring ebaõnnestus: {e}",
+        ) from e
+
+
+@router.get("/attendance/factions")
+def attendance_factions(
+    membership: str = Query("15", description="Riigikogu koosseis (14, 15 või all)"),
+    active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
+):
+    try:
+        return get_faction_attendance_stats(membership=membership, active_only=active_only)
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud. Käivita scripts/fetch_attendance.py või scripts/build_full_database.py.",
+        ) from e
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Andmebaasipäring ebaõnnestus: {e}",
+        ) from e
+
+
+@router.get("/attendance/factions/list")
+def factions_list(
+    membership: str = Query("15", description="Riigikogu koosseis (14, 15 või all)"),
+):
+    try:
+        return get_factions_list(membership=membership)
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
         raise HTTPException(
