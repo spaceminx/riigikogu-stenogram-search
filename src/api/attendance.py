@@ -14,24 +14,33 @@ MEMBERSHIP_DATES = {
 }
 
 
-def get_active_members() -> set[str]:
-    """Return the set of member names who are currently active MPs."""
+def get_active_members_data() -> tuple[set[str], dict[str, int]]:
+    """Return active member names and active member count per current faction."""
     factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
     if not os.path.exists(factions_file):
-        return set()
+        return set(), {}
     try:
         with open(factions_file, encoding="utf-8") as f:
             factions_map = json.load(f)
         today = datetime.now().strftime("%Y-%m-%d")
         active = set()
+        faction_counts: dict[str, int] = {}
         for member, periods in factions_map.items():
             for p in periods:
                 if p.get("end", "") >= today or p.get("end") == "2099-12-31":
                     active.add(member)
+                    fac = p.get("faction")
+                    if fac:
+                        faction_counts[fac] = faction_counts.get(fac, 0) + 1
                     break
-        return active
+        return active, faction_counts
     except Exception:
-        return set()
+        return set(), {}
+
+
+def get_active_members() -> set[str]:
+    """Return the set of member names who are currently active MPs."""
+    return get_active_members_data()[0]
 
 
 def get_attendance_stats(
@@ -126,8 +135,9 @@ def get_faction_attendance_stats(
                 Attendance.session_date >= start_d, Attendance.session_date <= end_d
             )
 
+        active_faction_counts: dict[str, int] = {}
         if active_only:
-            active_members = get_active_members()
+            active_members, active_faction_counts = get_active_members_data()
             if not active_members:
                 return []
             query = query.filter(Attendance.member_name.in_(active_members))
@@ -143,10 +153,11 @@ def get_faction_attendance_stats(
             total_val = int(total)
 
             percentage = round((present_val / total_val) * 100, 1)
+            m_count = active_faction_counts.get(fac_name, 0) if active_only else int(member_count)
             stats.append(
                 {
                     "faction": fac_name,
-                    "member_count": int(member_count),
+                    "member_count": m_count,
                     "total_sessions": total_val,
                     "present_sessions": present_val,
                     "attendance_percentage": percentage,
