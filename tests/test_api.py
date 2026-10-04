@@ -4,11 +4,48 @@ import sys
 # Ensure project root is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
+from src.load.database import SessionLocal, engine
+from src.load.models import Attendance, Base
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def setup_test_database():
+    """Ensure database schema and test data exist in CI environment."""
+    Base.metadata.create_all(bind=engine)
+    session = SessionLocal()
+    if session.query(Attendance).count() == 0:
+        test_records = [
+            Attendance(
+                session_date="2023-05-01T10:00:00",
+                voting_uuid="test-uuid-1",
+                member_name="Jaan Tamm",
+                faction="Eesti 200 fraktsioon",
+                status="KOHAL",
+            ),
+            Attendance(
+                session_date="2023-05-01T10:00:00",
+                voting_uuid="test-uuid-1",
+                member_name="Kati Kask",
+                faction="Isamaa fraktsioon",
+                status="PUUDUB",
+            ),
+            Attendance(
+                session_date="2021-05-01T10:00:00",
+                voting_uuid="test-uuid-2",
+                member_name="Jaan Tamm",
+                faction="Eesti Keskerakonna fraktsioon",
+                status="KOHAL",
+            ),
+        ]
+        session.add_all(test_records)
+        session.commit()
+    session.close()
 
 
 def test_root_status():
