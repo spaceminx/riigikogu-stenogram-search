@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { fetchSearch, fetchActivity, fetchSpeakers, fetchAttendance } from "./api";
+import {
+  fetchSearch,
+  fetchActivity,
+  fetchSpeakers,
+  fetchAttendance,
+  fetchFactionAttendance,
+  fetchFactionsList,
+} from "./api";
 import "./App.css";
 
 function formatDateTime(dateStr, timeStr) {
@@ -55,11 +62,25 @@ function App() {
   const [speeches, setSpeeches] = useState([]);
   const [activity, setActivity] = useState([]);
   const [speakers, setSpeakers] = useState([]);
-  const [attendanceStats, setAttendanceStats] = useState([]);
   const [view, setView] = useState("dashboard");
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Attendance state
+  const [attendanceTab, setAttendanceTab] = useState("members"); // "members" | "factions"
+  const [attendanceMembership, setAttendanceMembership] = useState("15"); // "15" | "14" | "all"
+  const [selectedFaction, setSelectedFaction] = useState("");
+  const [activeOnly, setActiveOnly] = useState(false);
+  const [attendanceStats, setAttendanceStats] = useState([]);
+  const [factionStats, setFactionStats] = useState([]);
+  const [factionsList, setFactionsList] = useState([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+
   const [sortConfig, setSortConfig] = useState({
+    key: "attendance_percentage",
+    direction: "descending",
+  });
+  const [factionSortConfig, setFactionSortConfig] = useState({
     key: "attendance_percentage",
     direction: "descending",
   });
@@ -71,6 +92,61 @@ function App() {
     }
     setSortConfig({ key, direction });
   };
+
+  const requestFactionSort = (key) => {
+    let direction = "descending";
+    if (factionSortConfig.key === key && factionSortConfig.direction === "descending") {
+      direction = "ascending";
+    }
+    setFactionSortConfig({ key, direction });
+  };
+
+  useEffect(() => {
+    if (view !== "attendance") return;
+
+    let isMounted = true;
+
+    async function fetchData() {
+      setAttendanceLoading(true);
+      setErrorMessage(null);
+      try {
+        const [membersData, factionsData, listData] = await Promise.all([
+          fetchAttendance({
+            membership: attendanceMembership,
+            faction: selectedFaction || null,
+            activeOnly,
+          }),
+          fetchFactionAttendance({
+            membership: attendanceMembership,
+            activeOnly,
+          }),
+          fetchFactionsList(attendanceMembership),
+        ]);
+        if (isMounted) {
+          setAttendanceStats(membersData || []);
+          setFactionStats(factionsData || []);
+          setFactionsList(listData || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch attendance data:", error);
+        if (isMounted) {
+          setErrorMessage(
+            error.message || "Kohaloleku andmete laadimine ebaõnnestus. Kontrolli serveri ühendust."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setAttendanceLoading(false);
+        }
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [view, attendanceMembership, selectedFaction, activeOnly]);
 
   const sortedStats = React.useMemo(() => {
     let sortableItems = [...attendanceStats];
@@ -88,23 +164,30 @@ function App() {
     return sortableItems;
   }, [attendanceStats, sortConfig]);
 
-  const handleLoadAttendance = async () => {
+  const sortedFactionStats = React.useMemo(() => {
+    let sortableItems = [...factionStats];
+    if (factionSortConfig.key) {
+      sortableItems.sort((a, b) => {
+        if (a[factionSortConfig.key] < b[factionSortConfig.key]) {
+          return factionSortConfig.direction === "ascending" ? -1 : 1;
+        }
+        if (a[factionSortConfig.key] > b[factionSortConfig.key]) {
+          return factionSortConfig.direction === "ascending" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [factionStats, factionSortConfig]);
+
+  const handleOpenAttendance = () => {
     setErrorMessage(null);
     setView("attendance");
-    if (attendanceStats.length === 0) {
-      setLoading(true);
-      try {
-        const data = await fetchAttendance();
-        setAttendanceStats(data);
-      } catch (error) {
-        console.error("Failed to fetch attendance:", error);
-        setErrorMessage(
-          error.message || "Kohaloleku andmete laadimine ebaõnnestus. Kontrolli serveri ühendust."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
+  };
+
+  const handleSelectFactionDrilldown = (factionName) => {
+    setSelectedFaction(factionName);
+    setAttendanceTab("members");
   };
 
   const tooltipStyle = {
@@ -134,7 +217,6 @@ function App() {
     if (inputValue.trim()) {
       newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], inputValue.trim()];
     }
-    // Only add a new group if the last one isn't already empty
     if (newGroups[newGroups.length - 1].length > 0) {
       newGroups.push([]);
     }
@@ -147,7 +229,6 @@ function App() {
     newGroups[gIndex] = [...newGroups[gIndex]];
     newGroups[gIndex].splice(wIndex, 1);
 
-    // If a group becomes completely empty and it's not the only group, remove it
     if (newGroups[gIndex].length === 0 && newGroups.length > 1) {
       newGroups.splice(gIndex, 1);
     }
@@ -162,11 +243,7 @@ function App() {
         inputValue.trim(),
       ];
     }
-
-    // Filter out completely empty groups
     finalGroups = finalGroups.filter((g) => g.length > 0);
-
-    // Convert to string: group words are joined by space (AND), groups are joined by comma (OR)
     return finalGroups.map((g) => g.join(" ")).join(", ");
   };
 
@@ -188,7 +265,6 @@ function App() {
       setSpeakers(speakersData.speakers || []);
       setView("dashboard");
 
-      // Auto-commit the input into the active group
       if (inputValue.trim()) {
         const newGroups = [...groups];
         newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], inputValue.trim()];
@@ -207,7 +283,6 @@ function App() {
   }
 
   const handleKeyDown = (e) => {
-    // If they press space, we could auto-trigger "AND", but standard form submit is enter
     if (e.key === "Enter") {
       // Let form submit naturally
     }
@@ -292,7 +367,7 @@ function App() {
           </button>
           <button
             className={`nav-btn ${view === "attendance" ? "active" : ""}`}
-            onClick={handleLoadAttendance}
+            onClick={handleOpenAttendance}
           >
             Kohalolek
           </button>
@@ -306,10 +381,9 @@ function App() {
             <span>{errorMessage}</span>
           </div>
           <button
-            type="button"
-            onClick={() => setErrorMessage(null)}
             className="error-dismiss"
-            aria-label="Sulge teade"
+            onClick={() => setErrorMessage(null)}
+            title="Sulge teade"
           >
             &times;
           </button>
@@ -321,30 +395,32 @@ function App() {
           <div className="search-groups-container">
             {groups.map((group, gIndex) => (
               <React.Fragment key={gIndex}>
-                {gIndex > 0 && <div className="or-divider">OR</div>}
-
+                {gIndex > 0 && <span className="or-divider">VÕI</span>}
                 <div className="and-group-box">
                   {group.map((word, wIndex) => (
-                    <span key={wIndex} className="token-pill word">
+                    <span key={wIndex} className="token-pill">
                       {word}
-                      <button type="button" onClick={() => removeWord(gIndex, wIndex)}>
+                      <button
+                        type="button"
+                        onClick={() => removeWord(gIndex, wIndex)}
+                        title="Eemalda sõna"
+                      >
                         &times;
                       </button>
                     </span>
                   ))}
-
-                  {/* Show input only in the last active group */}
                   {gIndex === groups.length - 1 && (
                     <input
+                      type="text"
                       className="search-input"
+                      placeholder={
+                        group.length === 0 && groups.length === 1
+                          ? "Sisesta otsisõna (nt mets)..."
+                          : "Lisa sõna..."
+                      }
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder={
-                        group.length === 0 && gIndex === 0
-                          ? "Sisesta märksõna (nt kliima)..."
-                          : "Lisa sõna (AND)..."
-                      }
                     />
                   )}
                 </div>
@@ -354,25 +430,34 @@ function App() {
 
           <div className="search-controls">
             <div className="logic-buttons">
-              <button type="button" className="logic-btn and-btn" onClick={handleAddAnd}>
-                + AND (koos)
+              <button
+                type="button"
+                className="logic-btn and-btn"
+                onClick={handleAddAnd}
+                title="Lisa sõna samasse gruppi (mõlemad peavad esinema)"
+              >
+                + JA
               </button>
-              <button type="button" className="logic-btn or-btn" onClick={handleAddOr}>
-                + OR (uus grupp)
+              <button
+                type="button"
+                className="logic-btn or-btn"
+                onClick={handleAddOr}
+                title="Alusta uut gruppi (üks või teine peab esinema)"
+              >
+                + VÕI
               </button>
             </div>
-
-            <div style={{ flex: 1 }}></div>
 
             <select
               className="search-select"
               value={interval}
               onChange={(e) => setSelectedInterval(e.target.value)}
             >
-              <option value="daily">Päev</option>
-              <option value="weekly">Nädal</option>
-              <option value="monthly">Kuu</option>
+              <option value="monthly">Kuu kaupa</option>
+              <option value="weekly">Nädala kaupa</option>
+              <option value="daily">Päeva kaupa</option>
             </select>
+
             <button type="submit" className="search-button" disabled={loading}>
               {loading ? "Otsin..." : "Otsi"}
             </button>
@@ -380,23 +465,20 @@ function App() {
         </form>
       )}
 
-      {view !== "attendance" && speeches.length === 0 && activity.length === 0 && (
-        <div style={{ textAlign: "center", marginTop: "4rem", color: "#64748b" }}>
+      {view === "dashboard" && activity.length === 0 && !loading && (
+        <div className="glass-panel empty-state">
           <svg
             width="48"
             height="48"
             viewBox="0 0 24 24"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ marginBottom: "1rem", opacity: 0.5 }}
+            stroke="#64748b"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <path
-              d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <p>Alustamiseks sisesta märksõna ja vajuta "Otsi"</p>
         </div>
@@ -560,100 +642,296 @@ function App() {
 
       {view === "attendance" && (
         <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
-          <div className="chart-header" style={{ marginBottom: "1.5rem" }}>
-            <h2 style={{ margin: 0 }}>Kohaloleku statistika (2019 - 2026)</h2>
+          <div className="chart-header" style={{ marginBottom: "1.25rem" }}>
+            <h2 style={{ margin: 0 }}>
+              Kohaloleku statistika{" "}
+              {attendanceMembership === "15"
+                ? "(XV Riigikogu, 2023–praegu)"
+                : attendanceMembership === "14"
+                  ? "(XIV Riigikogu, 2019–2023)"
+                  : "(2019–2026)"}
+            </h2>
           </div>
 
-          <div className="attendance-list">
-            <div className="attendance-header-row">
-              <div className="att-col-rank">#</div>
-              <div
-                className="att-col-name cursor-pointer"
-                onClick={() => requestSort("member_name")}
+          <div className="attendance-filter-bar">
+            <div className="segmented-control">
+              <button
+                type="button"
+                className={`segmented-btn ${attendanceTab === "members" ? "active" : ""}`}
+                onClick={() => setAttendanceTab("members")}
               >
-                Saadik{" "}
-                {sortConfig.key === "member_name"
-                  ? sortConfig.direction === "ascending"
-                    ? "↑"
-                    : "↓"
-                  : ""}
-              </div>
-              <div
-                className="att-col-total cursor-pointer"
-                onClick={() => requestSort("total_sessions")}
+                Saadikud
+              </button>
+              <button
+                type="button"
+                className={`segmented-btn ${attendanceTab === "factions" ? "active" : ""}`}
+                onClick={() => setAttendanceTab("factions")}
               >
-                Istungeid kokku{" "}
-                {sortConfig.key === "total_sessions"
-                  ? sortConfig.direction === "ascending"
-                    ? "↑"
-                    : "↓"
-                  : ""}
-              </div>
-              <div
-                className="att-col-present cursor-pointer"
-                onClick={() => requestSort("present_sessions")}
-              >
-                Kohal oldud{" "}
-                {sortConfig.key === "present_sessions"
-                  ? sortConfig.direction === "ascending"
-                    ? "↑"
-                    : "↓"
-                  : ""}
-              </div>
-              <div
-                className="att-col-percent cursor-pointer"
-                onClick={() => requestSort("attendance_percentage")}
-              >
-                %{" "}
-                {sortConfig.key === "attendance_percentage"
-                  ? sortConfig.direction === "ascending"
-                    ? "↑"
-                    : "↓"
-                  : ""}
-              </div>
+                Fraktsioonid
+              </button>
             </div>
 
-            {sortedStats.length === 0 ? (
-              <p style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>
-                Laen andmeid...
-              </p>
-            ) : (
-              sortedStats.map((stat, idx) => (
-                <div key={idx} className="attendance-row">
-                  <div className="att-col-rank">{idx + 1}</div>
-                  <div className="att-col-name">{stat.member_name}</div>
-                  <div className="att-col-total">{stat.total_sessions}</div>
-                  <div className="att-col-present">{stat.present_sessions}</div>
-                  <div className="att-col-percent">
-                    <div className="percent-bar-bg">
-                      <div
-                        className="percent-bar-fill"
-                        style={{
-                          width: `${stat.attendance_percentage}%`,
-                          backgroundColor:
-                            stat.attendance_percentage >= 90
-                              ? "#10b981"
-                              : stat.attendance_percentage >= 70
-                                ? "#f59e0b"
-                                : "#ef4444",
-                        }}
-                      ></div>
-                    </div>
-                    <span
-                      style={{
-                        fontWeight: "bold",
-                        marginLeft: "10px",
-                        minWidth: "45px",
-                        display: "inline-block",
-                      }}
+            <div className="attendance-controls-row">
+              <div className="filter-group">
+                <label className="filter-label">Koosseis:</label>
+                <select
+                  className="attendance-select"
+                  value={attendanceMembership}
+                  onChange={(e) => {
+                    setAttendanceMembership(e.target.value);
+                    setSelectedFaction("");
+                  }}
+                >
+                  <option value="15">XV Riigikogu (2023–praegu)</option>
+                  <option value="14">XIV Riigikogu (2019–2023)</option>
+                  <option value="all">Kõik kokku (2019–praegu)</option>
+                </select>
+              </div>
+
+              {attendanceTab === "members" && (
+                <div className="filter-group">
+                  <label className="filter-label">Fraktsioon:</label>
+                  <select
+                    className="attendance-select"
+                    value={selectedFaction}
+                    onChange={(e) => setSelectedFaction(e.target.value)}
+                  >
+                    <option value="">Kõik fraktsioonid</option>
+                    {factionsList.map((fac, idx) => (
+                      <option key={idx} value={fac}>
+                        {fac}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedFaction && (
+                    <button
+                      type="button"
+                      className="clear-filter-btn"
+                      onClick={() => setSelectedFaction("")}
+                      title="Eemalda fraktsiooni filter"
                     >
-                      {stat.attendance_percentage}%
-                    </span>
-                  </div>
+                      &times;
+                    </button>
+                  )}
                 </div>
-              ))
-            )}
+              )}
+
+              <label className="attendance-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={activeOnly}
+                  onChange={(e) => setActiveOnly(e.target.checked)}
+                />
+                <span>Ainult praegu aktiivsed saadikud (101)</span>
+              </label>
+            </div>
           </div>
+
+          {attendanceLoading ? (
+            <p style={{ textAlign: "center", padding: "3rem", color: "#94a3b8" }}>
+              Laen kohaloleku andmeid...
+            </p>
+          ) : attendanceTab === "members" ? (
+            <div className="attendance-list">
+              <div className="attendance-header-row">
+                <div className="att-col-rank">#</div>
+                <div
+                  className="att-col-name cursor-pointer"
+                  onClick={() => requestSort("member_name")}
+                >
+                  Saadik{" "}
+                  {sortConfig.key === "member_name"
+                    ? sortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-faction cursor-pointer"
+                  onClick={() => requestSort("faction")}
+                >
+                  Fraktsioon{" "}
+                  {sortConfig.key === "faction"
+                    ? sortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-total cursor-pointer"
+                  onClick={() => requestSort("total_sessions")}
+                >
+                  Istungeid{" "}
+                  {sortConfig.key === "total_sessions"
+                    ? sortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-present cursor-pointer"
+                  onClick={() => requestSort("present_sessions")}
+                >
+                  Kohal{" "}
+                  {sortConfig.key === "present_sessions"
+                    ? sortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-percent cursor-pointer"
+                  onClick={() => requestSort("attendance_percentage")}
+                >
+                  %{" "}
+                  {sortConfig.key === "attendance_percentage"
+                    ? sortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+              </div>
+
+              {sortedStats.length === 0 ? (
+                <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                  Valitud filtritele vastavaid saadikuid ei leitud.
+                </p>
+              ) : (
+                sortedStats.map((stat, idx) => (
+                  <div key={idx} className="attendance-row">
+                    <div className="att-col-rank">{idx + 1}</div>
+                    <div className="att-col-name">{stat.member_name}</div>
+                    <div className="att-col-faction">
+                      <span className="faction-badge" title={stat.faction}>
+                        {stat.faction}
+                      </span>
+                    </div>
+                    <div className="att-col-total">{stat.total_sessions}</div>
+                    <div className="att-col-present">{stat.present_sessions}</div>
+                    <div className="att-col-percent">
+                      <div className="percent-bar-bg">
+                        <div
+                          className="percent-bar-fill"
+                          style={{
+                            width: `${stat.attendance_percentage}%`,
+                            backgroundColor:
+                              stat.attendance_percentage >= 90
+                                ? "#10b981"
+                                : stat.attendance_percentage >= 70
+                                  ? "#f59e0b"
+                                  : "#ef4444",
+                          }}
+                        ></div>
+                      </div>
+                      <span className="percent-text">{stat.attendance_percentage}%</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="attendance-list">
+              <div className="attendance-header-row">
+                <div className="att-col-rank">#</div>
+                <div
+                  className="att-col-name cursor-pointer"
+                  onClick={() => requestFactionSort("faction")}
+                >
+                  Fraktsioon{" "}
+                  {factionSortConfig.key === "faction"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-count cursor-pointer"
+                  onClick={() => requestFactionSort("member_count")}
+                >
+                  Saadikuid{" "}
+                  {factionSortConfig.key === "member_count"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-total cursor-pointer"
+                  onClick={() => requestFactionSort("total_sessions")}
+                >
+                  Hääletusi kokku{" "}
+                  {factionSortConfig.key === "total_sessions"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-present cursor-pointer"
+                  onClick={() => requestFactionSort("present_sessions")}
+                >
+                  Kohal oldud{" "}
+                  {factionSortConfig.key === "present_sessions"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-percent cursor-pointer"
+                  onClick={() => requestFactionSort("attendance_percentage")}
+                >
+                  Keskmine kohalolek %{" "}
+                  {factionSortConfig.key === "attendance_percentage"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+              </div>
+
+              {sortedFactionStats.length === 0 ? (
+                <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                  Fraktsioonide andmeid ei leitud.
+                </p>
+              ) : (
+                sortedFactionStats.map((stat, idx) => (
+                  <div
+                    key={idx}
+                    className="attendance-row faction-row-interactive"
+                    onClick={() => handleSelectFactionDrilldown(stat.faction)}
+                    title={`Klõpsa, et vaadata ${stat.faction} saadikuid`}
+                  >
+                    <div className="att-col-rank">{idx + 1}</div>
+                    <div className="att-col-name">
+                      <span className="faction-title">{stat.faction}</span>
+                      <span className="drilldown-hint">Vaata saadikuid &rarr;</span>
+                    </div>
+                    <div className="att-col-count">{stat.member_count}</div>
+                    <div className="att-col-total">{stat.total_sessions}</div>
+                    <div className="att-col-present">{stat.present_sessions}</div>
+                    <div className="att-col-percent">
+                      <div className="percent-bar-bg">
+                        <div
+                          className="percent-bar-fill"
+                          style={{
+                            width: `${stat.attendance_percentage}%`,
+                            backgroundColor:
+                              stat.attendance_percentage >= 90
+                                ? "#10b981"
+                                : stat.attendance_percentage >= 70
+                                  ? "#f59e0b"
+                                  : "#ef4444",
+                          }}
+                        ></div>
+                      </div>
+                      <span className="percent-text">{stat.attendance_percentage}%</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
