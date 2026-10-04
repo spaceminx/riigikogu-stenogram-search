@@ -77,7 +77,7 @@ function App() {
   const [attendanceLoading, setAttendanceLoading] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
-    key: "attendance_percentage",
+    key: "present_sessions",
     direction: "descending",
   });
   const [factionSortConfig, setFactionSortConfig] = useState({
@@ -158,7 +158,10 @@ function App() {
         if (a[sortConfig.key] > b[sortConfig.key]) {
           return sortConfig.direction === "ascending" ? 1 : -1;
         }
-        return 0;
+        if (sortConfig.key !== "present_sessions") {
+          return b.present_sessions - a.present_sessions;
+        }
+        return b.attendance_percentage - a.attendance_percentage;
       });
     }
     return sortableItems;

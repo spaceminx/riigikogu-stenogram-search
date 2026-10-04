@@ -100,7 +100,7 @@ def get_attendance_stats(
                 }
             )
 
-        stats.sort(key=lambda x: (x["attendance_percentage"], x["total_sessions"]), reverse=True)
+        stats.sort(key=lambda x: (x["present_sessions"], x["attendance_percentage"]), reverse=True)
         return stats
     finally:
         session.close()
