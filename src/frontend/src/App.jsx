@@ -82,6 +82,12 @@ function formatFactionName(name) {
   return fallbackMap[clean] || clean;
 }
 
+function getPercentageColor(percentage) {
+  if (percentage >= 75) return "#10b981"; // green
+  if (percentage >= 50) return "#f59e0b"; // yellow
+  return "#ef4444"; // red
+}
+
 function App() {
   const [groups, setGroups] = useState([[]]); // Array of arrays of strings
   const [inputValue, setInputValue] = useState("");
@@ -849,12 +855,7 @@ function App() {
                           className="percent-bar-fill"
                           style={{
                             width: `${stat.attendance_percentage}%`,
-                            backgroundColor:
-                              stat.attendance_percentage >= 90
-                                ? "#10b981"
-                                : stat.attendance_percentage >= 70
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                            backgroundColor: getPercentageColor(stat.attendance_percentage),
                           }}
                         ></div>
                       </div>
@@ -951,12 +952,7 @@ function App() {
                           className="percent-bar-fill"
                           style={{
                             width: `${stat.attendance_percentage}%`,
-                            backgroundColor:
-                              stat.attendance_percentage >= 90
-                                ? "#10b981"
-                                : stat.attendance_percentage >= 70
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                            backgroundColor: getPercentageColor(stat.attendance_percentage),
                           }}
                         ></div>
                       </div>
