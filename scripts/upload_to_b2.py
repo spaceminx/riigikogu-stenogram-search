@@ -12,7 +12,6 @@ except ImportError:
 
 
 def upload_to_b2() -> bool:
-    # Read app_key info from env
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
@@ -33,25 +32,33 @@ def upload_to_b2() -> bool:
         print(f"Error initializing B2 client: {e}")
         return False
 
-    # Finding all .jsonl files
-    files_to_upload = glob.glob("data/processed/*.jsonl")
+    # Collect files to upload: (local_path, remote_key)
+    files_to_upload = []
+
+    # 1. Processed data (.jsonl files)
+    for file_path in glob.glob("data/processed/*.jsonl"):
+        files_to_upload.append((file_path, os.path.basename(file_path)))
+
+    # 2. Sync state files (.json files)
+    for file_path in glob.glob("data/sync/*.json"):
+        file_name = os.path.basename(file_path)
+        files_to_upload.append((file_path, f"sync/{file_name}"))
 
     if not files_to_upload:
-        print("No .jsonl files found in data/processed/ folder.")
+        print("No .jsonl or .json files found in data/processed/ or data/sync/ folders.")
         return True
 
     uploaded_count = 0
     failed_count = 0
 
-    for file_path in files_to_upload:
-        file_name = os.path.basename(file_path)
-        print(f"Uploading file to cloud: {file_name} -> {bucket_name} ...")
+    for local_path, remote_key in files_to_upload:
+        print(f"Uploading file to cloud: {local_path} -> {bucket_name}/{remote_key} ...")
 
         try:
-            s3.upload_file(file_path, bucket_name, file_name)
+            s3.upload_file(local_path, bucket_name, remote_key)
             uploaded_count += 1
         except Exception as e:
-            print(f"Error uploading {file_name} to B2: {e}")
+            print(f"Error uploading {local_path} to B2: {e}")
             failed_count += 1
 
     if failed_count == 0:
