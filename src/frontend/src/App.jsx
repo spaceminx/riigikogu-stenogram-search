@@ -55,6 +55,39 @@ function formatDateTime(dateStr, timeStr) {
   return `${formattedDate}${formattedTime}`;
 }
 
+function formatFactionName(name) {
+  if (!name) return "";
+  const nameMap = {
+    "Eesti Reformierakonna fraktsioon": "Reformierakond",
+    "Eesti Keskerakonna fraktsioon": "Keskerakond",
+    "Eesti Konservatiivse Rahvaerakonna fraktsioon": "EKRE",
+    "Eesti 200 fraktsioon": "Eesti 200",
+    "Isamaa fraktsioon": "Isamaa",
+    "Sotsiaaldemokraatliku Erakonna fraktsioon": "Sotsiaaldemokraadid",
+    "Fraktsiooni mittekuuluvad Riigikogu liikmed": "Fraktsiooni mittekuuluvad",
+  };
+  if (nameMap[name]) return nameMap[name];
+
+  const clean = name.replace(/ fraktsioon$/i, "").replace(/ fraktsiooni$/i, "");
+  const fallbackMap = {
+    "Eesti Reformierakonna": "Reformierakond",
+    "Eesti Reformierakond": "Reformierakond",
+    "Eesti Keskerakonna": "Keskerakond",
+    "Eesti Keskerakond": "Keskerakond",
+    "Eesti Konservatiivse Rahvaerakonna": "EKRE",
+    "Eesti Konservatiivne Rahvaerakond": "EKRE",
+    "Sotsiaaldemokraatliku Erakonna": "Sotsiaaldemokraadid",
+    "Sotsiaaldemokraatlik Erakond": "Sotsiaaldemokraadid",
+  };
+  return fallbackMap[clean] || clean;
+}
+
+function getPercentageColor(percentage) {
+  if (percentage >= 75) return "#10b981"; // green
+  if (percentage >= 50) return "#f59e0b"; // yellow
+  return "#ef4444"; // red
+}
+
 function App() {
   const [groups, setGroups] = useState([[]]); // Array of arrays of strings
   const [inputValue, setInputValue] = useState("");
@@ -77,7 +110,7 @@ function App() {
   const [attendanceLoading, setAttendanceLoading] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
-    key: "attendance_percentage",
+    key: "present_sessions",
     direction: "descending",
   });
   const [factionSortConfig, setFactionSortConfig] = useState({
@@ -158,7 +191,10 @@ function App() {
         if (a[sortConfig.key] > b[sortConfig.key]) {
           return sortConfig.direction === "ascending" ? 1 : -1;
         }
-        return 0;
+        if (sortConfig.key !== "present_sessions") {
+          return b.present_sessions - a.present_sessions;
+        }
+        return b.attendance_percentage - a.attendance_percentage;
       });
     }
     return sortableItems;
@@ -680,6 +716,7 @@ function App() {
                   onChange={(e) => {
                     setAttendanceMembership(e.target.value);
                     setSelectedFaction("");
+                    setActiveOnly(false);
                   }}
                 >
                   <option value="15">XV Riigikogu (2023–praegu)</option>
@@ -699,7 +736,7 @@ function App() {
                     <option value="">Kõik fraktsioonid</option>
                     {factionsList.map((fac, idx) => (
                       <option key={idx} value={fac}>
-                        {fac}
+                        {formatFactionName(fac)}
                       </option>
                     ))}
                   </select>
@@ -722,7 +759,11 @@ function App() {
                   checked={activeOnly}
                   onChange={(e) => setActiveOnly(e.target.checked)}
                 />
-                <span>Ainult praegu aktiivsed saadikud (101)</span>
+                <span>
+                  {attendanceMembership === "14"
+                    ? "Ainult saadikud, kes on ametis ka täna"
+                    : "Ainult tänased ametisolevad saadikud (101)"}
+                </span>
               </label>
             </div>
           </div>
@@ -803,7 +844,7 @@ function App() {
                     <div className="att-col-name">{stat.member_name}</div>
                     <div className="att-col-faction">
                       <span className="faction-badge" title={stat.faction}>
-                        {stat.faction}
+                        {formatFactionName(stat.faction)}
                       </span>
                     </div>
                     <div className="att-col-total">{stat.total_sessions}</div>
@@ -814,12 +855,7 @@ function App() {
                           className="percent-bar-fill"
                           style={{
                             width: `${stat.attendance_percentage}%`,
-                            backgroundColor:
-                              stat.attendance_percentage >= 90
-                                ? "#10b981"
-                                : stat.attendance_percentage >= 70
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                            backgroundColor: getPercentageColor(stat.attendance_percentage),
                           }}
                         ></div>
                       </div>
@@ -904,7 +940,7 @@ function App() {
                   >
                     <div className="att-col-rank">{idx + 1}</div>
                     <div className="att-col-name">
-                      <span className="faction-title">{stat.faction}</span>
+                      <span className="faction-title">{formatFactionName(stat.faction)}</span>
                       <span className="drilldown-hint">Vaata saadikuid &rarr;</span>
                     </div>
                     <div className="att-col-count">{stat.member_count}</div>
@@ -916,12 +952,7 @@ function App() {
                           className="percent-bar-fill"
                           style={{
                             width: `${stat.attendance_percentage}%`,
-                            backgroundColor:
-                              stat.attendance_percentage >= 90
-                                ? "#10b981"
-                                : stat.attendance_percentage >= 70
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                            backgroundColor: getPercentageColor(stat.attendance_percentage),
                           }}
                         ></div>
                       </div>
