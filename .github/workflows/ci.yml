@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  backend-lint:
-    name: Backend Lint & Format (Ruff)
+  backend-test:
+    name: Backend Lint, Format & Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -20,14 +20,18 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Ruff
-        run: pip install ruff
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Run Ruff Check
         run: ruff check .
 
       - name: Run Ruff Format Check
         run: ruff format . --check
+
+      - name: Run Pytest
+        run: pytest -v
+
 
   frontend-check:
     name: Frontend Lint, Format & Build
