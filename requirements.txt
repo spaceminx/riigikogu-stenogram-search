@@ -9,3 +9,5 @@ boto3
 uvicorn
 python-dotenv
 ruff
+pytest
+httpx
