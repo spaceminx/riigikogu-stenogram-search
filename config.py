@@ -38,4 +38,3 @@ STOPWORDS = {
     "sina",
     "nemad",
 }
-
