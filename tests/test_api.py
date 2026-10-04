@@ -41,3 +41,65 @@ def test_search_activity_invalid_interval():
     response = client.get("/search/activity?q=mets&interval=hourly")
     assert response.status_code == 400
     assert "Intervall peab olema" in response.json()["detail"]
+
+
+def test_attendance_stats_default():
+    response = client.get("/attendance/stats")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        item = data[0]
+        assert "member_name" in item
+        assert "faction" in item
+        assert "total_sessions" in item
+        assert "present_sessions" in item
+        assert "attendance_percentage" in item
+
+
+def test_attendance_stats_membership_filter():
+    response_xv = client.get("/attendance/stats?membership=15")
+    assert response_xv.status_code == 200
+    response_xiv = client.get("/attendance/stats?membership=14")
+    assert response_xiv.status_code == 200
+    response_all = client.get("/attendance/stats?membership=all")
+    assert response_all.status_code == 200
+
+
+def test_attendance_stats_faction_filter():
+    response = client.get("/attendance/stats?faction=Isamaa fraktsioon")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    for item in data:
+        assert item["faction"] == "Isamaa fraktsioon"
+
+
+def test_attendance_stats_active_only():
+    response = client.get("/attendance/stats?membership=15&active_only=true")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) <= 101
+
+
+def test_attendance_factions_stats():
+    response = client.get("/attendance/factions?membership=15")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        item = data[0]
+        assert "faction" in item
+        assert "member_count" in item
+        assert "total_sessions" in item
+        assert "present_sessions" in item
+        assert "attendance_percentage" in item
+
+
+def test_attendance_factions_list():
+    response = client.get("/attendance/factions/list?membership=15")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert "Eesti 200 fraktsioon" in data
