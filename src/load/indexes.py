@@ -13,7 +13,8 @@ INDEXES = [
 ]
 
 
-def create_indexes():
+def create_indexes() -> None:
+    """Create SQLite database indexes for fast keyword search and speaker lookups."""
     with engine.connect() as conn:
         for index in INDEXES:
             conn.execute(text(index))

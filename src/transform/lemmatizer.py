@@ -10,15 +10,13 @@ from src.load.models import Speech
 
 
 def get_default_workers() -> int:
-    """
-    Auto-detects host CPU threads, leaving at least 2 threads free
-    for system and UI responsiveness.
-    """
+    """Detect available CPU threads, leaving 2 threads free for system responsiveness."""
     cpu_count = os.cpu_count() or 4
     return max(1, cpu_count - 2)
 
 
-def lemmatize_text(text):
+def lemmatize_text(text: str) -> str:
+    """Extract and normalize Estonian base word forms (lemmas) using EstNLTK."""
     if not text:
         return ""
 
@@ -37,11 +35,8 @@ def lemmatize_text(text):
         return ""
 
 
-def _lemmatize_chunk(chunk):
-    """
-    Worker function executed in parallel processes.
-    chunk is a list of (speech_id, text) tuples.
-    """
+def _lemmatize_chunk(chunk: list[tuple[int, str]]) -> list[dict]:
+    """Process a chunk of (speech_id, text) tuples in a worker process."""
     results = []
     for speech_id, raw_text in chunk:
         lemmas = lemmatize_text(raw_text)
@@ -50,8 +45,9 @@ def _lemmatize_chunk(chunk):
 
 
 def build_missing_lemmas(
-    max_workers: int = None, chunk_size: int = 50, commit_interval: int = 2000
-):
+    max_workers: int | None = None, chunk_size: int = 50, commit_interval: int = 2000
+) -> None:
+    """Lemmatize all speeches lacking lemmas using parallel worker processes."""
     if max_workers is None or max_workers <= 0:
         max_workers = get_default_workers()
 

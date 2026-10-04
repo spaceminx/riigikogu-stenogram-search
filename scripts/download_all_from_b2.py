@@ -17,6 +17,7 @@ except ImportError:
 
 
 def download_all_from_b2() -> bool:
+    """Download all historical datasets and sync state files from Backblaze B2."""
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 

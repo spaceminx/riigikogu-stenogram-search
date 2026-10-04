@@ -20,7 +20,8 @@ except Exception:
     HAS_DB = False
 
 
-def fetch_attendance(start_date: str = None, end_date: str = None):
+def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
+    """Fetch attendance voting checks from Riigikogu API and record to attendance.jsonl."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
     attendance_file = os.path.join(OUTPUT_DIR_PROCESSED, "attendance.jsonl")
 

@@ -15,7 +15,8 @@ from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
 
-def build_full_database(workers: int = None, chunk_size: int = 50):
+def build_full_database(workers: int | None = None, chunk_size: int = 50) -> None:
+    """Run full end-to-end database initialization, loading, lemmatization, and indexing."""
     start_total = time.time()
     print("=" * 60)
     print("STARTING RIIGIKOGU DATABASE BUILD PIPELINE")

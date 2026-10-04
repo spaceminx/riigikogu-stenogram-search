@@ -8,7 +8,8 @@ from src.load.models import Lemma, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
 
-def fill_missing_periods(results, interval, label):
+def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]:
+    """Fill gaps in monthly timeline results with zero-count intervals."""
     if not results:
         return []
 
@@ -38,11 +39,8 @@ def fill_missing_periods(results, interval, label):
     return [{label: period, "count": count} for period, count in results]
 
 
-def parse_query_groups(query):
-    """
-    comma = OR
-    space in text = AND
-    """
+def parse_query_groups(query: str) -> list[list[str]]:
+    """Parse comma-separated OR groups and space-separated AND keywords into filtered lemmas."""
     groups = []
     raw_groups = query.split(",")
 
@@ -55,7 +53,8 @@ def parse_query_groups(query):
     return groups
 
 
-def build_matching_speech_ids_query(session, groups):
+def build_matching_speech_ids_query(session, groups: list[list[str]]):
+    """Build a SQL subquery returning distinct speech IDs matching query lemma groups."""
     group_queries = []
 
     for group in groups:
@@ -81,7 +80,8 @@ def build_matching_speech_ids_query(session, groups):
     return union_query.subquery()
 
 
-def build_matching_conditions(session, groups):
+def build_matching_conditions(session, groups: list[list[str]]) -> list:
+    """Build SQL filter conditions for speech IDs matching each lemma group."""
     matching_conditions = []
 
     for group in groups:
@@ -99,7 +99,8 @@ def build_matching_conditions(session, groups):
     return matching_conditions
 
 
-def search_by_keyword(query, limit=50):
+def search_by_keyword(query: str, limit: int = 50) -> list[dict]:
+    """Search speeches by keyword query with lemma matching and frequency scoring."""
     session = SessionLocal()
 
     try:
@@ -141,7 +142,8 @@ def search_by_keyword(query, limit=50):
         session.close()
 
 
-def keyword_activity(query: str, interval: str = "weekly"):
+def keyword_activity(query: str, interval: str = "weekly") -> list[dict]:
+    """Calculate timeline frequency of keyword occurrences aggregated by day, week, or month."""
     session = SessionLocal()
 
     try:
@@ -179,7 +181,8 @@ def keyword_activity(query: str, interval: str = "weekly"):
         session.close()
 
 
-def keyword_top_speakers(query, limit=20):
+def keyword_top_speakers(query: str, limit: int = 20) -> list[dict]:
+    """Rank parliament members by mention count for a given keyword query."""
     session = SessionLocal()
     try:
         groups = parse_query_groups(query)

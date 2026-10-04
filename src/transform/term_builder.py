@@ -7,7 +7,8 @@ from src.load.database import SessionLocal, engine
 from src.load.models import Lemma, Speech, SpeechTerm
 
 
-def get_or_create_lemma(session, lemma_text):
+def get_or_create_lemma(session, lemma_text: str) -> Lemma:
+    """Retrieve existing Lemma record or insert a new one if missing."""
     lemma_obj = session.query(Lemma).filter(Lemma.lemma == lemma_text).first()
 
     if lemma_obj:
@@ -20,7 +21,8 @@ def get_or_create_lemma(session, lemma_text):
     return lemma_obj
 
 
-def create_speech_terms(session, speech_id, text_lemmas):
+def create_speech_terms(session, speech_id: int, text_lemmas: str) -> None:
+    """Count term frequencies in a speech and create SpeechTerm associations."""
     if not text_lemmas:
         return
 
@@ -38,7 +40,8 @@ def create_speech_terms(session, speech_id, text_lemmas):
         session.add(term)
 
 
-def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000):
+def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000) -> None:
+    """Index term frequencies and inverted lemma mappings in bulk for speeches."""
     with engine.connect() as conn:
         conn.execute(text("PRAGMA journal_mode=WAL;"))
         conn.execute(text("PRAGMA synchronous=NORMAL;"))

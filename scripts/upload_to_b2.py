@@ -12,6 +12,7 @@ except ImportError:
 
 
 def upload_to_b2() -> bool:
+    """Upload processed datasets (.jsonl) and sync state files (.json) to Backblaze B2."""
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 

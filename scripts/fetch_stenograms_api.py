@@ -14,7 +14,8 @@ from config import OUTPUT_DIR_PROCESSED, START_DATE
 from src.transform.lemmatizer import lemmatize_text
 
 
-def split_speaker_role(full_name: str):
+def split_speaker_role(full_name: str) -> tuple[str, str | None]:
+    """Separate official titles (e.g. 'Peaminister') from speaker's full name."""
     parts = full_name.strip().split(" ")
     if len(parts) <= 1:
         return full_name, None
@@ -42,7 +43,8 @@ def split_speaker_role(full_name: str):
     return name, role if role else None
 
 
-def get_faction_for_date(faction_map, name, date_str):
+def get_faction_for_date(faction_map: dict, name: str, date_str: str) -> str | None:
+    """Find member's political faction on a given session date from faction history."""
     history = faction_map.get(name, [])
     for h in history:
         if h["start"] <= date_str <= h["end"]:
@@ -50,8 +52,8 @@ def get_faction_for_date(faction_map, name, date_str):
     return None
 
 
-# Basic date generator to chunk requests by month
-def get_month_ranges(start_date, end_date):
+def get_month_ranges(start_date: str, end_date: str) -> list[tuple[str, str]]:
+    """Generate (start, end) date ranges chunked by calendar months."""
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -68,7 +70,8 @@ def get_month_ranges(start_date, end_date):
     return ranges
 
 
-def fetch_and_process_stenograms():
+def fetch_and_process_stenograms() -> None:
+    """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
     # Load state of already processed verbatims (we can use UUIDs or Links)

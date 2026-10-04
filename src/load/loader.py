@@ -9,11 +9,13 @@ from src.load.database import SessionLocal, engine
 from src.load.models import Attendance, Base, Speech
 
 
-def create_tables():
+def create_tables() -> None:
+    """Create all database tables defined in SQLAlchemy ORM models."""
     Base.metadata.create_all(bind=engine)
 
 
-def load_attendance_to_database(batch_size: int = 2000):
+def load_attendance_to_database(batch_size: int = 2000) -> None:
+    """Load attendance voting records from attendance.jsonl into the attendance table."""
     attendance_file = Path(OUTPUT_DIR_PROCESSED) / "attendance.jsonl"
     if not attendance_file.exists():
         return
@@ -87,7 +89,8 @@ def load_attendance_to_database(batch_size: int = 2000):
     print(f"Done loading attendance ({total_loaded} records processed).")
 
 
-def load_jsonl_to_database(batch_size: int = 2000):
+def load_jsonl_to_database(batch_size: int = 2000) -> None:
+    """Load processed speech JSONL files into the speeches table in SQLite database."""
     with engine.connect() as conn:
         conn.execute(text("PRAGMA journal_mode=WAL;"))
         conn.execute(text("PRAGMA synchronous=NORMAL;"))

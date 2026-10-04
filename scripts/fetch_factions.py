@@ -10,7 +10,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import OUTPUT_DIR_PROCESSED
 
 
-def fetch_factions():
+def fetch_factions() -> None:
+    """Fetch MP parliamentary faction membership history from Riigikogu API."""
     url = "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=13&membership=14&membership=15"
     print(f"Fetching members from {url}...")
 

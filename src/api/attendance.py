@@ -4,7 +4,8 @@ from src.load.database import SessionLocal
 from src.load.models import Attendance
 
 
-def get_attendance_stats():
+def get_attendance_stats() -> list[dict]:
+    """Calculate attendance and presence statistics for all parliament members."""
     session = SessionLocal()
     try:
         results = (
