@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -15,7 +16,7 @@ except ImportError:
                     os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 
-def download_current_year_from_b2() -> bool:
+def download_from_b2() -> bool:
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
@@ -26,13 +27,10 @@ def download_current_year_from_b2() -> bool:
     endpoint = "https://s3.eu-central-003.backblazeb2.com"
     bucket_name = "riigikogu-stenograms"
 
-    current_year = datetime.today().strftime("%Y")
-    file_name = f"{current_year}.jsonl"
+    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    Path("data/sync").mkdir(parents=True, exist_ok=True)
 
-    os.makedirs("data/processed", exist_ok=True)
-    local_file_path = os.path.join("data", "processed", file_name)
-
-    print(f"Connecting to Backblaze B2 to download {file_name}...")
+    print("Connecting to Backblaze B2...")
 
     try:
         import boto3
@@ -40,13 +38,49 @@ def download_current_year_from_b2() -> bool:
         s3 = boto3.client(
             "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
         )
-        s3.download_file(bucket_name, file_name, local_file_path)
-        print(f"Successfully downloaded {file_name} -> {local_file_path}")
-        return True
     except Exception as e:
-        print(f"File not found or error downloading {file_name} from B2: {e}")
+        print(f"Error initializing B2 client: {e}")
         return False
+
+    # 1. Download current year processed file
+    current_year = datetime.today().strftime("%Y")
+    year_file = f"{current_year}.jsonl"
+    local_year_path = os.path.join("data", "processed", year_file)
+    try:
+        print(f"Downloading {year_file} from {bucket_name}...")
+        s3.download_file(bucket_name, year_file, local_year_path)
+        print(f"Downloaded: {local_year_path}")
+    except Exception as e:
+        print(f"Notice: Could not download {year_file} from B2 (might be new year): {e}")
+
+    # 2. Download attendance.jsonl if present in B2
+    attendance_file = "attendance.jsonl"
+    local_attendance_path = os.path.join("data", "processed", attendance_file)
+    try:
+        print(f"Downloading {attendance_file} from {bucket_name}...")
+        s3.download_file(bucket_name, attendance_file, local_attendance_path)
+        print(f"Downloaded: {local_attendance_path}")
+    except Exception as e:
+        print(f"Notice: Could not download {attendance_file} from B2: {e}")
+
+    # 3. Download sync state files (prefix: sync/)
+    try:
+        resp = s3.list_objects_v2(Bucket=bucket_name, Prefix="sync/")
+        if "Contents" in resp:
+            for obj in resp["Contents"]:
+                remote_key = obj["Key"]
+                filename = os.path.basename(remote_key)
+                if filename:
+                    local_sync_path = os.path.join("data", "sync", filename)
+                    print(f"Downloading sync file {remote_key} -> {local_sync_path}...")
+                    s3.download_file(bucket_name, remote_key, local_sync_path)
+                    print(f"Downloaded: {local_sync_path}")
+    except Exception as e:
+        print(f"Notice: Error listing/downloading sync files from B2: {e}")
+
+    print("Daily data download step completed.")
+    return True
 
 
 if __name__ == "__main__":
-    download_current_year_from_b2()
+    download_from_b2()

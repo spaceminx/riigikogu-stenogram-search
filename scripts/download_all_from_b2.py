@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -15,7 +16,7 @@ except ImportError:
                     os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 
-def download_all_from_b2():
+def download_all_from_b2() -> bool:
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
@@ -32,7 +33,9 @@ def download_all_from_b2():
 
     endpoint = "https://s3.eu-central-003.backblazeb2.com"
     bucket_name = "riigikogu-stenograms"
-    os.makedirs("data/processed", exist_ok=True)
+
+    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    Path("data/sync").mkdir(parents=True, exist_ok=True)
 
     print("Connecting to Backblaze B2 (private bucket) via S3 API...")
 
@@ -43,20 +46,36 @@ def download_all_from_b2():
             "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
         )
 
-        response = s3.list_objects_v2(Bucket=bucket_name)
-        if "Contents" not in response:
-            print("Bucket is empty!")
+        paginator = s3.get_paginator("list_objects_v2")
+        downloaded_count = 0
+
+        for page in paginator.paginate(Bucket=bucket_name):
+            if "Contents" not in page:
+                continue
+
+            for obj in page["Contents"]:
+                key = obj["Key"]
+                filename = os.path.basename(key)
+                if not filename:
+                    continue
+
+                if key.startswith("sync/") or key.endswith(".json"):
+                    local_path = os.path.join("data", "sync", filename)
+                elif key.endswith(".jsonl"):
+                    local_path = os.path.join("data", "processed", filename)
+                else:
+                    continue
+
+                print(f"Downloading {key} -> {local_path}...")
+                s3.download_file(bucket_name, key, local_path)
+                print(f"-> Downloaded: {local_path}")
+                downloaded_count += 1
+
+        if downloaded_count == 0:
+            print("Notice: No matching files found in B2 bucket.")
             return False
 
-        for obj in response["Contents"]:
-            file_name = obj["Key"]
-            if file_name.endswith(".jsonl"):
-                local_file_path = os.path.join("data", "processed", file_name)
-                print(f"Downloading {file_name} from {bucket_name}...")
-                s3.download_file(bucket_name, file_name, local_file_path)
-                print(f"-> Downloaded: {local_file_path}")
-
-        print("All files successfully downloaded from Backblaze B2.")
+        print(f"All {downloaded_count} files successfully downloaded from Backblaze B2.")
         return True
 
     except Exception as e:
