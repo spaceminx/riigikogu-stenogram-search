@@ -36,7 +36,6 @@ def download_all_from_b2() -> bool:
     bucket_name = "riigikogu-stenograms"
 
     Path("data/processed").mkdir(parents=True, exist_ok=True)
-    Path("data/sync").mkdir(parents=True, exist_ok=True)
 
     print("Connecting to Backblaze B2 (private bucket) via S3 API...")
 
@@ -60,9 +59,7 @@ def download_all_from_b2() -> bool:
                 if not filename:
                     continue
 
-                if key.startswith("sync/") or key.endswith(".json"):
-                    local_path = os.path.join("data", "sync", filename)
-                elif key.endswith(".jsonl"):
+                if key.endswith(".jsonl") or key.endswith(".json"):
                     local_path = os.path.join("data", "processed", filename)
                 else:
                     continue

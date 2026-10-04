@@ -15,9 +15,8 @@ def fetch_factions() -> None:
     url = "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=13&membership=14&membership=15"
     print(f"Fetching members from {url}...")
 
-    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
-    Path(sync_dir).mkdir(parents=True, exist_ok=True)
-    out_file = os.path.join(sync_dir, "factions_map.json")
+    Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
+    out_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
 
     max_retries = 3
     members = None

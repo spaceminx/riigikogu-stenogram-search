@@ -93,8 +93,7 @@ def fetch_and_process_stenograms() -> None:
     end_date = datetime.now().strftime("%Y-%m-%d")
     date_ranges = get_month_ranges(run_start_date, end_date)
 
-    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
-    factions_file = os.path.join(sync_dir, "factions_map.json")
+    factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
 
     if os.path.exists(factions_file):
         with open(factions_file) as f:

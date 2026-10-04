@@ -29,7 +29,6 @@ def download_from_b2() -> bool:
     bucket_name = "riigikogu-stenograms"
 
     Path("data/processed").mkdir(parents=True, exist_ok=True)
-    Path("data/sync").mkdir(parents=True, exist_ok=True)
 
     print("Connecting to Backblaze B2...")
 
@@ -64,20 +63,15 @@ def download_from_b2() -> bool:
     except Exception as e:
         print(f"Notice: Could not download {attendance_file} from B2: {e}")
 
-    # 3. Download sync state files (prefix: sync/)
+    # 3. Download factions_map.json if present in B2
+    factions_file = "factions_map.json"
+    local_factions_path = os.path.join("data", "processed", factions_file)
     try:
-        resp = s3.list_objects_v2(Bucket=bucket_name, Prefix="sync/")
-        if "Contents" in resp:
-            for obj in resp["Contents"]:
-                remote_key = obj["Key"]
-                filename = os.path.basename(remote_key)
-                if filename:
-                    local_sync_path = os.path.join("data", "sync", filename)
-                    print(f"Downloading sync file {remote_key} -> {local_sync_path}...")
-                    s3.download_file(bucket_name, remote_key, local_sync_path)
-                    print(f"Downloaded: {local_sync_path}")
+        print(f"Downloading {factions_file} from {bucket_name}...")
+        s3.download_file(bucket_name, factions_file, local_factions_path)
+        print(f"Downloaded: {local_factions_path}")
     except Exception as e:
-        print(f"Notice: Error listing/downloading sync files from B2: {e}")
+        print(f"Notice: Could not download {factions_file} from B2: {e}")
 
     print("Daily data download step completed.")
     return True

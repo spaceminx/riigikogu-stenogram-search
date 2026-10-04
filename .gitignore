@@ -1,5 +1,4 @@
-data/processed
-data/sync/
+data/processed/
 database/*.sqlite*
 .env
 .env.*

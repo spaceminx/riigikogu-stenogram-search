@@ -33,20 +33,14 @@ def upload_to_b2() -> bool:
         print(f"Error initializing B2 client: {e}")
         return False
 
-    # Collect files to upload: (local_path, remote_key)
+    # Collect files to upload from data/processed/ (.jsonl and .json files)
     files_to_upload = []
-
-    # 1. Processed data (.jsonl files)
-    for file_path in glob.glob("data/processed/*.jsonl"):
-        files_to_upload.append((file_path, os.path.basename(file_path)))
-
-    # 2. Sync state files (.json files)
-    for file_path in glob.glob("data/sync/*.json"):
-        file_name = os.path.basename(file_path)
-        files_to_upload.append((file_path, f"sync/{file_name}"))
+    for file_path in glob.glob("data/processed/*.*"):
+        if file_path.endswith(".jsonl") or file_path.endswith(".json"):
+            files_to_upload.append((file_path, os.path.basename(file_path)))
 
     if not files_to_upload:
-        print("No .jsonl or .json files found in data/processed/ or data/sync/ folders.")
+        print("No .jsonl or .json files found in data/processed/ folder.")
         return True
 
     uploaded_count = 0

@@ -18,7 +18,7 @@ COPY src/ ./src/
 COPY scripts/ ./scripts/
 
 # Create data directories for SQLite database and state files
-RUN mkdir -p /app/database /app/data/sync /app/data/processed
+RUN mkdir -p /app/database /app/data/processed
 
 EXPOSE 8000
 
