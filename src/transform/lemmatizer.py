@@ -62,9 +62,7 @@ def build_missing_lemmas(
     try:
         print("Querying speeches that require lemmatization...")
         missing_speeches = (
-            session.query(Speech.id, Speech.text)
-            .filter((Speech.text_lemmas.is_(None)) | (Speech.text_lemmas == ""))
-            .all()
+            session.query(Speech.id, Speech.text).filter(Speech.text_lemmas.is_(None)).all()
         )
 
         total_count = len(missing_speeches)
