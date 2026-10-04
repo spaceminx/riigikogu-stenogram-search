@@ -680,6 +680,7 @@ function App() {
                   onChange={(e) => {
                     setAttendanceMembership(e.target.value);
                     setSelectedFaction("");
+                    setActiveOnly(false);
                   }}
                 >
                   <option value="15">XV Riigikogu (2023–praegu)</option>
@@ -722,7 +723,11 @@ function App() {
                   checked={activeOnly}
                   onChange={(e) => setActiveOnly(e.target.checked)}
                 />
-                <span>Ainult praegu aktiivsed saadikud (101)</span>
+                <span>
+                  {attendanceMembership === "14"
+                    ? "Ainult saadikud, kes on ametis ka täna"
+                    : "Ainult tänased ametisolevad saadikud (101)"}
+                </span>
               </label>
             </div>
           </div>
