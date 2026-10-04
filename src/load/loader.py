@@ -169,4 +169,3 @@ def load_jsonl_to_database(batch_size: int = 2000):
 
     # Also load attendance records if attendance.jsonl is present
     load_attendance_to_database(batch_size=batch_size)
-

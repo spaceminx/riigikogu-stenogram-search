@@ -141,9 +141,7 @@ def fetch_attendance(start_date: str = None, end_date: str = None):
             for voter in voters:
                 name = voter.get("fullName", "").strip()
                 faction = (
-                    voter.get("faction", {}).get("name", "").strip()
-                    if voter.get("faction")
-                    else ""
+                    voter.get("faction", {}).get("name", "").strip() if voter.get("faction") else ""
                 )
                 status = voter.get("decision", {}).get("code", "").strip()
 
