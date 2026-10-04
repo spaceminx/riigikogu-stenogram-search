@@ -33,8 +33,9 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 | **Frontend** | React 19, Vite, Recharts, ESLint 10, Prettier |
 | **Backend & API** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
 | **NLP & Lemmatization** | EstNLTK, NLTK |
-| **Data Pipelines & Storage** | GitHub Actions, Backblaze B2, BeautifulSoup4, Requests |
-| **Code Quality & CI** | Ruff (Python), ESLint + Prettier (JS/React), GitHub Actions CI |
+| **Data Pipelines & Storage** | GitHub Actions, Backblaze B2, Requests |
+| **Deployment & Containers** | Docker, Docker Compose, Cloudflare Tunnel |
+| **Code Quality & CI** | Ruff (Python), ESLint + Prettier (JS/React), Pytest, Dependabot, GitHub Actions CI |
 
 ---
 
@@ -43,6 +44,7 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 ### Prerequisites
 - Python 3.10+ (Python 3.13 recommended)
 - Node.js 20+ & npm
+- Docker (optional, for containerized run)
 
 ### 1. Clone the repository
 ```bash
@@ -85,11 +87,17 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## Code Quality & Formatting
+## Testing & Code Quality
 
-The codebase uses Ruff for Python and ESLint + Prettier for frontend.
+The codebase uses Ruff for Python, ESLint + Prettier for frontend, and Pytest for automated testing.
 
-### Python (Backend & Scripts)
+### Automated Tests
+```bash
+# Run backend and API tests
+pytest -v
+```
+
+### Python Linting & Formatting
 ```bash
 # Check and auto-fix linting issues & sort imports
 ruff check . --fix
@@ -98,7 +106,7 @@ ruff check . --fix
 ruff format .
 ```
 
-### Frontend (React / JS)
+### Frontend Linting & Formatting
 ```bash
 cd src/frontend
 
@@ -118,18 +126,23 @@ npm run format:check
 ```text
 riigikogu-stenogram-search/
 ├── .github/
+│   ├── dependabot.yml             # Dependabot automated weekly dependency monitoring
 │   └── workflows/
-│       ├── ci.yml                 # Automated CI (Ruff, ESLint, Prettier, Vite build)
-│       └── daily_pipeline.yml     # Nightly data scraper and B2 sync
+│       ├── ci.yml                 # Automated CI (Ruff, ESLint, Prettier, Pytest, Vite build)
+│       └── daily_pipeline.yml     # Nightly data pipeline (B2 sync & API fetch)
 ├── config.py                      # Global configuration & paths
-├── pyproject.toml                 # Ruff and project configuration
+├── docker-compose.yml             # Multi-container Docker deployment
+├── Dockerfile                     # Production backend Docker container
+├── pyproject.toml                 # Ruff, pytest, and project configuration
 ├── requirements.txt               # Python backend dependencies
 ├── scripts/
 │   ├── build_full_database.py     # End-to-end parallel DB build pipeline
+│   ├── download_all_from_b2.py    # Downloads all data & sync states from Backblaze B2
+│   ├── download_from_b2.py        # Incremental daily B2 downloader
 │   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
-│   ├── fetch_factions.py          # MP faction scraper
+│   ├── fetch_factions.py          # MP faction history scraper
 │   ├── fetch_attendance.py        # Voting & attendance scraper
-│   └── upload_to_b2.py            # Backblaze B2 sync helper
+│   └── upload_to_b2.py            # Backblaze B2 uploader for data and sync states
 ├── src/
 │   ├── api/                       # FastAPI routes & endpoints
 │   │   ├── main.py                # App entrypoint & CORS config
@@ -148,6 +161,9 @@ riigikogu-stenogram-search/
 │       └── src/
 │           ├── App.jsx            # Main dashboard component
 │           └── api.js             # Frontend API client
+├── tests/
+│   ├── test_api.py                # FastAPI endpoint integration tests
+│   └── test_query_parser.py       # Query parser and search logic unit tests
 └── HOSTING.md                     # Hosting & architecture notes
 ```
 

@@ -33,8 +33,9 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 | **Frontend** | React 19, Vite, Recharts, ESLint 10, Prettier |
 | **Backend & API** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
 | **Keeletöötlus (NLP)** | EstNLTK, NLTK |
-| **Andmetorud & pilv** | GitHub Actions, Backblaze B2, BeautifulSoup4, Requests |
-| **Koodikvaliteet & CI** | Ruff (Python), ESLint + Prettier (JS/React), GitHub Actions CI |
+| **Andmetorud & pilv** | GitHub Actions, Backblaze B2, Requests |
+| **Paigaldus & konteinerid** | Docker, Docker Compose, Cloudflare Tunnel |
+| **Koodikvaliteet & CI** | Ruff (Python), ESLint + Prettier (JS/React), Pytest, Dependabot, GitHub Actions CI |
 
 ---
 
@@ -43,6 +44,7 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 ### Eeltingimused
 - Python 3.10+ (soovitatav Python 3.13)
 - Node.js 20+ & npm
+- Docker (valikuline, konteineris käivitamiseks)
 
 ### 1. Projekti allalaadimine
 ```bash
@@ -85,9 +87,15 @@ Ava brauseris `http://localhost:5173`.
 
 ---
 
-## Koodikvaliteet ja vormindamine
+## Testimine ja koodikvaliteet
 
-Projekt kasutab Pythoni jaoks Ruffi ning frontendi jaoks ESLint + Prettierit.
+Projekt kasutab koodikontrolliks Ruffi, ESLint + Prettierit ning automaattestideks Pytesti.
+
+### Automaattestid
+```bash
+# Käivita backendi ja API testid
+pytest -v
+```
 
 ### Python (Backend & skriptid)
 ```bash
@@ -118,18 +126,23 @@ npm run format:check
 ```text
 riigikogu-stenogram-search/
 ├── .github/
+│   ├── dependabot.yml             # Dependaboti iganädalane automaatne turvaseire
 │   └── workflows/
-│       ├── ci.yml                 # Automaatne CI (Ruff, ESLint, Prettier, Vite build)
-│       └── daily_pipeline.yml     # Igaöine kraapija ja B2 sünkroonimine
+│       ├── ci.yml                 # Automaatne CI (Ruff, ESLint, Prettier, Pytest, Vite build)
+│       └── daily_pipeline.yml     # Igaöine andmetoru (B2 sünkroonimine ja API kraapija)
 ├── config.py                      # Globaalsed seadistused ja teekonnad
-├── pyproject.toml                 # Ruffi ja projekti seadistused
+├── docker-compose.yml             # Multi-container Docker paigaldus
+├── Dockerfile                     # Tootmistasemel backend Docker konteiner
+├── pyproject.toml                 # Ruffi, pytesti ja projekti seadistused
 ├── requirements.txt               # Backendi Pythoni sõltuvused
 ├── scripts/
 │   ├── build_full_database.py     # Paralleelne täielik andmebaasi ehitaja
+│   ├── download_all_from_b2.py    # Kõigi andmete ja olekute allalaadija B2-st
+│   ├── download_from_b2.py        # Igapäevane inkrementaalne B2 allalaadija
 │   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
-│   ├── fetch_factions.py          # Fraktsioonide allalaadija
+│   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo allalaadija
 │   ├── fetch_attendance.py        # Kohaloleku ja hääletuste allalaadija
-│   └── upload_to_b2.py            # Backblaze B2 sünkroonija
+│   └── upload_to_b2.py            # Backblaze B2 uleslaadija andmetele ja olekutele
 ├── src/
 │   ├── api/                       # FastAPI marsruudid ja loogika
 │   │   ├── main.py                # Rakenduse peafail ja CORS seaded
@@ -148,6 +161,9 @@ riigikogu-stenogram-search/
 │       └── src/
 │           ├── App.jsx            # Põhikomponent ja dashboard
 │           └── api.js             # API klientpäringud
+├── tests/
+│   ├── test_api.py                # FastAPI endpointide integratsioonitestid
+│   └── test_query_parser.py       # Päringuparsija ja otsinguloogika ühiktestid
 └── HOSTING.md                     # Majutuse ja arhitektuuri juhised
 ```
 
