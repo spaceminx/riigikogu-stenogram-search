@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import sys
@@ -70,28 +71,41 @@ def get_month_ranges(start_date: str, end_date: str) -> list[tuple[str, str]]:
     return ranges
 
 
-def fetch_and_process_stenograms() -> None:
+def fetch_and_process_stenograms(
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> None:
     """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
-    # Load state of already processed verbatims (we can use UUIDs or Links)
-    sync_dir = os.path.join(os.path.dirname(OUTPUT_DIR_PROCESSED), "sync")
-    Path(sync_dir).mkdir(parents=True, exist_ok=True)
-    state_file = os.path.join(sync_dir, "api_parse_state.json")
+    # Load existing verbatim links/dates from processed jsonl files
+    processed_uuids = set()
+    for jsonl_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.jsonl")):
+        if os.path.basename(jsonl_path) == "attendance.jsonl":
+            continue
+        try:
+            with open(jsonl_path, encoding="utf-8") as f:
+                for line in f:
+                    if line.strip():
+                        record = json.loads(line)
+                        if record.get("source_url"):
+                            processed_uuids.add(record["source_url"])
+                        if record.get("date"):
+                            processed_uuids.add(record["date"])
+        except Exception as e:
+            print(f"Notice: Could not read {jsonl_path}: {e}")
 
-    if os.path.exists(state_file):
-        with open(state_file) as f:
-            processed_uuids = set(json.load(f))
+    if not start_date:
+        if processed_uuids:
+            # Incremental run: only fetch the last 14 days
+            start_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
+        else:
+            start_date = START_DATE
 
-        # Incremental run: only fetch the last 14 days
-        run_start_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
-    else:
-        processed_uuids = set()
-        run_start_date = START_DATE
+    if not end_date:
+        end_date = datetime.now().strftime("%Y-%m-%d")
 
-    # We will fetch up to today
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    date_ranges = get_month_ranges(run_start_date, end_date)
+    date_ranges = get_month_ranges(start_date, end_date)
 
     factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
 
@@ -101,7 +115,7 @@ def fetch_and_process_stenograms() -> None:
     else:
         faction_map = {}
 
-    print(f"Starting API fetch from {START_DATE} to {end_date}")
+    print(f"Starting API fetch from {start_date} to {end_date}")
 
     for start, end in date_ranges:
         print(f"Fetching {start} to {end}...")
@@ -211,8 +225,6 @@ def fetch_and_process_stenograms() -> None:
                     print(f"  -> Saved {len(speeches_to_save)} speeches to {year_str}.jsonl")
 
                 processed_uuids.add(uid)
-                with open(state_file, "w") as f:
-                    json.dump(list(processed_uuids), f)
 
         except Exception as e:
             print(f"Error on {start}-{end}: {e}")
