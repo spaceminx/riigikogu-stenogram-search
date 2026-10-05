@@ -118,6 +118,65 @@ function highlightKeywords(text, groups, extraTerm = "") {
   });
 }
 
+function parseQueryToGroups(queryString) {
+  if (!queryString || !queryString.trim()) return [[]];
+  const parts = queryString
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return [[]];
+  return parts.map((part) => part.split(/\s+/).filter(Boolean));
+}
+
+function syncUrl(state) {
+  const params = new URLSearchParams();
+  if (state.view && state.view !== "dashboard") {
+    params.set("view", state.view);
+  }
+  if (state.query && state.query.trim()) {
+    params.set("q", state.query.trim());
+  }
+  if (state.membership && state.membership !== "all") {
+    params.set("membership", state.membership);
+  }
+  if (state.faction && state.faction.trim()) {
+    params.set("faction", state.faction.trim());
+  }
+  if (state.speaker && state.speaker.trim()) {
+    params.set("speaker", state.speaker.trim());
+  }
+  if (state.sortBy && state.sortBy !== "date_desc") {
+    params.set("sort", state.sortBy);
+  }
+  if (state.interval && state.interval !== "monthly") {
+    params.set("interval", state.interval);
+  }
+  if (state.page && state.page > 1) {
+    params.set("page", String(state.page));
+  }
+  if (state.view === "attendance") {
+    if (state.attendanceTab && state.attendanceTab !== "members") {
+      params.set("att_tab", state.attendanceTab);
+    }
+    if (state.attendanceMembership && state.attendanceMembership !== "15") {
+      params.set("att_membership", state.attendanceMembership);
+    }
+    if (state.selectedFaction && state.selectedFaction.trim()) {
+      params.set("att_faction", state.selectedFaction.trim());
+    }
+    if (state.activeOnly) {
+      params.set("att_active", "1");
+    }
+  }
+  const queryString = params.toString();
+  const newUrl = queryString ? `?${queryString}` : window.location.pathname;
+  const currentSearch = window.location.search;
+  const targetSearch = queryString ? `?${queryString}` : "";
+  if (currentSearch !== targetSearch) {
+    window.history.replaceState(null, "", newUrl);
+  }
+}
+
 function App() {
   const [groups, setGroups] = useState([[]]); // Array of arrays of strings
   const [inputValue, setInputValue] = useState("");
@@ -142,6 +201,7 @@ function App() {
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
   const [contextSearchTerm, setContextSearchTerm] = useState("");
   const targetSpeechRef = useRef(null);
+  const isInitialMount = useRef(true);
 
   // Attendance state
   const [attendanceTab, setAttendanceTab] = useState("members"); // "members" | "factions"
@@ -163,6 +223,195 @@ function App() {
   });
 
   const totalPages = Math.max(1, Math.ceil(totalCount / searchPageSize));
+
+  const buildBackendQuery = () => {
+    let finalGroups = [...groups];
+    if (inputValue.trim()) {
+      finalGroups[finalGroups.length - 1] = [
+        ...finalGroups[finalGroups.length - 1],
+        inputValue.trim(),
+      ];
+    }
+    finalGroups = finalGroups.filter((g) => g.length > 0);
+    return finalGroups.map((g) => g.join(" ")).join(", ");
+  };
+
+  const executeSearch = async ({
+    query = buildBackendQuery(),
+    page = 1,
+    membership = searchMembership,
+    faction = searchFaction,
+    speaker = searchSpeaker,
+    sortBy = searchSortBy,
+    intervalValue = interval,
+  } = {}) => {
+    if (!query) return;
+
+    setErrorMessage(null);
+    setLoading(true);
+
+    try {
+      const offset = (page - 1) * searchPageSize;
+      const [searchData, activityData, speakersData] = await Promise.all([
+        fetchSearch({
+          query,
+          limit: searchPageSize,
+          offset,
+          membership,
+          faction: faction || null,
+          speaker: speaker || null,
+          sortBy,
+        }),
+        fetchActivity({
+          query,
+          interval: intervalValue,
+          membership,
+          faction: faction || null,
+          speaker: speaker || null,
+        }),
+        fetchSpeakers({
+          query,
+          limit: 20,
+          membership,
+          faction: faction || null,
+          speaker: speaker || null,
+        }),
+      ]);
+
+      setSpeeches(searchData.results || []);
+      setTotalCount(searchData.total_count || 0);
+      setSearchPage(page);
+      setActivity(activityData.activity || []);
+      setSpeakers(speakersData.speakers || []);
+
+      if (inputValue.trim()) {
+        const newGroups = [...groups];
+        newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], inputValue.trim()];
+        setGroups(newGroups);
+        setInputValue("");
+      }
+    } catch (error) {
+      console.error("Frontend request failed:", error);
+      setSpeeches([]);
+      setTotalCount(0);
+      setActivity([]);
+      setSpeakers([]);
+      setErrorMessage(
+        error.message ||
+          "Otsingupäring ebaõnnestus. Kontrolli, kas API server töötab aadressil http://127.0.0.1:8000."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Synchronize state to URL query parameters
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    const finalQuery = groups.filter((g) => g.length > 0).map((g) => g.join(" ")).join(", ");
+    syncUrl({
+      view,
+      query: finalQuery,
+      membership: searchMembership,
+      faction: searchFaction,
+      speaker: searchSpeaker,
+      sortBy: searchSortBy,
+      interval,
+      page: searchPage,
+      attendanceTab,
+      attendanceMembership,
+      selectedFaction,
+      activeOnly,
+    });
+  }, [
+    view,
+    groups,
+    searchMembership,
+    searchFaction,
+    searchSpeaker,
+    searchSortBy,
+    interval,
+    searchPage,
+    attendanceTab,
+    attendanceMembership,
+    selectedFaction,
+    activeOnly,
+  ]);
+
+  // Read initial query params on mount and listen to browser back/forward (popstate)
+  useEffect(() => {
+    const applyUrlParams = () => {
+      const params = new URLSearchParams(window.location.search);
+      const initialView = params.get("view");
+      const queryParam = params.get("q");
+      const membershipParam = params.get("membership");
+      const factionParam = params.get("faction");
+      const speakerParam = params.get("speaker");
+      const sortParam = params.get("sort");
+      const intervalParam = params.get("interval");
+      const pageParam = parseInt(params.get("page"), 10);
+
+      const attTabParam = params.get("att_tab");
+      const attMembershipParam = params.get("att_membership");
+      const attFactionParam = params.get("att_faction");
+      const attActiveParam = params.get("att_active");
+
+      if (initialView && ["dashboard", "speeches", "attendance"].includes(initialView)) {
+        setView(initialView);
+      }
+      if (membershipParam && ["15", "14", "all"].includes(membershipParam)) {
+        setSearchMembership(membershipParam);
+      }
+      if (factionParam !== null) {
+        setSearchFaction(factionParam);
+      }
+      if (speakerParam !== null) {
+        setSearchSpeaker(speakerParam);
+      }
+      if (sortParam && ["date_desc", "date_asc", "match_count_desc"].includes(sortParam)) {
+        setSearchSortBy(sortParam);
+      }
+      if (intervalParam && ["daily", "weekly", "monthly"].includes(intervalParam)) {
+        setSelectedInterval(intervalParam);
+      }
+      if (attTabParam && ["members", "factions"].includes(attTabParam)) {
+        setAttendanceTab(attTabParam);
+      }
+      if (attMembershipParam && ["15", "14", "all"].includes(attMembershipParam)) {
+        setAttendanceMembership(attMembershipParam);
+      }
+      if (attFactionParam !== null) {
+        setSelectedFaction(attFactionParam);
+      }
+      if (attActiveParam === "1" || attActiveParam === "true") {
+        setActiveOnly(true);
+      }
+
+      if (queryParam && queryParam.trim()) {
+        const parsedGroups = parseQueryToGroups(queryParam);
+        setGroups(parsedGroups);
+        const targetPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+        setSearchPage(targetPage);
+
+        executeSearch({
+          query: queryParam.trim(),
+          page: targetPage,
+          membership: membershipParam || "all",
+          faction: factionParam || "",
+          speaker: speakerParam || "",
+          sortBy: sortParam || "date_desc",
+          intervalValue: intervalParam || "monthly",
+        });
+      }
+    };
+
+    applyUrlParams();
+    isInitialMount.current = false;
+
+    window.addEventListener("popstate", applyUrlParams);
+    return () => window.removeEventListener("popstate", applyUrlParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Pre-load factions list for search dropdown
   useEffect(() => {
@@ -351,87 +600,6 @@ function App() {
       newGroups.splice(gIndex, 1);
     }
     setGroups(newGroups);
-  };
-
-  const buildBackendQuery = () => {
-    let finalGroups = [...groups];
-    if (inputValue.trim()) {
-      finalGroups[finalGroups.length - 1] = [
-        ...finalGroups[finalGroups.length - 1],
-        inputValue.trim(),
-      ];
-    }
-    finalGroups = finalGroups.filter((g) => g.length > 0);
-    return finalGroups.map((g) => g.join(" ")).join(", ");
-  };
-
-  const executeSearch = async ({
-    query = buildBackendQuery(),
-    page = 1,
-    membership = searchMembership,
-    faction = searchFaction,
-    speaker = searchSpeaker,
-    sortBy = searchSortBy,
-    intervalValue = interval,
-  } = {}) => {
-    if (!query) return;
-
-    setErrorMessage(null);
-    setLoading(true);
-
-    try {
-      const offset = (page - 1) * searchPageSize;
-      const [searchData, activityData, speakersData] = await Promise.all([
-        fetchSearch({
-          query,
-          limit: searchPageSize,
-          offset,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          sortBy,
-        }),
-        fetchActivity({
-          query,
-          interval: intervalValue,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-        }),
-        fetchSpeakers({
-          query,
-          limit: 20,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-        }),
-      ]);
-
-      setSpeeches(searchData.results || []);
-      setTotalCount(searchData.total_count || 0);
-      setSearchPage(page);
-      setActivity(activityData.activity || []);
-      setSpeakers(speakersData.speakers || []);
-
-      if (inputValue.trim()) {
-        const newGroups = [...groups];
-        newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], inputValue.trim()];
-        setGroups(newGroups);
-        setInputValue("");
-      }
-    } catch (error) {
-      console.error("Frontend request failed:", error);
-      setSpeeches([]);
-      setTotalCount(0);
-      setActivity([]);
-      setSpeakers([]);
-      setErrorMessage(
-        error.message ||
-          "Otsingupäring ebaõnnestus. Kontrolli, kas API server töötab aadressil http://127.0.0.1:8000."
-      );
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleSearch = (e) => {
