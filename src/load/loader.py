@@ -22,6 +22,10 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
 
     print(f"Loading attendance records from {attendance_file.name}...")
     session = SessionLocal()
+
+    # Query existing voting_uuid set to quickly skip records already in database
+    existing_uuids = set(r[0] for r in session.query(Attendance.voting_uuid).distinct().all())
+
     batch = []
     total_loaded = 0
 
@@ -38,10 +42,14 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
                 )
                 continue
 
+            v_uuid = data.get("voting_uuid")
+            if v_uuid in existing_uuids:
+                continue
+
             try:
                 record = Attendance(
                     session_date=data["session_date"],
-                    voting_uuid=data["voting_uuid"],
+                    voting_uuid=v_uuid,
                     member_name=data["member_name"],
                     faction=data.get("faction", ""),
                     status=data.get("status", ""),
@@ -86,7 +94,7 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
             batch.clear()
 
     session.close()
-    print(f"Done loading attendance ({total_loaded} records processed).")
+    print(f"Done loading attendance ({total_loaded} records added).")
 
 
 def load_jsonl_to_database(batch_size: int = 2000) -> None:

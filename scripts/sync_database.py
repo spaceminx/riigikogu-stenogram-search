@@ -35,6 +35,12 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
     batch = []
 
     print(f"Checking {year_file.name} for new speeches...")
+    existing_keys = set(
+        session.query(Speech.source_file, Speech.speaker)
+        .filter(Speech.date >= f"{year}-01-01")
+        .all()
+    )
+
     with open(year_file, encoding="utf-8") as f:
         for line_num, line in enumerate(f, 1):
             if not line.strip():
@@ -45,12 +51,18 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
             except json.JSONDecodeError:
                 continue
 
+            src_file = data.get("source_file", f"{year_file.name}:{line_num}")
+            spk = data.get("speaker", "Tundmatu")
+
+            if (src_file, spk) in existing_keys:
+                continue
+
             speech = Speech(
                 date=data["date"],
                 time=data["time"],
-                source_file=data.get("source_file", f"{year_file.name}:{line_num}"),
+                source_file=src_file,
                 source_url=data.get("source_url"),
-                speaker=data.get("speaker", "Tundmatu"),
+                speaker=spk,
                 speaker_role=data.get("speaker_role"),
                 speaker_faction=data.get("speaker_faction"),
                 text=data["text"],
