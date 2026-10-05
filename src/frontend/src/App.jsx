@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import {
   fetchSearch,
   fetchActivity,
   fetchSpeakers,
+  fetchSpeechContext,
+  getExportUrl,
   fetchAttendance,
   fetchFactionAttendance,
   fetchFactionsList,
@@ -11,7 +13,7 @@ import {
 import "./App.css";
 
 function formatDateTime(dateStr, timeStr) {
-  if (!dateStr) return "";
+  if (!dateStr && !timeStr) return "";
   const months = [
     "jaanuar",
     "veebruar",
@@ -26,14 +28,16 @@ function formatDateTime(dateStr, timeStr) {
     "november",
     "detsember",
   ];
-  let formattedDate = dateStr;
+  let formattedDate = dateStr || "";
   try {
-    const parts = dateStr.split("-");
-    if (parts.length === 3) {
-      const year = parts[0];
-      const month = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      formattedDate = `${day}. ${months[month]} ${year}`;
+    if (dateStr) {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const year = parts[0];
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        formattedDate = `${day}. ${months[month]} ${year}`;
+      }
     }
   } catch {
     // fallback to original dateStr if parsing fails
@@ -52,7 +56,7 @@ function formatDateTime(dateStr, timeStr) {
       }
     }
   }
-  return `${formattedDate}${formattedTime}`;
+  return `${formattedDate}${formattedTime}`.trim();
 }
 
 function formatFactionName(name) {
@@ -93,11 +97,24 @@ function App() {
   const [inputValue, setInputValue] = useState("");
   const [interval, setSelectedInterval] = useState("monthly");
   const [speeches, setSpeeches] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [searchPage, setSearchPage] = useState(1);
+  const searchPageSize = 50;
   const [activity, setActivity] = useState([]);
   const [speakers, setSpeakers] = useState([]);
-  const [view, setView] = useState("dashboard");
+  const [view, setView] = useState("dashboard"); // "dashboard" | "speeches" | "attendance"
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Search filters state
+  const [searchMembership, setSearchMembership] = useState("all"); // "all" | "15" | "14"
+  const [searchFaction, setSearchFaction] = useState("");
+  const [searchSpeaker, setSearchSpeaker] = useState("");
+
+  // Context Modal state
+  const [activeSpeechContext, setActiveSpeechContext] = useState(null);
+  const [contextSearchTerm, setContextSearchTerm] = useState("");
+  const targetSpeechRef = useRef(null);
 
   // Attendance state
   const [attendanceTab, setAttendanceTab] = useState("members"); // "members" | "factions"
@@ -117,6 +134,44 @@ function App() {
     key: "attendance_percentage",
     direction: "descending",
   });
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / searchPageSize));
+
+  // Pre-load factions list for search dropdown
+  useEffect(() => {
+    async function loadFactions() {
+      try {
+        const list = await fetchFactionsList("all");
+        if (list && list.length > 0) {
+          setFactionsList(list);
+        }
+      } catch {
+        // silent fallback
+      }
+    }
+    loadFactions();
+  }, []);
+
+  // Handle ESC key to close context modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && activeSpeechContext) {
+        setActiveSpeechContext(null);
+        setContextSearchTerm("");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeSpeechContext]);
+
+  // Auto-scroll to target speech when context modal opens
+  useEffect(() => {
+    if (activeSpeechContext && targetSpeechRef.current) {
+      setTimeout(() => {
+        targetSpeechRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+    }
+  }, [activeSpeechContext]);
 
   const requestSort = (key) => {
     let direction = "descending";
@@ -181,7 +236,7 @@ function App() {
     };
   }, [view, attendanceMembership, selectedFaction, activeOnly]);
 
-  const sortedStats = React.useMemo(() => {
+  const sortedStats = useMemo(() => {
     let sortableItems = [...attendanceStats];
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
@@ -200,7 +255,7 @@ function App() {
     return sortableItems;
   }, [attendanceStats, sortConfig]);
 
-  const sortedFactionStats = React.useMemo(() => {
+  const sortedFactionStats = useMemo(() => {
     let sortableItems = [...factionStats];
     if (factionSortConfig.key) {
       sortableItems.sort((a, b) => {
@@ -283,23 +338,51 @@ function App() {
     return finalGroups.map((g) => g.join(" ")).join(", ");
   };
 
-  async function handleSearch(e) {
-    e.preventDefault();
-    const finalQuery = buildBackendQuery();
-    if (!finalQuery) return;
+  const executeSearch = async ({
+    query = buildBackendQuery(),
+    page = 1,
+    membership = searchMembership,
+    faction = searchFaction,
+    speaker = searchSpeaker,
+    intervalValue = interval,
+  } = {}) => {
+    if (!query) return;
 
     setErrorMessage(null);
     setLoading(true);
 
     try {
-      const searchData = await fetchSearch(finalQuery);
-      const activityData = await fetchActivity(finalQuery, interval);
-      const speakersData = await fetchSpeakers(finalQuery);
+      const offset = (page - 1) * searchPageSize;
+      const [searchData, activityData, speakersData] = await Promise.all([
+        fetchSearch({
+          query,
+          limit: searchPageSize,
+          offset,
+          membership,
+          faction: faction || null,
+          speaker: speaker || null,
+        }),
+        fetchActivity({
+          query,
+          interval: intervalValue,
+          membership,
+          faction: faction || null,
+          speaker: speaker || null,
+        }),
+        fetchSpeakers({
+          query,
+          limit: 20,
+          membership,
+          faction: faction || null,
+          speaker: speaker || null,
+        }),
+      ]);
 
       setSpeeches(searchData.results || []);
+      setTotalCount(searchData.total_count || 0);
+      setSearchPage(page);
       setActivity(activityData.activity || []);
       setSpeakers(speakersData.speakers || []);
-      setView("dashboard");
 
       if (inputValue.trim()) {
         const newGroups = [...groups];
@@ -310,6 +393,7 @@ function App() {
     } catch (error) {
       console.error("Frontend request failed:", error);
       setSpeeches([]);
+      setTotalCount(0);
       setActivity([]);
       setSpeakers([]);
       setErrorMessage(
@@ -319,13 +403,79 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      // Let form submit naturally
+  const handleSearch = (e) => {
+    e.preventDefault();
+    executeSearch({ page: 1 });
+  };
+
+  const handlePageChange = async (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setLoading(true);
+    try {
+      const offset = (newPage - 1) * searchPageSize;
+      const finalQuery = buildBackendQuery();
+      const searchData = await fetchSearch({
+        query: finalQuery,
+        limit: searchPageSize,
+        offset,
+        membership: searchMembership,
+        faction: searchFaction || null,
+        speaker: searchSpeaker || null,
+      });
+      setSpeeches(searchData.results || []);
+      setTotalCount(searchData.total_count || 0);
+      setSearchPage(newPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      console.error("Failed to load page:", error);
+      setErrorMessage(error.message || "Lehe laadimine ebaõnnestus.");
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleOpenContext = async (speechId) => {
+    setErrorMessage(null);
+    try {
+      const data = await fetchSpeechContext(speechId);
+      setActiveSpeechContext(data);
+    } catch (error) {
+      console.error("Failed to load transcript context:", error);
+      setErrorMessage(error.message || "Istungi stenogrammi laadimine ebaõnnestus.");
+    }
+  };
+
+  const handleCloseContext = () => {
+    setActiveSpeechContext(null);
+    setContextSearchTerm("");
+  };
+
+  const handleIntervalChange = (newInterval) => {
+    setSelectedInterval(newInterval);
+    const query = buildBackendQuery();
+    if (query && activity.length > 0) {
+      fetchActivity({
+        query,
+        interval: newInterval,
+        membership: searchMembership,
+        faction: searchFaction || null,
+        speaker: searchSpeaker || null,
+      })
+        .then((data) => setActivity(data.activity || []))
+        .catch(() => {});
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearchMembership("all");
+    setSearchFaction("");
+    setSearchSpeaker("");
+  };
+
+  const hasActiveFilters =
+    searchMembership !== "all" || searchFaction !== "" || searchSpeaker.trim() !== "";
 
   return (
     <div className="app-container">
@@ -454,12 +604,11 @@ function App() {
                       className="search-input"
                       placeholder={
                         group.length === 0 && groups.length === 1
-                          ? "Sisesta otsisõna (nt mets)..."
+                          ? "Sisesta otsisõna (nt kliima, mets)..."
                           : "Lisa sõna..."
                       }
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      onKeyDown={handleKeyDown}
                     />
                   )}
                 </div>
@@ -490,7 +639,7 @@ function App() {
             <select
               className="search-select"
               value={interval}
-              onChange={(e) => setSelectedInterval(e.target.value)}
+              onChange={(e) => handleIntervalChange(e.target.value)}
             >
               <option value="monthly">Kuu kaupa</option>
               <option value="weekly">Nädala kaupa</option>
@@ -500,6 +649,81 @@ function App() {
             <button type="submit" className="search-button" disabled={loading}>
               {loading ? "Otsin..." : "Otsi"}
             </button>
+          </div>
+
+          {/* Search Filters Row */}
+          <div className="search-filters-row">
+            <div className="filter-group-item">
+              <label htmlFor="filter-membership" className="filter-label">
+                Koosseis:
+              </label>
+              <select
+                id="filter-membership"
+                className="filter-select"
+                value={searchMembership}
+                onChange={(e) => setSearchMembership(e.target.value)}
+              >
+                <option value="all">Kõik (2019–praegu)</option>
+                <option value="15">XV Riigikogu (2023–praegu)</option>
+                <option value="14">XIV Riigikogu (2019–2023)</option>
+              </select>
+            </div>
+
+            <div className="filter-group-item">
+              <label htmlFor="filter-faction" className="filter-label">
+                Fraktsioon:
+              </label>
+              <select
+                id="filter-faction"
+                className="filter-select"
+                value={searchFaction}
+                onChange={(e) => setSearchFaction(e.target.value)}
+              >
+                <option value="">Kõik fraktsioonid</option>
+                {factionsList.map((fac, idx) => (
+                  <option key={idx} value={fac}>
+                    {formatFactionName(fac)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group-item speaker-filter-item">
+              <label htmlFor="filter-speaker" className="filter-label">
+                Esineja:
+              </label>
+              <div className="filter-input-wrap">
+                <input
+                  id="filter-speaker"
+                  type="text"
+                  className="filter-text-input"
+                  placeholder="Nt Kaja Kallas..."
+                  value={searchSpeaker}
+                  onChange={(e) => setSearchSpeaker(e.target.value)}
+                />
+                {searchSpeaker && (
+                  <button
+                    type="button"
+                    className="filter-clear-icon-btn"
+                    onClick={() => setSearchSpeaker("")}
+                    title="Tühjenda esineja väli"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="reset-filters-btn"
+                onClick={handleResetFilters}
+                title="Lähtesta koosseisu, fraktsiooni ja esineja filtrid"
+              >
+                Lähtesta filtrid
+              </button>
+            )}
           </div>
         </form>
       )}
@@ -592,89 +816,250 @@ function App() {
             </div>
           </div>
 
-          {speeches.length > 0 && (
+          {totalCount > 0 && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: "2.5rem" }}>
               <button
                 className="search-button"
                 style={{ padding: "1rem 3rem", fontSize: "1.1rem" }}
                 onClick={() => setView("speeches")}
               >
-                Vaata leitud stenogramme ({speeches.length}) &rarr;
+                Vaata leitud stenogramme ({totalCount.toLocaleString("et-EE")}) &rarr;
               </button>
             </div>
           )}
         </>
       )}
 
-      {view === "speeches" && speeches.length > 0 && (
+      {view === "speeches" && (
         <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
-          <div className="chart-header" style={{ marginBottom: "1.5rem" }}>
+          <div className="chart-header speeches-header-bar">
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <button
-                onClick={() => setView("dashboard")}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#8b5cf6",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  padding: 0,
-                }}
-              >
+              <button className="back-nav-btn" onClick={() => setView("dashboard")}>
                 &larr; Tagasi töölauale
               </button>
-              <h2
-                style={{
-                  margin: 0,
-                  paddingLeft: "1rem",
-                  borderLeft: "1px solid rgba(255,255,255,0.1)",
-                }}
-              >
+              <h2 className="speeches-view-title">
                 Leitud stenogrammid
+                <span className="results-badge">{totalCount.toLocaleString("et-EE")} tk</span>
               </h2>
             </div>
+
+            <div className="export-actions-wrap">
+              <span className="export-label">Eksport:</span>
+              <a
+                href={getExportUrl({
+                  query: buildBackendQuery(),
+                  format: "csv",
+                  membership: searchMembership,
+                  faction: searchFaction || null,
+                  speaker: searchSpeaker || null,
+                })}
+                className="export-btn-link"
+                download
+                title="Laadi otsingutulemused alla CSV failina"
+              >
+                CSV
+              </a>
+              <a
+                href={getExportUrl({
+                  query: buildBackendQuery(),
+                  format: "json",
+                  membership: searchMembership,
+                  faction: searchFaction || null,
+                  speaker: searchSpeaker || null,
+                })}
+                className="export-btn-link"
+                download
+                title="Laadi otsingutulemused alla JSON failina"
+              >
+                JSON
+              </a>
+            </div>
           </div>
-          <div className="speeches-list">
-            {speeches.map((speech, index) => (
-              <div key={index} className="glass-panel speech-card">
-                <div className="speech-meta">
-                  <span style={{ color: "#f8fafc", fontWeight: 500 }}>{speech.speaker}</span>
-                  <span>•</span>
-                  <span style={{ color: "#94a3b8" }}>
-                    {formatDateTime(speech.date, speech.time)}
-                  </span>
-                </div>
-                <p className="speech-text">{speech.text.slice(0, 350)}...</p>
-                <a
-                  href={speech.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="speech-link"
-                >
-                  Ava stenogramm
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{ marginLeft: "4px" }}
-                  >
-                    <path
-                      d="M7 17L17 7M17 7H7M17 7V17"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
+
+          {speeches.length === 0 ? (
+            <div className="empty-state" style={{ padding: "3rem 1rem" }}>
+              <p>Valitud filtritega kõnesid ei leitud.</p>
+            </div>
+          ) : (
+            <>
+              <div className="speeches-list">
+                {speeches.map((speech) => (
+                  <div key={speech.id} className="glass-panel speech-card">
+                    <div className="speech-meta">
+                      <div className="speaker-header-info">
+                        <span className="speaker-name-highlight">{speech.speaker}</span>
+                        {speech.speaker_role && (
+                          <span className="speaker-role-tag">{speech.speaker_role}</span>
+                        )}
+                        {speech.speaker_faction && (
+                          <span className="faction-badge">
+                            {formatFactionName(speech.speaker_faction)}
+                          </span>
+                        )}
+                      </div>
+                      <span className="speech-datetime">
+                        {formatDateTime(speech.date, speech.time)}
+                      </span>
+                    </div>
+
+                    <p className="speech-text">{speech.text.slice(0, 380)}...</p>
+
+                    <div className="speech-card-actions">
+                      <button
+                        type="button"
+                        className="context-btn"
+                        onClick={() => handleOpenContext(speech.id)}
+                        title="Ava terve istungi ajajoon ja vaata kõnet selle loomulikus kontekstis"
+                      >
+                        Vaata tervet istungit ({speech.count} mainimist)
+                      </button>
+
+                      <a
+                        href={speech.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="speech-link"
+                      >
+                        Ava allikas
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ marginLeft: "4px" }}
+                        >
+                          <path
+                            d="M7 17L17 7M17 7H7M17 7V17"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              {totalPages > 1 && (
+                <div className="pagination-container">
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    disabled={searchPage <= 1 || loading}
+                    onClick={() => handlePageChange(searchPage - 1)}
+                  >
+                    &larr; Eelmine
+                  </button>
+                  <span className="pagination-text">
+                    Lehekülg {searchPage} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="pagination-btn"
+                    disabled={searchPage >= totalPages || loading}
+                    onClick={() => handlePageChange(searchPage + 1)}
+                  >
+                    Järgmine &rarr;
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Transcript Full Context Modal */}
+      {activeSpeechContext && (
+        <div className="modal-backdrop" onClick={handleCloseContext}>
+          <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-top-bar">
+              <div>
+                <h2 className="modal-heading">Istungi stenogramm</h2>
+                <div className="modal-meta-row">
+                  <span>{formatDateTime(activeSpeechContext.date, activeSpeechContext.time)}</span>
+                  <span>•</span>
+                  <span>{activeSpeechContext.total_speeches} kõnet/repliiki</span>
+                  <span>•</span>
+                  <a
+                    href={activeSpeechContext.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="modal-external-link"
+                  >
+                    Ametlik stenogrammid.riigikogu.ee &rarr;
+                  </a>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-icon-btn"
+                onClick={handleCloseContext}
+                title="Sulge aken (ESC)"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="modal-filter-box">
+              <input
+                type="text"
+                placeholder="Filtreeri kõnesid istungi sees..."
+                value={contextSearchTerm}
+                onChange={(e) => setContextSearchTerm(e.target.value)}
+                className="modal-search-input"
+              />
+            </div>
+
+            <div className="modal-speeches-scroll">
+              {activeSpeechContext.speeches
+                .filter((s) => {
+                  if (!contextSearchTerm.trim()) return true;
+                  const term = contextSearchTerm.toLowerCase();
+                  return (
+                    (s.speaker && s.speaker.toLowerCase().includes(term)) ||
+                    (s.text && s.text.toLowerCase().includes(term))
+                  );
+                })
+                .map((speech) => {
+                  const isTarget = speech.id === activeSpeechContext.target_speech_id;
+                  return (
+                    <div
+                      key={speech.id}
+                      ref={isTarget ? targetSpeechRef : null}
+                      className={`transcript-speech-row ${isTarget ? "target-speech-highlight" : ""}`}
+                    >
+                      <div className="transcript-row-header">
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <span className="transcript-row-speaker">{speech.speaker}</span>
+                          {speech.speaker_role && (
+                            <span className="speaker-role-tag">{speech.speaker_role}</span>
+                          )}
+                          {speech.speaker_faction && (
+                            <span className="faction-badge">
+                              {formatFactionName(speech.speaker_faction)}
+                            </span>
+                          )}
+                          {isTarget && <span className="target-speech-badge">Otsitud kõne</span>}
+                        </div>
+                        <span className="transcript-row-time">
+                          {formatDateTime("", speech.time)}
+                        </span>
+                      </div>
+                      <div className="transcript-row-text">{speech.text}</div>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
         </div>
       )}
@@ -699,39 +1084,47 @@ function App() {
                 className={`segmented-btn ${attendanceTab === "members" ? "active" : ""}`}
                 onClick={() => setAttendanceTab("members")}
               >
-                Saadikud
+                Saadikute vaade
               </button>
               <button
                 type="button"
                 className={`segmented-btn ${attendanceTab === "factions" ? "active" : ""}`}
                 onClick={() => setAttendanceTab("factions")}
               >
-                Fraktsioonid
+                Fraktsioonide koond
               </button>
             </div>
 
             <div className="attendance-controls-row">
-              <div className="filter-group">
-                <label className="filter-label">Koosseis:</label>
+              <div className="attendance-select-group">
+                <label htmlFor="period-select" className="attendance-label">
+                  Periood:
+                </label>
                 <select
+                  id="period-select"
                   className="attendance-select"
                   value={attendanceMembership}
                   onChange={(e) => {
-                    setAttendanceMembership(e.target.value);
-                    setSelectedFaction("");
-                    setActiveOnly(false);
+                    const newPeriod = e.target.value;
+                    setAttendanceMembership(newPeriod);
+                    if (newPeriod !== "15") {
+                      setActiveOnly(false);
+                    }
                   }}
                 >
                   <option value="15">XV Riigikogu (2023–praegu)</option>
                   <option value="14">XIV Riigikogu (2019–2023)</option>
-                  <option value="all">Kõik kokku (2019–praegu)</option>
+                  <option value="all">Kõik kokku (2019–2026)</option>
                 </select>
               </div>
 
               {attendanceTab === "members" && (
-                <div className="filter-group">
-                  <label className="filter-label">Fraktsioon:</label>
+                <div className="attendance-select-group">
+                  <label htmlFor="faction-select" className="attendance-label">
+                    Fraktsioon:
+                  </label>
                   <select
+                    id="faction-select"
                     className="attendance-select"
                     value={selectedFaction}
                     onChange={(e) => setSelectedFaction(e.target.value)}
@@ -743,227 +1136,218 @@ function App() {
                       </option>
                     ))}
                   </select>
-                  {selectedFaction && (
-                    <button
-                      type="button"
-                      className="clear-filter-btn"
-                      onClick={() => setSelectedFaction("")}
-                      title="Eemalda fraktsiooni filter"
-                    >
-                      &times;
-                    </button>
-                  )}
                 </div>
               )}
 
-              <label className="attendance-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={activeOnly}
-                  onChange={(e) => setActiveOnly(e.target.checked)}
-                />
-                <span>
-                  {attendanceMembership === "14"
-                    ? "Ainult saadikud, kes on ametis ka täna"
-                    : "Ainult tänased ametisolevad saadikud (101)"}
-                </span>
-              </label>
+              {attendanceMembership === "15" && (
+                <label className="attendance-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={activeOnly}
+                    onChange={(e) => setActiveOnly(e.target.checked)}
+                  />
+                  <span>
+                    {attendanceTab === "factions"
+                      ? "Ainult praegused aktiivsed saadikud (101 liiget)"
+                      : "Ainult praegu aktiivsed Riigikogu liikmed (101 liiget)"}
+                  </span>
+                </label>
+              )}
             </div>
           </div>
 
           {attendanceLoading ? (
-            <p style={{ textAlign: "center", padding: "3rem", color: "#94a3b8" }}>
-              Laen kohaloleku andmeid...
-            </p>
+            <div className="empty-state" style={{ padding: "3rem 1rem" }}>
+              <p>Laadin kohaloleku andmeid...</p>
+            </div>
           ) : attendanceTab === "members" ? (
-            <div className="attendance-list">
-              <div className="attendance-header-row">
-                <div className="att-col-rank">#</div>
+            <div className="attendance-table-container">
+              <div className="attendance-table-header">
                 <div
-                  className="att-col-name cursor-pointer"
+                  className="att-col-member sortable-header"
                   onClick={() => requestSort("member_name")}
                 >
                   Saadik{" "}
                   {sortConfig.key === "member_name"
                     ? sortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
                 <div
-                  className="att-col-faction cursor-pointer"
+                  className="att-col-faction sortable-header"
                   onClick={() => requestSort("faction")}
                 >
                   Fraktsioon{" "}
                   {sortConfig.key === "faction"
                     ? sortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
                 <div
-                  className="att-col-total cursor-pointer"
-                  onClick={() => requestSort("total_sessions")}
-                >
-                  Istungeid{" "}
-                  {sortConfig.key === "total_sessions"
-                    ? sortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
-                    : ""}
-                </div>
-                <div
-                  className="att-col-present cursor-pointer"
+                  className="att-col-present sortable-header"
                   onClick={() => requestSort("present_sessions")}
                 >
                   Kohal{" "}
                   {sortConfig.key === "present_sessions"
                     ? sortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
                 <div
-                  className="att-col-percent cursor-pointer"
+                  className="att-col-total sortable-header"
+                  onClick={() => requestSort("total_sessions")}
+                >
+                  Istungeid{" "}
+                  {sortConfig.key === "total_sessions"
+                    ? sortConfig.direction === "ascending"
+                      ? "▲"
+                      : "▼"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-percent sortable-header"
                   onClick={() => requestSort("attendance_percentage")}
                 >
-                  %{" "}
+                  Osalusprotsent{" "}
                   {sortConfig.key === "attendance_percentage"
                     ? sortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
               </div>
-
-              {sortedStats.length === 0 ? (
-                <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
-                  Valitud filtritele vastavaid saadikuid ei leitud.
-                </p>
-              ) : (
-                sortedStats.map((stat, idx) => (
-                  <div key={idx} className="attendance-row">
-                    <div className="att-col-rank">{idx + 1}</div>
-                    <div className="att-col-name">{stat.member_name}</div>
-                    <div className="att-col-faction">
-                      <span className="faction-badge" title={stat.faction}>
-                        {formatFactionName(stat.faction)}
+              <div className="attendance-table-body">
+                {sortedStats.map((item, idx) => (
+                  <div key={idx} className="attendance-table-row">
+                    <div className="att-col-member" title={item.member_name}>
+                      {item.member_name}
+                    </div>
+                    <div className="att-col-faction" title={item.faction || "Puudub"}>
+                      <span className="faction-badge">
+                        {formatFactionName(item.faction) || "Fraktsioonita"}
                       </span>
                     </div>
-                    <div className="att-col-total">{stat.total_sessions}</div>
-                    <div className="att-col-present">{stat.present_sessions}</div>
+                    <div className="att-col-present">{item.present_sessions}</div>
+                    <div className="att-col-total">{item.total_sessions}</div>
                     <div className="att-col-percent">
                       <div className="percent-bar-bg">
                         <div
                           className="percent-bar-fill"
                           style={{
-                            width: `${stat.attendance_percentage}%`,
-                            backgroundColor: getPercentageColor(stat.attendance_percentage),
+                            width: `${item.attendance_percentage}%`,
+                            backgroundColor: getPercentageColor(item.attendance_percentage),
                           }}
-                        ></div>
+                        />
                       </div>
-                      <span className="percent-text">{stat.attendance_percentage}%</span>
+                      <span
+                        className="percent-text"
+                        style={{ color: getPercentageColor(item.attendance_percentage) }}
+                      >
+                        {item.attendance_percentage}%
+                      </span>
                     </div>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="attendance-list">
-              <div className="attendance-header-row">
-                <div className="att-col-rank">#</div>
+            <div className="attendance-table-container">
+              <div className="attendance-table-header">
                 <div
-                  className="att-col-name cursor-pointer"
+                  className="att-col-faction sortable-header"
                   onClick={() => requestFactionSort("faction")}
                 >
                   Fraktsioon{" "}
                   {factionSortConfig.key === "faction"
                     ? factionSortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
                 <div
-                  className="att-col-count cursor-pointer"
+                  className="att-col-count sortable-header"
                   onClick={() => requestFactionSort("member_count")}
                 >
                   Saadikuid{" "}
                   {factionSortConfig.key === "member_count"
                     ? factionSortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
                 <div
-                  className="att-col-total cursor-pointer"
-                  onClick={() => requestFactionSort("total_sessions")}
-                >
-                  Hääletusi kokku{" "}
-                  {factionSortConfig.key === "total_sessions"
-                    ? factionSortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
-                    : ""}
-                </div>
-                <div
-                  className="att-col-present cursor-pointer"
+                  className="att-col-present sortable-header"
                   onClick={() => requestFactionSort("present_sessions")}
                 >
-                  Kohal oldud{" "}
+                  Kohaloldud{" "}
                   {factionSortConfig.key === "present_sessions"
                     ? factionSortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
                 <div
-                  className="att-col-percent cursor-pointer"
+                  className="att-col-total sortable-header"
+                  onClick={() => requestFactionSort("total_sessions")}
+                >
+                  Istungeid{" "}
+                  {factionSortConfig.key === "total_sessions"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "▲"
+                      : "▼"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-percent sortable-header"
                   onClick={() => requestFactionSort("attendance_percentage")}
                 >
-                  Keskmine kohalolek %{" "}
+                  Keskmine osalus{" "}
                   {factionSortConfig.key === "attendance_percentage"
                     ? factionSortConfig.direction === "ascending"
-                      ? "↑"
-                      : "↓"
+                      ? "▲"
+                      : "▼"
                     : ""}
                 </div>
               </div>
-
-              {sortedFactionStats.length === 0 ? (
-                <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
-                  Fraktsioonide andmeid ei leitud.
-                </p>
-              ) : (
-                sortedFactionStats.map((stat, idx) => (
+              <div className="attendance-table-body">
+                {sortedFactionStats.map((item, idx) => (
                   <div
                     key={idx}
-                    className="attendance-row faction-row-interactive"
-                    onClick={() => handleSelectFactionDrilldown(stat.faction)}
-                    title={`Klõpsa, et vaadata ${stat.faction} saadikuid`}
+                    className="attendance-table-row clickable-row"
+                    onClick={() => handleSelectFactionDrilldown(item.faction)}
+                    title="Kliki saadikute nimekirja avamiseks"
                   >
-                    <div className="att-col-rank">{idx + 1}</div>
-                    <div className="att-col-name">
-                      <span className="faction-title">{formatFactionName(stat.faction)}</span>
-                      <span className="drilldown-hint">Vaata saadikuid &rarr;</span>
+                    <div className="att-col-faction" title={item.faction}>
+                      <span className="faction-badge">
+                        {formatFactionName(item.faction) || "Fraktsioonita"}
+                      </span>
                     </div>
-                    <div className="att-col-count">{stat.member_count}</div>
-                    <div className="att-col-total">{stat.total_sessions}</div>
-                    <div className="att-col-present">{stat.present_sessions}</div>
+                    <div className="att-col-count">{item.member_count}</div>
+                    <div className="att-col-present">{item.present_sessions}</div>
+                    <div className="att-col-total">{item.total_sessions}</div>
                     <div className="att-col-percent">
                       <div className="percent-bar-bg">
                         <div
                           className="percent-bar-fill"
                           style={{
-                            width: `${stat.attendance_percentage}%`,
-                            backgroundColor: getPercentageColor(stat.attendance_percentage),
+                            width: `${item.attendance_percentage}%`,
+                            backgroundColor: getPercentageColor(item.attendance_percentage),
                           }}
-                        ></div>
+                        />
                       </div>
-                      <span className="percent-text">{stat.attendance_percentage}%</span>
+                      <span
+                        className="percent-text"
+                        style={{ color: getPercentageColor(item.attendance_percentage) }}
+                      >
+                        {item.attendance_percentage}%
+                      </span>
                     </div>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
           )}
         </div>
