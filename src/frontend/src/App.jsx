@@ -110,7 +110,7 @@ function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
   keywords.sort((a, b) => b.length - a.length);
 
   const escaped = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const regex = new RegExp(`(${escaped.join("|")})`, "gi");
+  const regex = new RegExp(`(?<=[^\\p{L}\\p{N}]|^)(${escaped.join("|")})(?=[^\\p{L}\\p{N}]|$)`, "gui");
 
   const parts = text.split(regex);
   return parts.map((part, index) => {
