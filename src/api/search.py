@@ -1,6 +1,7 @@
+import re
 from datetime import datetime
 
-from estnltk import Text
+from estnltk.vabamorf.morf import Vabamorf
 from sqlalchemy import func, or_
 
 from config import STOPWORDS
@@ -8,21 +9,27 @@ from src.load.database import SessionLocal
 from src.load.models import Lemma, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
+_WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ]+\b")
+_VABAMORF = Vabamorf.instance()
+
 
 def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
-    """Extract surface word tokens from text matching any of target lemmas."""
+    """Extract surface word tokens from text matching any of target lemmas with high-speed morphological analysis."""
     if not text or not target_lemmas:
         return []
     try:
-        doc = Text(text)
-        doc.tag_layer()
+        tokens = list(set(_WORD_REGEX.findall(text)))
+        if not tokens:
+            return []
+        analyses = _VABAMORF.analyze([t.lower() for t in tokens])
         matched = set()
-        for word in doc.words:
-            if word.lemma:
-                for lem in word.lemma:
-                    if lem.lower() in target_lemmas:
-                        matched.add(word.text)
-        return sorted(matched, key=lambda s: len(s), reverse=True)
+        for token, item in zip(tokens, analyses):
+            for a in item.get("analysis", []):
+                lemma = a.get("lemma", "")
+                if lemma and lemma.lower() in target_lemmas:
+                    matched.add(token)
+                    break
+        return sorted(matched, key=len, reverse=True)
     except Exception:
         return []
 
@@ -397,9 +404,20 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
         )
 
         target_lemmas: set[str] = set()
+        matching_speech_ids: set[int] = set()
         if query and not is_only_stopwords(query):
             groups = parse_query_groups(query)
             target_lemmas = {lemma for group in groups for lemma in group}
+            if target_lemmas and speeches:
+                speech_ids = [s.id for s in speeches]
+                matching_speech_ids = {
+                    row[0]
+                    for row in session.query(SpeechTerm.speech_id)
+                    .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                    .filter(SpeechTerm.speech_id.in_(speech_ids))
+                    .filter(Lemma.lemma.in_(target_lemmas))
+                    .all()
+                }
 
         return {
             "target_speech_id": target_speech.id,
@@ -419,7 +437,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
                     "text": s.text,
                     "source_url": s.source_url,
                     "matched_words": extract_matched_words(s.text, target_lemmas)
-                    if target_lemmas
+                    if s.id in matching_speech_ids
                     else [],
                 }
                 for s in speeches
