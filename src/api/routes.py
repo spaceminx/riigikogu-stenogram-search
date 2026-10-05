@@ -85,6 +85,11 @@ def search(
             "count": len(results),
             "results": results,
         }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        ) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
@@ -108,6 +113,11 @@ def search_activity(
         )
     try:
         return {"query": q, "interval": interval, "activity": keyword_activity(q, interval)}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        ) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
@@ -127,6 +137,11 @@ def search_speakers(
 ):
     try:
         return {"query": q, "speakers": keyword_top_speakers(q, limit)}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        ) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,

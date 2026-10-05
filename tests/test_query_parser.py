@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from scripts.fetch_stenograms_api import split_speaker_role
-from src.api.search import fill_missing_periods, parse_query_groups
+from src.api.search import fill_missing_periods, is_only_stopwords, parse_query_groups
 
 
 def test_parse_single_keyword():
@@ -35,6 +35,15 @@ def test_stopwords_filtered():
     groups = parse_query_groups("ja see on mets")
     assert len(groups) == 1
     assert groups[0] == ["mets"]
+
+
+def test_is_only_stopwords():
+    assert is_only_stopwords("ja") is True
+    assert is_only_stopwords("see on") is True
+    assert is_only_stopwords("ja, ning, ehk") is True
+    assert is_only_stopwords("mets") is False
+    assert is_only_stopwords("ja mets") is False
+    assert is_only_stopwords("") is False
 
 
 def test_split_speaker_role():

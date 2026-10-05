@@ -309,6 +309,9 @@ function App() {
       }
     } catch (error) {
       console.error("Frontend request failed:", error);
+      setSpeeches([]);
+      setActivity([]);
+      setSpeakers([]);
       setErrorMessage(
         error.message ||
           "Otsingupäring ebaõnnestus. Kontrolli, kas API server töötab aadressil http://127.0.0.1:8000."

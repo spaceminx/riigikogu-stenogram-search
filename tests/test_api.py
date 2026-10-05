@@ -80,6 +80,29 @@ def test_search_activity_invalid_interval():
     assert "Intervall peab olema" in response.json()["detail"]
 
 
+def test_search_only_stopwords():
+    # Calling /search with only stopwords should return 400 Bad Request
+    response = client.get("/search?q=ja")
+    assert response.status_code == 400
+    assert "liiga üldine" in response.json()["detail"]
+
+    response_multi = client.get("/search?q=see on, ning")
+    assert response_multi.status_code == 400
+    assert "liiga üldine" in response_multi.json()["detail"]
+
+
+def test_search_activity_only_stopwords():
+    response = client.get("/search/activity?q=on")
+    assert response.status_code == 400
+    assert "liiga üldine" in response.json()["detail"]
+
+
+def test_search_speakers_only_stopwords():
+    response = client.get("/search/speakers?q=see")
+    assert response.status_code == 400
+    assert "liiga üldine" in response.json()["detail"]
+
+
 def test_attendance_stats_default():
     response = client.get("/attendance/stats")
     assert response.status_code == 200

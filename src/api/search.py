@@ -39,6 +39,19 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
     return [{label: period, "count": count} for period, count in results]
 
 
+def is_only_stopwords(query: str) -> bool:
+    """Check if query contains non-empty words but all of them are in STOPWORDS."""
+    raw_groups = query.split(",")
+    has_any_words = False
+    for group in raw_groups:
+        lemmas = lemmatize_text(group).split()
+        if lemmas:
+            has_any_words = True
+            if any(lemma not in STOPWORDS for lemma in lemmas):
+                return False
+    return has_any_words
+
+
 def parse_query_groups(query: str) -> list[list[str]]:
     """Parse comma-separated OR groups and space-separated AND keywords into filtered lemmas."""
     groups = []
@@ -101,6 +114,11 @@ def build_matching_conditions(session, groups: list[list[str]]) -> list:
 
 def search_by_keyword(query: str, limit: int = 50) -> list[dict]:
     """Search speeches by keyword query with lemma matching and frequency scoring."""
+    if is_only_stopwords(query):
+        raise ValueError(
+            "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
+        )
+
     session = SessionLocal()
 
     try:
@@ -144,6 +162,11 @@ def search_by_keyword(query: str, limit: int = 50) -> list[dict]:
 
 def keyword_activity(query: str, interval: str = "weekly") -> list[dict]:
     """Calculate timeline frequency of keyword occurrences aggregated by day, week, or month."""
+    if is_only_stopwords(query):
+        raise ValueError(
+            "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
+        )
+
     session = SessionLocal()
 
     try:
@@ -183,6 +206,11 @@ def keyword_activity(query: str, interval: str = "weekly") -> list[dict]:
 
 def keyword_top_speakers(query: str, limit: int = 20) -> list[dict]:
     """Rank parliament members by mention count for a given keyword query."""
+    if is_only_stopwords(query):
+        raise ValueError(
+            "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
+        )
+
     session = SessionLocal()
     try:
         groups = parse_query_groups(query)
