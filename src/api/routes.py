@@ -92,6 +92,11 @@ def search(
     speaker: str | None = Query(None, description="Filtreeri esineja nime järgi"),
     start_date: str | None = Query(None, description="Alguskuupäev (YYYY-MM-DD)"),
     end_date: str | None = Query(None, description="Lõppkuupäev (YYYY-MM-DD)"),
+    sort_by: str = Query(
+        "date_desc",
+        description="Sorteerimine: date_desc (uuemad enne), date_asc (vanemad enne), match_count_desc (sagedus)",
+        pattern="^(date_desc|date_asc|match_count_desc)$",
+    ),
 ):
     try:
         results, total_count = search_by_keyword(
@@ -103,6 +108,7 @@ def search(
             speaker=speaker,
             start_date=start_date,
             end_date=end_date,
+            sort_by=sort_by,
         )
         return {
             "query": q,
@@ -243,6 +249,7 @@ def search_export(
     speaker: str | None = Query(None),
     start_date: str | None = Query(None),
     end_date: str | None = Query(None),
+    sort_by: str = Query("date_desc", pattern="^(date_desc|date_asc|match_count_desc)$"),
     limit: int = Query(2000, ge=1, le=5000),
 ):
     if format not in ("csv", "json"):
@@ -258,6 +265,7 @@ def search_export(
             speaker=speaker,
             start_date=start_date,
             end_date=end_date,
+            sort_by=sort_by,
         )
 
         safe_q = "".join(c for c in q if c.isalnum() or c in ("-", "_")).strip() or "otsing"

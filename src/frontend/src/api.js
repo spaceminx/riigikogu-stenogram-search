@@ -28,6 +28,7 @@ export function buildSearchQueryString({
   speaker = null,
   startDate = null,
   endDate = null,
+  sortBy = "date_desc",
 } = {}) {
   const params = new URLSearchParams();
   if (query) params.append("q", query);
@@ -39,6 +40,7 @@ export function buildSearchQueryString({
   if (speaker && speaker.trim()) params.append("speaker", speaker.trim());
   if (startDate) params.append("start_date", startDate);
   if (endDate) params.append("end_date", endDate);
+  if (sortBy && sortBy !== "date_desc") params.append("sort_by", sortBy);
   return params.toString();
 }
 

@@ -177,6 +177,36 @@ def test_search_pagination():
     assert data["offset"] == 0
 
 
+def test_search_sorting():
+    # Sort date_desc (default)
+    res_desc = client.get("/search?q=kliimamuutus&sort_by=date_desc")
+    assert res_desc.status_code == 200
+    data_desc = res_desc.json()["results"]
+    if len(data_desc) >= 2:
+        for i in range(len(data_desc) - 1):
+            assert data_desc[i]["date"] >= data_desc[i + 1]["date"]
+
+    # Sort date_asc
+    res_asc = client.get("/search?q=kliimamuutus&sort_by=date_asc")
+    assert res_asc.status_code == 200
+    data_asc = res_asc.json()["results"]
+    if len(data_asc) >= 2:
+        for i in range(len(data_asc) - 1):
+            assert data_asc[i]["date"] <= data_asc[i + 1]["date"]
+
+    # Sort match_count_desc
+    res_freq = client.get("/search?q=kliimamuutus, energeetika&sort_by=match_count_desc")
+    assert res_freq.status_code == 200
+    data_freq = res_freq.json()["results"]
+    if len(data_freq) >= 2:
+        for i in range(len(data_freq) - 1):
+            assert data_freq[i]["count"] >= data_freq[i + 1]["count"]
+
+    # Invalid sort_by returns 422
+    res_invalid = client.get("/search?q=kliimamuutus&sort_by=invalid_sort")
+    assert res_invalid.status_code == 422
+
+
 def test_speech_context():
     # Get first speech id from search
     search_res = client.get("/search?q=kliimamuutus&limit=1")

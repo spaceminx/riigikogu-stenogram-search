@@ -136,6 +136,7 @@ function App() {
   const [searchMembership, setSearchMembership] = useState("all"); // "all" | "15" | "14"
   const [searchFaction, setSearchFaction] = useState("");
   const [searchSpeaker, setSearchSpeaker] = useState("");
+  const [searchSortBy, setSearchSortBy] = useState("date_desc"); // "date_desc" | "date_asc" | "match_count_desc"
 
   // Context Modal state
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
@@ -370,6 +371,7 @@ function App() {
     membership = searchMembership,
     faction = searchFaction,
     speaker = searchSpeaker,
+    sortBy = searchSortBy,
     intervalValue = interval,
   } = {}) => {
     if (!query) return;
@@ -387,6 +389,7 @@ function App() {
           membership,
           faction: faction || null,
           speaker: speaker || null,
+          sortBy,
         }),
         fetchActivity({
           query,
@@ -436,6 +439,32 @@ function App() {
     executeSearch({ page: 1 });
   };
 
+  const handleSortChange = async (newSort) => {
+    setSearchSortBy(newSort);
+    const finalQuery = buildBackendQuery();
+    if (!finalQuery) return;
+    setLoading(true);
+    try {
+      const searchData = await fetchSearch({
+        query: finalQuery,
+        limit: searchPageSize,
+        offset: 0,
+        membership: searchMembership,
+        faction: searchFaction || null,
+        speaker: searchSpeaker || null,
+        sortBy: newSort,
+      });
+      setSpeeches(searchData.results || []);
+      setTotalCount(searchData.total_count || 0);
+      setSearchPage(1);
+    } catch (error) {
+      console.error("Failed to re-sort results:", error);
+      setErrorMessage(error.message || "Tulemuste sorteerimine ebaõnnestus.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePageChange = async (newPage) => {
     if (newPage < 1 || newPage > totalPages) return;
     setLoading(true);
@@ -449,6 +478,7 @@ function App() {
         membership: searchMembership,
         faction: searchFaction || null,
         speaker: searchSpeaker || null,
+        sortBy: searchSortBy,
       });
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
@@ -869,36 +899,56 @@ function App() {
               </h2>
             </div>
 
-            <div className="export-actions-wrap">
-              <span className="export-label">Eksport:</span>
-              <a
-                href={getExportUrl({
-                  query: buildBackendQuery(),
-                  format: "csv",
-                  membership: searchMembership,
-                  faction: searchFaction || null,
-                  speaker: searchSpeaker || null,
-                })}
-                className="export-btn-link"
-                download
-                title="Laadi otsingutulemused alla CSV failina"
-              >
-                CSV
-              </a>
-              <a
-                href={getExportUrl({
-                  query: buildBackendQuery(),
-                  format: "json",
-                  membership: searchMembership,
-                  faction: searchFaction || null,
-                  speaker: searchSpeaker || null,
-                })}
-                className="export-btn-link"
-                download
-                title="Laadi otsingutulemused alla JSON failina"
-              >
-                JSON
-              </a>
+            <div className="speeches-header-controls">
+              <div className="sort-control-wrap">
+                <label htmlFor="search-sort-select" className="sort-label">
+                  Järjestus:
+                </label>
+                <select
+                  id="search-sort-select"
+                  className="search-sort-select"
+                  value={searchSortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                >
+                  <option value="date_desc">Uuemad enne</option>
+                  <option value="date_asc">Vanemad enne</option>
+                  <option value="match_count_desc">Märksõnade sagedus</option>
+                </select>
+              </div>
+
+              <div className="export-actions-wrap">
+                <span className="export-label">Eksport:</span>
+                <a
+                  href={getExportUrl({
+                    query: buildBackendQuery(),
+                    format: "csv",
+                    membership: searchMembership,
+                    faction: searchFaction || null,
+                    speaker: searchSpeaker || null,
+                    sortBy: searchSortBy,
+                  })}
+                  className="export-btn-link"
+                  download
+                  title="Laadi otsingutulemused alla CSV failina"
+                >
+                  CSV
+                </a>
+                <a
+                  href={getExportUrl({
+                    query: buildBackendQuery(),
+                    format: "json",
+                    membership: searchMembership,
+                    faction: searchFaction || null,
+                    speaker: searchSpeaker || null,
+                    sortBy: searchSortBy,
+                  })}
+                  className="export-btn-link"
+                  download
+                  title="Laadi otsingutulemused alla JSON failina"
+                >
+                  JSON
+                </a>
+              </div>
             </div>
           </div>
 

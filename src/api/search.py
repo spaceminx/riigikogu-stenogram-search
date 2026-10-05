@@ -151,6 +151,7 @@ def search_by_keyword(
     speaker: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    sort_by: str = "date_desc",
 ) -> tuple[list[dict], int]:
     """Search speeches by keyword query with lemma matching, filters, and frequency scoring."""
     if is_only_stopwords(query):
@@ -188,13 +189,17 @@ def search_by_keyword(
         if speech_filters:
             base_query = base_query.filter(*speech_filters)
 
-        results = (
-            base_query.group_by(Speech.id)
-            .order_by(Speech.date.desc())
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
+        grouped_query = base_query.group_by(Speech.id)
+        if sort_by == "date_asc":
+            ordered_query = grouped_query.order_by(Speech.date.asc(), Speech.id.asc())
+        elif sort_by == "match_count_desc":
+            ordered_query = grouped_query.order_by(
+                func.sum(SpeechTerm.count).desc(), Speech.date.desc(), Speech.id.desc()
+            )
+        else:
+            ordered_query = grouped_query.order_by(Speech.date.desc(), Speech.id.desc())
+
+        results = ordered_query.offset(offset).limit(limit).all()
 
         count_query = (
             session.query(Speech.id)

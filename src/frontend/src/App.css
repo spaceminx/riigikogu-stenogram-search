@@ -925,6 +925,50 @@
   border-radius: 9999px;
 }
 
+.speeches-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.sort-control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.search-sort-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #e2e8f0;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-sort-select:focus,
+.search-sort-select:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #ffffff;
+}
+
+.search-sort-select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
 .export-actions-wrap {
   display: flex;
   align-items: center;
