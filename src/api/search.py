@@ -112,8 +112,47 @@ def build_matching_conditions(session, groups: list[list[str]]) -> list:
     return matching_conditions
 
 
-def search_by_keyword(query: str, limit: int = 50) -> list[dict]:
-    """Search speeches by keyword query with lemma matching and frequency scoring."""
+def build_speech_filters(
+    membership: str = "all",
+    faction: str | None = None,
+    speaker: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list:
+    """Build list of SQLAlchemy filter clauses for Speech table."""
+    filters = []
+
+    if membership == "15":
+        filters.append(Speech.date >= "2023-04-10")
+    elif membership == "14":
+        filters.append(Speech.date < "2023-04-10")
+
+    if faction:
+        filters.append(Speech.speaker_faction == faction)
+
+    if speaker and speaker.strip():
+        filters.append(Speech.speaker.ilike(f"%{speaker.strip()}%"))
+
+    if start_date:
+        filters.append(Speech.date >= start_date)
+
+    if end_date:
+        filters.append(Speech.date <= end_date)
+
+    return filters
+
+
+def search_by_keyword(
+    query: str,
+    limit: int = 50,
+    offset: int = 0,
+    membership: str = "all",
+    faction: str | None = None,
+    speaker: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> tuple[list[dict], int]:
+    """Search speeches by keyword query with lemma matching, filters, and frequency scoring."""
     if is_only_stopwords(query):
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
@@ -125,43 +164,82 @@ def search_by_keyword(query: str, limit: int = 50) -> list[dict]:
         groups = parse_query_groups(query)
 
         if not groups:
-            return []
+            return [], 0
 
         matching_conditions = build_matching_conditions(session, groups)
+        speech_filters = build_speech_filters(
+            membership=membership,
+            faction=faction,
+            speaker=speaker,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
-        results = (
+        all_lemmas = [lemma for group in groups for lemma in group]
+
+        base_query = (
             session.query(Speech, func.sum(SpeechTerm.count).label("match_count"))
             .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(or_(*matching_conditions))
-            .filter(Lemma.lemma.in_([lemma for group in groups for lemma in group]))
-            .group_by(Speech.id)
+            .filter(Lemma.lemma.in_(all_lemmas))
+        )
+
+        if speech_filters:
+            base_query = base_query.filter(*speech_filters)
+
+        results = (
+            base_query.group_by(Speech.id)
             .order_by(Speech.date.desc())
+            .offset(offset)
             .limit(limit)
             .all()
         )
 
-        output = []
+        count_query = (
+            session.query(Speech.id)
+            .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
+            .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+            .filter(or_(*matching_conditions))
+            .filter(Lemma.lemma.in_(all_lemmas))
+        )
+        if speech_filters:
+            count_query = count_query.filter(*speech_filters)
 
+        total_count = count_query.distinct().count()
+
+        output = []
         for speech, match_count in results:
             output.append(
                 {
+                    "id": speech.id,
                     "speaker": speech.speaker,
+                    "speaker_role": speech.speaker_role,
+                    "speaker_faction": speech.speaker_faction,
                     "text": speech.text,
                     "count": int(match_count),
                     "date": speech.date,
                     "time": speech.time,
+                    "source_file": speech.source_file,
                     "source_url": speech.source_url,
                 }
             )
-        return output
+        return output, total_count
 
     finally:
         session.close()
 
 
-def keyword_activity(query: str, interval: str = "weekly") -> list[dict]:
-    """Calculate timeline frequency of keyword occurrences aggregated by day, week, or month."""
+def keyword_activity(
+    query: str,
+    interval: str = "weekly",
+    membership: str = "all",
+    faction: str | None = None,
+    speaker: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[dict]:
+    """Calculate timeline frequency of keyword occurrences aggregated by day, week, or month with filters."""
     if is_only_stopwords(query):
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
@@ -186,14 +264,22 @@ def keyword_activity(query: str, interval: str = "weekly") -> list[dict]:
             label = "week"
 
         matched_speeches = build_matching_speech_ids_query(session, groups)
-
-        results = (
-            session.query(date_group.label("period"), func.count(Speech.id).label("total_count"))
-            .join(matched_speeches, Speech.id == list(matched_speeches.c)[0])
-            .group_by(date_group)
-            .order_by(date_group)
-            .all()
+        speech_filters = build_speech_filters(
+            membership=membership,
+            faction=faction,
+            speaker=speaker,
+            start_date=start_date,
+            end_date=end_date,
         )
+
+        query_builder = session.query(
+            date_group.label("period"), func.count(Speech.id).label("total_count")
+        ).join(matched_speeches, Speech.id == list(matched_speeches.c)[0])
+
+        if speech_filters:
+            query_builder = query_builder.filter(*speech_filters)
+
+        results = query_builder.group_by(date_group).order_by(date_group).all()
 
         if interval == "monthly":
             return fill_missing_periods(results, interval, label)
@@ -204,8 +290,16 @@ def keyword_activity(query: str, interval: str = "weekly") -> list[dict]:
         session.close()
 
 
-def keyword_top_speakers(query: str, limit: int = 20) -> list[dict]:
-    """Rank parliament members by mention count for a given keyword query."""
+def keyword_top_speakers(
+    query: str,
+    limit: int = 20,
+    membership: str = "all",
+    faction: str | None = None,
+    speaker: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[dict]:
+    """Rank parliament members by mention count for a given keyword query with filters."""
     if is_only_stopwords(query):
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
@@ -218,24 +312,78 @@ def keyword_top_speakers(query: str, limit: int = 20) -> list[dict]:
             return []
 
         matching_conditions = build_matching_conditions(session, groups)
+        speech_filters = build_speech_filters(
+            membership=membership,
+            faction=faction,
+            speaker=speaker,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
         all_lemmas = [lemma for group in groups for lemma in group]
 
-        results = (
+        query_builder = (
             session.query(Speech.speaker, func.sum(SpeechTerm.count).label("total_count"))
             .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(or_(*matching_conditions))
             .filter(Lemma.lemma.in_(all_lemmas))
-            .group_by(Speech.speaker)
+        )
+
+        if speech_filters:
+            query_builder = query_builder.filter(*speech_filters)
+
+        results = (
+            query_builder.group_by(Speech.speaker)
             .order_by(func.sum(SpeechTerm.count).desc())
             .limit(limit)
             .all()
         )
 
         output = [
-            {"speaker": speaker, "count": int(total_count)} for speaker, total_count in results
+            {"speaker": speaker_name, "count": int(total_count)}
+            for speaker_name, total_count in results
         ]
         return output
+    finally:
+        session.close()
+
+
+def get_speech_context(speech_id: int) -> dict | None:
+    """Retrieve full transcript context (all speeches in chronological order) for a given speech."""
+    session = SessionLocal()
+    try:
+        target_speech = session.query(Speech).filter(Speech.id == speech_id).first()
+        if not target_speech:
+            return None
+
+        speeches = (
+            session.query(Speech)
+            .filter(Speech.source_file == target_speech.source_file)
+            .order_by(Speech.id.asc())
+            .all()
+        )
+
+        return {
+            "target_speech_id": target_speech.id,
+            "date": target_speech.date,
+            "time": target_speech.time,
+            "source_file": target_speech.source_file,
+            "source_url": target_speech.source_url,
+            "total_speeches": len(speeches),
+            "speeches": [
+                {
+                    "id": s.id,
+                    "date": s.date,
+                    "time": s.time,
+                    "speaker": s.speaker,
+                    "speaker_role": s.speaker_role,
+                    "speaker_faction": s.speaker_faction,
+                    "text": s.text,
+                    "source_url": s.source_url,
+                }
+                for s in speeches
+            ],
+        }
     finally:
         session.close()
