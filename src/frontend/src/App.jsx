@@ -1051,9 +1051,6 @@ function App() {
                           )}
                           {isTarget && <span className="target-speech-badge">Otsitud kõne</span>}
                         </div>
-                        <span className="transcript-row-time">
-                          {formatDateTime("", speech.time)}
-                        </span>
                       </div>
                       <div className="transcript-row-text">{speech.text}</div>
                     </div>
@@ -1161,193 +1158,194 @@ function App() {
               <p>Laadin kohaloleku andmeid...</p>
             </div>
           ) : attendanceTab === "members" ? (
-            <div className="attendance-table-container">
-              <div className="attendance-table-header">
+            <div className="attendance-list">
+              <div className="attendance-header-row">
+                <div className="att-col-rank">#</div>
                 <div
-                  className="att-col-member sortable-header"
+                  className="att-col-name cursor-pointer"
                   onClick={() => requestSort("member_name")}
                 >
                   Saadik{" "}
                   {sortConfig.key === "member_name"
                     ? sortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
                 <div
-                  className="att-col-faction sortable-header"
+                  className="att-col-faction cursor-pointer"
                   onClick={() => requestSort("faction")}
                 >
                   Fraktsioon{" "}
                   {sortConfig.key === "faction"
                     ? sortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
                 <div
-                  className="att-col-present sortable-header"
-                  onClick={() => requestSort("present_sessions")}
-                >
-                  Kohal{" "}
-                  {sortConfig.key === "present_sessions"
-                    ? sortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </div>
-                <div
-                  className="att-col-total sortable-header"
+                  className="att-col-total cursor-pointer"
                   onClick={() => requestSort("total_sessions")}
                 >
                   Istungeid{" "}
                   {sortConfig.key === "total_sessions"
                     ? sortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
                 <div
-                  className="att-col-percent sortable-header"
+                  className="att-col-present cursor-pointer"
+                  onClick={() => requestSort("present_sessions")}
+                >
+                  Kohal{" "}
+                  {sortConfig.key === "present_sessions"
+                    ? sortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-percent cursor-pointer"
                   onClick={() => requestSort("attendance_percentage")}
                 >
-                  Osalusprotsent{" "}
+                  %{" "}
                   {sortConfig.key === "attendance_percentage"
                     ? sortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
               </div>
-              <div className="attendance-table-body">
-                {sortedStats.map((item, idx) => (
-                  <div key={idx} className="attendance-table-row">
-                    <div className="att-col-member" title={item.member_name}>
-                      {item.member_name}
-                    </div>
-                    <div className="att-col-faction" title={item.faction || "Puudub"}>
-                      <span className="faction-badge">
-                        {formatFactionName(item.faction) || "Fraktsioonita"}
+
+              {sortedStats.length === 0 ? (
+                <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                  Valitud filtritele vastavaid saadikuid ei leitud.
+                </p>
+              ) : (
+                sortedStats.map((stat, idx) => (
+                  <div key={idx} className="attendance-row">
+                    <div className="att-col-rank">{idx + 1}</div>
+                    <div className="att-col-name">{stat.member_name}</div>
+                    <div className="att-col-faction">
+                      <span className="faction-badge" title={stat.faction}>
+                        {formatFactionName(stat.faction)}
                       </span>
                     </div>
-                    <div className="att-col-present">{item.present_sessions}</div>
-                    <div className="att-col-total">{item.total_sessions}</div>
+                    <div className="att-col-total">{stat.total_sessions}</div>
+                    <div className="att-col-present">{stat.present_sessions}</div>
                     <div className="att-col-percent">
                       <div className="percent-bar-bg">
                         <div
                           className="percent-bar-fill"
                           style={{
-                            width: `${item.attendance_percentage}%`,
-                            backgroundColor: getPercentageColor(item.attendance_percentage),
+                            width: `${stat.attendance_percentage}%`,
+                            backgroundColor: getPercentageColor(stat.attendance_percentage),
                           }}
-                        />
+                        ></div>
                       </div>
-                      <span
-                        className="percent-text"
-                        style={{ color: getPercentageColor(item.attendance_percentage) }}
-                      >
-                        {item.attendance_percentage}%
-                      </span>
+                      <span className="percent-text">{stat.attendance_percentage}%</span>
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </div>
           ) : (
-            <div className="attendance-table-container">
-              <div className="attendance-table-header">
+            <div className="attendance-list">
+              <div className="attendance-header-row">
+                <div className="att-col-rank">#</div>
                 <div
-                  className="att-col-faction sortable-header"
+                  className="att-col-name cursor-pointer"
                   onClick={() => requestFactionSort("faction")}
                 >
                   Fraktsioon{" "}
                   {factionSortConfig.key === "faction"
                     ? factionSortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
                 <div
-                  className="att-col-count sortable-header"
+                  className="att-col-count cursor-pointer"
                   onClick={() => requestFactionSort("member_count")}
                 >
                   Saadikuid{" "}
                   {factionSortConfig.key === "member_count"
                     ? factionSortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
                 <div
-                  className="att-col-present sortable-header"
-                  onClick={() => requestFactionSort("present_sessions")}
-                >
-                  Kohaloldud{" "}
-                  {factionSortConfig.key === "present_sessions"
-                    ? factionSortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </div>
-                <div
-                  className="att-col-total sortable-header"
+                  className="att-col-total cursor-pointer"
                   onClick={() => requestFactionSort("total_sessions")}
                 >
-                  Istungeid{" "}
+                  Hääletusi kokku{" "}
                   {factionSortConfig.key === "total_sessions"
                     ? factionSortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
                 <div
-                  className="att-col-percent sortable-header"
+                  className="att-col-present cursor-pointer"
+                  onClick={() => requestFactionSort("present_sessions")}
+                >
+                  Kohal oldud{" "}
+                  {factionSortConfig.key === "present_sessions"
+                    ? factionSortConfig.direction === "ascending"
+                      ? "↑"
+                      : "↓"
+                    : ""}
+                </div>
+                <div
+                  className="att-col-percent cursor-pointer"
                   onClick={() => requestFactionSort("attendance_percentage")}
                 >
-                  Keskmine osalus{" "}
+                  Keskmine kohalolek %{" "}
                   {factionSortConfig.key === "attendance_percentage"
                     ? factionSortConfig.direction === "ascending"
-                      ? "▲"
-                      : "▼"
+                      ? "↑"
+                      : "↓"
                     : ""}
                 </div>
               </div>
-              <div className="attendance-table-body">
-                {sortedFactionStats.map((item, idx) => (
+
+              {sortedFactionStats.length === 0 ? (
+                <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                  Fraktsioonide andmeid ei leitud.
+                </p>
+              ) : (
+                sortedFactionStats.map((stat, idx) => (
                   <div
                     key={idx}
-                    className="attendance-table-row clickable-row"
-                    onClick={() => handleSelectFactionDrilldown(item.faction)}
-                    title="Kliki saadikute nimekirja avamiseks"
+                    className="attendance-row faction-row-interactive"
+                    onClick={() => handleSelectFactionDrilldown(stat.faction)}
+                    title={`Klõpsa, et vaadata ${stat.faction} saadikuid`}
                   >
-                    <div className="att-col-faction" title={item.faction}>
-                      <span className="faction-badge">
-                        {formatFactionName(item.faction) || "Fraktsioonita"}
-                      </span>
+                    <div className="att-col-rank">{idx + 1}</div>
+                    <div className="att-col-name">
+                      <span className="faction-title">{formatFactionName(stat.faction)}</span>
+                      <span className="drilldown-hint">Vaata saadikuid &rarr;</span>
                     </div>
-                    <div className="att-col-count">{item.member_count}</div>
-                    <div className="att-col-present">{item.present_sessions}</div>
-                    <div className="att-col-total">{item.total_sessions}</div>
+                    <div className="att-col-count">{stat.member_count}</div>
+                    <div className="att-col-total">{stat.total_sessions}</div>
+                    <div className="att-col-present">{stat.present_sessions}</div>
                     <div className="att-col-percent">
                       <div className="percent-bar-bg">
                         <div
                           className="percent-bar-fill"
                           style={{
-                            width: `${item.attendance_percentage}%`,
-                            backgroundColor: getPercentageColor(item.attendance_percentage),
+                            width: `${stat.attendance_percentage}%`,
+                            backgroundColor: getPercentageColor(stat.attendance_percentage),
                           }}
-                        />
+                        ></div>
                       </div>
-                      <span
-                        className="percent-text"
-                        style={{ color: getPercentageColor(item.attendance_percentage) }}
-                      >
-                        {item.attendance_percentage}%
-                      </span>
+                      <span className="percent-text">{stat.attendance_percentage}%</span>
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </div>
           )}
         </div>
