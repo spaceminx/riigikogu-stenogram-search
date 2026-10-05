@@ -92,11 +92,18 @@ function getPercentageColor(percentage) {
   return "#ef4444"; // red
 }
 
-function highlightKeywords(text, groups, extraTerm = "") {
+function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
   if (!text) return "";
   const allTerms = groups ? groups.flat().map((w) => w.trim().toLowerCase()) : [];
   if (extraTerm && extraTerm.trim().length >= 2) {
     allTerms.push(extraTerm.trim().toLowerCase());
+  }
+  if (matchedWords && Array.isArray(matchedWords)) {
+    matchedWords.forEach((w) => {
+      if (w && w.trim().length >= 2) {
+        allTerms.push(w.trim().toLowerCase());
+      }
+    });
   }
   const keywords = Array.from(new Set(allTerms.filter((w) => w.length >= 2)));
   if (keywords.length === 0) return text;
@@ -663,7 +670,8 @@ function App() {
   const handleOpenContext = async (speechId) => {
     setErrorMessage(null);
     try {
-      const data = await fetchSpeechContext(speechId);
+      const finalQuery = buildBackendQuery();
+      const data = await fetchSpeechContext(speechId, finalQuery || null);
       setActiveSpeechContext(data);
     } catch (error) {
       console.error("Failed to load transcript context:", error);
@@ -1147,7 +1155,13 @@ function App() {
                     </div>
 
                     <p className="speech-text">
-                      {highlightKeywords(speech.text.slice(0, 380), groups)}...
+                      {highlightKeywords(
+                        speech.text.slice(0, 380),
+                        groups,
+                        "",
+                        speech.matched_words
+                      )}
+                      ...
                     </p>
 
                     <div className="speech-card-actions">
@@ -1299,7 +1313,12 @@ function App() {
                         </div>
                       </div>
                       <div className="transcript-row-text">
-                        {highlightKeywords(speech.text, groups, contextSearchTerm)}
+                        {highlightKeywords(
+                          speech.text,
+                          groups,
+                          contextSearchTerm,
+                          speech.matched_words
+                        )}
                       </div>
                     </div>
                   );

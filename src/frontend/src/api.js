@@ -67,8 +67,9 @@ export async function fetchSpeakers(options, legacyLimit = 20) {
   return handleResponse(res);
 }
 
-export async function fetchSpeechContext(speechId) {
-  const res = await fetch(`${BASE_URL}/speeches/${speechId}/context`);
+export async function fetchSpeechContext(speechId, query = null) {
+  const qs = query ? `?q=${encodeURIComponent(query)}` : "";
+  const res = await fetch(`${BASE_URL}/speeches/${speechId}/context${qs}`);
   return handleResponse(res);
 }
 

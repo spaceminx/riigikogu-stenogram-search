@@ -222,9 +222,12 @@ def search_speakers(
 
 
 @router.get("/speeches/{speech_id}/context")
-def speech_context(speech_id: int):
+def speech_context(
+    speech_id: int,
+    q: str | None = Query(None, description="Otsingupäring lemmade esiletõstmiseks"),
+):
     try:
-        context = get_speech_context(speech_id)
+        context = get_speech_context(speech_id=speech_id, query=q)
         if not context:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
         return context
@@ -266,6 +269,7 @@ def search_export(
             start_date=start_date,
             end_date=end_date,
             sort_by=sort_by,
+            include_matched_words=False,
         )
 
         safe_q = "".join(c for c in q if c.isalnum() or c in ("-", "_")).strip() or "otsing"

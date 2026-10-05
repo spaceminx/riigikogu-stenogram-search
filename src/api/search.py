@@ -1,11 +1,30 @@
 from datetime import datetime
 
+from estnltk import Text
 from sqlalchemy import func, or_
 
 from config import STOPWORDS
 from src.load.database import SessionLocal
 from src.load.models import Lemma, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
+
+
+def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
+    """Extract surface word tokens from text matching any of target lemmas."""
+    if not text or not target_lemmas:
+        return []
+    try:
+        doc = Text(text)
+        doc.tag_layer()
+        matched = set()
+        for word in doc.words:
+            if word.lemma:
+                for lem in word.lemma:
+                    if lem.lower() in target_lemmas:
+                        matched.add(word.text)
+        return sorted(matched, key=lambda s: len(s), reverse=True)
+    except Exception:
+        return []
 
 
 def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]:
@@ -152,6 +171,7 @@ def search_by_keyword(
     start_date: str | None = None,
     end_date: str | None = None,
     sort_by: str = "date_desc",
+    include_matched_words: bool = True,
 ) -> tuple[list[dict], int]:
     """Search speeches by keyword query with lemma matching, filters, and frequency scoring."""
     if is_only_stopwords(query):
@@ -213,8 +233,14 @@ def search_by_keyword(
 
         total_count = count_query.distinct().count()
 
+        target_lemmas_set = set(all_lemmas) if include_matched_words else set()
         output = []
         for speech, match_count in results:
+            matched_words = (
+                extract_matched_words(speech.text, target_lemmas_set)
+                if include_matched_words
+                else []
+            )
             output.append(
                 {
                     "id": speech.id,
@@ -223,6 +249,7 @@ def search_by_keyword(
                     "speaker_faction": speech.speaker_faction,
                     "text": speech.text,
                     "count": int(match_count),
+                    "matched_words": matched_words,
                     "date": speech.date,
                     "time": speech.time,
                     "source_file": speech.source_file,
@@ -354,7 +381,7 @@ def keyword_top_speakers(
         session.close()
 
 
-def get_speech_context(speech_id: int) -> dict | None:
+def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
     """Retrieve full transcript context (all speeches in chronological order) for a given speech."""
     session = SessionLocal()
     try:
@@ -368,6 +395,11 @@ def get_speech_context(speech_id: int) -> dict | None:
             .order_by(Speech.id.asc())
             .all()
         )
+
+        target_lemmas: set[str] = set()
+        if query and not is_only_stopwords(query):
+            groups = parse_query_groups(query)
+            target_lemmas = {lemma for group in groups for lemma in group}
 
         return {
             "target_speech_id": target_speech.id,
@@ -386,6 +418,9 @@ def get_speech_context(speech_id: int) -> dict | None:
                     "speaker_faction": s.speaker_faction,
                     "text": s.text,
                     "source_url": s.source_url,
+                    "matched_words": extract_matched_words(s.text, target_lemmas)
+                    if target_lemmas
+                    else [],
                 }
                 for s in speeches
             ],
