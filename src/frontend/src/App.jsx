@@ -92,6 +92,32 @@ function getPercentageColor(percentage) {
   return "#ef4444"; // red
 }
 
+function highlightKeywords(text, groups, extraTerm = "") {
+  if (!text) return "";
+  const allTerms = groups ? groups.flat().map((w) => w.trim().toLowerCase()) : [];
+  if (extraTerm && extraTerm.trim().length >= 2) {
+    allTerms.push(extraTerm.trim().toLowerCase());
+  }
+  const keywords = Array.from(new Set(allTerms.filter((w) => w.length >= 2)));
+  if (keywords.length === 0) return text;
+  keywords.sort((a, b) => b.length - a.length);
+
+  const escaped = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const regex = new RegExp(`(${escaped.join("|")})`, "gi");
+
+  const parts = text.split(regex);
+  return parts.map((part, index) => {
+    const isMatch = keywords.some((k) => part.toLowerCase() === k.toLowerCase());
+    return isMatch ? (
+      <mark key={index} className="keyword-highlight">
+        {part}
+      </mark>
+    ) : (
+      part
+    );
+  });
+}
+
 function App() {
   const [groups, setGroups] = useState([[]]); // Array of arrays of strings
   const [inputValue, setInputValue] = useState("");
@@ -902,7 +928,9 @@ function App() {
                       </span>
                     </div>
 
-                    <p className="speech-text">{speech.text.slice(0, 380)}...</p>
+                    <p className="speech-text">
+                      {highlightKeywords(speech.text.slice(0, 380), groups)}...
+                    </p>
 
                     <div className="speech-card-actions">
                       <button
@@ -1052,7 +1080,9 @@ function App() {
                           {isTarget && <span className="target-speech-badge">Otsitud kõne</span>}
                         </div>
                       </div>
-                      <div className="transcript-row-text">{speech.text}</div>
+                      <div className="transcript-row-text">
+                        {highlightKeywords(speech.text, groups, contextSearchTerm)}
+                      </div>
                     </div>
                   );
                 })}
