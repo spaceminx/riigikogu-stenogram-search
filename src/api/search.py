@@ -23,7 +23,7 @@ def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
             return []
         analyses = _VABAMORF.analyze([t.lower() for t in tokens])
         matched = set()
-        for token, item in zip(tokens, analyses):
+        for token, item in zip(tokens, analyses, strict=True):
             for a in item.get("analysis", []):
                 lemma = a.get("lemma", "")
                 if lemma and lemma.lower() in target_lemmas:
