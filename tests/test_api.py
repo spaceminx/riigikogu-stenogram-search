@@ -130,6 +130,23 @@ def test_dashboard_overview_shape():
         assert {"date", "source_url", "topics"} <= data["sessions"][0].keys()
 
 
+def test_plenary_session_calendar_and_transcript():
+    calendar_response = client.get("/sessions/dates")
+    assert calendar_response.status_code == 200
+    dates = calendar_response.json()["dates"]
+    assert isinstance(dates, list)
+    assert dates == sorted(dates, reverse=True)
+
+    if dates:
+        session_response = client.get(f"/sessions/{dates[0]}")
+        assert session_response.status_code == 200
+        session_data = session_response.json()
+        assert session_data["date"] == dates[0]
+        assert session_data["count"] == len(session_data["results"])
+        if session_data["results"]:
+            assert {"speaker", "date", "text", "source_url"} <= session_data["results"][0].keys()
+
+
 def test_search_missing_query():
     # Calling /search without 'q' parameter should return 422 Unprocessable Entity
     response = client.get("/search")

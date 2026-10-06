@@ -1,8 +1,10 @@
 import csv
 import io
 import json
+from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query, Response
+
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from src.api.attendance import (
@@ -12,6 +14,8 @@ from src.api.attendance import (
 )
 from src.api.search import (
     get_dashboard_overview,
+    get_plenary_session_dates,
+    get_session_speeches,
     get_speech_context,
     keyword_activity,
     keyword_top_speakers,
@@ -39,6 +43,40 @@ def dashboard_overview():
         raise HTTPException(
             status_code=500,
             detail="Arhiivi koondandmete päring ebaõnnestus.",
+        ) from e
+
+
+@router.get("/sessions/dates")
+def plenary_session_dates():
+    try:
+        return {"dates": get_plenary_session_dates()}
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Istungite kuupäevad pole praegu kättesaadavad.",
+        ) from e
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Istungite kuupäevade päring ebaõnnestus.",
+        ) from e
+
+
+@router.get("/sessions/{session_date}")
+def plenary_session(session_date: date):
+    try:
+        session_date_value = session_date.isoformat()
+        speeches = get_session_speeches(session_date_value)
+        return {"date": session_date_value, "count": len(speeches), "results": speeches}
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Istungi stenogramm pole praegu kättesaadav.",
+        ) from e
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Istungi stenogrammi päring ebaõnnestus.",
         ) from e
 
 
