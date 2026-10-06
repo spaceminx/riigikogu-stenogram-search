@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 const WEEKDAYS = ["E", "T", "K", "N", "R", "L", "P"];
@@ -6,6 +6,38 @@ const MONTHS = [
   "jaanuar", "veebruar", "märts", "aprill", "mai", "juuni",
   "juuli", "august", "september", "oktoober", "november", "detsember",
 ];
+const YEARS = Array.from({ length: 8 }, (_, index) => 2019 + index);
+const CALENDAR_MIN_MONTH = new Date(2019, 0, 1);
+const CALENDAR_MAX_MONTH = new Date(2026, 11, 1);
+const QUICK_PRESETS = [
+  { id: "xv", label: "XV Riigikogu (2023–praegu)" },
+  { id: "xiv", label: "XIV Riigikogu (2019–2023)" },
+  { id: "year", label: "Viimane aasta" },
+  { id: "archive", label: "Kogu arhiiv" },
+];
+
+function clampMonth(date) {
+  if (date < CALENDAR_MIN_MONTH) return CALENDAR_MIN_MONTH;
+  if (date > CALENDAR_MAX_MONTH) return CALENDAR_MAX_MONTH;
+  return date;
+}
+
+function getPresetRange(presetId, dates) {
+  const today = new Date();
+  const todayKey = toDateKey(today);
+  if (presetId === "xv") return { startDate: "2023-04-10", endDate: todayKey };
+  if (presetId === "xiv") return { startDate: "2019-04-04", endDate: "2023-04-10" };
+  if (presetId === "year") {
+    const yearAgo = new Date(today);
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    return { startDate: toDateKey(yearAgo), endDate: todayKey };
+  }
+  const orderedDates = [...dates].sort();
+  return {
+    startDate: orderedDates[0] || "2019-01-01",
+    endDate: orderedDates.at(-1) || todayKey,
+  };
+}
 
 function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -54,12 +86,65 @@ export default function DateRangeCalendar({
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const start = fromDateKey(value.startDate);
     const now = new Date();
-    return new Date(start?.getFullYear() ?? now.getFullYear(), start?.getMonth() ?? now.getMonth(), 1);
+    return clampMonth(new Date(start?.getFullYear() ?? now.getFullYear(), start?.getMonth() ?? now.getMonth(), 1));
   });
   const rootRef = useRef(null);
+  const popoverRef = useRef(null);
+  const [popoverPosition, setPopoverPosition] = useState(null);
   const sessionDates = useMemo(() => new Set(dates), [dates]);
   const monthCount = compact ? 1 : 2;
   const months = Array.from({ length: monthCount }, (_, index) => shiftMonth(visibleMonth, index));
+
+  const changeVisibleMonth = (amount) => {
+    setVisibleMonth((month) => clampMonth(shiftMonth(month, amount)));
+  };
+
+  const applyPreset = (presetId) => {
+    const nextRange = getPresetRange(presetId, dates);
+    onChange?.(nextRange);
+    setVisibleMonth(clampMonth(fromDateKey(nextRange.startDate)));
+  };
+
+  useLayoutEffect(() => {
+    if (!isOpen || compact) return undefined;
+
+    const positionPopover = () => {
+      const trigger = rootRef.current?.querySelector(".date-range-trigger");
+      const popover = popoverRef.current;
+      if (!trigger || !popover) return;
+
+      const triggerRect = trigger.getBoundingClientRect();
+      const popoverRect = popover.getBoundingClientRect();
+      const availableBelow = window.innerHeight - triggerRect.bottom - 9;
+      const availableAbove = triggerRect.top - 9;
+      const maxHeight = Math.max(0, window.innerHeight - 32);
+      const top = popoverRect.height <= availableBelow
+        ? triggerRect.bottom + 9
+        : popoverRect.height <= availableAbove
+          ? triggerRect.top - popoverRect.height - 9
+          : 16;
+      const left = Math.max(16, Math.min(
+        triggerRect.right - popoverRect.width,
+        window.innerWidth - popoverRect.width - 16,
+      ));
+
+      setPopoverPosition({
+        position: "fixed",
+        left: `${left}px`,
+        top: `${top}px`,
+        right: "auto",
+        maxHeight: `${maxHeight}px`,
+      });
+    };
+
+    positionPopover();
+    window.addEventListener("resize", positionPopover);
+    window.addEventListener("scroll", positionPopover);
+    return () => {
+      window.removeEventListener("resize", positionPopover);
+      window.removeEventListener("scroll", positionPopover);
+    };
+  }, [compact, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -89,6 +174,49 @@ export default function DateRangeCalendar({
       onChange?.({ startDate, endDate: dateKey });
     }
   };
+
+  const renderCalendarHeader = () => (
+    <div className="calendar-popover-header">
+      <button
+        type="button"
+        className="calendar-nav-button"
+        aria-label={compact ? "Eelmine kuu" : "Eelmised kuud"}
+        disabled={visibleMonth <= CALENDAR_MIN_MONTH}
+        onClick={() => changeVisibleMonth(-1)}
+      >
+        <ChevronLeft aria-hidden="true" />
+      </button>
+      <div className="calendar-selectors">
+        <label className="calendar-select-label" htmlFor={compact ? "compact-calendar-month" : "date-range-month"}>Kuu</label>
+        <select
+          id={compact ? "compact-calendar-month" : "date-range-month"}
+          className="calendar-select calendar-month-select"
+          value={visibleMonth.getMonth()}
+          onChange={(event) => setVisibleMonth((month) => new Date(month.getFullYear(), Number(event.target.value), 1))}
+        >
+          {MONTHS.map((month, index) => <option key={month} value={index}>{month}</option>)}
+        </select>
+        <label className="calendar-select-label" htmlFor={compact ? "compact-calendar-year" : "date-range-year"}>Aasta</label>
+        <select
+          id={compact ? "compact-calendar-year" : "date-range-year"}
+          className="calendar-select calendar-year-select"
+          value={visibleMonth.getFullYear()}
+          onChange={(event) => setVisibleMonth((month) => new Date(Number(event.target.value), month.getMonth(), 1))}
+        >
+          {YEARS.map((year) => <option key={year} value={year}>{year}</option>)}
+        </select>
+      </div>
+      <button
+        type="button"
+        className="calendar-nav-button"
+        aria-label={compact ? "Järgmine kuu" : "Järgmised kuud"}
+        disabled={visibleMonth >= CALENDAR_MAX_MONTH}
+        onClick={() => changeVisibleMonth(1)}
+      >
+        <ChevronRight aria-hidden="true" />
+      </button>
+    </div>
+  );
 
   const renderMonth = (month) => {
     const days = getMonthDays(month);
@@ -165,15 +293,7 @@ export default function DateRangeCalendar({
         </button>
         {isOpen && (
           <div className="calendar-popover compact-calendar-popover" role="dialog" aria-label="Riigikogu istungite kalender">
-            <div className="calendar-popover-header">
-              <button type="button" className="calendar-nav-button" aria-label="Eelmine kuu" onClick={() => setVisibleMonth((month) => shiftMonth(month, -1))}>
-                <ChevronLeft aria-hidden="true" />
-              </button>
-              <strong>{monthTitle(visibleMonth)}</strong>
-              <button type="button" className="calendar-nav-button" aria-label="Järgmine kuu" onClick={() => setVisibleMonth((month) => shiftMonth(month, 1))}>
-                <ChevronRight aria-hidden="true" />
-              </button>
-            </div>
+            {renderCalendarHeader()}
             {renderMonth(visibleMonth)}
             <p className="calendar-hint">Vali istungipäev, et avada selle kuupäeva kõned.</p>
           </div>
@@ -201,16 +321,26 @@ export default function DateRangeCalendar({
         <span>{rangeLabel}</span>
       </button>
       {isOpen && (
-        <div className="calendar-popover date-range-popover" role="dialog" aria-label="Kuupäevavahemiku valimine">
-          <div className="calendar-popover-header">
-            <button type="button" className="calendar-nav-button" aria-label="Eelmised kuud" onClick={() => setVisibleMonth((month) => shiftMonth(month, -1))}>
-              <ChevronLeft aria-hidden="true" />
-            </button>
-            <strong>Vali istungite ajavahemik</strong>
-            <button type="button" className="calendar-nav-button" aria-label="Järgmised kuud" onClick={() => setVisibleMonth((month) => shiftMonth(month, 1))}>
-              <ChevronRight aria-hidden="true" />
-            </button>
+        <div
+          className="calendar-popover date-range-popover"
+          ref={popoverRef}
+          style={popoverPosition || undefined}
+          role="dialog"
+          aria-label="Kuupäevavahemiku valimine"
+        >
+          <div className="calendar-quick-presets" role="group" aria-label="Kiirvalikud">
+            {QUICK_PRESETS.map((preset) => (
+              <button
+                type="button"
+                className="calendar-preset-button"
+                key={preset.id}
+                onClick={() => applyPreset(preset.id)}
+              >
+                {preset.label}
+              </button>
+            ))}
           </div>
+          {renderCalendarHeader()}
           <div className="calendar-months">{months.map(renderMonth)}</div>
           <div className="calendar-popover-footer">
             <span>{value.startDate ? `${formatDate(value.startDate)}${value.endDate ? ` – ${formatDate(value.endDate)}` : " – vali lõpp"}` : "Vali algus- ja lõppkuupäev"}</span>
