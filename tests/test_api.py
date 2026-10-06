@@ -301,3 +301,36 @@ def test_attendance_factions_list():
     data = response.json()
     assert isinstance(data, list)
     assert "Eesti 200 fraktsioon" in data
+
+
+def test_attendance_stats_active_only_faction_filter():
+    response = client.get(
+        "/attendance/stats?membership=15&active_only=true&faction=Eesti Konservatiivse Rahvaerakonna fraktsioon"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == 9
+    for item in data:
+        assert item["faction"] == "Eesti Konservatiivse Rahvaerakonna fraktsioon"
+
+
+def test_attendance_factions_stats_active_only():
+    response = client.get("/attendance/factions?membership=15&active_only=true")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    total_active_members = sum(item["member_count"] for item in data)
+    assert total_active_members == 101
+
+    ekre_stat = next(
+        (
+            item
+            for item in data
+            if item["faction"] == "Eesti Konservatiivse Rahvaerakonna fraktsioon"
+        ),
+        None,
+    )
+    assert ekre_stat is not None
+    assert ekre_stat["member_count"] == 9
+    assert ekre_stat["total_sessions"] == 4734
