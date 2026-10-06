@@ -846,12 +846,6 @@ const tooltipStyle = {
 
       {view !== "attendance" && (
         <form onSubmit={handleSearch} className="search-section">
-          <div className="search-heading">
-            <div>
-              <span className="section-kicker">OTSING JA FILTRID</span>
-              <h2>Otsingutingimused</h2>
-            </div>
-          </div>
           <div className="search-query-row">
             <div className="search-groups-container">
               {groups.map((group, gIndex) => (
@@ -908,16 +902,6 @@ const tooltipStyle = {
           </div>
 
           <div className="search-controls">
-            <select
-              className="search-select"
-              value={interval}
-              onChange={(e) => handleIntervalChange(e.target.value)}
-            >
-              <option value="monthly">Kuu kaupa</option>
-              <option value="weekly">Nädala kaupa</option>
-              <option value="daily">Päeva kaupa</option>
-            </select>
-
             <button type="submit" className="search-button" disabled={loading}>
               {loading ? "Otsin..." : "Otsi"}
             </button>
@@ -1034,7 +1018,26 @@ const tooltipStyle = {
                   <span className="section-kicker">TEEMA LÄBI AJA</span>
                   <h2 id="timeline-title">Kõnede ajajoon</h2>
                 </div>
-                {activity.length > 0 && <span className="chart-period">{activity.length} perioodi</span>}
+                <div className="timeline-header-controls">
+                  {activity.length > 0 && <span className="chart-period">{activity.length} perioodi</span>}
+                  <div className="interval-segmented" role="group" aria-label="Ajajoone ajavahemik">
+                    {[
+                      ["daily", "Päev"],
+                      ["weekly", "Nädal"],
+                      ["monthly", "Kuu"],
+                    ].map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className={`interval-segment${interval === value ? " is-active" : ""}`}
+                        aria-pressed={interval === value}
+                        onClick={() => handleIntervalChange(value)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               {activity.length > 0 ? (
                 <div className="timeline-chart">
