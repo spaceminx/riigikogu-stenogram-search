@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from src.api.main import app
 from src.load.database import SessionLocal, engine
-from src.load.models import Attendance, Base
+from src.load.models import Attendance, Base, Lemma, Speech, SpeechTerm
 
 client = TestClient(app)
 
@@ -45,6 +45,46 @@ def setup_test_database():
         ]
         session.add_all(test_records)
         session.commit()
+
+    if session.query(Speech).count() == 0:
+        s1 = Speech(
+            id=1,
+            date="2024-01-15",
+            time="1500",
+            source_file="2024-01-15_1500.api",
+            source_url="https://stenogrammid.riigikogu.ee/202401151500",
+            speaker="Kaja Kallas",
+            speaker_role="Peaminister",
+            speaker_faction="Eesti Reformierakonna fraktsioon",
+            text="Kliimamuutused ja energeetika on olulised.",
+            text_lemmas="kliimamuutus ja energeetika olema oluline",
+        )
+        s2 = Speech(
+            id=2,
+            date="2021-02-10",
+            time="1500",
+            source_file="2021-02-10_1500.api",
+            source_url="https://stenogrammid.riigikogu.ee/202102101500",
+            speaker="Jüri Ratas",
+            speaker_role="Riigikogu esimees",
+            speaker_faction="Eesti Keskerakonna fraktsioon",
+            text="Kliimamuutused nõuavad tähelepanu.",
+            text_lemmas="kliimamuutus nõudma tähelepanu",
+        )
+        session.add_all([s1, s2])
+        session.flush()
+
+        l1 = Lemma(id=1, lemma="kliimamuutus")
+        l2 = Lemma(id=2, lemma="energeetika")
+        session.add_all([l1, l2])
+        session.flush()
+
+        t1 = SpeechTerm(speech_id=s1.id, lemma_id=l1.id, count=1)
+        t2 = SpeechTerm(speech_id=s1.id, lemma_id=l2.id, count=1)
+        t3 = SpeechTerm(speech_id=s2.id, lemma_id=l1.id, count=1)
+        session.add_all([t1, t2, t3])
+        session.commit()
+
     session.close()
 
 
@@ -101,6 +141,104 @@ def test_search_speakers_only_stopwords():
     response = client.get("/search/speakers?q=see")
     assert response.status_code == 400
     assert "liiga üldine" in response.json()["detail"]
+
+
+def test_search_with_filters():
+    # Search with membership filter (15 vs 14)
+    res_xv = client.get("/search?q=kliimamuutus&membership=15")
+    assert res_xv.status_code == 200
+    data_xv = res_xv.json()
+    assert "results" in data_xv
+    assert "total_count" in data_xv
+    for r in data_xv["results"]:
+        assert r["date"] >= "2023-04-10"
+
+    res_xiv = client.get("/search?q=kliimamuutus&membership=14")
+    assert res_xiv.status_code == 200
+    data_xiv = res_xiv.json()
+    for r in data_xiv["results"]:
+        assert r["date"] < "2023-04-10"
+
+
+def test_search_with_speaker_and_faction_filter():
+    res_speaker = client.get("/search?q=kliimamuutus&speaker=Kaja")
+    assert res_speaker.status_code == 200
+    data = res_speaker.json()
+    for r in data["results"]:
+        assert "Kaja" in r["speaker"]
+
+
+def test_search_pagination():
+    res = client.get("/search?q=kliimamuutus&limit=1&offset=0")
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data["results"]) <= 1
+    assert data["limit"] == 1
+    assert data["offset"] == 0
+
+
+def test_search_sorting():
+    # Sort date_desc (default)
+    res_desc = client.get("/search?q=kliimamuutus&sort_by=date_desc")
+    assert res_desc.status_code == 200
+    data_desc = res_desc.json()["results"]
+    if len(data_desc) >= 2:
+        for i in range(len(data_desc) - 1):
+            assert data_desc[i]["date"] >= data_desc[i + 1]["date"]
+
+    # Sort date_asc
+    res_asc = client.get("/search?q=kliimamuutus&sort_by=date_asc")
+    assert res_asc.status_code == 200
+    data_asc = res_asc.json()["results"]
+    if len(data_asc) >= 2:
+        for i in range(len(data_asc) - 1):
+            assert data_asc[i]["date"] <= data_asc[i + 1]["date"]
+
+    # Sort match_count_desc
+    res_freq = client.get("/search?q=kliimamuutus, energeetika&sort_by=match_count_desc")
+    assert res_freq.status_code == 200
+    data_freq = res_freq.json()["results"]
+    if len(data_freq) >= 2:
+        for i in range(len(data_freq) - 1):
+            assert data_freq[i]["count"] >= data_freq[i + 1]["count"]
+
+    # Invalid sort_by returns 422
+    res_invalid = client.get("/search?q=kliimamuutus&sort_by=invalid_sort")
+    assert res_invalid.status_code == 422
+
+
+def test_speech_context():
+    # Get first speech id from search
+    search_res = client.get("/search?q=kliimamuutus&limit=1")
+    if search_res.status_code == 200 and search_res.json()["results"]:
+        speech_id = search_res.json()["results"][0]["id"]
+        ctx_res = client.get(f"/speeches/{speech_id}/context")
+        assert ctx_res.status_code == 200
+        ctx_data = ctx_res.json()
+        assert ctx_data["target_speech_id"] == speech_id
+        assert "speeches" in ctx_data
+        assert len(ctx_data["speeches"]) >= 1
+
+    # 404 test for non-existent speech
+    not_found_res = client.get("/speeches/99999999/context")
+    assert not_found_res.status_code == 404
+
+
+def test_search_export():
+    # Test CSV export
+    res_csv = client.get("/search/export?q=kliimamuutus&format=csv")
+    assert res_csv.status_code == 200
+    assert "text/csv" in res_csv.headers["content-type"]
+    assert "attachment" in res_csv.headers["content-disposition"]
+
+    # Test JSON export
+    res_json = client.get("/search/export?q=kliimamuutus&format=json")
+    assert res_json.status_code == 200
+    assert "application/json" in res_json.headers["content-type"]
+
+    # Test invalid format
+    res_inv = client.get("/search/export?q=kliimamuutus&format=xml")
+    assert res_inv.status_code == 400
 
 
 def test_attendance_stats_default():

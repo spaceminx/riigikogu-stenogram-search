@@ -18,23 +18,65 @@ async function handleResponse(res) {
   return res.json();
 }
 
-export async function fetchSearch(query, limit = 50) {
-  const res = await fetch(`${BASE_URL}/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+export function buildSearchQueryString({
+  query,
+  limit,
+  offset,
+  interval,
+  membership = "all",
+  faction = null,
+  speaker = null,
+  startDate = null,
+  endDate = null,
+  sortBy = "date_desc",
+} = {}) {
+  const params = new URLSearchParams();
+  if (query) params.append("q", query);
+  if (limit !== undefined && limit !== null) params.append("limit", limit);
+  if (offset !== undefined && offset !== null) params.append("offset", offset);
+  if (interval) params.append("interval", interval);
+  if (membership && membership !== "all") params.append("membership", membership);
+  if (faction) params.append("faction", faction);
+  if (speaker && speaker.trim()) params.append("speaker", speaker.trim());
+  if (startDate) params.append("start_date", startDate);
+  if (endDate) params.append("end_date", endDate);
+  if (sortBy && sortBy !== "date_desc") params.append("sort_by", sortBy);
+  return params.toString();
+}
+
+export async function fetchSearch(options) {
+  const qs =
+    typeof options === "string"
+      ? `q=${encodeURIComponent(options)}`
+      : buildSearchQueryString(options);
+  const res = await fetch(`${BASE_URL}/search?${qs}`);
   return handleResponse(res);
 }
 
-export async function fetchActivity(query, interval = "monthly") {
-  const res = await fetch(
-    `${BASE_URL}/search/activity?q=${encodeURIComponent(query)}&interval=${interval}`
-  );
+export async function fetchActivity(options, legacyInterval = "monthly") {
+  const opts = typeof options === "string" ? { query: options, interval: legacyInterval } : options;
+  const qs = buildSearchQueryString(opts);
+  const res = await fetch(`${BASE_URL}/search/activity?${qs}`);
   return handleResponse(res);
 }
 
-export async function fetchSpeakers(query, limit = 20) {
-  const res = await fetch(
-    `${BASE_URL}/search/speakers?q=${encodeURIComponent(query)}&limit=${limit}`
-  );
+export async function fetchSpeakers(options, legacyLimit = 20) {
+  const opts = typeof options === "string" ? { query: options, limit: legacyLimit } : options;
+  const qs = buildSearchQueryString(opts);
+  const res = await fetch(`${BASE_URL}/search/speakers?${qs}`);
   return handleResponse(res);
+}
+
+export async function fetchSpeechContext(speechId, query = null) {
+  const qs = query ? `?q=${encodeURIComponent(query)}` : "";
+  const res = await fetch(`${BASE_URL}/speeches/${speechId}/context${qs}`);
+  return handleResponse(res);
+}
+
+export function getExportUrl(options) {
+  const qs = buildSearchQueryString(options);
+  const format = options.format || "csv";
+  return `${BASE_URL}/search/export?${qs}&format=${format}`;
 }
 
 export async function fetchAttendance({
