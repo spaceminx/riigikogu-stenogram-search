@@ -110,7 +110,10 @@ function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
   keywords.sort((a, b) => b.length - a.length);
 
   const escaped = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const regex = new RegExp(`(?<=[^\\p{L}\\p{N}]|^)(${escaped.join("|")})(?=[^\\p{L}\\p{N}]|$)`, "gui");
+  const regex = new RegExp(
+    `(?<=[^\\p{L}\\p{N}]|^)(${escaped.join("|")})(?=[^\\p{L}\\p{N}]|$)`,
+    "gui"
+  );
 
   const parts = text.split(regex);
   return parts.map((part, index) => {
@@ -315,7 +318,10 @@ function App() {
   // Synchronize state to URL query parameters
   useEffect(() => {
     if (isInitialMount.current) return;
-    const finalQuery = groups.filter((g) => g.length > 0).map((g) => g.join(" ")).join(", ");
+    const finalQuery = groups
+      .filter((g) => g.length > 0)
+      .map((g) => g.join(" "))
+      .join(", ");
     syncUrl({
       view,
       query: finalQuery,
