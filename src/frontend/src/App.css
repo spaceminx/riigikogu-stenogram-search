@@ -3961,6 +3961,39 @@ html[data-theme="dark"] .session-marker {
   box-shadow: 0 0 0 3px #25344a;
 }
 
+.archive-stats-row {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: -2px 0 14px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.archive-stat {
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.archive-stat-separator {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+html[data-theme="dark"] .archive-stat {
+  border-color: #35445b;
+  background: #172235;
+  color: #cbd5e1;
+}
+
 html[data-theme="dark"] .search-heading h2,
 html[data-theme="dark"] .summary-label,
 html[data-theme="dark"] .topic-suggestions-label,

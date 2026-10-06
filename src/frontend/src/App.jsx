@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Activity, CalendarDays, Database, ExternalLink, Landmark, Menu, MessageSquareText, Moon, Search, Sun, UsersRound } from "lucide-react";
+import { Activity, CalendarDays, Database, ExternalLink, Landmark, Menu, Moon, Search, Sun } from "lucide-react";
 import useSWR from "swr";
 import { fetchDashboardOverview } from "./api";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
@@ -817,6 +817,16 @@ const tooltipStyle = {
         <h1>{view === "attendance" ? "Kohaloleku andmed" : view === "speeches" ? "Otsingutulemused" : "Kõnede analüüs"}</h1>
         <span>Riigikogu stenogrammid · XV ja XIV koosseis</span>
       </div>
+
+      {view === "dashboard" && (
+        <div className="archive-stats-row" aria-label="Riigikogu arhiivi kokkuvõte">
+          <span className="archive-stat">120 000+ kõnet</span>
+          <span className="archive-stat-separator" aria-hidden="true">•</span>
+          <span className="archive-stat">101 saadikut</span>
+          <span className="archive-stat-separator" aria-hidden="true">•</span>
+          <span className="archive-stat">XIV ja XV koosseis</span>
+        </div>
+      )}
       
       {errorMessage && (
         <div className="error-banner">
@@ -1015,24 +1025,6 @@ const tooltipStyle = {
                 {topic}
               </button>
             ))}
-          </section>
-
-          <section className="summary-grid" aria-label="Riigikogu arhiivi ülevaade">
-            <article className="summary-card glass-panel">
-              <span className="summary-icon" aria-hidden="true"><MessageSquareText /></span>
-              <div><span className="summary-label">STENOGRAMMID</span><strong>120 000+</strong></div>
-              <span className="summary-caption">kõnet arhiivis</span>
-            </article>
-            <article className="summary-card glass-panel">
-              <span className="summary-icon member-icon" aria-hidden="true"><UsersRound /></span>
-              <div><span className="summary-label">RIIGIKOGU LIIKMEID</span><strong>101</strong></div>
-              <span className="summary-caption">liikmekohta koosseisus</span>
-            </article>
-            <article className="summary-card glass-panel">
-              <span className="summary-icon mention-icon" aria-hidden="true"><Landmark /></span>
-              <div><span className="summary-label">KOOSSEISE</span><strong>2</strong></div>
-              <span className="summary-caption">XIV ja XV Riigikogu</span>
-            </article>
           </section>
 
           <div className="dashboard-grid">
