@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Landmark, MessageSquareText, UsersRound } from "lucide-react";
+import { Activity, CalendarDays, Database, ExternalLink, Landmark, Menu, MessageSquareText, Moon, Search, Sun, UsersRound } from "lucide-react";
+import useSWR from "swr";
+import { fetchDashboardOverview } from "./api";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import {
   fetchSearch,
@@ -201,6 +203,19 @@ function App() {
   const [view, setView] = useState("dashboard"); // "dashboard" | "speeches" | "attendance"
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState("light");
+  const {
+    data: dashboardOverview,
+    error: overviewError,
+    isLoading: overviewLoading,
+  } = useSWR("dashboard-overview", fetchDashboardOverview, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   // Search filters state
   const [searchMembership, setSearchMembership] = useState("all"); // "all" | "15" | "14"
@@ -714,6 +729,11 @@ const tooltipStyle = {
 
   const hasActiveFilters =
     searchMembership !== "all" || searchFaction !== "" || searchSpeaker.trim() !== "";
+  const showingArchiveSpeakers = speakers.length === 0;
+  const sidebarSpeakers = showingArchiveSpeakers
+    ? dashboardOverview?.speakers || []
+    : speakers.slice(0, 4);
+  const recentSessions = dashboardOverview?.sessions || [];
 
   return (
     <div className="app-container">
@@ -746,7 +766,51 @@ const tooltipStyle = {
             Kohalolek
           </button>
         </nav>
-        <span className="header-status"><span /> 2019–praegu</span>
+        <details className="header-menu">
+          <summary className="header-menu-trigger" aria-label="Ava andmevaate menüü">
+            <Menu aria-hidden="true" />
+            <span>Menüü</span>
+          </summary>
+          <div className="header-menu-panel">
+            <div className="menu-section-label">Välimus</div>
+            <button
+              type="button"
+              className="menu-action"
+              aria-pressed={theme === "dark"}
+              onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+              <span>{theme === "dark" ? "Hele kujundus" : "Tume kujundus"}</span>
+            </button>
+            <div className="menu-divider" />
+            <div className="menu-section-label">Andmed ja teenused</div>
+            <div className="menu-status-row">
+              <Database aria-hidden="true" />
+              <span>Arhiiv</span>
+              <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
+                <i />{overviewError ? "Pole ühendust" : overviewLoading ? "Ühendun…" : "Valmis"}
+              </span>
+            </div>
+            <div className="menu-status-row">
+              <Activity aria-hidden="true" />
+              <span>API olek</span>
+              <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
+                <i />{overviewError ? "Pole saadaval" : overviewLoading ? "Kontrollin…" : "Aktiivne"}
+              </span>
+            </div>
+            <div className="menu-divider" />
+            <a className="menu-link" href="https://www.riigikogu.ee/" target="_blank" rel="noreferrer">
+              <Landmark aria-hidden="true" />
+              <span>Riigikogu ametlik arhiiv</span>
+              <ExternalLink aria-hidden="true" />
+            </a>
+            <a className="menu-link" href="https://github.com/spaceminx/riigikogu-stenogram-search" target="_blank" rel="noreferrer">
+              <span className="github-mark" aria-hidden="true">GH</span>
+              <span>Lähtekood GitHubis</span>
+              <ExternalLink aria-hidden="true" />
+            </a>
+          </div>
+        </details>
       </header>
 
       <div className="page-titlebar">
@@ -778,43 +842,42 @@ const tooltipStyle = {
               <h2>Otsingutingimused</h2>
             </div>
           </div>
-          <div className="search-groups-container">
-            {groups.map((group, gIndex) => (
-              <React.Fragment key={gIndex}>
-                {gIndex > 0 && <span className="or-divider">VÕI</span>}
-                <div className="and-group-box">
-                  {group.map((word, wIndex) => (
-                    <span key={wIndex} className="token-pill">
-                      {word}
-                      <button
-                        type="button"
-                        onClick={() => removeWord(gIndex, wIndex)}
-                        title="Eemalda sõna"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
-                  {gIndex === groups.length - 1 && (
-                    <input
-                      type="text"
-                      className="search-input"
-                      placeholder={
-                        group.length === 0 && groups.length === 1
-                          ? "Sisesta otsisõna (nt kliima, mets)..."
-                          : "Lisa sõna..."
-                      }
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                    />
-                  )}
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-
-          <div className="search-controls">
-            <div className="logic-buttons">
+          <div className="search-query-row">
+            <div className="search-groups-container">
+              {groups.map((group, gIndex) => (
+                <React.Fragment key={gIndex}>
+                  {gIndex > 0 && <span className="or-divider">VÕI</span>}
+                  <div className="and-group-box">
+                    {group.map((word, wIndex) => (
+                      <span key={wIndex} className="token-pill">
+                        {word}
+                        <button
+                          type="button"
+                          onClick={() => removeWord(gIndex, wIndex)}
+                          title="Eemalda sõna"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                    {gIndex === groups.length - 1 && (
+                      <input
+                        type="text"
+                        className="search-input"
+                        placeholder={
+                          group.length === 0 && groups.length === 1
+                            ? "Sisesta otsisõna (nt kliima, mets)..."
+                            : "Lisa sõna..."
+                        }
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                      />
+                    )}
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="logic-buttons" aria-label="Otsingutingimuste loogika">
               <button
                 type="button"
                 className="logic-btn and-btn"
@@ -832,7 +895,9 @@ const tooltipStyle = {
                 + VÕI
               </button>
             </div>
+          </div>
 
+          <div className="search-controls">
             <select
               className="search-select"
               value={interval}
@@ -890,6 +955,7 @@ const tooltipStyle = {
                 Esineja:
               </label>
               <div className="filter-input-wrap">
+                <Search className="filter-search-icon" aria-hidden="true" />
                 <input
                   id="filter-speaker"
                   type="text"
@@ -1044,48 +1110,68 @@ const tooltipStyle = {
             <aside className="dashboard-rail">
               <section className="glass-panel members-panel" aria-labelledby="members-title">
                 <div className="chart-header">
-                  <div><span className="section-kicker">ARUTELU HÄÄLED</span><h2 id="members-title">Aktiivsed liikmed</h2></div>
-                  {speakers.length > 0 && <span className="member-total">{speakers.length}</span>}
+                  <div><span className="section-kicker">ARUTELUDE PÕHJAL</span><h2 id="members-title">Aktiivseimad kõnelejad</h2></div>
+                  <span className="member-total">{sidebarSpeakers.length || "—"}</span>
                 </div>
-                {speakers.length > 0 ? (
+                {sidebarSpeakers.length > 0 ? (
                   <div className="speakers-list">
-                    {speakers.slice(0, 5).map((sp, idx) => {
+                    {sidebarSpeakers.map((sp, idx) => {
                       const initials = (sp.speaker || "?").split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
-                      const maxCount = Math.max(...speakers.map((speaker) => Number(speaker.count || 0)), 1);
+                      const maxCount = Math.max(...sidebarSpeakers.map((speaker) => Number(speaker.count || 0)), 1);
                       return (
                         <article key={`${sp.speaker}-${idx}`} className="speaker-item profile-card">
                           <span className={`profile-avatar avatar-${idx % 5}`} aria-hidden="true">{initials}</span>
-                          <div className="profile-details"><strong className="speaker-name">{sp.speaker}</strong><span>{Number(sp.count || 0).toLocaleString("et-EE")} teemakohast mainimist</span><span className="profile-meter"><i style={{ width: `${Math.max(8, (Number(sp.count || 0) / maxCount) * 100)}%` }} /></span></div>
+                          <div className="profile-details">
+                            <strong className="speaker-name">{sp.speaker}</strong>
+                            {sp.faction && <span className="faction-badge">{formatFactionName(sp.faction)}</span>}
+                            <span className="speaker-count-caption">
+                              {Number(sp.count || 0).toLocaleString("et-EE")} {showingArchiveSpeakers ? "kõnet" : "teemakohast mainimist"}
+                            </span>
+                            <span className="profile-meter"><i style={{ width: `${Math.max(8, (Number(sp.count || 0) / maxCount) * 100)}%` }} /></span>
+                          </div>
                           <span className="profile-rank">{String(idx + 1).padStart(2, "0")}</span>
                         </article>
                       );
                     })}
                   </div>
                 ) : (
-                  <div className="member-sample">
-                    <div className="member-sample-heading">
-                      <span className="profile-avatar" aria-hidden="true">ML</span>
-                      <div className="profile-details">
-                        <strong className="speaker-name">Liikme profiil</strong>
-                        <span>Näidisvaade</span>
-                      </div>
-                      <span className="sample-badge">NÄIDIS</span>
-                    </div>
-                    <div className="member-sample-tags">
-                      <span className="faction-badge">Fraktsioon</span>
-                      <span className="faction-badge">Kõnede arv</span>
-                    </div>
-                    <p>Otsingu järel kuvatakse siin teemaga seotud kõnelejad.</p>
-                  </div>
+                  <p className="sidebar-empty-state">
+                    {overviewError ? "Kõnelejate koondandmed pole praegu kättesaadavad." : "Kõnelejate andmed laaditakse arhiivist."}
+                  </p>
                 )}
               </section>
 
-              <section className="glass-panel voting-card" aria-labelledby="voting-title">
-                <div className="voting-card-top">
-                  <h2 id="voting-title">Hääletuste andmed</h2>
-                  <span className="coming-soon">TULEKUL</span>
+              <section className="glass-panel sessions-card" aria-labelledby="sessions-title">
+                <div className="chart-header">
+                  <div><span className="section-kicker">ARHIIVI VÄRSKEIMAD</span><h2 id="sessions-title">Viimased istungid</h2></div>
+                  <CalendarDays className="sessions-heading-icon" aria-hidden="true" />
                 </div>
-                <p>Hääletustulemuste analüüs lisatakse andmevaatesse järgmises etapis.</p>
+                {recentSessions.length > 0 ? (
+                  <div className="sessions-list">
+                    {recentSessions.slice(0, 3).map((session, idx) => (
+                      <article className="session-item" key={`${session.date}-${idx}`}>
+                        <span className="session-marker" aria-hidden="true" />
+                        <div className="session-content">
+                          <strong>{formatDateTime(session.date)}</strong>
+                          <div className="session-topics">
+                            {(session.topics || []).slice(0, 3).map((topic) => (
+                              <span className="session-topic" key={topic}>{topic}</span>
+                            ))}
+                            {session.source_url && (
+                              <a className="session-source-link" href={session.source_url} target="_blank" rel="noreferrer" aria-label="Ava istungi allikas">
+                                <ExternalLink aria-hidden="true" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="sidebar-empty-state">
+                    {overviewError ? "Istungite andmed pole praegu kättesaadavad." : "Värskeimad istungid laaditakse arhiivist."}
+                  </p>
+                )}
               </section>
             </aside>
           </div>

@@ -118,6 +118,18 @@ def test_root_status():
     assert response.json() == {"status": "ok"}
 
 
+def test_dashboard_overview_shape():
+    response = client.get("/overview")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data["speakers"], list)
+    assert isinstance(data["sessions"], list)
+    if data["speakers"]:
+        assert {"speaker", "faction", "count"} <= data["speakers"][0].keys()
+    if data["sessions"]:
+        assert {"date", "source_url", "topics"} <= data["sessions"][0].keys()
+
+
 def test_search_missing_query():
     # Calling /search without 'q' parameter should return 422 Unprocessable Entity
     response = client.get("/search")
