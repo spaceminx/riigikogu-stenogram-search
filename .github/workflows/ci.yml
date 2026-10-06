@@ -65,3 +65,16 @@ jobs:
       - name: Build Frontend
         run: npm run build
 
+
+  deploy:
+    name: Auto-Deploy to Server
+    needs: [backend-test, frontend-check]
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: self-hosted
+    steps:
+      - name: Pull latest code and rebuild Docker
+        run: |
+          cd /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
+          git pull origin master
+          docker compose up -d --build
+
