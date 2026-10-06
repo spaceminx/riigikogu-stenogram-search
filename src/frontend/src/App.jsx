@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Activity, CalendarDays, Database, ExternalLink, Landmark, Menu, Moon, Search, Sun } from "lucide-react";
+import {
+  Activity,
+  CalendarDays,
+  Database,
+  ExternalLink,
+  Landmark,
+  Menu,
+  Moon,
+  Search,
+  Sun,
+} from "lucide-react";
 import useSWR from "swr";
 import { fetchDashboardOverview, fetchPlenarySession, fetchPlenarySessionDates } from "./api";
 import DateRangeCalendar from "./DateRangeCalendar";
@@ -490,11 +500,7 @@ function App() {
           sortBy: sortParam || "date_desc",
           intervalValue: intervalParam || "monthly",
         });
-      } else if (
-        initialView === "speeches" &&
-        startDateParam &&
-        startDateParam === endDateParam
-      ) {
+      } else if (initialView === "speeches" && startDateParam && startDateParam === endDateParam) {
         handlePlenaryDateSelect(startDateParam);
       }
     };
@@ -651,17 +657,17 @@ function App() {
     setAttendanceTab("members");
   };
 
-const tooltipStyle = {
-  contentStyle: {
-    backgroundColor: "#ffffff",
-    color: "#25364a",
-    border: "1px solid #cbd3dc",
-    borderRadius: "3px",
-    boxShadow: "0 2px 8px rgba(20, 35, 55, 0.12)",
-  },
-  itemStyle: { color: "#315b84", fontWeight: 600 },
-  labelStyle: { color: "#536477", marginBottom: "4px" },
-};
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: "#ffffff",
+      color: "#25364a",
+      border: "1px solid #cbd3dc",
+      borderRadius: "3px",
+      boxShadow: "0 2px 8px rgba(20, 35, 55, 0.12)",
+    },
+    itemStyle: { color: "#315b84", fontWeight: 600 },
+    labelStyle: { color: "#536477", marginBottom: "4px" },
+  };
 
   const handleAddAnd = () => {
     if (inputValue.trim()) {
@@ -802,7 +808,9 @@ const tooltipStyle = {
   };
 
   const hasActiveFilters =
-    searchMembership !== "all" || searchFaction !== "" || searchSpeaker.trim() !== "" ||
+    searchMembership !== "all" ||
+    searchFaction !== "" ||
+    searchSpeaker.trim() !== "" ||
     Boolean(searchDateRange.startDate || searchDateRange.endDate);
   const showingArchiveSpeakers = speakers.length === 0;
   const sidebarSpeakers = showingArchiveSpeakers
@@ -852,7 +860,7 @@ const tooltipStyle = {
               type="button"
               className="menu-action"
               aria-pressed={theme === "dark"}
-              onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+              onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
             >
               {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
               <span>{theme === "dark" ? "Hele kujundus" : "Tume kujundus"}</span>
@@ -863,24 +871,38 @@ const tooltipStyle = {
               <Database aria-hidden="true" />
               <span>Arhiiv</span>
               <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
-                <i />{overviewError ? "Pole ühendust" : overviewLoading ? "Ühendun…" : "Valmis"}
+                <i />
+                {overviewError ? "Pole ühendust" : overviewLoading ? "Ühendun…" : "Valmis"}
               </span>
             </div>
             <div className="menu-status-row">
               <Activity aria-hidden="true" />
               <span>API olek</span>
               <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
-                <i />{overviewError ? "Pole saadaval" : overviewLoading ? "Kontrollin…" : "Aktiivne"}
+                <i />
+                {overviewError ? "Pole saadaval" : overviewLoading ? "Kontrollin…" : "Aktiivne"}
               </span>
             </div>
             <div className="menu-divider" />
-            <a className="menu-link" href="https://www.riigikogu.ee/" target="_blank" rel="noreferrer">
+            <a
+              className="menu-link"
+              href="https://www.riigikogu.ee/"
+              target="_blank"
+              rel="noreferrer"
+            >
               <Landmark aria-hidden="true" />
               <span>Riigikogu ametlik arhiiv</span>
               <ExternalLink aria-hidden="true" />
             </a>
-            <a className="menu-link" href="https://github.com/spaceminx/riigikogu-stenogram-search" target="_blank" rel="noreferrer">
-              <span className="github-mark" aria-hidden="true">GH</span>
+            <a
+              className="menu-link"
+              href="https://github.com/spaceminx/riigikogu-stenogram-search"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span className="github-mark" aria-hidden="true">
+                GH
+              </span>
               <span>Lähtekood GitHubis</span>
               <ExternalLink aria-hidden="true" />
             </a>
@@ -889,20 +911,30 @@ const tooltipStyle = {
       </header>
 
       <div className="page-titlebar">
-        <h1>{view === "attendance" ? "Kohaloleku andmed" : view === "speeches" ? "Otsingutulemused" : "Kõnede analüüs"}</h1>
+        <h1>
+          {view === "attendance"
+            ? "Kohaloleku andmed"
+            : view === "speeches"
+              ? "Otsingutulemused"
+              : "Kõnede analüüs"}
+        </h1>
         <span>Riigikogu stenogrammid · XV ja XIV koosseis</span>
       </div>
 
       {view === "dashboard" && (
         <div className="archive-stats-row" aria-label="Riigikogu arhiivi kokkuvõte">
           <span className="archive-stat">120 000+ kõnet</span>
-          <span className="archive-stat-separator" aria-hidden="true">•</span>
+          <span className="archive-stat-separator" aria-hidden="true">
+            •
+          </span>
           <span className="archive-stat">101 saadikut</span>
-          <span className="archive-stat-separator" aria-hidden="true">•</span>
+          <span className="archive-stat-separator" aria-hidden="true">
+            •
+          </span>
           <span className="archive-stat">XIV ja XV koosseis</span>
         </div>
       )}
-      
+
       {errorMessage && (
         <div className="error-banner">
           <div className="error-content">
@@ -1100,7 +1132,9 @@ const tooltipStyle = {
                   <h2 id="timeline-title">Kõnede ajajoon</h2>
                 </div>
                 <div className="timeline-header-controls">
-                  {activity.length > 0 && <span className="chart-period">{activity.length} perioodi</span>}
+                  {activity.length > 0 && (
+                    <span className="chart-period">{activity.length} perioodi</span>
+                  )}
                   <div className="interval-segmented" role="group" aria-label="Ajajoone ajavahemik">
                     {[
                       ["daily", "Päev"],
@@ -1131,21 +1165,39 @@ const tooltipStyle = {
                         </linearGradient>
                       </defs>
                       <XAxis
-                        dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
+                        dataKey={
+                          interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"
+                        }
                         stroke="#cbd3dc"
                         tick={{ fill: "#64748b", fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                         minTickGap={24}
                       />
-                      <YAxis stroke="#cbd3dc" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <YAxis
+                        stroke="#cbd3dc"
+                        tick={{ fill: "#64748b", fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
                       <Tooltip {...tooltipStyle} cursor={{ stroke: "#9eabb9", strokeWidth: 1 }} />
-                      <Area type="monotone" dataKey="count" name="Kõnesid" stroke="#315b84" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 4, fill: "#315b84", stroke: "#ffffff", strokeWidth: 2 }} />
+                      <Area
+                        type="monotone"
+                        dataKey="count"
+                        name="Kõnesid"
+                        stroke="#315b84"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorCount)"
+                        activeDot={{ r: 4, fill: "#315b84", stroke: "#ffffff", strokeWidth: 2 }}
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               ) : loading ? (
-                <div className="chart-empty-state" role="status">Laen arutelude andmeid…</div>
+                <div className="chart-empty-state" role="status">
+                  Laen arutelude andmeid…
+                </div>
               ) : (
                 <div className="sample-preview">
                   <div className="sample-preview-header">
@@ -1155,55 +1207,108 @@ const tooltipStyle = {
                     </div>
                     <span className="sample-badge">Illustratiivne</span>
                   </div>
-                  <div className="timeline-chart sample-chart" aria-label="Illustratiivne kõnede ajajoon">
+                  <div
+                    className="timeline-chart sample-chart"
+                    aria-label="Illustratiivne kõnede ajajoon"
+                  >
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={[
-                        { month: "jaan", count: 14 }, { month: "veebr", count: 22 },
-                        { month: "märts", count: 18 }, { month: "apr", count: 34 },
-                        { month: "mai", count: 27 }, { month: "juuni", count: 42 },
-                        { month: "juuli", count: 31 }, { month: "aug", count: 48 },
-                        { month: "sept", count: 39 }, { month: "okt", count: 58 },
-                        { month: "nov", count: 46 }, { month: "dets", count: 63 },
-                      ]} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                      <AreaChart
+                        data={[
+                          { month: "jaan", count: 14 },
+                          { month: "veebr", count: 22 },
+                          { month: "märts", count: 18 },
+                          { month: "apr", count: 34 },
+                          { month: "mai", count: 27 },
+                          { month: "juuni", count: 42 },
+                          { month: "juuli", count: 31 },
+                          { month: "aug", count: 48 },
+                          { month: "sept", count: 39 },
+                          { month: "okt", count: 58 },
+                          { month: "nov", count: 46 },
+                          { month: "dets", count: 63 },
+                        ]}
+                        margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+                      >
                         <defs>
                           <linearGradient id="sampleArea" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#315b84" stopOpacity={0.14} />
                             <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <XAxis dataKey="month" stroke="#d4dce5" tick={{ fill: "#738195", fontSize: 10 }} tickLine={false} axisLine={false} />
+                        <XAxis
+                          dataKey="month"
+                          stroke="#d4dce5"
+                          tick={{ fill: "#738195", fontSize: 10 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
                         <YAxis hide />
-                        <Area type="monotone" dataKey="count" stroke="#315b84" strokeWidth={2} fill="url(#sampleArea)" dot={false} isAnimationActive={false} />
+                        <Area
+                          type="monotone"
+                          dataKey="count"
+                          stroke="#315b84"
+                          strokeWidth={2}
+                          fill="url(#sampleArea)"
+                          dot={false}
+                          isAnimationActive={false}
+                        />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                  <p>Graafik kuvab näidisandmeid. Sisesta märksõna, et vaadata arhiivi tegelikke tulemusi.</p>
+                  <p>
+                    Graafik kuvab näidisandmeid. Sisesta märksõna, et vaadata arhiivi tegelikke
+                    tulemusi.
+                  </p>
                 </div>
               )}
-              <div className="chart-footer"><span className="legend-dot" /> Kõnede arv valitud perioodis</div>
+              <div className="chart-footer">
+                <span className="legend-dot" /> Kõnede arv valitud perioodis
+              </div>
             </section>
 
             <aside className="dashboard-rail">
               <section className="glass-panel members-panel" aria-labelledby="members-title">
                 <div className="chart-header">
-                  <div><span className="section-kicker">ARUTELUDE PÕHJAL</span><h2 id="members-title">Aktiivseimad kõnelejad</h2></div>
+                  <div>
+                    <span className="section-kicker">ARUTELUDE PÕHJAL</span>
+                    <h2 id="members-title">Aktiivseimad kõnelejad</h2>
+                  </div>
                   <span className="member-total">{sidebarSpeakers.length || "—"}</span>
                 </div>
                 {sidebarSpeakers.length > 0 ? (
                   <div className="speakers-list">
                     {sidebarSpeakers.map((sp, idx) => {
-                      const initials = (sp.speaker || "?").split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
-                      const maxCount = Math.max(...sidebarSpeakers.map((speaker) => Number(speaker.count || 0)), 1);
+                      const initials = (sp.speaker || "?")
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase();
+                      const maxCount = Math.max(
+                        ...sidebarSpeakers.map((speaker) => Number(speaker.count || 0)),
+                        1
+                      );
                       return (
                         <article key={`${sp.speaker}-${idx}`} className="speaker-item profile-card">
-                          <span className={`profile-avatar avatar-${idx % 5}`} aria-hidden="true">{initials}</span>
+                          <span className={`profile-avatar avatar-${idx % 5}`} aria-hidden="true">
+                            {initials}
+                          </span>
                           <div className="profile-details">
                             <strong className="speaker-name">{sp.speaker}</strong>
-                            {sp.faction && <span className="faction-badge">{formatFactionName(sp.faction)}</span>}
+                            {sp.faction && (
+                              <span className="faction-badge">{formatFactionName(sp.faction)}</span>
+                            )}
                             <span className="speaker-count-caption">
-                              {Number(sp.count || 0).toLocaleString("et-EE")} {showingArchiveSpeakers ? "kõnet" : "teemakohast mainimist"}
+                              {Number(sp.count || 0).toLocaleString("et-EE")}{" "}
+                              {showingArchiveSpeakers ? "kõnet" : "teemakohast mainimist"}
                             </span>
-                            <span className="profile-meter"><i style={{ width: `${Math.max(8, (Number(sp.count || 0) / maxCount) * 100)}%` }} /></span>
+                            <span className="profile-meter">
+                              <i
+                                style={{
+                                  width: `${Math.max(8, (Number(sp.count || 0) / maxCount) * 100)}%`,
+                                }}
+                              />
+                            </span>
                           </div>
                           <span className="profile-rank">{String(idx + 1).padStart(2, "0")}</span>
                         </article>
@@ -1212,14 +1317,19 @@ const tooltipStyle = {
                   </div>
                 ) : (
                   <p className="sidebar-empty-state">
-                    {overviewError ? "Kõnelejate koondandmed pole praegu kättesaadavad." : "Kõnelejate andmed laaditakse arhiivist."}
+                    {overviewError
+                      ? "Kõnelejate koondandmed pole praegu kättesaadavad."
+                      : "Kõnelejate andmed laaditakse arhiivist."}
                   </p>
                 )}
               </section>
 
               <section className="glass-panel sessions-card" aria-labelledby="sessions-title">
                 <div className="chart-header">
-                  <div><span className="section-kicker">ARHIIVI VÄRSKEIMAD</span><h2 id="sessions-title">Viimased istungid</h2></div>
+                  <div>
+                    <span className="section-kicker">ARHIIVI VÄRSKEIMAD</span>
+                    <h2 id="sessions-title">Viimased istungid</h2>
+                  </div>
                   <CalendarDays className="sessions-heading-icon" aria-hidden="true" />
                 </div>
                 {recentSessions.length > 0 ? (
@@ -1231,10 +1341,18 @@ const tooltipStyle = {
                           <strong>{formatDateTime(session.date)}</strong>
                           <div className="session-topics">
                             {(session.topics || []).slice(0, 3).map((topic) => (
-                              <span className="session-topic" key={topic}>{topic}</span>
+                              <span className="session-topic" key={topic}>
+                                {topic}
+                              </span>
                             ))}
                             {session.source_url && (
-                              <a className="session-source-link" href={session.source_url} target="_blank" rel="noreferrer" aria-label="Ava istungi allikas">
+                              <a
+                                className="session-source-link"
+                                href={session.source_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Ava istungi allikas"
+                              >
                                 <ExternalLink aria-hidden="true" />
                               </a>
                             )}
@@ -1245,7 +1363,9 @@ const tooltipStyle = {
                   </div>
                 ) : (
                   <p className="sidebar-empty-state">
-                    {overviewError ? "Istungite andmed pole praegu kättesaadavad." : "Värskeimad istungid laaditakse arhiivist."}
+                    {overviewError
+                      ? "Istungite andmed pole praegu kättesaadavad."
+                      : "Värskeimad istungid laaditakse arhiivist."}
                   </p>
                 )}
                 <DateRangeCalendar
@@ -1262,7 +1382,8 @@ const tooltipStyle = {
           {totalCount > 0 && (
             <div className="results-cta-wrap">
               <button className="search-button results-cta" onClick={() => setView("speeches")}>
-                Vaata kõiki {totalCount.toLocaleString("et-EE")} stenogramme <span aria-hidden="true">→</span>
+                Vaata kõiki {totalCount.toLocaleString("et-EE")} stenogramme{" "}
+                <span aria-hidden="true">→</span>
               </button>
             </div>
           )}
@@ -1277,66 +1398,70 @@ const tooltipStyle = {
                 &larr; Tagasi töölauale
               </button>
               <h2 className="speeches-view-title">
-                {isSessionBrowseMode ? `Istungi kõned · ${formatDateTime(selectedSessionDate)}` : "Leitud stenogrammid"}
+                {isSessionBrowseMode
+                  ? `Istungi kõned · ${formatDateTime(selectedSessionDate)}`
+                  : "Leitud stenogrammid"}
                 <span className="results-badge">{totalCount.toLocaleString("et-EE")} tk</span>
               </h2>
             </div>
 
-            {!isSessionBrowseMode && <div className="speeches-header-controls">
-              <div className="sort-control-wrap">
-                <label htmlFor="search-sort-select" className="sort-label">
-                  Järjestus:
-                </label>
-                <select
-                  id="search-sort-select"
-                  className="search-sort-select"
-                  value={searchSortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                >
-                  <option value="date_desc">Uuemad enne</option>
-                  <option value="date_asc">Vanemad enne</option>
-                  <option value="match_count_desc">Märksõnade sagedus</option>
-                </select>
-              </div>
+            {!isSessionBrowseMode && (
+              <div className="speeches-header-controls">
+                <div className="sort-control-wrap">
+                  <label htmlFor="search-sort-select" className="sort-label">
+                    Järjestus:
+                  </label>
+                  <select
+                    id="search-sort-select"
+                    className="search-sort-select"
+                    value={searchSortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                  >
+                    <option value="date_desc">Uuemad enne</option>
+                    <option value="date_asc">Vanemad enne</option>
+                    <option value="match_count_desc">Märksõnade sagedus</option>
+                  </select>
+                </div>
 
-              <div className="export-actions-wrap">
-                <span className="export-label">Eksport:</span>
-                <a
-                  href={getExportUrl({
-                    query: buildBackendQuery(),
-                    format: "csv",
-                    membership: searchMembership,
-                    faction: searchFaction || null,
-                    speaker: searchSpeaker || null,
-                    startDate: searchDateRange.startDate || null,
-                    endDate: searchDateRange.endDate || null,
-                    sortBy: searchSortBy,
-                  })}
-                  className="export-btn-link"
-                  download
-                  title="Laadi otsingutulemused alla CSV failina"
-                >
-                  CSV
-                </a>
-                <a
-                  href={getExportUrl({
-                    query: buildBackendQuery(),
-                    format: "json",
-                    membership: searchMembership,
-                    faction: searchFaction || null,
-                    speaker: searchSpeaker || null,
-                    startDate: searchDateRange.startDate || null,
-                    endDate: searchDateRange.endDate || null,
-                    sortBy: searchSortBy,
-                  })}
-                  className="export-btn-link"
-                  download
-                  title="Laadi otsingutulemused alla JSON failina"
-                >
-                  JSON
-                </a>
+                <div className="export-actions-wrap">
+                  <span className="export-label">Eksport:</span>
+                  <a
+                    href={getExportUrl({
+                      query: buildBackendQuery(),
+                      format: "csv",
+                      membership: searchMembership,
+                      faction: searchFaction || null,
+                      speaker: searchSpeaker || null,
+                      startDate: searchDateRange.startDate || null,
+                      endDate: searchDateRange.endDate || null,
+                      sortBy: searchSortBy,
+                    })}
+                    className="export-btn-link"
+                    download
+                    title="Laadi otsingutulemused alla CSV failina"
+                  >
+                    CSV
+                  </a>
+                  <a
+                    href={getExportUrl({
+                      query: buildBackendQuery(),
+                      format: "json",
+                      membership: searchMembership,
+                      faction: searchFaction || null,
+                      speaker: searchSpeaker || null,
+                      startDate: searchDateRange.startDate || null,
+                      endDate: searchDateRange.endDate || null,
+                      sortBy: searchSortBy,
+                    })}
+                    className="export-btn-link"
+                    download
+                    title="Laadi otsingutulemused alla JSON failina"
+                  >
+                    JSON
+                  </a>
+                </div>
               </div>
-            </div>}
+            )}
           </div>
 
           {speeches.length === 0 ? (
@@ -1382,7 +1507,9 @@ const tooltipStyle = {
                         onClick={() => handleOpenContext(speech.id)}
                         title="Ava terve istungi ajajoon ja vaata kõnet selle loomulikus kontekstis"
                       >
-                        {isSessionBrowseMode ? "Vaata kõne konteksti" : `Vaata tervet istungit (${speech.count} mainimist)`}
+                        {isSessionBrowseMode
+                          ? "Vaata kõne konteksti"
+                          : `Vaata tervet istungit (${speech.count} mainimist)`}
                       </button>
 
                       <a

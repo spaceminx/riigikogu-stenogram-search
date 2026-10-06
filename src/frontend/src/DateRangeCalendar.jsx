@@ -3,8 +3,18 @@ import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 const WEEKDAYS = ["E", "T", "K", "N", "R", "L", "P"];
 const MONTHS = [
-  "jaanuar", "veebruar", "märts", "aprill", "mai", "juuni",
-  "juuli", "august", "september", "oktoober", "november", "detsember",
+  "jaanuar",
+  "veebruar",
+  "märts",
+  "aprill",
+  "mai",
+  "juuni",
+  "juuli",
+  "august",
+  "september",
+  "oktoober",
+  "november",
+  "detsember",
 ];
 const YEARS = Array.from({ length: 8 }, (_, index) => 2019 + index);
 const CALENDAR_MIN_MONTH = new Date(2019, 0, 1);
@@ -86,7 +96,9 @@ export default function DateRangeCalendar({
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const start = fromDateKey(value.startDate);
     const now = new Date();
-    return clampMonth(new Date(start?.getFullYear() ?? now.getFullYear(), start?.getMonth() ?? now.getMonth(), 1));
+    return clampMonth(
+      new Date(start?.getFullYear() ?? now.getFullYear(), start?.getMonth() ?? now.getMonth(), 1)
+    );
   });
   const rootRef = useRef(null);
   const popoverRef = useRef(null);
@@ -118,15 +130,16 @@ export default function DateRangeCalendar({
       const availableBelow = window.innerHeight - triggerRect.bottom - 9;
       const availableAbove = triggerRect.top - 9;
       const maxHeight = Math.max(0, window.innerHeight - 32);
-      const top = popoverRect.height <= availableBelow
-        ? triggerRect.bottom + 9
-        : popoverRect.height <= availableAbove
-          ? triggerRect.top - popoverRect.height - 9
-          : 16;
-      const left = Math.max(16, Math.min(
-        triggerRect.right - popoverRect.width,
-        window.innerWidth - popoverRect.width - 16,
-      ));
+      const top =
+        popoverRect.height <= availableBelow
+          ? triggerRect.bottom + 9
+          : popoverRect.height <= availableAbove
+            ? triggerRect.top - popoverRect.height - 9
+            : 16;
+      const left = Math.max(
+        16,
+        Math.min(triggerRect.right - popoverRect.width, window.innerWidth - popoverRect.width - 16)
+      );
 
       setPopoverPosition({
         position: "fixed",
@@ -187,23 +200,45 @@ export default function DateRangeCalendar({
         <ChevronLeft aria-hidden="true" />
       </button>
       <div className="calendar-selectors">
-        <label className="calendar-select-label" htmlFor={compact ? "compact-calendar-month" : "date-range-month"}>Kuu</label>
+        <label
+          className="calendar-select-label"
+          htmlFor={compact ? "compact-calendar-month" : "date-range-month"}
+        >
+          Kuu
+        </label>
         <select
           id={compact ? "compact-calendar-month" : "date-range-month"}
           className="calendar-select calendar-month-select"
           value={visibleMonth.getMonth()}
-          onChange={(event) => setVisibleMonth((month) => new Date(month.getFullYear(), Number(event.target.value), 1))}
+          onChange={(event) =>
+            setVisibleMonth((month) => new Date(month.getFullYear(), Number(event.target.value), 1))
+          }
         >
-          {MONTHS.map((month, index) => <option key={month} value={index}>{month}</option>)}
+          {MONTHS.map((month, index) => (
+            <option key={month} value={index}>
+              {month}
+            </option>
+          ))}
         </select>
-        <label className="calendar-select-label" htmlFor={compact ? "compact-calendar-year" : "date-range-year"}>Aasta</label>
+        <label
+          className="calendar-select-label"
+          htmlFor={compact ? "compact-calendar-year" : "date-range-year"}
+        >
+          Aasta
+        </label>
         <select
           id={compact ? "compact-calendar-year" : "date-range-year"}
           className="calendar-select calendar-year-select"
           value={visibleMonth.getFullYear()}
-          onChange={(event) => setVisibleMonth((month) => new Date(Number(event.target.value), month.getMonth(), 1))}
+          onChange={(event) =>
+            setVisibleMonth((month) => new Date(Number(event.target.value), month.getMonth(), 1))
+          }
         >
-          {YEARS.map((year) => <option key={year} value={year}>{year}</option>)}
+          {YEARS.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
         </select>
       </div>
       <button
@@ -228,7 +263,9 @@ export default function DateRangeCalendar({
       <section className="calendar-month" key={monthKey} aria-label={monthTitle(month)}>
         <div className="calendar-month-title">{monthTitle(month)}</div>
         <div className="calendar-weekdays" aria-hidden="true">
-          {WEEKDAYS.map((weekday, index) => <span key={`${weekday}-${index}`}>{weekday}</span>)}
+          {WEEKDAYS.map((weekday, index) => (
+            <span key={`${weekday}-${index}`}>{weekday}</span>
+          ))}
         </div>
         <div className="calendar-days">
           {days.map((date) => {
@@ -247,7 +284,9 @@ export default function DateRangeCalendar({
               isStart && "is-range-start",
               isEnd && "is-range-end",
               isBetween && "is-in-range",
-            ].filter(Boolean).join(" ");
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
               <button
@@ -255,7 +294,11 @@ export default function DateRangeCalendar({
                 type="button"
                 disabled={compact && !hasSession}
                 key={dateKey}
-                aria-label={hasSession ? tooltip : `${date.getDate()}. ${MONTHS[date.getMonth()]} ${date.getFullYear()}`}
+                aria-label={
+                  hasSession
+                    ? tooltip
+                    : `${date.getDate()}. ${MONTHS[date.getMonth()]} ${date.getFullYear()}`
+                }
                 aria-describedby={hasSession ? `session-tooltip-${monthKey}-${dateKey}` : undefined}
                 aria-pressed={isStart || isEnd}
                 onClick={() => {
@@ -269,7 +312,15 @@ export default function DateRangeCalendar({
               >
                 <span>{date.getDate()}</span>
                 {hasSession && <i className="calendar-session-dot" aria-hidden="true" />}
-                {hasSession && <span id={`session-tooltip-${monthKey}-${dateKey}`} className="calendar-day-tooltip" role="tooltip">{tooltip}</span>}
+                {hasSession && (
+                  <span
+                    id={`session-tooltip-${monthKey}-${dateKey}`}
+                    className="calendar-day-tooltip"
+                    role="tooltip"
+                  >
+                    {tooltip}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -292,7 +343,11 @@ export default function DateRangeCalendar({
           <span aria-hidden="true">{isOpen ? "−" : "+"}</span>
         </button>
         {isOpen && (
-          <div className="calendar-popover compact-calendar-popover" role="dialog" aria-label="Riigikogu istungite kalender">
+          <div
+            className="calendar-popover compact-calendar-popover"
+            role="dialog"
+            aria-label="Riigikogu istungite kalender"
+          >
             {renderCalendarHeader()}
             {renderMonth(visibleMonth)}
             <p className="calendar-hint">Vali istungipäev, et avada selle kuupäeva kõned.</p>
@@ -308,7 +363,9 @@ export default function DateRangeCalendar({
 
   return (
     <div className="date-range-picker" ref={rootRef}>
-      <label className="filter-label" htmlFor="date-range-trigger">Kuupäevad:</label>
+      <label className="filter-label" htmlFor="date-range-trigger">
+        Kuupäevad:
+      </label>
       <button
         id="date-range-trigger"
         type="button"
@@ -343,10 +400,26 @@ export default function DateRangeCalendar({
           {renderCalendarHeader()}
           <div className="calendar-months">{months.map(renderMonth)}</div>
           <div className="calendar-popover-footer">
-            <span>{value.startDate ? `${formatDate(value.startDate)}${value.endDate ? ` – ${formatDate(value.endDate)}` : " – vali lõpp"}` : "Vali algus- ja lõppkuupäev"}</span>
+            <span>
+              {value.startDate
+                ? `${formatDate(value.startDate)}${value.endDate ? ` – ${formatDate(value.endDate)}` : " – vali lõpp"}`
+                : "Vali algus- ja lõppkuupäev"}
+            </span>
             <div>
-              <button type="button" className="calendar-clear-button" onClick={() => onChange?.({ startDate: "", endDate: "" })}>Tühjenda</button>
-              <button type="button" className="calendar-done-button" onClick={() => setIsOpen(false)}>Valmis</button>
+              <button
+                type="button"
+                className="calendar-clear-button"
+                onClick={() => onChange?.({ startDate: "", endDate: "" })}
+              >
+                Tühjenda
+              </button>
+              <button
+                type="button"
+                className="calendar-done-button"
+                onClick={() => setIsOpen(false)}
+              >
+                Valmis
+              </button>
             </div>
           </div>
         </div>
@@ -354,4 +427,3 @@ export default function DateRangeCalendar({
     </div>
   );
 }
-

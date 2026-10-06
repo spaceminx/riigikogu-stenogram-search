@@ -458,7 +458,6 @@ def get_dashboard_overview() -> dict:
         session.close()
 
 
-
 def keyword_top_speakers(
     query: str,
     limit: int = 20,
