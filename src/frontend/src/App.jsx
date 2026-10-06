@@ -717,90 +717,60 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="header">
-        <h1>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 2L2 7L12 12L22 7L12 2Z"
-              stroke="url(#paint0_linear)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 17L12 22L22 17"
-              stroke="url(#paint1_linear)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 12L12 17L22 12"
-              stroke="url(#paint2_linear)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <defs>
-              <linearGradient
-                id="paint0_linear"
-                x1="2"
-                y1="7"
-                x2="22"
-                y2="7"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3b82f6" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-              <linearGradient
-                id="paint1_linear"
-                x1="2"
-                y1="19.5"
-                x2="22"
-                y2="19.5"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3b82f6" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-              <linearGradient
-                id="paint2_linear"
-                x1="2"
-                y1="14.5"
-                x2="22"
-                y2="14.5"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3b82f6" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-            </defs>
-          </svg>
-          Riigikogu Search
-        </h1>
-        <div className="nav-links">
+      <header className="header">
+        <a className="brand-lockup" href="/" aria-label="Riigikogu andmevaade">
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M5 11.5 16 5l11 6.5-11 6.3L5 11.5Z" />
+              <path d="m5 16 11 6.4L27 16M5 20.5l11 6.4 11-6.4" />
+            </svg>
+          </span>
+          <span className="brand-copy">
+            <strong>Riigikogu</strong>
+            <span>Kõned ja andmed</span>
+          </span>
+        </a>
+        <nav className="nav-links" aria-label="Põhinavigatsioon">
           <button
             className={`nav-btn ${view !== "attendance" ? "active" : ""}`}
             onClick={() => setView("dashboard")}
+            aria-current={view !== "attendance" ? "page" : undefined}
           >
-            Otsing
+            Kõneotsing
           </button>
           <button
             className={`nav-btn ${view === "attendance" ? "active" : ""}`}
             onClick={handleOpenAttendance}
+            aria-current={view === "attendance" ? "page" : undefined}
           >
             Kohalolek
           </button>
-        </div>
-      </div>
+        </nav>
+        <span className="header-status"><span /> 2019–praegu</span>
+      </header>
 
+      {view === "dashboard" && (
+        <section className="page-intro" aria-labelledby="page-title">
+          <div className="eyebrow"><span className="eyebrow-rule" /> AVALIKU ARUTELU ÜLEVAADE</div>
+          <h1 id="page-title">Leia arutelust <span>oluline.</span></h1>
+          <p>Otsi Riigikogu stenogrammidest ja jälgi, kuidas teemad ajas arenevad.</p>
+        </section>
+      )}
+
+      {view === "speeches" && (
+        <section className="page-intro compact-intro" aria-labelledby="results-page-title">
+          <div className="eyebrow"><span className="eyebrow-rule" /> RIIGIKOGU STENOGRAMMID</div>
+          <h1 id="results-page-title">Otsingutulemused</h1>
+        </section>
+      )}
+      {view === "attendance" && (
+        <section className="page-intro compact-intro" aria-labelledby="attendance-page-title">
+          <div className="eyebrow"><span className="eyebrow-rule" /> RIIGIKOGU ANDMED</div>
+          <h1 id="attendance-page-title">Kohaloleku ülevaade</h1>
+          <p>Vaata saadikute ja fraktsioonide osalemist istungitel.</p>
+        </section>
+      )}
+      
       {errorMessage && (
         <div className="error-banner">
           <div className="error-content">
@@ -819,6 +789,13 @@ function App() {
 
       {view !== "attendance" && (
         <form onSubmit={handleSearch} className="search-section">
+          <div className="search-heading">
+            <div>
+              <span className="section-kicker">STENOGRAMMIDE OTSING</span>
+              <h2>Millest Riigikogus räägitakse?</h2>
+            </div>
+            <span className="search-hint">Kasuta fraase või lisa mitu märksõna</span>
+          </div>
           <div className="search-groups-container">
             {groups.map((group, gIndex) => (
               <React.Fragment key={gIndex}>
@@ -966,102 +943,109 @@ function App() {
         </form>
       )}
 
-      {view === "dashboard" && activity.length === 0 && !loading && (
-        <div className="glass-panel empty-state">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#64748b"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <p>Alustamiseks sisesta märksõna ja vajuta "Otsi"</p>
-        </div>
-      )}
-
-      {view === "dashboard" && activity.length > 0 && (
+      {view === "dashboard" && (
         <>
-          <div className="dashboard-grid">
-            <div className="glass-panel">
-              <div className="chart-header">
-                <h2>Aktiivsus ajas</h2>
-              </div>
-              <div style={{ width: "100%", height: 350 }}>
-                <ResponsiveContainer>
-                  <AreaChart data={activity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.6} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey={
-                        interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"
-                      }
-                      stroke="#4b5563"
-                      tick={{ fill: "#9ca3af", fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#4b5563"
-                      tick={{ fill: "#9ca3af", fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      {...tooltipStyle}
-                      cursor={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 2 }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="count"
-                      name="Mainimisi"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorCount)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+          <section className="summary-grid" aria-label="Otsingu kokkuvõte">
+            <article className="summary-card glass-panel">
+              <span className="summary-icon speech-icon" aria-hidden="true">Aa</span>
+              <div><span className="summary-label">LEITUD KÕNESID</span><strong>{totalCount ? totalCount.toLocaleString("et-EE") : "—"}</strong></div>
+              <span className="summary-caption">{totalCount ? "vastab sinu otsingule" : "alusta märksõnaotsinguga"}</span>
+            </article>
+            <article className="summary-card glass-panel">
+              <span className="summary-icon member-icon" aria-hidden="true">◎</span>
+              <div><span className="summary-label">KÕNELEJAID</span><strong>{speakers.length || "—"}</strong></div>
+              <span className="summary-caption">{speakers.length ? "osalevad arutelus" : "tulemuste põhjal"}</span>
+            </article>
+            <article className="summary-card glass-panel">
+              <span className="summary-icon mention-icon" aria-hidden="true">↗</span>
+              <div><span className="summary-label">MÄRKIMISI</span><strong>{speakers.length ? speakers.reduce((sum, speaker) => sum + Number(speaker.count || 0), 0).toLocaleString("et-EE") : "—"}</strong></div>
+              <span className="summary-caption">valitud teemal kokku</span>
+            </article>
+          </section>
 
-            <div className="glass-panel">
+          <div className="dashboard-grid">
+            <section className="glass-panel timeline-panel" aria-labelledby="timeline-title">
               <div className="chart-header">
-                <h2>Top kõnelejad</h2>
+                <div>
+                  <span className="section-kicker">TEEMA LÄBI AJA</span>
+                  <h2 id="timeline-title">Kõnede ajajoon</h2>
+                </div>
+                {activity.length > 0 && <span className="chart-period">{activity.length} perioodi</span>}
               </div>
-              <div className="speakers-list">
-                {speakers.slice(0, 8).map((sp, idx) => (
-                  <div key={idx} className="speaker-item">
-                    <div className="speaker-info">
-                      <span className="speaker-rank">{idx + 1}</span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span className="speaker-name">{sp.speaker}</span>
-                      </div>
-                    </div>
-                    <span className="speaker-count">{sp.count}</span>
+              {activity.length > 0 ? (
+                <div className="timeline-chart">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#77e2c2" stopOpacity={0.28} />
+                          <stop offset="95%" stopColor="#77e2c2" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis
+                        dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
+                        stroke="#4b5563"
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        minTickGap={24}
+                      />
+                      <YAxis stroke="#4b5563" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <Tooltip {...tooltipStyle} cursor={{ stroke: "rgba(119,226,194,0.18)", strokeWidth: 1 }} />
+                      <Area type="monotone" dataKey="count" name="Kõnesid" stroke="#77e2c2" strokeWidth={2.5} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 4, fill: "#77e2c2", stroke: "#0e191b", strokeWidth: 2 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="chart-empty-state">
+                  <span className="empty-chart-mark" aria-hidden="true">⌁</span>
+                  <strong>{loading ? "Laen arutelude andmeid…" : "Ajajoon ootab sinu otsingut"}</strong>
+                  <span>{loading ? "Koondame kõned perioodide kaupa." : "Sisesta märksõna ülal, et näha teema aktiivsust ajas."}</span>
+                </div>
+              )}
+              <div className="chart-footer"><span className="legend-dot" /> Kõnede arv valitud perioodis</div>
+            </section>
+
+            <aside className="dashboard-rail">
+              <section className="glass-panel members-panel" aria-labelledby="members-title">
+                <div className="chart-header">
+                  <div><span className="section-kicker">ARUTELU HÄÄLED</span><h2 id="members-title">Aktiivsed liikmed</h2></div>
+                  {speakers.length > 0 && <span className="member-total">{speakers.length}</span>}
+                </div>
+                {speakers.length > 0 ? (
+                  <div className="speakers-list">
+                    {speakers.slice(0, 5).map((sp, idx) => {
+                      const initials = (sp.speaker || "?").split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+                      const maxCount = Math.max(...speakers.map((speaker) => Number(speaker.count || 0)), 1);
+                      return (
+                        <article key={`${sp.speaker}-${idx}`} className="speaker-item profile-card">
+                          <span className={`profile-avatar avatar-${idx % 5}`} aria-hidden="true">{initials}</span>
+                          <div className="profile-details"><strong className="speaker-name">{sp.speaker}</strong><span>{Number(sp.count || 0).toLocaleString("et-EE")} teemakohast mainimist</span><span className="profile-meter"><i style={{ width: `${Math.max(8, (Number(sp.count || 0) / maxCount) * 100)}%` }} /></span></div>
+                          <span className="profile-rank">{String(idx + 1).padStart(2, "0")}</span>
+                        </article>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                ) : (
+                  <div className="members-empty"><span className="members-empty-icon" aria-hidden="true">◎</span><span>Liikmete profiilid ilmuvad pärast märksõnaotsingut.</span></div>
+                )}
+              </section>
+
+              <section className="glass-panel voting-card" aria-labelledby="voting-title">
+                <div className="voting-card-top"><span className="voting-icon" aria-hidden="true">▤</span><span className="coming-soon">PEAGI</span></div>
+                <span className="section-kicker">JÄRGMINE MOODUL</span>
+                <h2 id="voting-title">Hääletuste analüütika</h2>
+                <p>Vaata, kuidas saadikud ja fraktsioonid hääletavad — võrdle otsuseid, osalust ja suundumusi.</p>
+                <div className="voting-preview" aria-hidden="true"><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /></div>
+                <span className="voting-footnote">Andmete ettevalmistamisel</span>
+              </section>
+            </aside>
           </div>
 
           {totalCount > 0 && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "2.5rem" }}>
-              <button
-                className="search-button"
-                style={{ padding: "1rem 3rem", fontSize: "1.1rem" }}
-                onClick={() => setView("speeches")}
-              >
-                Vaata leitud stenogramme ({totalCount.toLocaleString("et-EE")}) &rarr;
+            <div className="results-cta-wrap">
+              <button className="search-button results-cta" onClick={() => setView("speeches")}>
+                Vaata kõiki {totalCount.toLocaleString("et-EE")} stenogramme <span aria-hidden="true">→</span>
               </button>
             </div>
           )}
