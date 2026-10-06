@@ -391,42 +391,42 @@
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding: 1.25rem;
-  background: rgba(15, 23, 42, 0.5);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #d8dee6;
+  border-radius: 6px;
 }
 
 .segmented-control {
   display: inline-flex;
-  gap: 0.35rem;
-  background: rgba(15, 23, 42, 0.7);
-  padding: 0.3rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.25rem;
   width: fit-content;
+  padding: 0.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #e2e8f0;
 }
 
 .segmented-btn {
+  padding: 0.45rem 1rem;
+  border: 0;
+  border-radius: 6px;
   background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 0.45rem 1.4rem;
-  border-radius: 9999px;
-  font-weight: 600;
+  color: #475569;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .segmented-btn:hover {
-  color: var(--text-primary);
+  color: #0f172a;
 }
 
 .segmented-btn.active {
-  background: var(--accent-gradient);
-  color: #ffffff;
-  box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
 }
 
 .attendance-controls-row {
@@ -443,42 +443,44 @@
   position: relative;
 }
 
-.filter-label {
-  color: var(--text-secondary);
+.filter-label,
+.attendance-label {
+  color: #334155;
   font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .attendance-select {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text-primary);
   padding: 0.45rem 2.2rem 0.45rem 0.9rem;
-  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  appearance: none;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  color: #1e293b;
   font-size: 0.9rem;
   cursor: pointer;
   outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%23f8fafc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .attendance-select:focus {
-  border-color: rgba(139, 92, 246, 0.6);
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.2);
 }
 
 .attendance-checkbox-label {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: var(--text-primary);
+  margin-left: auto;
+  color: #334155;
   font-size: 0.9rem;
   cursor: pointer;
   user-select: none;
-  margin-left: auto;
 }
 
 .attendance-checkbox-label input[type="checkbox"] {
@@ -492,7 +494,11 @@
 .attendance-list {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -500,14 +506,15 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 840px;
   padding: 1rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #cbd5e1;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  min-width: 840px;
 }
 
 .cursor-pointer {
@@ -524,18 +531,35 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.9rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background-color 0.2s;
   min-width: 840px;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  transition: background-color 0.2s;
 }
 
 .attendance-row:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: #f8fafc;
 }
 
 .attendance-row:last-child {
   border-bottom: none;
+}
+
+.attendance-header-row .cursor-pointer:hover {
+  color: #0f172a;
+}
+
+.attendance-row .faction-title {
+  color: #0f172a;
+}
+
+.attendance-row .drilldown-hint {
+  color: #475569;
+}
+
+.attendance-row.faction-row-interactive:hover {
+  background-color: #f1f5f9;
 }
 
 .faction-row-interactive {
@@ -566,14 +590,14 @@
 .att-col-rank {
   width: 35px;
   flex-shrink: 0;
-  color: var(--text-secondary);
+  color: #64748b;
   font-size: 0.9rem;
 }
 
 .att-col-name {
   flex: 2.2;
-  font-weight: 500;
-  color: #e2e8f0;
+  font-weight: 700;
+  color: #0f172a;
   display: flex;
   align-items: center;
   min-width: 150px;
@@ -593,10 +617,10 @@
 .faction-badge {
   display: inline-block;
   padding: 0.25rem 0.65rem;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  color: #c4b5fd;
+  background: #f8fafc;
+  color: #475569;
   font-size: 0.8rem;
   max-width: 100%;
   white-space: nowrap;
@@ -605,22 +629,13 @@
   box-sizing: border-box;
 }
 
-.att-col-count {
-  flex: 1;
-  color: #cbd5e1;
-  min-width: 85px;
-}
-
-.att-col-total {
-  flex: 1;
-  color: #cbd5e1;
-  min-width: 85px;
-}
-
+.att-col-count,
+.att-col-total,
 .att-col-present {
   flex: 1;
-  color: #cbd5e1;
   min-width: 85px;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
 }
 
 .att-col-percent {
@@ -633,9 +648,9 @@
 .percent-bar-bg {
   flex: 1;
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
   overflow: hidden;
+  border-radius: 9999px;
+  background: #e2e8f0;
 }
 
 .percent-bar-fill {
@@ -645,12 +660,13 @@
 }
 
 .percent-text {
-  font-weight: 700;
-  margin-left: 10px;
-  min-width: 48px;
   display: inline-block;
-  color: #f8fafc;
+  min-width: 48px;
+  margin-left: 10px;
+  color: #334155;
   font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 1024px) {
