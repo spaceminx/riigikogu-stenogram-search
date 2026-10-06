@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Landmark, MessageSquareText, UsersRound } from "lucide-react";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import {
   fetchSearch,
@@ -926,21 +927,45 @@ const tooltipStyle = {
 
       {view === "dashboard" && (
         <>
-          <section className="summary-grid" aria-label="Otsingu kokkuvõte">
+          <section className="topic-suggestions" aria-label="Populaarsed otsinguteemad">
+            <span className="topic-suggestions-label">Populaarsed teemad</span>
+            {[
+              "Kaitsekulud",
+              "Riigieelarve",
+              "Maksupoliitika",
+              "Õpetajate palgad",
+              "Energeetika",
+            ].map((topic) => (
+              <button
+                className="topic-pill"
+                key={topic}
+                type="button"
+                onClick={() => {
+                  setGroups([[topic]]);
+                  setInputValue("");
+                  executeSearch({ query: topic, page: 1 });
+                }}
+              >
+                {topic}
+              </button>
+            ))}
+          </section>
+
+          <section className="summary-grid" aria-label="Riigikogu arhiivi ülevaade">
             <article className="summary-card glass-panel">
-              <span className="summary-icon speech-icon" aria-hidden="true">Aa</span>
-              <div><span className="summary-label">LEITUD KÕNESID</span><strong>{totalCount ? totalCount.toLocaleString("et-EE") : "—"}</strong></div>
-              <span className="summary-caption">{totalCount ? "vastab sinu otsingule" : "alusta märksõnaotsinguga"}</span>
+              <span className="summary-icon" aria-hidden="true"><MessageSquareText /></span>
+              <div><span className="summary-label">STENOGRAMMID</span><strong>120 000+</strong></div>
+              <span className="summary-caption">kõnet arhiivis</span>
             </article>
             <article className="summary-card glass-panel">
-              <span className="summary-icon member-icon" aria-hidden="true">◎</span>
-              <div><span className="summary-label">KÕNELEJAID</span><strong>{speakers.length || "—"}</strong></div>
-              <span className="summary-caption">{speakers.length ? "osalevad arutelus" : "tulemuste põhjal"}</span>
+              <span className="summary-icon member-icon" aria-hidden="true"><UsersRound /></span>
+              <div><span className="summary-label">RIIGIKOGU LIIKMEID</span><strong>101</strong></div>
+              <span className="summary-caption">liikmekohta koosseisus</span>
             </article>
             <article className="summary-card glass-panel">
-              <span className="summary-icon mention-icon" aria-hidden="true">↗</span>
-              <div><span className="summary-label">MÄRKIMISI</span><strong>{speakers.length ? speakers.reduce((sum, speaker) => sum + Number(speaker.count || 0), 0).toLocaleString("et-EE") : "—"}</strong></div>
-              <span className="summary-caption">valitud teemal kokku</span>
+              <span className="summary-icon mention-icon" aria-hidden="true"><Landmark /></span>
+              <div><span className="summary-label">KOOSSEISE</span><strong>2</strong></div>
+              <span className="summary-caption">XIV ja XV Riigikogu</span>
             </article>
           </section>
 
@@ -977,11 +1002,40 @@ const tooltipStyle = {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+              ) : loading ? (
+                <div className="chart-empty-state" role="status">Laen arutelude andmeid…</div>
               ) : (
-                <div className="chart-empty-state">
-                  <span className="empty-chart-mark" aria-hidden="true">⌁</span>
-                  <strong>{loading ? "Laen arutelude andmeid…" : "Ajajoon ootab sinu otsingut"}</strong>
-                  <span>{loading ? "Koondame kõned perioodide kaupa." : "Sisesta märksõna ülal, et näha teema aktiivsust ajas."}</span>
+                <div className="sample-preview">
+                  <div className="sample-preview-header">
+                    <div>
+                      <span className="sample-preview-kicker">ARHIIVI NÄIDIS</span>
+                      <strong>Teemade aktiivsus ajas</strong>
+                    </div>
+                    <span className="sample-badge">Illustratiivne</span>
+                  </div>
+                  <div className="timeline-chart sample-chart" aria-label="Illustratiivne kõnede ajajoon">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={[
+                        { month: "jaan", count: 14 }, { month: "veebr", count: 22 },
+                        { month: "märts", count: 18 }, { month: "apr", count: 34 },
+                        { month: "mai", count: 27 }, { month: "juuni", count: 42 },
+                        { month: "juuli", count: 31 }, { month: "aug", count: 48 },
+                        { month: "sept", count: 39 }, { month: "okt", count: 58 },
+                        { month: "nov", count: 46 }, { month: "dets", count: 63 },
+                      ]} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="sampleArea" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#315b84" stopOpacity={0.14} />
+                            <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="month" stroke="#d4dce5" tick={{ fill: "#738195", fontSize: 10 }} tickLine={false} axisLine={false} />
+                        <YAxis hide />
+                        <Area type="monotone" dataKey="count" stroke="#315b84" strokeWidth={2} fill="url(#sampleArea)" dot={false} isAnimationActive={false} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p>Graafik kuvab näidisandmeid. Sisesta märksõna, et vaadata arhiivi tegelikke tulemusi.</p>
                 </div>
               )}
               <div className="chart-footer"><span className="legend-dot" /> Kõnede arv valitud perioodis</div>
@@ -1008,7 +1062,21 @@ const tooltipStyle = {
                     })}
                   </div>
                 ) : (
-                  <div className="members-empty"><span className="members-empty-icon" aria-hidden="true">◎</span><span>Liikmete profiilid ilmuvad pärast märksõnaotsingut.</span></div>
+                  <div className="member-sample">
+                    <div className="member-sample-heading">
+                      <span className="profile-avatar" aria-hidden="true">ML</span>
+                      <div className="profile-details">
+                        <strong className="speaker-name">Liikme profiil</strong>
+                        <span>Näidisvaade</span>
+                      </div>
+                      <span className="sample-badge">NÄIDIS</span>
+                    </div>
+                    <div className="member-sample-tags">
+                      <span className="faction-badge">Fraktsioon</span>
+                      <span className="faction-badge">Kõnede arv</span>
+                    </div>
+                    <p>Otsingu järel kuvatakse siin teemaga seotud kõnelejad.</p>
+                  </div>
                 )}
               </section>
 
