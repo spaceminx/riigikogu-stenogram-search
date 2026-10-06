@@ -18,7 +18,7 @@ async function handleResponse(res) {
   return res.json();
 }
 
-export function buildSearchQueryString({
+function buildSearchQueryString({
   query,
   limit,
   offset,
