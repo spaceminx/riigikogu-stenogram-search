@@ -1393,7 +1393,7 @@ function App() {
       {view === "speeches" && (
         <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
           <div className="chart-header speeches-header-bar">
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div className="speeches-header-heading">
               <button className="back-nav-btn" onClick={() => setView("dashboard")}>
                 &larr; Tagasi töölauale
               </button>
