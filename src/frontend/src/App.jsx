@@ -570,18 +570,17 @@ function App() {
     setAttendanceTab("members");
   };
 
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: "rgba(15, 23, 42, 0.9)",
-      backdropFilter: "blur(8px)",
-      color: "#f8fafc",
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      borderRadius: "12px",
-      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
-    },
-    itemStyle: { color: "#8b5cf6", fontWeight: 600 },
-    labelStyle: { color: "#cbd5e1", marginBottom: "4px" },
-  };
+const tooltipStyle = {
+  contentStyle: {
+    backgroundColor: "#ffffff",
+    color: "#25364a",
+    border: "1px solid #cbd3dc",
+    borderRadius: "3px",
+    boxShadow: "0 2px 8px rgba(20, 35, 55, 0.12)",
+  },
+  itemStyle: { color: "#315b84", fontWeight: 600 },
+  labelStyle: { color: "#536477", marginBottom: "4px" },
+};
 
   const handleAddAnd = () => {
     if (inputValue.trim()) {
@@ -749,27 +748,10 @@ function App() {
         <span className="header-status"><span /> 2019–praegu</span>
       </header>
 
-      {view === "dashboard" && (
-        <section className="page-intro" aria-labelledby="page-title">
-          <div className="eyebrow"><span className="eyebrow-rule" /> AVALIKU ARUTELU ÜLEVAADE</div>
-          <h1 id="page-title">Leia arutelust <span>oluline.</span></h1>
-          <p>Otsi Riigikogu stenogrammidest ja jälgi, kuidas teemad ajas arenevad.</p>
-        </section>
-      )}
-
-      {view === "speeches" && (
-        <section className="page-intro compact-intro" aria-labelledby="results-page-title">
-          <div className="eyebrow"><span className="eyebrow-rule" /> RIIGIKOGU STENOGRAMMID</div>
-          <h1 id="results-page-title">Otsingutulemused</h1>
-        </section>
-      )}
-      {view === "attendance" && (
-        <section className="page-intro compact-intro" aria-labelledby="attendance-page-title">
-          <div className="eyebrow"><span className="eyebrow-rule" /> RIIGIKOGU ANDMED</div>
-          <h1 id="attendance-page-title">Kohaloleku ülevaade</h1>
-          <p>Vaata saadikute ja fraktsioonide osalemist istungitel.</p>
-        </section>
-      )}
+      <div className="page-titlebar">
+        <h1>{view === "attendance" ? "Kohaloleku andmed" : view === "speeches" ? "Otsingutulemused" : "Kõnede analüüs"}</h1>
+        <span>Riigikogu stenogrammid · XV ja XIV koosseis</span>
+      </div>
       
       {errorMessage && (
         <div className="error-banner">
@@ -791,10 +773,9 @@ function App() {
         <form onSubmit={handleSearch} className="search-section">
           <div className="search-heading">
             <div>
-              <span className="section-kicker">STENOGRAMMIDE OTSING</span>
-              <h2>Millest Riigikogus räägitakse?</h2>
+              <span className="section-kicker">OTSING JA FILTRID</span>
+              <h2>Otsingutingimused</h2>
             </div>
-            <span className="search-hint">Kasuta fraase või lisa mitu märksõna</span>
           </div>
           <div className="search-groups-container">
             {groups.map((group, gIndex) => (
@@ -978,21 +959,21 @@ function App() {
                     <AreaChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#77e2c2" stopOpacity={0.28} />
-                          <stop offset="95%" stopColor="#77e2c2" stopOpacity={0} />
+                          <stop offset="0%" stopColor="#315b84" stopOpacity={0.16} />
+                          <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <XAxis
                         dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
-                        stroke="#4b5563"
-                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        stroke="#cbd3dc"
+                        tick={{ fill: "#64748b", fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                         minTickGap={24}
                       />
-                      <YAxis stroke="#4b5563" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} />
-                      <Tooltip {...tooltipStyle} cursor={{ stroke: "rgba(119,226,194,0.18)", strokeWidth: 1 }} />
-                      <Area type="monotone" dataKey="count" name="Kõnesid" stroke="#77e2c2" strokeWidth={2.5} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 4, fill: "#77e2c2", stroke: "#0e191b", strokeWidth: 2 }} />
+                      <YAxis stroke="#cbd3dc" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <Tooltip {...tooltipStyle} cursor={{ stroke: "#9eabb9", strokeWidth: 1 }} />
+                      <Area type="monotone" dataKey="count" name="Kõnesid" stroke="#315b84" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 4, fill: "#315b84", stroke: "#ffffff", strokeWidth: 2 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -1032,12 +1013,11 @@ function App() {
               </section>
 
               <section className="glass-panel voting-card" aria-labelledby="voting-title">
-                <div className="voting-card-top"><span className="voting-icon" aria-hidden="true">▤</span><span className="coming-soon">PEAGI</span></div>
-                <span className="section-kicker">JÄRGMINE MOODUL</span>
-                <h2 id="voting-title">Hääletuste analüütika</h2>
-                <p>Vaata, kuidas saadikud ja fraktsioonid hääletavad — võrdle otsuseid, osalust ja suundumusi.</p>
-                <div className="voting-preview" aria-hidden="true"><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /></div>
-                <span className="voting-footnote">Andmete ettevalmistamisel</span>
+                <div className="voting-card-top">
+                  <h2 id="voting-title">Hääletuste andmed</h2>
+                  <span className="coming-soon">TULEKUL</span>
+                </div>
+                <p>Hääletustulemuste analüüs lisatakse andmevaatesse järgmises etapis.</p>
               </section>
             </aside>
           </div>
