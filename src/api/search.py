@@ -323,6 +323,58 @@ def keyword_activity(
         session.close()
 
 
+def get_plenary_session_dates() -> list[str]:
+    """Return distinct dates represented by plenary-session transcripts in the archive."""
+    session = SessionLocal()
+    try:
+        return [
+            row.date
+            for row in (
+                session.query(Speech.date)
+                .filter(
+                    Speech.date.like("____-__-__"),
+                    Speech.source_file.isnot(None),
+                    Speech.source_file != "",
+                )
+                .distinct()
+                .order_by(Speech.date.desc())
+                .all()
+            )
+        ]
+    finally:
+        session.close()
+
+
+def get_session_speeches(session_date: str) -> list[dict]:
+    """Return the transcript entries for one plenary date, ordered as spoken."""
+    session = SessionLocal()
+    try:
+        speeches = (
+            session.query(Speech)
+            .filter(Speech.date == session_date)
+            .order_by(Speech.time.asc(), Speech.id.asc())
+            .all()
+        )
+        return [
+            {
+                "id": speech.id,
+                "speaker": speech.speaker,
+                "speaker_role": speech.speaker_role,
+                "speaker_faction": speech.speaker_faction,
+                "text": speech.text,
+                "count": 0,
+                "matched_words": [],
+                "date": speech.date,
+                "time": speech.time,
+                "source_file": speech.source_file,
+                "source_url": speech.source_url,
+            }
+            for speech in speeches
+        ]
+    finally:
+        session.close()
+
+
 def get_dashboard_overview() -> dict:
     """Return archive-wide speakers and the latest plenary sessions."""
     session = SessionLocal()

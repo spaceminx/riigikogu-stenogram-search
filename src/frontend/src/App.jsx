@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Activity, CalendarDays, Database, ExternalLink, Landmark, Menu, Moon, Search, Sun } from "lucide-react";
 import useSWR from "swr";
-import { fetchDashboardOverview } from "./api";
+import { fetchDashboardOverview, fetchPlenarySession, fetchPlenarySessionDates } from "./api";
+import DateRangeCalendar from "./DateRangeCalendar";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import {
   fetchSearch,
@@ -158,6 +159,12 @@ function syncUrl(state) {
   if (state.speaker && state.speaker.trim()) {
     params.set("speaker", state.speaker.trim());
   }
+  if (state.startDate) {
+    params.set("start_date", state.startDate);
+  }
+  if (state.endDate) {
+    params.set("end_date", state.endDate);
+  }
   if (state.sortBy && state.sortBy !== "date_desc") {
     params.set("sort", state.sortBy);
   }
@@ -212,6 +219,11 @@ function App() {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
+  const { data: plenaryDatesData } = useSWR("plenary-session-dates", fetchPlenarySessionDates, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
+  const plenaryDates = plenaryDatesData?.dates || [];
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -221,6 +233,9 @@ function App() {
   const [searchMembership, setSearchMembership] = useState("all"); // "all" | "15" | "14"
   const [searchFaction, setSearchFaction] = useState("");
   const [searchSpeaker, setSearchSpeaker] = useState("");
+  const [searchDateRange, setSearchDateRange] = useState({ startDate: "", endDate: "" });
+  const [isSessionBrowseMode, setIsSessionBrowseMode] = useState(false);
+  const [selectedSessionDate, setSelectedSessionDate] = useState("");
   const [searchSortBy, setSearchSortBy] = useState("date_desc"); // "date_desc" | "date_asc" | "match_count_desc"
 
   // Context Modal state
@@ -270,10 +285,14 @@ function App() {
     speaker = searchSpeaker,
     sortBy = searchSortBy,
     intervalValue = interval,
+    startDate = searchDateRange.startDate,
+    endDate = searchDateRange.endDate,
   } = {}) => {
     if (!query) return;
 
     setErrorMessage(null);
+    setIsSessionBrowseMode(false);
+    setSelectedSessionDate("");
     setLoading(true);
 
     try {
@@ -286,6 +305,8 @@ function App() {
           membership,
           faction: faction || null,
           speaker: speaker || null,
+          startDate: startDate || null,
+          endDate: endDate || null,
           sortBy,
         }),
         fetchActivity({
@@ -294,6 +315,8 @@ function App() {
           membership,
           faction: faction || null,
           speaker: speaker || null,
+          startDate: startDate || null,
+          endDate: endDate || null,
         }),
         fetchSpeakers({
           query,
@@ -301,6 +324,8 @@ function App() {
           membership,
           faction: faction || null,
           speaker: speaker || null,
+          startDate: startDate || null,
+          endDate: endDate || null,
         }),
       ]);
 
@@ -331,6 +356,29 @@ function App() {
     }
   };
 
+  const handlePlenaryDateSelect = async (date) => {
+    setSearchDateRange({ startDate: date, endDate: date });
+    setSelectedSessionDate(date);
+    setIsSessionBrowseMode(true);
+    setView("speeches");
+    setErrorMessage(null);
+    setLoading(true);
+    try {
+      const sessionData = await fetchPlenarySession(date);
+      setSpeeches(sessionData.results || []);
+      setTotalCount(sessionData.count || 0);
+      setSearchPage(1);
+      setActivity([]);
+      setSpeakers([]);
+    } catch (error) {
+      setSpeeches([]);
+      setTotalCount(0);
+      setErrorMessage(error.message || "Istungi stenogrammi laadimine ebaõnnestus.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Synchronize state to URL query parameters
   useEffect(() => {
     if (isInitialMount.current) return;
@@ -340,10 +388,12 @@ function App() {
       .join(", ");
     syncUrl({
       view,
-      query: finalQuery,
+      query: isSessionBrowseMode ? "" : finalQuery,
       membership: searchMembership,
       faction: searchFaction,
       speaker: searchSpeaker,
+      startDate: searchDateRange.startDate,
+      endDate: searchDateRange.endDate,
       sortBy: searchSortBy,
       interval,
       page: searchPage,
@@ -358,6 +408,8 @@ function App() {
     searchMembership,
     searchFaction,
     searchSpeaker,
+    searchDateRange,
+    isSessionBrowseMode,
     searchSortBy,
     interval,
     searchPage,
@@ -376,6 +428,8 @@ function App() {
       const membershipParam = params.get("membership");
       const factionParam = params.get("faction");
       const speakerParam = params.get("speaker");
+      const startDateParam = params.get("start_date");
+      const endDateParam = params.get("end_date");
       const sortParam = params.get("sort");
       const intervalParam = params.get("interval");
       const pageParam = parseInt(params.get("page"), 10);
@@ -396,6 +450,9 @@ function App() {
       }
       if (speakerParam !== null) {
         setSearchSpeaker(speakerParam);
+      }
+      if (startDateParam || endDateParam) {
+        setSearchDateRange({ startDate: startDateParam || "", endDate: endDateParam || "" });
       }
       if (sortParam && ["date_desc", "date_asc", "match_count_desc"].includes(sortParam)) {
         setSearchSortBy(sortParam);
@@ -428,9 +485,17 @@ function App() {
           membership: membershipParam || "all",
           faction: factionParam || "",
           speaker: speakerParam || "",
+          startDate: startDateParam || "",
+          endDate: endDateParam || "",
           sortBy: sortParam || "date_desc",
           intervalValue: intervalParam || "monthly",
         });
+      } else if (
+        initialView === "speeches" &&
+        startDateParam &&
+        startDateParam === endDateParam
+      ) {
+        handlePlenaryDateSelect(startDateParam);
       }
     };
 
@@ -648,6 +713,8 @@ const tooltipStyle = {
         membership: searchMembership,
         faction: searchFaction || null,
         speaker: searchSpeaker || null,
+        startDate: searchDateRange.startDate || null,
+        endDate: searchDateRange.endDate || null,
         sortBy: newSort,
       });
       setSpeeches(searchData.results || []);
@@ -674,6 +741,8 @@ const tooltipStyle = {
         membership: searchMembership,
         faction: searchFaction || null,
         speaker: searchSpeaker || null,
+        startDate: searchDateRange.startDate || null,
+        endDate: searchDateRange.endDate || null,
         sortBy: searchSortBy,
       });
       setSpeeches(searchData.results || []);
@@ -715,6 +784,8 @@ const tooltipStyle = {
         membership: searchMembership,
         faction: searchFaction || null,
         speaker: searchSpeaker || null,
+        startDate: searchDateRange.startDate || null,
+        endDate: searchDateRange.endDate || null,
       })
         .then((data) => setActivity(data.activity || []))
         .catch(() => {});
@@ -725,10 +796,14 @@ const tooltipStyle = {
     setSearchMembership("all");
     setSearchFaction("");
     setSearchSpeaker("");
+    setSearchDateRange({ startDate: "", endDate: "" });
+    setIsSessionBrowseMode(false);
+    setSelectedSessionDate("");
   };
 
   const hasActiveFilters =
-    searchMembership !== "all" || searchFaction !== "" || searchSpeaker.trim() !== "";
+    searchMembership !== "all" || searchFaction !== "" || searchSpeaker.trim() !== "" ||
+    Boolean(searchDateRange.startDate || searchDateRange.endDate);
   const showingArchiveSpeakers = speakers.length === 0;
   const sidebarSpeakers = showingArchiveSpeakers
     ? dashboardOverview?.speakers || []
@@ -944,6 +1019,12 @@ const tooltipStyle = {
               </select>
             </div>
 
+            <DateRangeCalendar
+              dates={plenaryDates}
+              value={searchDateRange}
+              onChange={setSearchDateRange}
+            />
+
             <div className="filter-group-item speaker-filter-item">
               <label htmlFor="filter-speaker" className="filter-label">
                 Esineja:
@@ -976,7 +1057,7 @@ const tooltipStyle = {
                 type="button"
                 className="reset-filters-btn"
                 onClick={handleResetFilters}
-                title="Lähtesta koosseisu, fraktsiooni ja esineja filtrid"
+                title="Lähtesta kõik otsingufiltrid"
               >
                 Lähtesta filtrid
               </button>
@@ -1167,6 +1248,13 @@ const tooltipStyle = {
                     {overviewError ? "Istungite andmed pole praegu kättesaadavad." : "Värskeimad istungid laaditakse arhiivist."}
                   </p>
                 )}
+                <DateRangeCalendar
+                  compact
+                  dates={plenaryDates}
+                  value={searchDateRange}
+                  onChange={setSearchDateRange}
+                  onSelectDate={handlePlenaryDateSelect}
+                />
               </section>
             </aside>
           </div>
@@ -1189,12 +1277,12 @@ const tooltipStyle = {
                 &larr; Tagasi töölauale
               </button>
               <h2 className="speeches-view-title">
-                Leitud stenogrammid
+                {isSessionBrowseMode ? `Istungi kõned · ${formatDateTime(selectedSessionDate)}` : "Leitud stenogrammid"}
                 <span className="results-badge">{totalCount.toLocaleString("et-EE")} tk</span>
               </h2>
             </div>
 
-            <div className="speeches-header-controls">
+            {!isSessionBrowseMode && <div className="speeches-header-controls">
               <div className="sort-control-wrap">
                 <label htmlFor="search-sort-select" className="sort-label">
                   Järjestus:
@@ -1220,6 +1308,8 @@ const tooltipStyle = {
                     membership: searchMembership,
                     faction: searchFaction || null,
                     speaker: searchSpeaker || null,
+                    startDate: searchDateRange.startDate || null,
+                    endDate: searchDateRange.endDate || null,
                     sortBy: searchSortBy,
                   })}
                   className="export-btn-link"
@@ -1235,6 +1325,8 @@ const tooltipStyle = {
                     membership: searchMembership,
                     faction: searchFaction || null,
                     speaker: searchSpeaker || null,
+                    startDate: searchDateRange.startDate || null,
+                    endDate: searchDateRange.endDate || null,
                     sortBy: searchSortBy,
                   })}
                   className="export-btn-link"
@@ -1244,7 +1336,7 @@ const tooltipStyle = {
                   JSON
                 </a>
               </div>
-            </div>
+            </div>}
           </div>
 
           {speeches.length === 0 ? (
@@ -1276,7 +1368,7 @@ const tooltipStyle = {
                     <p className="speech-text">
                       {highlightKeywords(
                         speech.text.slice(0, 380),
-                        groups,
+                        isSessionBrowseMode ? [[]] : groups,
                         "",
                         speech.matched_words
                       )}
@@ -1290,7 +1382,7 @@ const tooltipStyle = {
                         onClick={() => handleOpenContext(speech.id)}
                         title="Ava terve istungi ajajoon ja vaata kõnet selle loomulikus kontekstis"
                       >
-                        Vaata tervet istungit ({speech.count} mainimist)
+                        {isSessionBrowseMode ? "Vaata kõne konteksti" : `Vaata tervet istungit (${speech.count} mainimist)`}
                       </button>
 
                       <a

@@ -49,6 +49,16 @@ export async function fetchDashboardOverview() {
   return handleResponse(res);
 }
 
+export async function fetchPlenarySessionDates() {
+  const res = await fetch(`${BASE_URL}/sessions/dates`);
+  return handleResponse(res);
+}
+
+export async function fetchPlenarySession(date) {
+  const res = await fetch(`${BASE_URL}/sessions/${encodeURIComponent(date)}`);
+  return handleResponse(res);
+}
+
 export async function fetchSearch(options) {
   const qs =
     typeof options === "string"
