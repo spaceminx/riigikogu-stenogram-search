@@ -39,11 +39,6 @@ def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]
         return set(), {}, {}
 
 
-def get_active_members() -> set[str]:
-    """Return the set of member names who are currently active MPs."""
-    return get_active_members_data()[0]
-
-
 def get_attendance_stats(
     membership: str | None = "15",
     faction: str | None = None,

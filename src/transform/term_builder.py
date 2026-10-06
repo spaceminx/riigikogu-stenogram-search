@@ -7,39 +7,6 @@ from src.load.database import SessionLocal, engine
 from src.load.models import Lemma, Speech, SpeechTerm
 
 
-def get_or_create_lemma(session, lemma_text: str) -> Lemma:
-    """Retrieve existing Lemma record or insert a new one if missing."""
-    lemma_obj = session.query(Lemma).filter(Lemma.lemma == lemma_text).first()
-
-    if lemma_obj:
-        return lemma_obj
-
-    lemma_obj = Lemma(lemma=lemma_text)
-    session.add(lemma_obj)
-    session.flush()
-
-    return lemma_obj
-
-
-def create_speech_terms(session, speech_id: int, text_lemmas: str) -> None:
-    """Count term frequencies in a speech and create SpeechTerm associations."""
-    if not text_lemmas:
-        return
-
-    lemma_counts = Counter(text_lemmas.split())
-
-    for lemma_text, lemma_count in lemma_counts.items():
-        lemma_obj = get_or_create_lemma(session=session, lemma_text=lemma_text)
-
-        term = SpeechTerm(
-            speech_id=speech_id,
-            lemma_id=lemma_obj.id,
-            count=lemma_count,
-        )
-
-        session.add(term)
-
-
 def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000) -> None:
     """Index term frequencies and inverted lemma mappings in bulk for speeches."""
     with engine.connect() as conn:
