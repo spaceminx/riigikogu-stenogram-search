@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Activity, CalendarDays, Database, ExternalLink, Landmark, Menu, Moon, Search, Sun } from "lucide-react";
+import useSWR from "swr";
+import { fetchDashboardOverview } from "./api";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import {
   fetchSearch,
@@ -200,6 +203,19 @@ function App() {
   const [view, setView] = useState("dashboard"); // "dashboard" | "speeches" | "attendance"
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState("light");
+  const {
+    data: dashboardOverview,
+    error: overviewError,
+    isLoading: overviewLoading,
+  } = useSWR("dashboard-overview", fetchDashboardOverview, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   // Search filters state
   const [searchMembership, setSearchMembership] = useState("all"); // "all" | "15" | "14"
@@ -570,18 +586,17 @@ function App() {
     setAttendanceTab("members");
   };
 
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: "rgba(15, 23, 42, 0.9)",
-      backdropFilter: "blur(8px)",
-      color: "#f8fafc",
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      borderRadius: "12px",
-      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
-    },
-    itemStyle: { color: "#8b5cf6", fontWeight: 600 },
-    labelStyle: { color: "#cbd5e1", marginBottom: "4px" },
-  };
+const tooltipStyle = {
+  contentStyle: {
+    backgroundColor: "#ffffff",
+    color: "#25364a",
+    border: "1px solid #cbd3dc",
+    borderRadius: "3px",
+    boxShadow: "0 2px 8px rgba(20, 35, 55, 0.12)",
+  },
+  itemStyle: { color: "#315b84", fontWeight: 600 },
+  labelStyle: { color: "#536477", marginBottom: "4px" },
+};
 
   const handleAddAnd = () => {
     if (inputValue.trim()) {
@@ -714,93 +729,105 @@ function App() {
 
   const hasActiveFilters =
     searchMembership !== "all" || searchFaction !== "" || searchSpeaker.trim() !== "";
+  const showingArchiveSpeakers = speakers.length === 0;
+  const sidebarSpeakers = showingArchiveSpeakers
+    ? dashboardOverview?.speakers || []
+    : speakers.slice(0, 4);
+  const recentSessions = dashboardOverview?.sessions || [];
 
   return (
     <div className="app-container">
-      <div className="header">
-        <h1>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 2L2 7L12 12L22 7L12 2Z"
-              stroke="url(#paint0_linear)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 17L12 22L22 17"
-              stroke="url(#paint1_linear)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 12L12 17L22 12"
-              stroke="url(#paint2_linear)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <defs>
-              <linearGradient
-                id="paint0_linear"
-                x1="2"
-                y1="7"
-                x2="22"
-                y2="7"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3b82f6" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-              <linearGradient
-                id="paint1_linear"
-                x1="2"
-                y1="19.5"
-                x2="22"
-                y2="19.5"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3b82f6" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-              <linearGradient
-                id="paint2_linear"
-                x1="2"
-                y1="14.5"
-                x2="22"
-                y2="14.5"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3b82f6" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-            </defs>
-          </svg>
-          Riigikogu Search
-        </h1>
-        <div className="nav-links">
+      <header className="header">
+        <a className="brand-lockup" href="/" aria-label="Riigikogu andmevaade">
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M5 11.5 16 5l11 6.5-11 6.3L5 11.5Z" />
+              <path d="m5 16 11 6.4L27 16M5 20.5l11 6.4 11-6.4" />
+            </svg>
+          </span>
+          <span className="brand-copy">
+            <strong>Riigikogu</strong>
+            <span>Kõned ja andmed</span>
+          </span>
+        </a>
+        <nav className="nav-links" aria-label="Põhinavigatsioon">
           <button
             className={`nav-btn ${view !== "attendance" ? "active" : ""}`}
             onClick={() => setView("dashboard")}
+            aria-current={view !== "attendance" ? "page" : undefined}
           >
-            Otsing
+            Kõneotsing
           </button>
           <button
             className={`nav-btn ${view === "attendance" ? "active" : ""}`}
             onClick={handleOpenAttendance}
+            aria-current={view === "attendance" ? "page" : undefined}
           >
             Kohalolek
           </button>
-        </div>
+        </nav>
+        <details className="header-menu">
+          <summary className="header-menu-trigger" aria-label="Ava andmevaate menüü">
+            <Menu aria-hidden="true" />
+            <span>Menüü</span>
+          </summary>
+          <div className="header-menu-panel">
+            <div className="menu-section-label">Välimus</div>
+            <button
+              type="button"
+              className="menu-action"
+              aria-pressed={theme === "dark"}
+              onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+              <span>{theme === "dark" ? "Hele kujundus" : "Tume kujundus"}</span>
+            </button>
+            <div className="menu-divider" />
+            <div className="menu-section-label">Andmed ja teenused</div>
+            <div className="menu-status-row">
+              <Database aria-hidden="true" />
+              <span>Arhiiv</span>
+              <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
+                <i />{overviewError ? "Pole ühendust" : overviewLoading ? "Ühendun…" : "Valmis"}
+              </span>
+            </div>
+            <div className="menu-status-row">
+              <Activity aria-hidden="true" />
+              <span>API olek</span>
+              <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
+                <i />{overviewError ? "Pole saadaval" : overviewLoading ? "Kontrollin…" : "Aktiivne"}
+              </span>
+            </div>
+            <div className="menu-divider" />
+            <a className="menu-link" href="https://www.riigikogu.ee/" target="_blank" rel="noreferrer">
+              <Landmark aria-hidden="true" />
+              <span>Riigikogu ametlik arhiiv</span>
+              <ExternalLink aria-hidden="true" />
+            </a>
+            <a className="menu-link" href="https://github.com/spaceminx/riigikogu-stenogram-search" target="_blank" rel="noreferrer">
+              <span className="github-mark" aria-hidden="true">GH</span>
+              <span>Lähtekood GitHubis</span>
+              <ExternalLink aria-hidden="true" />
+            </a>
+          </div>
+        </details>
+      </header>
+
+      <div className="page-titlebar">
+        <h1>{view === "attendance" ? "Kohaloleku andmed" : view === "speeches" ? "Otsingutulemused" : "Kõnede analüüs"}</h1>
+        <span>Riigikogu stenogrammid · XV ja XIV koosseis</span>
       </div>
 
+      {view === "dashboard" && (
+        <div className="archive-stats-row" aria-label="Riigikogu arhiivi kokkuvõte">
+          <span className="archive-stat">120 000+ kõnet</span>
+          <span className="archive-stat-separator" aria-hidden="true">•</span>
+          <span className="archive-stat">101 saadikut</span>
+          <span className="archive-stat-separator" aria-hidden="true">•</span>
+          <span className="archive-stat">XIV ja XV koosseis</span>
+        </div>
+      )}
+      
       {errorMessage && (
         <div className="error-banner">
           <div className="error-content">
@@ -819,43 +846,42 @@ function App() {
 
       {view !== "attendance" && (
         <form onSubmit={handleSearch} className="search-section">
-          <div className="search-groups-container">
-            {groups.map((group, gIndex) => (
-              <React.Fragment key={gIndex}>
-                {gIndex > 0 && <span className="or-divider">VÕI</span>}
-                <div className="and-group-box">
-                  {group.map((word, wIndex) => (
-                    <span key={wIndex} className="token-pill">
-                      {word}
-                      <button
-                        type="button"
-                        onClick={() => removeWord(gIndex, wIndex)}
-                        title="Eemalda sõna"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
-                  {gIndex === groups.length - 1 && (
-                    <input
-                      type="text"
-                      className="search-input"
-                      placeholder={
-                        group.length === 0 && groups.length === 1
-                          ? "Sisesta otsisõna (nt kliima, mets)..."
-                          : "Lisa sõna..."
-                      }
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                    />
-                  )}
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-
-          <div className="search-controls">
-            <div className="logic-buttons">
+          <div className="search-query-row">
+            <div className="search-groups-container">
+              {groups.map((group, gIndex) => (
+                <React.Fragment key={gIndex}>
+                  {gIndex > 0 && <span className="or-divider">VÕI</span>}
+                  <div className="and-group-box">
+                    {group.map((word, wIndex) => (
+                      <span key={wIndex} className="token-pill">
+                        {word}
+                        <button
+                          type="button"
+                          onClick={() => removeWord(gIndex, wIndex)}
+                          title="Eemalda sõna"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                    {gIndex === groups.length - 1 && (
+                      <input
+                        type="text"
+                        className="search-input"
+                        placeholder={
+                          group.length === 0 && groups.length === 1
+                            ? "Sisesta otsisõna (nt kliima, mets)..."
+                            : "Lisa sõna..."
+                        }
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                      />
+                    )}
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="logic-buttons" aria-label="Otsingutingimuste loogika">
               <button
                 type="button"
                 className="logic-btn and-btn"
@@ -873,17 +899,9 @@ function App() {
                 + VÕI
               </button>
             </div>
+          </div>
 
-            <select
-              className="search-select"
-              value={interval}
-              onChange={(e) => handleIntervalChange(e.target.value)}
-            >
-              <option value="monthly">Kuu kaupa</option>
-              <option value="weekly">Nädala kaupa</option>
-              <option value="daily">Päeva kaupa</option>
-            </select>
-
+          <div className="search-controls">
             <button type="submit" className="search-button" disabled={loading}>
               {loading ? "Otsin..." : "Otsi"}
             </button>
@@ -931,6 +949,7 @@ function App() {
                 Esineja:
               </label>
               <div className="filter-input-wrap">
+                <Search className="filter-search-icon" aria-hidden="true" />
                 <input
                   id="filter-speaker"
                   type="text"
@@ -966,102 +985,196 @@ function App() {
         </form>
       )}
 
-      {view === "dashboard" && activity.length === 0 && !loading && (
-        <div className="glass-panel empty-state">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#64748b"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <p>Alustamiseks sisesta märksõna ja vajuta "Otsi"</p>
-        </div>
-      )}
-
-      {view === "dashboard" && activity.length > 0 && (
+      {view === "dashboard" && (
         <>
-          <div className="dashboard-grid">
-            <div className="glass-panel">
-              <div className="chart-header">
-                <h2>Aktiivsus ajas</h2>
-              </div>
-              <div style={{ width: "100%", height: 350 }}>
-                <ResponsiveContainer>
-                  <AreaChart data={activity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.6} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey={
-                        interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"
-                      }
-                      stroke="#4b5563"
-                      tick={{ fill: "#9ca3af", fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#4b5563"
-                      tick={{ fill: "#9ca3af", fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      {...tooltipStyle}
-                      cursor={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 2 }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="count"
-                      name="Mainimisi"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorCount)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+          <section className="topic-suggestions" aria-label="Populaarsed otsinguteemad">
+            <span className="topic-suggestions-label">Populaarsed teemad</span>
+            {[
+              "Kaitsekulud",
+              "Riigieelarve",
+              "Maksupoliitika",
+              "Õpetajate palgad",
+              "Energeetika",
+            ].map((topic) => (
+              <button
+                className="topic-pill"
+                key={topic}
+                type="button"
+                onClick={() => {
+                  setGroups([[topic]]);
+                  setInputValue("");
+                  executeSearch({ query: topic, page: 1 });
+                }}
+              >
+                {topic}
+              </button>
+            ))}
+          </section>
 
-            <div className="glass-panel">
+          <div className="dashboard-grid">
+            <section className="glass-panel timeline-panel" aria-labelledby="timeline-title">
               <div className="chart-header">
-                <h2>Top kõnelejad</h2>
-              </div>
-              <div className="speakers-list">
-                {speakers.slice(0, 8).map((sp, idx) => (
-                  <div key={idx} className="speaker-item">
-                    <div className="speaker-info">
-                      <span className="speaker-rank">{idx + 1}</span>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span className="speaker-name">{sp.speaker}</span>
-                      </div>
-                    </div>
-                    <span className="speaker-count">{sp.count}</span>
+                <div>
+                  <span className="section-kicker">TEEMA LÄBI AJA</span>
+                  <h2 id="timeline-title">Kõnede ajajoon</h2>
+                </div>
+                <div className="timeline-header-controls">
+                  {activity.length > 0 && <span className="chart-period">{activity.length} perioodi</span>}
+                  <div className="interval-segmented" role="group" aria-label="Ajajoone ajavahemik">
+                    {[
+                      ["daily", "Päev"],
+                      ["weekly", "Nädal"],
+                      ["monthly", "Kuu"],
+                    ].map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className={`interval-segment${interval === value ? " is-active" : ""}`}
+                        aria-pressed={interval === value}
+                        onClick={() => handleIntervalChange(value)}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
+              {activity.length > 0 ? (
+                <div className="timeline-chart">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#315b84" stopOpacity={0.16} />
+                          <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis
+                        dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
+                        stroke="#cbd3dc"
+                        tick={{ fill: "#64748b", fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        minTickGap={24}
+                      />
+                      <YAxis stroke="#cbd3dc" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <Tooltip {...tooltipStyle} cursor={{ stroke: "#9eabb9", strokeWidth: 1 }} />
+                      <Area type="monotone" dataKey="count" name="Kõnesid" stroke="#315b84" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 4, fill: "#315b84", stroke: "#ffffff", strokeWidth: 2 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : loading ? (
+                <div className="chart-empty-state" role="status">Laen arutelude andmeid…</div>
+              ) : (
+                <div className="sample-preview">
+                  <div className="sample-preview-header">
+                    <div>
+                      <span className="sample-preview-kicker">ARHIIVI NÄIDIS</span>
+                      <strong>Teemade aktiivsus ajas</strong>
+                    </div>
+                    <span className="sample-badge">Illustratiivne</span>
+                  </div>
+                  <div className="timeline-chart sample-chart" aria-label="Illustratiivne kõnede ajajoon">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={[
+                        { month: "jaan", count: 14 }, { month: "veebr", count: 22 },
+                        { month: "märts", count: 18 }, { month: "apr", count: 34 },
+                        { month: "mai", count: 27 }, { month: "juuni", count: 42 },
+                        { month: "juuli", count: 31 }, { month: "aug", count: 48 },
+                        { month: "sept", count: 39 }, { month: "okt", count: 58 },
+                        { month: "nov", count: 46 }, { month: "dets", count: 63 },
+                      ]} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="sampleArea" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#315b84" stopOpacity={0.14} />
+                            <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="month" stroke="#d4dce5" tick={{ fill: "#738195", fontSize: 10 }} tickLine={false} axisLine={false} />
+                        <YAxis hide />
+                        <Area type="monotone" dataKey="count" stroke="#315b84" strokeWidth={2} fill="url(#sampleArea)" dot={false} isAnimationActive={false} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p>Graafik kuvab näidisandmeid. Sisesta märksõna, et vaadata arhiivi tegelikke tulemusi.</p>
+                </div>
+              )}
+              <div className="chart-footer"><span className="legend-dot" /> Kõnede arv valitud perioodis</div>
+            </section>
+
+            <aside className="dashboard-rail">
+              <section className="glass-panel members-panel" aria-labelledby="members-title">
+                <div className="chart-header">
+                  <div><span className="section-kicker">ARUTELUDE PÕHJAL</span><h2 id="members-title">Aktiivseimad kõnelejad</h2></div>
+                  <span className="member-total">{sidebarSpeakers.length || "—"}</span>
+                </div>
+                {sidebarSpeakers.length > 0 ? (
+                  <div className="speakers-list">
+                    {sidebarSpeakers.map((sp, idx) => {
+                      const initials = (sp.speaker || "?").split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+                      const maxCount = Math.max(...sidebarSpeakers.map((speaker) => Number(speaker.count || 0)), 1);
+                      return (
+                        <article key={`${sp.speaker}-${idx}`} className="speaker-item profile-card">
+                          <span className={`profile-avatar avatar-${idx % 5}`} aria-hidden="true">{initials}</span>
+                          <div className="profile-details">
+                            <strong className="speaker-name">{sp.speaker}</strong>
+                            {sp.faction && <span className="faction-badge">{formatFactionName(sp.faction)}</span>}
+                            <span className="speaker-count-caption">
+                              {Number(sp.count || 0).toLocaleString("et-EE")} {showingArchiveSpeakers ? "kõnet" : "teemakohast mainimist"}
+                            </span>
+                            <span className="profile-meter"><i style={{ width: `${Math.max(8, (Number(sp.count || 0) / maxCount) * 100)}%` }} /></span>
+                          </div>
+                          <span className="profile-rank">{String(idx + 1).padStart(2, "0")}</span>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="sidebar-empty-state">
+                    {overviewError ? "Kõnelejate koondandmed pole praegu kättesaadavad." : "Kõnelejate andmed laaditakse arhiivist."}
+                  </p>
+                )}
+              </section>
+
+              <section className="glass-panel sessions-card" aria-labelledby="sessions-title">
+                <div className="chart-header">
+                  <div><span className="section-kicker">ARHIIVI VÄRSKEIMAD</span><h2 id="sessions-title">Viimased istungid</h2></div>
+                  <CalendarDays className="sessions-heading-icon" aria-hidden="true" />
+                </div>
+                {recentSessions.length > 0 ? (
+                  <div className="sessions-list">
+                    {recentSessions.slice(0, 3).map((session, idx) => (
+                      <article className="session-item" key={`${session.date}-${idx}`}>
+                        <span className="session-marker" aria-hidden="true" />
+                        <div className="session-content">
+                          <strong>{formatDateTime(session.date)}</strong>
+                          <div className="session-topics">
+                            {(session.topics || []).slice(0, 3).map((topic) => (
+                              <span className="session-topic" key={topic}>{topic}</span>
+                            ))}
+                            {session.source_url && (
+                              <a className="session-source-link" href={session.source_url} target="_blank" rel="noreferrer" aria-label="Ava istungi allikas">
+                                <ExternalLink aria-hidden="true" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="sidebar-empty-state">
+                    {overviewError ? "Istungite andmed pole praegu kättesaadavad." : "Värskeimad istungid laaditakse arhiivist."}
+                  </p>
+                )}
+              </section>
+            </aside>
           </div>
 
           {totalCount > 0 && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "2.5rem" }}>
-              <button
-                className="search-button"
-                style={{ padding: "1rem 3rem", fontSize: "1.1rem" }}
-                onClick={() => setView("speeches")}
-              >
-                Vaata leitud stenogramme ({totalCount.toLocaleString("et-EE")}) &rarr;
+            <div className="results-cta-wrap">
+              <button className="search-button results-cta" onClick={() => setView("speeches")}>
+                Vaata kõiki {totalCount.toLocaleString("et-EE")} stenogramme <span aria-hidden="true">→</span>
               </button>
             </div>
           )}

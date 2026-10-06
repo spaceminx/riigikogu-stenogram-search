@@ -11,6 +11,7 @@ from src.api.attendance import (
     get_factions_list,
 )
 from src.api.search import (
+    get_dashboard_overview,
     get_speech_context,
     keyword_activity,
     keyword_top_speakers,
@@ -23,6 +24,22 @@ router = APIRouter()
 @router.get("/")
 def root():
     return {"status": "ok"}
+
+
+@router.get("/overview")
+def dashboard_overview():
+    try:
+        return get_dashboard_overview()
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Arhiivi koondandmed pole praegu kättesaadavad.",
+        ) from e
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Arhiivi koondandmete päring ebaõnnestus.",
+        ) from e
 
 
 @router.get("/attendance/stats")

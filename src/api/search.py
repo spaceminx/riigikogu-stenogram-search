@@ -285,10 +285,8 @@ def keyword_activity(
         )
 
     session = SessionLocal()
-
     try:
         groups = parse_query_groups(query)
-
         if not groups:
             return []
 
@@ -310,7 +308,6 @@ def keyword_activity(
             start_date=start_date,
             end_date=end_date,
         )
-
         query_builder = session.query(
             date_group.label("period"), func.count(Speech.id).label("total_count")
         ).join(matched_speeches, Speech.id == list(matched_speeches.c)[0])
@@ -319,14 +316,95 @@ def keyword_activity(
             query_builder = query_builder.filter(*speech_filters)
 
         results = query_builder.group_by(date_group).order_by(date_group).all()
-
         if interval == "monthly":
             return fill_missing_periods(results, interval, label)
-
         return [{label: period, "count": int(total_count)} for period, total_count in results]
-
     finally:
         session.close()
+
+
+def get_dashboard_overview() -> dict:
+    """Return archive-wide speakers and the latest plenary sessions."""
+    session = SessionLocal()
+    try:
+        speaker_rows = (
+            session.query(Speech.speaker, func.count(Speech.id).label("speech_count"))
+            .filter(
+                Speech.speaker.isnot(None),
+                Speech.speaker != "",
+                Speech.speaker_faction.isnot(None),
+                Speech.speaker_faction != "",
+            )
+            .group_by(Speech.speaker)
+            .order_by(func.count(Speech.id).desc(), Speech.speaker.asc())
+            .limit(4)
+            .all()
+        )
+
+        speakers = []
+        for speaker_name, speech_count in speaker_rows:
+            latest_speech = (
+                session.query(Speech.speaker_faction)
+                .filter(Speech.speaker == speaker_name)
+                .order_by(Speech.date.desc(), Speech.time.desc())
+                .first()
+            )
+            speakers.append(
+                {
+                    "speaker": speaker_name,
+                    "faction": latest_speech[0] if latest_speech else None,
+                    "count": int(speech_count),
+                }
+            )
+
+        session_rows = (
+            session.query(
+                Speech.source_file,
+                func.max(Speech.date).label("date"),
+                func.max(Speech.source_url).label("source_url"),
+            )
+            .filter(Speech.source_file.isnot(None), Speech.source_file != "")
+            .group_by(Speech.source_file)
+            .order_by(func.max(Speech.date).desc())
+            .limit(3)
+            .all()
+        )
+        source_files = [row.source_file for row in session_rows]
+        topics_by_source: dict[str, list[str]] = {source_file: [] for source_file in source_files}
+
+        if source_files:
+            topic_rows = (
+                session.query(
+                    Speech.source_file,
+                    Lemma.lemma,
+                    func.sum(SpeechTerm.count).label("occurrences"),
+                )
+                .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
+                .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                .filter(Speech.source_file.in_(source_files))
+                .group_by(Speech.source_file, Lemma.lemma)
+                .order_by(Speech.source_file.asc(), func.sum(SpeechTerm.count).desc())
+                .all()
+            )
+            stopwords = {word.casefold() for word in STOPWORDS}
+            for source_file, lemma, _occurrences in topic_rows:
+                normalized = lemma.casefold()
+                topics = topics_by_source[source_file]
+                if len(normalized) >= 4 and normalized not in stopwords and len(topics) < 3:
+                    topics.append(lemma)
+
+        sessions = [
+            {
+                "date": row.date,
+                "source_url": row.source_url,
+                "topics": topics_by_source.get(row.source_file, []),
+            }
+            for row in session_rows
+        ]
+        return {"speakers": speakers, "sessions": sessions}
+    finally:
+        session.close()
+
 
 
 def keyword_top_speakers(

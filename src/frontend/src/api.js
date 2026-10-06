@@ -44,6 +44,11 @@ function buildSearchQueryString({
   return params.toString();
 }
 
+export async function fetchDashboardOverview() {
+  const res = await fetch(`${BASE_URL}/overview`);
+  return handleResponse(res);
+}
+
 export async function fetchSearch(options) {
   const qs =
     typeof options === "string"
