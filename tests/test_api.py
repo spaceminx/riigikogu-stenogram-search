@@ -10,8 +10,9 @@ from fastapi.testclient import TestClient
 
 from config import OUTPUT_DIR_PROCESSED
 from src.api.main import app
-from src.load.database import SessionLocal, engine
-from src.load.models import Attendance, Base, Lemma, Speech, SpeechTerm
+from src.load.database import SessionLocal
+from src.load.loader import create_tables
+from src.load.models import Attendance, Lemma, Speech, SpeechTerm
 
 client = TestClient(app)
 
@@ -19,7 +20,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True, scope="session")
 def setup_test_database():
     """Ensure database schema and test data exist in CI environment."""
-    Base.metadata.create_all(bind=engine)
+    create_tables()
     session = SessionLocal()
     if session.query(Attendance).count() == 0:
         test_records = [
@@ -144,7 +145,14 @@ def test_plenary_session_calendar_and_transcript():
         assert session_data["date"] == dates[0]
         assert session_data["count"] == len(session_data["results"])
         if session_data["results"]:
-            assert {"speaker", "date", "text", "source_url"} <= session_data["results"][0].keys()
+            assert {
+                "speaker",
+                "date",
+                "text",
+                "source_url",
+                "agenda_title",
+                "video_url",
+            } <= session_data["results"][0].keys()
 
 
 def test_search_missing_query():
@@ -203,6 +211,22 @@ def test_search_with_filters():
     data_xv = res_xv.json()
     assert "results" in data_xv
     assert "total_count" in data_xv
+    if data_xv["results"]:
+        assert {
+            "id",
+            "speaker",
+            "speaker_role",
+            "speaker_faction",
+            "text",
+            "count",
+            "matched_words",
+            "date",
+            "time",
+            "source_file",
+            "source_url",
+            "agenda_title",
+            "video_url",
+        } <= data_xv["results"][0].keys()
     for r in data_xv["results"]:
         assert r["date"] >= "2023-04-10"
 
@@ -269,8 +293,31 @@ def test_speech_context():
         assert ctx_res.status_code == 200
         ctx_data = ctx_res.json()
         assert ctx_data["target_speech_id"] == speech_id
-        assert "speeches" in ctx_data
+        assert {
+            "target_speech_id",
+            "date",
+            "time",
+            "source_file",
+            "source_url",
+            "agenda_title",
+            "video_url",
+            "total_speeches",
+            "speeches",
+        } <= ctx_data.keys()
         assert len(ctx_data["speeches"]) >= 1
+        assert {
+            "id",
+            "date",
+            "time",
+            "speaker",
+            "speaker_role",
+            "speaker_faction",
+            "text",
+            "source_url",
+            "agenda_title",
+            "video_url",
+            "matched_words",
+        } <= ctx_data["speeches"][0].keys()
 
     # 404 test for non-existent speech
     not_found_res = client.get("/speeches/99999999/context")

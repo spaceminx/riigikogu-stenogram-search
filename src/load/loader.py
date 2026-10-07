@@ -10,8 +10,17 @@ from src.load.models import Attendance, Base, Speech
 
 
 def create_tables() -> None:
-    """Create all database tables defined in SQLAlchemy ORM models."""
+    """Create all database tables and ensure optional columns exist."""
     Base.metadata.create_all(bind=engine)
+    with engine.connect() as conn:
+        # Migrate optional columns if speeches table already exists
+        existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(speeches)"))}
+        if existing_cols:
+            if "agenda_title" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN agenda_title TEXT;"))
+            if "video_url" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN video_url TEXT;"))
+        conn.commit()
 
 
 def load_attendance_to_database(batch_size: int = 2000) -> None:
@@ -133,6 +142,8 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             time=data["time"],
                             source_file=data.get("source_file", f"{input_file.name}:{line_num}"),
                             source_url=data.get("source_url"),
+                            agenda_title=data.get("agenda_title"),
+                            video_url=data.get("video_url"),
                             speaker=data.get("speaker", "Tundmatu"),
                             speaker_role=data.get("speaker_role"),
                             speaker_faction=data.get("speaker_faction"),

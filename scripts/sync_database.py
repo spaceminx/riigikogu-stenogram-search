@@ -62,6 +62,8 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                 time=data["time"],
                 source_file=src_file,
                 source_url=data.get("source_url"),
+                agenda_title=data.get("agenda_title"),
+                video_url=data.get("video_url"),
                 speaker=spk,
                 speaker_role=data.get("speaker_role"),
                 speaker_faction=data.get("speaker_faction"),

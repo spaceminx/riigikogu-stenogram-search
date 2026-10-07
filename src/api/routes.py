@@ -346,7 +346,9 @@ def search_export(
                 "Roll",
                 "Fraktsioon",
                 "Leitud märksõnu",
+                "Päevakorrapunkt",
                 "Allikas",
+                "Video",
                 "Tekst",
             ]
         )
@@ -360,7 +362,9 @@ def search_export(
                     r.get("speaker_role", "") or "",
                     r.get("speaker_faction", "") or "",
                     r.get("count", 0),
+                    r.get("agenda_title", "") or "",
                     r.get("source_url", ""),
+                    r.get("video_url", "") or "",
                     r.get("text", ""),
                 ]
             )

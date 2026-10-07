@@ -261,6 +261,8 @@ def search_by_keyword(
                     "time": speech.time,
                     "source_file": speech.source_file,
                     "source_url": speech.source_url,
+                    "agenda_title": speech.agenda_title,
+                    "video_url": speech.video_url,
                 }
             )
         return output, total_count
@@ -368,6 +370,8 @@ def get_session_speeches(session_date: str) -> list[dict]:
                 "time": speech.time,
                 "source_file": speech.source_file,
                 "source_url": speech.source_url,
+                "agenda_title": speech.agenda_title,
+                "video_url": speech.video_url,
             }
             for speech in speeches
         ]
@@ -554,6 +558,8 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
             "time": target_speech.time,
             "source_file": target_speech.source_file,
             "source_url": target_speech.source_url,
+            "agenda_title": target_speech.agenda_title,
+            "video_url": target_speech.video_url,
             "total_speeches": len(speeches),
             "speeches": [
                 {
@@ -565,6 +571,8 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
                     "speaker_faction": s.speaker_faction,
                     "text": s.text,
                     "source_url": s.source_url,
+                    "agenda_title": s.agenda_title,
+                    "video_url": s.video_url,
                     "matched_words": extract_matched_words(s.text, target_lemmas)
                     if s.id in matching_speech_ids
                     else [],
