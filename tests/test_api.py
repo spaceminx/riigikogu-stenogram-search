@@ -494,3 +494,23 @@ def test_speech_type_filtering():
     assert "SESSION_END" in IGNORED_SPEECH_TYPES
     assert "SPEECH" not in IGNORED_SPEECH_TYPES
     assert "istung lõppes" in IGNORED_SPEAKER_NAMES
+
+
+def test_split_speaker_role():
+    from scripts.fetch_stenograms_api import split_speaker_role
+
+    name, role = split_speaker_role("Õiguskantsler Ülle Madise")
+    assert name == "Ülle Madise"
+    assert role == "Õiguskantsler"
+
+    name, role = split_speaker_role("Riigikontrolör Janar Holm")
+    assert name == "Janar Holm"
+    assert role == "Riigikontrolör"
+
+    name, role = split_speaker_role("Peaminister Kaja Kallas")
+    assert name == "Kaja Kallas"
+    assert role == "Peaminister"
+
+    name, role = split_speaker_role("Jüri Ratas")
+    assert name == "Jüri Ratas"
+    assert role is None

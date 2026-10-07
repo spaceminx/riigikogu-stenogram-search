@@ -74,8 +74,27 @@ def format_stenogram_url(
     return base
 
 
+KNOWN_ROLE_KEYWORDS = {
+    "minister",
+    "esimees",
+    "aseesimees",
+    "õiguskantsler",
+    "riigikontrolör",
+    "president",
+    "riigisekretär",
+    "kantsler",
+    "asekantsler",
+    "peadirektor",
+    "juhataja",
+    "ettekandja",
+    "kaasettekandja",
+    "nõunik",
+    "ekspert",
+}
+
+
 def split_speaker_role(full_name: str) -> tuple[str, str | None]:
-    """Separate official titles (e.g. 'Peaminister') from speaker's full name."""
+    """Separate official titles (e.g. 'Peaminister', 'Õiguskantsler', 'Riigikontrolör') from speaker's full name."""
     parts = full_name.strip().split(" ")
     if len(parts) <= 1:
         return full_name, None
@@ -84,12 +103,8 @@ def split_speaker_role(full_name: str) -> tuple[str, str | None]:
     i = len(parts) - 1
     while i >= 0:
         word = parts[i]
-        if (
-            word
-            and word[0].isupper()
-            and "minister" not in word.lower()
-            and "esimees" not in word.lower()
-        ):
+        word_lower = word.lower()
+        if word and word[0].isupper() and not any(kw in word_lower for kw in KNOWN_ROLE_KEYWORDS):
             name_parts.insert(0, word)
             i -= 1
         else:

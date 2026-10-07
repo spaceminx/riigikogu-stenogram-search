@@ -701,14 +701,14 @@ function App() {
 
   const tooltipStyle = {
     contentStyle: {
-      backgroundColor: "#ffffff",
-      color: "#25364a",
-      border: "1px solid #cbd3dc",
-      borderRadius: "3px",
-      boxShadow: "0 2px 8px rgba(20, 35, 55, 0.12)",
+      backgroundColor: theme === "dark" ? "#1e293b" : "#ffffff",
+      color: theme === "dark" ? "#f1f5f9" : "#25364a",
+      border: `1px solid ${theme === "dark" ? "#334155" : "#cbd3dc"}`,
+      borderRadius: "4px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
     },
-    itemStyle: { color: "#315b84", fontWeight: 600 },
-    labelStyle: { color: "#536477", marginBottom: "4px" },
+    itemStyle: { color: theme === "dark" ? "#60a5fa" : "#315b84", fontWeight: 600 },
+    labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
   };
 
   const handleAddAnd = () => {
@@ -1845,8 +1845,16 @@ function App() {
               <div className="attendance-header-row">
                 <div className="att-col-rank">#</div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-name cursor-pointer"
                   onClick={() => requestSort("member_name")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("member_name");
+                    }
+                  }}
                 >
                   Saadik{" "}
                   {sortConfig.key === "member_name"
@@ -1856,8 +1864,16 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-faction cursor-pointer"
                   onClick={() => requestSort("faction")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("faction");
+                    }
+                  }}
                 >
                   Fraktsioon{" "}
                   {sortConfig.key === "faction"
@@ -1867,10 +1883,18 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-total cursor-pointer"
                   onClick={() => requestSort("total_sessions")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("total_sessions");
+                    }
+                  }}
                 >
-                  Istungeid{" "}
+                  Kontrolle{" "}
                   {sortConfig.key === "total_sessions"
                     ? sortConfig.direction === "ascending"
                       ? "↑"
@@ -1878,8 +1902,16 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-present cursor-pointer"
                   onClick={() => requestSort("present_sessions")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("present_sessions");
+                    }
+                  }}
                 >
                   Kohal{" "}
                   {sortConfig.key === "present_sessions"
@@ -1889,8 +1921,16 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-percent cursor-pointer"
                   onClick={() => requestSort("attendance_percentage")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("attendance_percentage");
+                    }
+                  }}
                 >
                   %{" "}
                   {sortConfig.key === "attendance_percentage"
