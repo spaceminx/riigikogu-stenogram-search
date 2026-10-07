@@ -1,4 +1,5 @@
 import re
+import time
 from datetime import datetime, timedelta
 
 from estnltk.vabamorf.morf import Vabamorf
@@ -404,8 +405,19 @@ def get_session_speeches(session_date: str) -> list[dict]:
         session.close()
 
 
+_OVERVIEW_CACHE: dict = {"data": None, "timestamp": 0.0}
+_OVERVIEW_CACHE_TTL: float = 3600.0
+
+
 def get_dashboard_overview() -> dict:
     """Return archive-wide speakers and the latest plenary sessions."""
+    now = time.time()
+    if (
+        _OVERVIEW_CACHE["data"] is not None
+        and (now - _OVERVIEW_CACHE["timestamp"]) < _OVERVIEW_CACHE_TTL
+    ):
+        return _OVERVIEW_CACHE["data"]
+
     session = SessionLocal()
     try:
         speaker_rows = (
@@ -438,19 +450,26 @@ def get_dashboard_overview() -> dict:
                 }
             )
 
-        session_rows = (
-            session.query(
-                Speech.source_file,
-                func.max(Speech.date).label("date"),
-                func.max(Speech.source_url).label("source_url"),
-            )
+        # Fast lookup for top 3 recent sessions using date index
+        recent_speeches = (
+            session.query(Speech.source_file, Speech.date, Speech.source_url)
             .filter(Speech.source_file.isnot(None), Speech.source_file != "")
-            .group_by(Speech.source_file)
-            .order_by(func.max(Speech.date).desc())
-            .limit(3)
+            .order_by(Speech.date.desc(), Speech.id.desc())
+            .limit(1000)
             .all()
         )
-        source_files = [row.source_file for row in session_rows]
+        session_map: dict[str, dict] = {}
+        for sp in recent_speeches:
+            if sp.source_file not in session_map:
+                session_map[sp.source_file] = {
+                    "source_file": sp.source_file,
+                    "date": sp.date,
+                    "source_url": sp.source_url,
+                }
+                if len(session_map) == 3:
+                    break
+
+        source_files = list(session_map.keys())
         topics_by_source: dict[str, list[str]] = {source_file: [] for source_file in source_files}
 
         if source_files:
@@ -476,15 +495,18 @@ def get_dashboard_overview() -> dict:
 
         sessions = [
             {
-                "date": row.date,
+                "date": row["date"],
                 "source_url": normalize_source_url(
-                    row.source_url.split("#")[0] if row.source_url else None
+                    row["source_url"].split("#")[0] if row["source_url"] else None
                 ),
-                "topics": topics_by_source.get(row.source_file, []),
+                "topics": topics_by_source.get(row["source_file"], []),
             }
-            for row in session_rows
+            for row in session_map.values()
         ]
-        return {"speakers": speakers, "sessions": sessions}
+        result = {"speakers": speakers, "sessions": sessions}
+        _OVERVIEW_CACHE["data"] = result
+        _OVERVIEW_CACHE["timestamp"] = now
+        return result
     finally:
         session.close()
 

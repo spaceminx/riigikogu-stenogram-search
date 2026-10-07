@@ -13,6 +13,7 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_speech_terms_lemma_speech ON speech_terms(lemma_id, speech_id)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_date ON speeches(date)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_speaker ON speeches(speaker)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_speaker_faction ON speeches(speaker, speaker_faction)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_faction ON speeches(speaker_faction)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_source_file ON speeches(source_file)",
 ]
