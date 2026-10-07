@@ -5,8 +5,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from sqlalchemy.exc import IntegrityError
-
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -21,7 +19,7 @@ from src.transform.term_builder import build_missing_terms
 
 
 def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) -> int:
-    """Load new speeches from the current year's JSONL file into SQLite."""
+    """Load new speeches from the current year's JSONL file into SQLite session-by-session."""
     if not year:
         year = datetime.today().strftime("%Y")
 
@@ -32,14 +30,17 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
 
     session = SessionLocal()
     new_count = 0
-    batch = []
 
     print(f"Checking {year_file.name} for new speeches...")
-    existing_keys = set(
-        session.query(Speech.source_file, Speech.speaker)
+    existing_source_files = set(
+        r[0]
+        for r in session.query(Speech.source_file)
         .filter(Speech.date >= f"{year}-01-01")
+        .distinct()
         .all()
     )
+
+    speeches_by_session: dict[str, list[Speech]] = {}
 
     with open(year_file, encoding="utf-8") as f:
         for line_num, line in enumerate(f, 1):
@@ -52,10 +53,11 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                 continue
 
             src_file = data.get("source_file", f"{year_file.name}:{line_num}")
-            spk = data.get("speaker", "Tundmatu")
-
-            if (src_file, spk) in existing_keys:
+            if src_file in existing_source_files:
                 continue
+
+            if src_file not in speeches_by_session:
+                speeches_by_session[src_file] = []
 
             speech = Speech(
                 date=data["date"],
@@ -64,45 +66,23 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                 source_url=data.get("source_url"),
                 agenda_title=data.get("agenda_title"),
                 video_url=data.get("video_url"),
-                speaker=spk,
+                speaker=data.get("speaker", "Tundmatu"),
                 speaker_role=data.get("speaker_role"),
                 speaker_faction=data.get("speaker_faction"),
                 text=data["text"],
                 text_lemmas=data.get("text_lemmas"),
             )
-            batch.append(speech)
+            speeches_by_session[src_file].append(speech)
 
-            if len(batch) >= batch_size:
-                try:
-                    session.bulk_save_objects(batch)
-                    session.commit()
-                    new_count += len(batch)
-                except IntegrityError:
-                    session.rollback()
-                    for item in batch:
-                        try:
-                            session.add(item)
-                            session.commit()
-                            new_count += 1
-                        except IntegrityError:
-                            session.rollback()
-                batch.clear()
-
-        if batch:
-            try:
-                session.bulk_save_objects(batch)
-                session.commit()
-                new_count += len(batch)
-            except IntegrityError:
-                session.rollback()
-                for item in batch:
-                    try:
-                        session.add(item)
-                        session.commit()
-                        new_count += 1
-                    except IntegrityError:
-                        session.rollback()
-            batch.clear()
+    for src_file, speeches_list in speeches_by_session.items():
+        try:
+            session.bulk_save_objects(speeches_list)
+            session.commit()
+            new_count += len(speeches_list)
+            existing_source_files.add(src_file)
+        except Exception as e:
+            session.rollback()
+            print(f"Notice: Error syncing session {src_file}: {e}")
 
     session.close()
     return new_count

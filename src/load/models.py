@@ -20,8 +20,6 @@ class Speech(Base):
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
 
-    __table_args__ = (UniqueConstraint("source_file", "speaker", "text", name="uq_speech"),)
-
 
 class Lemma(Base):
     __tablename__ = "lemmas"

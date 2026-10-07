@@ -116,13 +116,15 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
     processed_dir = Path(OUTPUT_DIR_PROCESSED)
     session = SessionLocal()
 
+    existing_source_files = set(r[0] for r in session.query(Speech.source_file).distinct().all())
+
     jsonl_files = [f for f in processed_dir.glob("*.jsonl") if f.name != "attendance.jsonl"]
     if not jsonl_files:
         print(f"No speech .jsonl files found in {OUTPUT_DIR_PROCESSED}")
     else:
-        for input_file in jsonl_files:
+        for input_file in sorted(jsonl_files):
             print(f"Processing {input_file.name}...")
-            batch = []
+            speeches_by_session: dict[str, list[Speech]] = {}
             with open(input_file, encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
                     if not line.strip():
@@ -136,11 +138,18 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                         )
                         continue
 
+                    src_file = data.get("source_file", f"{input_file.name}:{line_num}")
+                    if src_file in existing_source_files:
+                        continue
+
+                    if src_file not in speeches_by_session:
+                        speeches_by_session[src_file] = []
+
                     try:
                         speech = Speech(
                             date=data["date"],
                             time=data["time"],
-                            source_file=data.get("source_file", f"{input_file.name}:{line_num}"),
+                            source_file=src_file,
                             source_url=data.get("source_url"),
                             agenda_title=data.get("agenda_title"),
                             video_url=data.get("video_url"),
@@ -150,40 +159,21 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             text=data["text"],
                             text_lemmas=data.get("text_lemmas"),
                         )
-                        batch.append(speech)
+                        speeches_by_session[src_file].append(speech)
                     except KeyError as e:
                         print(
                             f"Warning: Missing required field {e} on line {line_num} in {input_file.name}. Skipping."
                         )
                         continue
 
-                    if len(batch) >= batch_size:
-                        try:
-                            session.bulk_save_objects(batch)
-                            session.commit()
-                        except IntegrityError:
-                            session.rollback()
-                            for item in batch:
-                                try:
-                                    session.add(item)
-                                    session.commit()
-                                except IntegrityError:
-                                    session.rollback()
-                        batch.clear()
-
-            if batch:
+            for src_file, speeches_list in speeches_by_session.items():
                 try:
-                    session.bulk_save_objects(batch)
+                    session.bulk_save_objects(speeches_list)
                     session.commit()
-                except IntegrityError:
+                    existing_source_files.add(src_file)
+                except Exception as e:
                     session.rollback()
-                    for item in batch:
-                        try:
-                            session.add(item)
-                            session.commit()
-                        except IntegrityError:
-                            session.rollback()
-                batch.clear()
+                    print(f"Notice: Error loading session {src_file}: {e}")
 
         print("Done loading speech JSONL files to database.")
 
