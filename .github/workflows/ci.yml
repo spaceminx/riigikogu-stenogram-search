@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
@@ -41,10 +41,10 @@ jobs:
         working-directory: src/frontend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
@@ -67,15 +67,15 @@ jobs:
 
 
   deploy:
-        name: Auto-Deploy to Server
-        needs: [backend-test, frontend-check]
-        if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        runs-on: self-hosted
-        steps:
-          - name: Pull latest code and rebuild Docker
-            run: |
-              git config --global --add safe.directory /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
-              cd /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
-              git pull origin master
-              docker compose up -d --build
+    name: Auto-Deploy to Server
+    needs: [backend-test, frontend-check]
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: self-hosted
+    steps:
+      - name: Pull latest code and rebuild Docker
+        run: |
+          git config --global --add safe.directory /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
+          cd /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
+          git pull origin master
+          docker compose up -d --build
 
