@@ -19,6 +19,7 @@ class Speech(Base):
     speaker_faction = Column(Text, nullable=True)
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
+    status = Column(Text, nullable=True, default="EDITED")
 
 
 class Lemma(Base):

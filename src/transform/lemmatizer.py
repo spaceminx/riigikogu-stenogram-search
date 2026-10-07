@@ -18,7 +18,7 @@ def get_default_workers() -> int:
     return max(1, cpu_count - 2)
 
 
-def lemmatize_text(text: str) -> str:
+def lemmatize_text(text: str) -> str | None:
     """Extract and normalize Estonian base word forms (lemmas) using EstNLTK."""
     if not text:
         return ""
@@ -38,7 +38,7 @@ def lemmatize_text(text: str) -> str:
         return " ".join(lemmas)
     except Exception as e:
         logger.error("Lemmatization failed on text slice %r: %s", text[:100], e)
-        return ""
+        return None
 
 
 def _lemmatize_chunk(chunk: list[tuple[int, str]]) -> list[dict]:
@@ -46,7 +46,8 @@ def _lemmatize_chunk(chunk: list[tuple[int, str]]) -> list[dict]:
     results = []
     for speech_id, raw_text in chunk:
         lemmas = lemmatize_text(raw_text)
-        results.append({"id": speech_id, "text_lemmas": lemmas})
+        if lemmas is not None:
+            results.append({"id": speech_id, "text_lemmas": lemmas})
     return results
 
 

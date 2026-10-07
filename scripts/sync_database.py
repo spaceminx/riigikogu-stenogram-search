@@ -13,78 +13,107 @@ from scripts.download_from_b2 import download_from_b2
 from src.load.database import SessionLocal
 from src.load.indexes import create_indexes
 from src.load.loader import create_tables, load_attendance_to_database
-from src.load.models import Speech
+from src.load.models import Speech, SpeechTerm
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
 
 def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) -> int:
-    """Load new speeches from the current year's JSONL file into SQLite session-by-session."""
-    if not year:
-        year = datetime.today().strftime("%Y")
-
-    year_file = Path(OUTPUT_DIR_PROCESSED) / f"{year}.jsonl"
-    if not year_file.exists():
-        print(f"Notice: Year file {year_file.name} not found.")
-        return 0
+    """Load new or updated speeches from recent years' JSONL files into SQLite session-by-session."""
+    current_year_int = datetime.today().year
+    years_to_check = [year] if year else [str(current_year_int - 1), str(current_year_int)]
 
     session = SessionLocal()
     new_count = 0
 
-    print(f"Checking {year_file.name} for new speeches...")
-    existing_source_files = set(
-        r[0]
-        for r in session.query(Speech.source_file)
-        .filter(Speech.date >= f"{year}-01-01")
-        .distinct()
-        .all()
-    )
+    try:
+        unedited_db_files = set(
+            r[0]
+            for r in session.query(Speech.source_file)
+            .filter(Speech.status == "UNEDITED")
+            .distinct()
+            .all()
+        )
 
-    speeches_by_session: dict[str, list[Speech]] = {}
-
-    with open(year_file, encoding="utf-8") as f:
-        for line_num, line in enumerate(f, 1):
-            if not line.strip():
+        for yr in years_to_check:
+            year_file = Path(OUTPUT_DIR_PROCESSED) / f"{yr}.jsonl"
+            if not year_file.exists():
                 continue
 
-            try:
-                data = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-
-            src_file = data.get("source_file", f"{year_file.name}:{line_num}")
-            if src_file in existing_source_files:
-                continue
-
-            if src_file not in speeches_by_session:
-                speeches_by_session[src_file] = []
-
-            speech = Speech(
-                date=data["date"],
-                time=data["time"],
-                source_file=src_file,
-                source_url=data.get("source_url"),
-                agenda_title=data.get("agenda_title"),
-                video_url=data.get("video_url"),
-                speaker=data.get("speaker", "Tundmatu"),
-                speaker_role=data.get("speaker_role"),
-                speaker_faction=data.get("speaker_faction"),
-                text=data["text"],
-                text_lemmas=data.get("text_lemmas"),
+            print(f"Checking {year_file.name} for new or updated speeches...")
+            existing_source_files = set(
+                r[0]
+                for r in session.query(Speech.source_file)
+                .filter(Speech.date >= f"{yr}-01-01")
+                .distinct()
+                .all()
             )
-            speeches_by_session[src_file].append(speech)
 
-    for src_file, speeches_list in speeches_by_session.items():
-        try:
-            session.bulk_save_objects(speeches_list)
-            session.commit()
-            new_count += len(speeches_list)
-            existing_source_files.add(src_file)
-        except Exception as e:
-            session.rollback()
-            print(f"Notice: Error syncing session {src_file}: {e}")
+            speeches_by_session: dict[str, list[Speech]] = {}
 
-    session.close()
+            with open(year_file, encoding="utf-8") as f:
+                for line_num, line in enumerate(f, 1):
+                    if not line.strip():
+                        continue
+
+                    try:
+                        data = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+
+                    src_file = data.get("source_file", f"{year_file.name}:{line_num}")
+                    rec_status = data.get("status", "EDITED")
+                    if src_file in existing_source_files and not (
+                        src_file in unedited_db_files and rec_status == "EDITED"
+                    ):
+                        continue
+
+                    if src_file not in speeches_by_session:
+                        speeches_by_session[src_file] = []
+
+                    speech = Speech(
+                        date=data["date"],
+                        time=data["time"],
+                        source_file=src_file,
+                        source_url=data.get("source_url"),
+                        agenda_title=data.get("agenda_title"),
+                        video_url=data.get("video_url"),
+                        speaker=data.get("speaker", "Tundmatu"),
+                        speaker_role=data.get("speaker_role"),
+                        speaker_faction=data.get("speaker_faction"),
+                        text=data["text"],
+                        text_lemmas=data.get("text_lemmas"),
+                        status=rec_status,
+                    )
+                    speeches_by_session[src_file].append(speech)
+
+            for src_file, speeches_list in speeches_by_session.items():
+                try:
+                    if src_file in unedited_db_files:
+                        old_ids = [
+                            r[0]
+                            for r in session.query(Speech.id)
+                            .filter(Speech.source_file == src_file)
+                            .all()
+                        ]
+                        if old_ids:
+                            session.query(SpeechTerm).filter(
+                                SpeechTerm.speech_id.in_(old_ids)
+                            ).delete(synchronize_session=False)
+                            session.query(Speech).filter(Speech.source_file == src_file).delete(
+                                synchronize_session=False
+                            )
+                    session.bulk_save_objects(speeches_list)
+                    session.commit()
+                    new_count += len(speeches_list)
+                    existing_source_files.add(src_file)
+                    unedited_db_files.discard(src_file)
+                except Exception as e:
+                    session.rollback()
+                    print(f"Notice: Error syncing session {src_file}: {e}")
+    finally:
+        session.close()
+
     return new_count
 
 
@@ -97,7 +126,9 @@ def sync_database() -> bool:
 
     # 1. Download latest data and state from B2
     print("\n[1/5] Downloading latest files from Backblaze B2...")
-    download_from_b2()
+    b2_ok = download_from_b2()
+    if not b2_ok:
+        print("Warning: B2 download was not successful. Continuing with available local files.")
 
     # 2. Ensure tables and indexes exist
     print("\n[2/5] Ensuring database tables and indexes exist...")
