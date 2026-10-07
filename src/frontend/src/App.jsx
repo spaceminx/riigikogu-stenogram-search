@@ -293,6 +293,9 @@ function App() {
   const [contextSearchTerm, setContextSearchTerm] = useState("");
   const targetSpeechRef = useRef(null);
   const isInitialMount = useRef(true);
+  const [lastExecutedSearch, setLastExecutedSearch] = useState(null);
+  const searchAbortRef = useRef(null);
+  const searchRequestIdRef = useRef(0);
 
   // Attendance state
   const [attendanceTab, setAttendanceTab] = useState("members"); // "members" | "factions"
@@ -341,6 +344,13 @@ function App() {
   } = {}) => {
     if (!query) return;
 
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    searchAbortRef.current = abortController;
+    const currentRequestId = ++searchRequestIdRef.current;
+
     setErrorMessage(null);
     setIsSessionBrowseMode(false);
     setSelectedSessionDate("");
@@ -349,42 +359,64 @@ function App() {
     try {
       const offset = (page - 1) * searchPageSize;
       const [searchData, activityData, speakersData] = await Promise.all([
-        fetchSearch({
-          query,
-          limit: searchPageSize,
-          offset,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          startDate: startDate || null,
-          endDate: endDate || null,
-          sortBy,
-        }),
-        fetchActivity({
-          query,
-          interval: intervalValue,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          startDate: startDate || null,
-          endDate: endDate || null,
-        }),
-        fetchSpeakers({
-          query,
-          limit: 20,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          startDate: startDate || null,
-          endDate: endDate || null,
-        }),
+        fetchSearch(
+          {
+            query,
+            limit: searchPageSize,
+            offset,
+            membership,
+            faction: faction || null,
+            speaker: speaker || null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+            sortBy,
+          },
+          abortController.signal
+        ),
+        fetchActivity(
+          {
+            query,
+            interval: intervalValue,
+            membership,
+            faction: faction || null,
+            speaker: speaker || null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+          },
+          "monthly",
+          abortController.signal
+        ),
+        fetchSpeakers(
+          {
+            query,
+            limit: 20,
+            membership,
+            faction: faction || null,
+            speaker: speaker || null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+          },
+          20,
+          abortController.signal
+        ),
       ]);
+
+      if (currentRequestId !== searchRequestIdRef.current) return;
 
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
       setSearchPage(page);
       setActivity(activityData.activity || []);
       setSpeakers(speakersData.speakers || []);
+      setLastExecutedSearch({
+        query,
+        membership,
+        faction,
+        speaker,
+        sortBy,
+        startDate,
+        endDate,
+      });
 
       if (inputValue.trim()) {
         const newGroups = [...groups];
@@ -393,6 +425,8 @@ function App() {
         setInputValue("");
       }
     } catch (error) {
+      if (error.name === "AbortError") return;
+      if (currentRequestId !== searchRequestIdRef.current) return;
       console.error("Frontend request failed:", error);
       setSpeeches([]);
       setTotalCount(0);
@@ -403,7 +437,9 @@ function App() {
           "Otsingupäring ebaõnnestus. Kontrolli, kas API server töötab aadressil http://127.0.0.1:8000."
       );
     } finally {
-      setLoading(false);
+      if (currentRequestId === searchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -750,66 +786,115 @@ function App() {
 
   const handleSortChange = async (newSort) => {
     setSearchSortBy(newSort);
-    const finalQuery = buildBackendQuery();
-    if (!finalQuery) return;
+    const searchParams = lastExecutedSearch || {
+      query: buildBackendQuery(),
+      membership: searchMembership,
+      faction: searchFaction,
+      speaker: searchSpeaker,
+      startDate: searchDateRange.startDate,
+      endDate: searchDateRange.endDate,
+    };
+    if (!searchParams.query) return;
+
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    searchAbortRef.current = abortController;
+    const currentRequestId = ++searchRequestIdRef.current;
+
     setLoading(true);
     try {
-      const searchData = await fetchSearch({
-        query: finalQuery,
-        limit: searchPageSize,
-        offset: 0,
-        membership: searchMembership,
-        faction: searchFaction || null,
-        speaker: searchSpeaker || null,
-        startDate: searchDateRange.startDate || null,
-        endDate: searchDateRange.endDate || null,
-        sortBy: newSort,
-      });
+      const searchData = await fetchSearch(
+        {
+          query: searchParams.query,
+          limit: searchPageSize,
+          offset: 0,
+          membership: searchParams.membership,
+          faction: searchParams.faction || null,
+          speaker: searchParams.speaker || null,
+          startDate: searchParams.startDate || null,
+          endDate: searchParams.endDate || null,
+          sortBy: newSort,
+        },
+        abortController.signal
+      );
+      if (currentRequestId !== searchRequestIdRef.current) return;
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
       setSearchPage(1);
+      setLastExecutedSearch((prev) => (prev ? { ...prev, sortBy: newSort } : null));
     } catch (error) {
+      if (error.name === "AbortError") return;
+      if (currentRequestId !== searchRequestIdRef.current) return;
       console.error("Failed to re-sort results:", error);
       setErrorMessage(error.message || "Tulemuste sorteerimine ebaõnnestus.");
     } finally {
-      setLoading(false);
+      if (currentRequestId === searchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const handlePageChange = async (newPage) => {
     if (newPage < 1 || newPage > totalPages) return;
+    const searchParams = lastExecutedSearch || {
+      query: buildBackendQuery(),
+      membership: searchMembership,
+      faction: searchFaction,
+      speaker: searchSpeaker,
+      startDate: searchDateRange.startDate,
+      endDate: searchDateRange.endDate,
+      sortBy: searchSortBy,
+    };
+    if (!searchParams.query) return;
+
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    searchAbortRef.current = abortController;
+    const currentRequestId = ++searchRequestIdRef.current;
+
     setLoading(true);
     try {
       const offset = (newPage - 1) * searchPageSize;
-      const finalQuery = buildBackendQuery();
-      const searchData = await fetchSearch({
-        query: finalQuery,
-        limit: searchPageSize,
-        offset,
-        membership: searchMembership,
-        faction: searchFaction || null,
-        speaker: searchSpeaker || null,
-        startDate: searchDateRange.startDate || null,
-        endDate: searchDateRange.endDate || null,
-        sortBy: searchSortBy,
-      });
+      const searchData = await fetchSearch(
+        {
+          query: searchParams.query,
+          limit: searchPageSize,
+          offset,
+          membership: searchParams.membership,
+          faction: searchParams.faction || null,
+          speaker: searchParams.speaker || null,
+          startDate: searchParams.startDate || null,
+          endDate: searchParams.endDate || null,
+          sortBy: searchParams.sortBy,
+        },
+        abortController.signal
+      );
+      if (currentRequestId !== searchRequestIdRef.current) return;
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
       setSearchPage(newPage);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
+      if (error.name === "AbortError") return;
+      if (currentRequestId !== searchRequestIdRef.current) return;
       console.error("Failed to load page:", error);
       setErrorMessage(error.message || "Lehe laadimine ebaõnnestus.");
     } finally {
-      setLoading(false);
+      if (currentRequestId === searchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const handleOpenContext = async (speechId) => {
     setErrorMessage(null);
     try {
-      const finalQuery = buildBackendQuery();
-      const data = await fetchSpeechContext(speechId, finalQuery || null);
+      const query = lastExecutedSearch ? lastExecutedSearch.query : buildBackendQuery();
+      const data = await fetchSpeechContext(speechId, query || null);
       setActiveSpeechContext(data);
     } catch (error) {
       console.error("Failed to load transcript context:", error);
@@ -1469,14 +1554,16 @@ function App() {
                   <span className="export-label">Eksport:</span>
                   <a
                     href={getExportUrl({
-                      query: buildBackendQuery(),
+                      ...(lastExecutedSearch || {
+                        query: buildBackendQuery(),
+                        membership: searchMembership,
+                        faction: searchFaction || null,
+                        speaker: searchSpeaker || null,
+                        startDate: searchDateRange.startDate || null,
+                        endDate: searchDateRange.endDate || null,
+                        sortBy: searchSortBy,
+                      }),
                       format: "csv",
-                      membership: searchMembership,
-                      faction: searchFaction || null,
-                      speaker: searchSpeaker || null,
-                      startDate: searchDateRange.startDate || null,
-                      endDate: searchDateRange.endDate || null,
-                      sortBy: searchSortBy,
                     })}
                     className="export-btn-link"
                     download
@@ -1486,14 +1573,16 @@ function App() {
                   </a>
                   <a
                     href={getExportUrl({
-                      query: buildBackendQuery(),
+                      ...(lastExecutedSearch || {
+                        query: buildBackendQuery(),
+                        membership: searchMembership,
+                        faction: searchFaction || null,
+                        speaker: searchSpeaker || null,
+                        startDate: searchDateRange.startDate || null,
+                        endDate: searchDateRange.endDate || null,
+                        sortBy: searchSortBy,
+                      }),
                       format: "json",
-                      membership: searchMembership,
-                      faction: searchFaction || null,
-                      speaker: searchSpeaker || null,
-                      startDate: searchDateRange.startDate || null,
-                      endDate: searchDateRange.endDate || null,
-                      sortBy: searchSortBy,
                     })}
                     className="export-btn-link"
                     download
