@@ -1,4 +1,5 @@
 import glob
+import html
 import json
 import os
 import re
@@ -17,10 +18,11 @@ from src.transform.lemmatizer import lemmatize_text
 
 
 def clean_html(raw_html: str) -> str:
-    """Remove HTML tags and normalize whitespace."""
+    """Remove HTML tags, decode HTML entities (&nbsp;, &quot;, etc.) and normalize whitespace."""
     if not raw_html:
         return ""
     clean = re.sub(r"<[^>]+>", " ", raw_html)
+    clean = html.unescape(clean)
     return " ".join(clean.split()).strip()
 
 
@@ -153,7 +155,7 @@ def fetch_and_process_stenograms(
     factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
 
     if os.path.exists(factions_file):
-        with open(factions_file) as f:
+        with open(factions_file, encoding="utf-8") as f:
             faction_map = json.load(f)
     else:
         faction_map = {}
@@ -232,6 +234,18 @@ def fetch_and_process_stenograms(
                 rich_meeting = fetch_rich_meeting_data(meeting_code)
 
                 speeches_to_save = []
+                ignored_speech_types = {
+                    "PRESENCE_CHECK",
+                    "SESSION_START",
+                    "SESSION_END",
+                    "VOTING_EVENT",
+                }
+                ignored_speaker_names = {
+                    "kohaloleku kontroll",
+                    "istung lõppes",
+                    "istung algas",
+                    "hääletustulemused",
+                }
 
                 if rich_meeting and rich_meeting.get("stenograph", {}).get("agendaItems"):
                     agendas = rich_meeting["stenograph"]["agendaItems"]
@@ -249,12 +263,13 @@ def fetch_and_process_stenograms(
                             speaker_raw = sp.get("name", "")
                             raw_content = sp.get("content", "")
                             raw_text = clean_html(raw_content)
+                            sp_type = sp.get("speechType")
 
                             if (
                                 not raw_text
                                 or not speaker_raw
-                                or sp.get("speechType") == "PRESENCE_CHECK"
-                                or speaker_raw.lower() == "kohaloleku kontroll"
+                                or sp_type in ignored_speech_types
+                                or speaker_raw.lower() in ignored_speaker_names
                                 or raw_text.startswith("http://")
                                 or raw_text.startswith("https://")
                             ):
@@ -267,10 +282,18 @@ def fetch_and_process_stenograms(
                             lemmas = lemmatize_text(raw_text)
                             video_url = sp.get("parsedVideoLink")
 
+                            # Extract speech specific start time if available
+                            sp_time_raw = sp.get("startTime")
+                            sp_time = time_formatted
+                            if sp_time_raw and "T" in sp_time_raw:
+                                time_part = sp_time_raw.split("T")[1].replace(":", "")[:4]
+                                if len(time_part) == 4 and time_part.isdigit():
+                                    sp_time = time_part
+
                             speeches_to_save.append(
                                 {
                                     "date": date_formatted,
-                                    "time": time_formatted,
+                                    "time": sp_time,
                                     "source_file": f"{date_formatted}_{time_formatted}.api",
                                     "source_url": item_source_url,
                                     "agenda_title": agenda_title or None,

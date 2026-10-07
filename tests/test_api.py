@@ -431,3 +431,23 @@ def test_attendance_factions_stats_active_only():
         assert "total_sessions" in item
         assert "present_sessions" in item
         assert "attendance_percentage" in item
+
+
+def test_clean_html_unescapes_entities():
+    from scripts.fetch_stenograms_api import clean_html
+
+    raw = "<p>P&auml;evakord &amp; arutelu&nbsp;punkt &quot;Eeln&otilde;u 123&quot;</p>"
+    cleaned = clean_html(raw)
+    assert cleaned == 'Päevakord & arutelu punkt "Eelnõu 123"'
+
+
+def test_format_stenogram_url_and_normalization():
+    from scripts.fetch_stenograms_api import format_stenogram_url
+    from src.api.search import normalize_source_url
+
+    url = format_stenogram_url("202609171000", agenda_id=1319712)
+    assert url == "https://stenogrammid.riigikogu.ee/et/202609171000#PKP-1319712"
+
+    raw_url = "https://stenogrammid.riigikogu.ee/202609171000#PKP-1319712"
+    normalized = normalize_source_url(raw_url)
+    assert normalized == "https://stenogrammid.riigikogu.ee/et/202609171000#PKP-1319712"

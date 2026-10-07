@@ -463,7 +463,9 @@ def get_dashboard_overview() -> dict:
         sessions = [
             {
                 "date": row.date,
-                "source_url": normalize_source_url(row.source_url),
+                "source_url": normalize_source_url(
+                    row.source_url.split("#")[0] if row.source_url else None
+                ),
                 "topics": topics_by_source.get(row.source_file, []),
             }
             for row in session_rows
