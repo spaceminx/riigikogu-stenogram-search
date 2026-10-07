@@ -1,7 +1,13 @@
 import glob
 import os
+import sys
 
 import boto3
+
+# Add project root to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from config import OUTPUT_DIR_PROCESSED
 
 try:
     from dotenv import load_dotenv
@@ -33,14 +39,14 @@ def upload_to_b2() -> bool:
         print(f"Error initializing B2 client: {e}")
         return False
 
-    # Collect files to upload from data/processed/ (.jsonl and .json files)
+    # Collect files to upload from OUTPUT_DIR_PROCESSED (.jsonl and .json files)
     files_to_upload = []
-    for file_path in glob.glob("data/processed/*.*"):
+    for file_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.*")):
         if file_path.endswith(".jsonl") or file_path.endswith(".json"):
             files_to_upload.append((file_path, os.path.basename(file_path)))
 
     if not files_to_upload:
-        print("No .jsonl or .json files found in data/processed/ folder.")
+        print(f"No .jsonl or .json files found in {OUTPUT_DIR_PROCESSED} folder.")
         return True
 
     uploaded_count = 0
@@ -65,4 +71,5 @@ def upload_to_b2() -> bool:
 
 
 if __name__ == "__main__":
-    upload_to_b2()
+    success = upload_to_b2()
+    sys.exit(0 if success else 1)

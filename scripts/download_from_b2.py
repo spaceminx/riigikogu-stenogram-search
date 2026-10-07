@@ -1,6 +1,11 @@
 import os
-from datetime import datetime
+import sys
 from pathlib import Path
+
+# Add project root to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from config import OUTPUT_DIR_PROCESSED
 
 try:
     from dotenv import load_dotenv
@@ -17,7 +22,7 @@ except ImportError:
 
 
 def download_from_b2() -> bool:
-    """Download current year data, attendance, and sync state files from Backblaze B2."""
+    """Download all processed datasets, attendance, and faction maps from Backblaze B2."""
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
@@ -28,7 +33,7 @@ def download_from_b2() -> bool:
     endpoint = "https://s3.eu-central-003.backblazeb2.com"
     bucket_name = "riigikogu-stenograms"
 
-    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
     print("Connecting to Backblaze B2...")
 
@@ -42,40 +47,28 @@ def download_from_b2() -> bool:
         print(f"Error initializing B2 client: {e}")
         return False
 
-    # 1. Download current year processed file
-    current_year = datetime.today().strftime("%Y")
-    year_file = f"{current_year}.jsonl"
-    local_year_path = os.path.join("data", "processed", year_file)
+    downloaded_count = 0
     try:
-        print(f"Downloading {year_file} from {bucket_name}...")
-        s3.download_file(bucket_name, year_file, local_year_path)
-        print(f"Downloaded: {local_year_path}")
+        # List and download all available dataset files in the bucket
+        paginator = s3.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket_name):
+            for obj in page.get("Contents", []):
+                key = obj.get("Key")
+                if not key or not (key.endswith(".jsonl") or key.endswith(".json")):
+                    continue
+                local_path = os.path.join(OUTPUT_DIR_PROCESSED, key)
+                print(f"Downloading {key} from {bucket_name}...")
+                s3.download_file(bucket_name, key, local_path)
+                print(f"Downloaded: {local_path}")
+                downloaded_count += 1
     except Exception as e:
-        print(f"Notice: Could not download {year_file} from B2 (might be new year): {e}")
+        print(f"Error listing/downloading files from B2: {e}")
+        return False
 
-    # 2. Download attendance.jsonl if present in B2
-    attendance_file = "attendance.jsonl"
-    local_attendance_path = os.path.join("data", "processed", attendance_file)
-    try:
-        print(f"Downloading {attendance_file} from {bucket_name}...")
-        s3.download_file(bucket_name, attendance_file, local_attendance_path)
-        print(f"Downloaded: {local_attendance_path}")
-    except Exception as e:
-        print(f"Notice: Could not download {attendance_file} from B2: {e}")
-
-    # 3. Download factions_map.json if present in B2
-    factions_file = "factions_map.json"
-    local_factions_path = os.path.join("data", "processed", factions_file)
-    try:
-        print(f"Downloading {factions_file} from {bucket_name}...")
-        s3.download_file(bucket_name, factions_file, local_factions_path)
-        print(f"Downloaded: {local_factions_path}")
-    except Exception as e:
-        print(f"Notice: Could not download {factions_file} from B2: {e}")
-
-    print("Daily data download step completed.")
+    print(f"Daily data download step completed. ({downloaded_count} files downloaded)")
     return True
 
 
 if __name__ == "__main__":
-    download_from_b2()
+    success = download_from_b2()
+    sys.exit(0 if success else 1)

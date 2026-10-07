@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 import requests
@@ -10,9 +11,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import OUTPUT_DIR_PROCESSED
 
 
-def fetch_factions() -> None:
+def fetch_factions() -> bool:
     """Fetch MP parliamentary faction membership history from Riigikogu API."""
-    url = "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=13&membership=14&membership=15"
+    current_year = datetime.now().year
+    # 13th Riigikogu was 2015-2019, 14th 2019-2023, 15th 2023-2027, 16th 2027+
+    max_membership = 15 + max(0, (current_year - 2023) // 4 + 1)
+    membership_params = "&".join(f"membership={m}" for m in range(13, max_membership + 1))
+    url = f"https://api.riigikogu.ee/api/plenary-members?status=ALL&{membership_params}"
     print(f"Fetching members from {url}...")
 
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
@@ -47,9 +52,9 @@ def fetch_factions() -> None:
             print(
                 f"Notice: Could not refresh factions from API. Using existing cache from {out_file}."
             )
-            return
+            return True
         print(f"Error: Failed to fetch factions from {url} and no cached {out_file} found.")
-        return
+        return False
 
     faction_map = {}
 
@@ -85,7 +90,9 @@ def fetch_factions() -> None:
         json.dump(faction_map, f, ensure_ascii=False, indent=2)
 
     print(f"Saved faction history for {len(faction_map)} members to {out_file}")
+    return True
 
 
 if __name__ == "__main__":
-    fetch_factions()
+    success = fetch_factions()
+    sys.exit(0 if success else 1)

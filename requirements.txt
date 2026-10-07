@@ -8,6 +8,7 @@ nltk
 boto3
 uvicorn
 python-dotenv
+tqdm>=4.66.0
 ruff
 pytest
 httpx

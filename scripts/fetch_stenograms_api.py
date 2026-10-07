@@ -119,29 +119,42 @@ def get_month_ranges(start_date: str, end_date: str) -> list[tuple[str, str]]:
 def fetch_and_process_stenograms(
     start_date: str | None = None,
     end_date: str | None = None,
-) -> None:
+) -> bool:
     """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
-    # Load existing verbatim links/dates from processed jsonl files
-    processed_uuids = set()
+    # Load existing meeting codes and source files from processed jsonl files
+    processed_meeting_codes = set()
+    processed_source_files = set()
+    total_existing_records = 0
+
     for jsonl_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.jsonl")):
         if os.path.basename(jsonl_path) == "attendance.jsonl":
             continue
         try:
             with open(jsonl_path, encoding="utf-8") as f:
                 for line in f:
-                    if line.strip():
+                    if not line.strip():
+                        continue
+                    total_existing_records += 1
+                    try:
                         record = json.loads(line)
-                        if record.get("source_url"):
-                            processed_uuids.add(record["source_url"])
-                        if record.get("date"):
-                            processed_uuids.add(record["date"])
+                        src_file = record.get("source_file")
+                        if src_file:
+                            processed_source_files.add(src_file)
+                        src_url = record.get("source_url")
+                        if src_url:
+                            # Extract meeting code e.g. "https://stenogrammid.riigikogu.ee/et/202609141500#PKP-..." -> "202609141500"
+                            code = src_url.split("#")[0].rstrip("/").split("/")[-1]
+                            if code.isdigit():
+                                processed_meeting_codes.add(code)
+                    except json.JSONDecodeError:
+                        continue
         except Exception as e:
             print(f"Notice: Could not read {jsonl_path}: {e}")
 
     if not start_date:
-        if processed_uuids:
+        if total_existing_records > 0:
             # Incremental run: only fetch the last 14 days
             start_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
         else:
@@ -161,6 +174,7 @@ def fetch_and_process_stenograms(
         faction_map = {}
 
     print(f"Starting API fetch from {start_date} to {end_date}")
+    has_errors = False
 
     for start, end in date_ranges:
         print(f"Fetching {start} to {end}...")
@@ -199,19 +213,14 @@ def fetch_and_process_stenograms(
                 time.sleep(5)
 
         if not isinstance(verbatims, list):
-            print(f"Notice: Skipping {start}-{end} (no valid data received).")
+            print(f"Warning: Skipping {start}-{end} (no valid data received).")
+            has_errors = True
             continue
 
         try:
             for verbatim in verbatims:
                 verbatim_link = verbatim.get("link", "")
-                # If we don't have a reliable UUID in verbatim root, use the link as the unique ID
-                uid = verbatim_link if verbatim_link else str(verbatim.get("date"))
-
-                if uid in processed_uuids:
-                    continue
-
-                print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
+                meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
 
                 # Extract date and time for our JSONL format
                 v_date_str = verbatim.get("date")  # e.g. "2024-01-08T13:00:00.000+00:00"
@@ -223,14 +232,21 @@ def fetch_and_process_stenograms(
                 date_formatted = v_dt.strftime("%Y-%m-%d")
 
                 # Extract time from link if possible, or from date string
-                # e.g. https://stenogrammid.riigikogu.ee/202401081500
                 time_formatted = "0000"
                 if verbatim_link and len(verbatim_link) >= 4:
-                    time_formatted = verbatim_link[-4:]
-                    if not time_formatted.isdigit():
-                        time_formatted = "0000"
+                    candidate_time = verbatim_link[-4:]
+                    if candidate_time.isdigit():
+                        time_formatted = candidate_time
 
-                meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
+                source_file_key = f"{date_formatted}_{time_formatted}.api"
+
+                if (meeting_code and meeting_code in processed_meeting_codes) or (
+                    source_file_key in processed_source_files
+                ):
+                    continue
+
+                print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
+
                 rich_meeting = fetch_rich_meeting_data(meeting_code)
 
                 speeches_to_save = []
@@ -294,7 +310,7 @@ def fetch_and_process_stenograms(
                                 {
                                     "date": date_formatted,
                                     "time": sp_time,
-                                    "source_file": f"{date_formatted}_{time_formatted}.api",
+                                    "source_file": source_file_key,
                                     "source_url": item_source_url,
                                     "agenda_title": agenda_title or None,
                                     "video_url": video_url,
@@ -327,7 +343,7 @@ def fetch_and_process_stenograms(
                                     {
                                         "date": date_formatted,
                                         "time": time_formatted,
-                                        "source_file": f"{date_formatted}_{time_formatted}.api",
+                                        "source_file": source_file_key,
                                         "source_url": format_stenogram_url(
                                             meeting_code=meeting_code,
                                             verbatim_link=verbatim_link,
@@ -350,11 +366,17 @@ def fetch_and_process_stenograms(
 
                     print(f"  -> Saved {len(speeches_to_save)} speeches to {year_str}.jsonl")
 
-                processed_uuids.add(uid)
+                if meeting_code:
+                    processed_meeting_codes.add(meeting_code)
+                processed_source_files.add(source_file_key)
 
         except Exception as e:
             print(f"Error on {start}-{end}: {e}")
+            has_errors = True
+
+    return not has_errors
 
 
 if __name__ == "__main__":
-    fetch_and_process_stenograms()
+    success = fetch_and_process_stenograms()
+    sys.exit(0 if success else 1)

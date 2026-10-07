@@ -178,7 +178,9 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
     print(
         f"Done fetching attendance: added {new_checks_count} new checks ({new_records_count} records) to {attendance_file}."
     )
+    return True
 
 
 if __name__ == "__main__":
-    fetch_attendance()
+    success = fetch_attendance()
+    sys.exit(0 if success is not False else 1)
