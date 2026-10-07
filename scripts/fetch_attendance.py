@@ -27,6 +27,8 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
 
     existing_uuids = set()
 
+    latest_existing_date = None
+
     # Load existing voting UUIDs from attendance.jsonl
     if os.path.exists(attendance_file):
         with open(attendance_file, encoding="utf-8") as f:
@@ -36,6 +38,11 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
                         record = json.loads(line)
                         if "voting_uuid" in record:
                             existing_uuids.add(record["voting_uuid"])
+                        rec_date = record.get("session_date") or record.get("date")
+                        if rec_date:
+                            clean_date = rec_date[:10]
+                            if latest_existing_date is None or clean_date > latest_existing_date:
+                                latest_existing_date = clean_date
                     except json.JSONDecodeError:
                         continue
 
@@ -49,8 +56,13 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
             session = None
 
     if not start_date:
-        if existing_uuids:
-            # Incremental run: only check last 14 days
+        if latest_existing_date:
+            # Incremental run: start from the latest existing date minus a 7-day safety buffer
+            latest_dt = datetime.strptime(latest_existing_date, "%Y-%m-%d")
+            start_dt = max(datetime.strptime(START_DATE, "%Y-%m-%d"), latest_dt - timedelta(days=7))
+            start_date = start_dt.strftime("%Y-%m-%d")
+        elif existing_uuids:
+            # Fallback if dates weren't present
             start_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
         else:
             start_date = START_DATE
@@ -61,7 +73,7 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
     votings_url = f"https://api.riigikogu.ee/api/votings?startDate={start_date}&endDate={end_date}"
     print(f"Fetching votings from {start_date} to {end_date} ({votings_url})")
 
-    votings = []
+    votings = None
     max_retries = 3
     for attempt in range(1, max_retries + 1):
         try:
@@ -84,7 +96,7 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
         print("Error: Could not retrieve votings list. Exiting.")
         if session:
             session.close()
-        return
+        return False
 
     attendance_votings = []
     for v_day in votings:
@@ -183,4 +195,4 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
 
 if __name__ == "__main__":
     success = fetch_attendance()
-    sys.exit(0 if success is not False else 1)
+    sys.exit(0 if success else 1)
