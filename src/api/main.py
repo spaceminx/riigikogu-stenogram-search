@@ -17,5 +17,11 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "Content-Disposition",
+        "X-Total-Count",
+        "X-Export-Count",
+        "X-Export-Truncated",
+    ],
 )
 app.include_router(router)

@@ -1,6 +1,5 @@
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "http://127.0.0.1:8000" : "https://karmarv.tail60892b.ts.net");
+  import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://127.0.0.1:8000" : "");
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -8,7 +7,15 @@ async function handleResponse(res) {
     try {
       const data = await res.json();
       if (data && data.detail) {
-        errorDetail = data.detail;
+        if (typeof data.detail === "string") {
+          errorDetail = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          errorDetail = data.detail.map((d) => (d && d.msg ? d.msg : JSON.stringify(d))).join(", ");
+        } else if (typeof data.detail === "object") {
+          errorDetail = JSON.stringify(data.detail);
+        } else {
+          errorDetail = String(data.detail);
+        }
       }
     } catch {
       // response body was not JSON
@@ -59,26 +66,26 @@ export async function fetchPlenarySession(date) {
   return handleResponse(res);
 }
 
-export async function fetchSearch(options) {
+export async function fetchSearch(options, signal) {
   const qs =
     typeof options === "string"
       ? `q=${encodeURIComponent(options)}`
       : buildSearchQueryString(options);
-  const res = await fetch(`${BASE_URL}/search?${qs}`);
+  const res = await fetch(`${BASE_URL}/search?${qs}`, { signal });
   return handleResponse(res);
 }
 
-export async function fetchActivity(options, legacyInterval = "monthly") {
+export async function fetchActivity(options, legacyInterval = "monthly", signal) {
   const opts = typeof options === "string" ? { query: options, interval: legacyInterval } : options;
   const qs = buildSearchQueryString(opts);
-  const res = await fetch(`${BASE_URL}/search/activity?${qs}`);
+  const res = await fetch(`${BASE_URL}/search/activity?${qs}`, { signal });
   return handleResponse(res);
 }
 
-export async function fetchSpeakers(options, legacyLimit = 20) {
+export async function fetchSpeakers(options, legacyLimit = 20, signal) {
   const opts = typeof options === "string" ? { query: options, limit: legacyLimit } : options;
   const qs = buildSearchQueryString(opts);
-  const res = await fetch(`${BASE_URL}/search/speakers?${qs}`);
+  const res = await fetch(`${BASE_URL}/search/speakers?${qs}`, { signal });
   return handleResponse(res);
 }
 

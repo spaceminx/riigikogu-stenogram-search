@@ -151,6 +151,37 @@ function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
   });
 }
 
+function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 380) {
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+
+  const terms = [
+    ...(Array.isArray(matchedWords) ? matchedWords : []),
+    ...(Array.isArray(groups) ? groups.flat() : []),
+  ]
+    .map((w) => (typeof w === "string" ? w.trim().toLowerCase() : ""))
+    .filter((w) => w.length >= 2);
+
+  let firstIndex = -1;
+  const lowerText = text.toLowerCase();
+  for (const term of terms) {
+    const idx = lowerText.indexOf(term);
+    if (idx !== -1 && (firstIndex === -1 || idx < firstIndex)) {
+      firstIndex = idx;
+    }
+  }
+
+  if (firstIndex === -1 || firstIndex < 120) {
+    return text.slice(0, maxLength).trim() + "...";
+  }
+
+  const start = Math.max(0, firstIndex - 100);
+  const end = Math.min(text.length, start + maxLength);
+  const prefix = start > 0 ? "..." : "";
+  const suffix = end < text.length ? "..." : "";
+  return prefix + text.slice(start, end).trim() + suffix;
+}
+
 function parseQueryToGroups(queryString) {
   if (!queryString || !queryString.trim()) return [[]];
   const parts = queryString
@@ -262,6 +293,9 @@ function App() {
   const [contextSearchTerm, setContextSearchTerm] = useState("");
   const targetSpeechRef = useRef(null);
   const isInitialMount = useRef(true);
+  const [lastExecutedSearch, setLastExecutedSearch] = useState(null);
+  const searchAbortRef = useRef(null);
+  const searchRequestIdRef = useRef(0);
 
   // Attendance state
   const [attendanceTab, setAttendanceTab] = useState("members"); // "members" | "factions"
@@ -270,7 +304,8 @@ function App() {
   const [activeOnly, setActiveOnly] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState([]);
   const [factionStats, setFactionStats] = useState([]);
-  const [factionsList, setFactionsList] = useState([]);
+  const [searchFactionsList, setSearchFactionsList] = useState([]);
+  const [attendanceFactionsList, setAttendanceFactionsList] = useState([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
@@ -309,6 +344,13 @@ function App() {
   } = {}) => {
     if (!query) return;
 
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    searchAbortRef.current = abortController;
+    const currentRequestId = ++searchRequestIdRef.current;
+
     setErrorMessage(null);
     setIsSessionBrowseMode(false);
     setSelectedSessionDate("");
@@ -317,42 +359,64 @@ function App() {
     try {
       const offset = (page - 1) * searchPageSize;
       const [searchData, activityData, speakersData] = await Promise.all([
-        fetchSearch({
-          query,
-          limit: searchPageSize,
-          offset,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          startDate: startDate || null,
-          endDate: endDate || null,
-          sortBy,
-        }),
-        fetchActivity({
-          query,
-          interval: intervalValue,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          startDate: startDate || null,
-          endDate: endDate || null,
-        }),
-        fetchSpeakers({
-          query,
-          limit: 20,
-          membership,
-          faction: faction || null,
-          speaker: speaker || null,
-          startDate: startDate || null,
-          endDate: endDate || null,
-        }),
+        fetchSearch(
+          {
+            query,
+            limit: searchPageSize,
+            offset,
+            membership,
+            faction: faction || null,
+            speaker: speaker || null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+            sortBy,
+          },
+          abortController.signal
+        ),
+        fetchActivity(
+          {
+            query,
+            interval: intervalValue,
+            membership,
+            faction: faction || null,
+            speaker: speaker || null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+          },
+          "monthly",
+          abortController.signal
+        ),
+        fetchSpeakers(
+          {
+            query,
+            limit: 20,
+            membership,
+            faction: faction || null,
+            speaker: speaker || null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+          },
+          20,
+          abortController.signal
+        ),
       ]);
+
+      if (currentRequestId !== searchRequestIdRef.current) return;
 
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
       setSearchPage(page);
       setActivity(activityData.activity || []);
       setSpeakers(speakersData.speakers || []);
+      setLastExecutedSearch({
+        query,
+        membership,
+        faction,
+        speaker,
+        sortBy,
+        startDate,
+        endDate,
+      });
 
       if (inputValue.trim()) {
         const newGroups = [...groups];
@@ -361,6 +425,8 @@ function App() {
         setInputValue("");
       }
     } catch (error) {
+      if (error.name === "AbortError") return;
+      if (currentRequestId !== searchRequestIdRef.current) return;
       console.error("Frontend request failed:", error);
       setSpeeches([]);
       setTotalCount(0);
@@ -371,7 +437,9 @@ function App() {
           "Otsingupäring ebaõnnestus. Kontrolli, kas API server töötab aadressil http://127.0.0.1:8000."
       );
     } finally {
-      setLoading(false);
+      if (currentRequestId === searchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -528,7 +596,8 @@ function App() {
       try {
         const list = await fetchFactionsList("all");
         if (list && list.length > 0) {
-          setFactionsList(list);
+          setSearchFactionsList(list);
+          setAttendanceFactionsList(list);
         }
       } catch {
         // silent fallback
@@ -598,7 +667,7 @@ function App() {
         if (isMounted) {
           setAttendanceStats(membersData || []);
           setFactionStats(factionsData || []);
-          setFactionsList(listData || []);
+          setAttendanceFactionsList(listData || []);
         }
       } catch (error) {
         console.error("Failed to fetch attendance data:", error);
@@ -668,14 +737,14 @@ function App() {
 
   const tooltipStyle = {
     contentStyle: {
-      backgroundColor: "#ffffff",
-      color: "#25364a",
-      border: "1px solid #cbd3dc",
-      borderRadius: "3px",
-      boxShadow: "0 2px 8px rgba(20, 35, 55, 0.12)",
+      backgroundColor: theme === "dark" ? "#1e293b" : "#ffffff",
+      color: theme === "dark" ? "#f1f5f9" : "#25364a",
+      border: `1px solid ${theme === "dark" ? "#334155" : "#cbd3dc"}`,
+      borderRadius: "4px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
     },
-    itemStyle: { color: "#315b84", fontWeight: 600 },
-    labelStyle: { color: "#536477", marginBottom: "4px" },
+    itemStyle: { color: theme === "dark" ? "#60a5fa" : "#315b84", fontWeight: 600 },
+    labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
   };
 
   const handleAddAnd = () => {
@@ -717,66 +786,115 @@ function App() {
 
   const handleSortChange = async (newSort) => {
     setSearchSortBy(newSort);
-    const finalQuery = buildBackendQuery();
-    if (!finalQuery) return;
+    const searchParams = lastExecutedSearch || {
+      query: buildBackendQuery(),
+      membership: searchMembership,
+      faction: searchFaction,
+      speaker: searchSpeaker,
+      startDate: searchDateRange.startDate,
+      endDate: searchDateRange.endDate,
+    };
+    if (!searchParams.query) return;
+
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    searchAbortRef.current = abortController;
+    const currentRequestId = ++searchRequestIdRef.current;
+
     setLoading(true);
     try {
-      const searchData = await fetchSearch({
-        query: finalQuery,
-        limit: searchPageSize,
-        offset: 0,
-        membership: searchMembership,
-        faction: searchFaction || null,
-        speaker: searchSpeaker || null,
-        startDate: searchDateRange.startDate || null,
-        endDate: searchDateRange.endDate || null,
-        sortBy: newSort,
-      });
+      const searchData = await fetchSearch(
+        {
+          query: searchParams.query,
+          limit: searchPageSize,
+          offset: 0,
+          membership: searchParams.membership,
+          faction: searchParams.faction || null,
+          speaker: searchParams.speaker || null,
+          startDate: searchParams.startDate || null,
+          endDate: searchParams.endDate || null,
+          sortBy: newSort,
+        },
+        abortController.signal
+      );
+      if (currentRequestId !== searchRequestIdRef.current) return;
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
       setSearchPage(1);
+      setLastExecutedSearch((prev) => (prev ? { ...prev, sortBy: newSort } : null));
     } catch (error) {
+      if (error.name === "AbortError") return;
+      if (currentRequestId !== searchRequestIdRef.current) return;
       console.error("Failed to re-sort results:", error);
       setErrorMessage(error.message || "Tulemuste sorteerimine ebaõnnestus.");
     } finally {
-      setLoading(false);
+      if (currentRequestId === searchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const handlePageChange = async (newPage) => {
     if (newPage < 1 || newPage > totalPages) return;
+    const searchParams = lastExecutedSearch || {
+      query: buildBackendQuery(),
+      membership: searchMembership,
+      faction: searchFaction,
+      speaker: searchSpeaker,
+      startDate: searchDateRange.startDate,
+      endDate: searchDateRange.endDate,
+      sortBy: searchSortBy,
+    };
+    if (!searchParams.query) return;
+
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    searchAbortRef.current = abortController;
+    const currentRequestId = ++searchRequestIdRef.current;
+
     setLoading(true);
     try {
       const offset = (newPage - 1) * searchPageSize;
-      const finalQuery = buildBackendQuery();
-      const searchData = await fetchSearch({
-        query: finalQuery,
-        limit: searchPageSize,
-        offset,
-        membership: searchMembership,
-        faction: searchFaction || null,
-        speaker: searchSpeaker || null,
-        startDate: searchDateRange.startDate || null,
-        endDate: searchDateRange.endDate || null,
-        sortBy: searchSortBy,
-      });
+      const searchData = await fetchSearch(
+        {
+          query: searchParams.query,
+          limit: searchPageSize,
+          offset,
+          membership: searchParams.membership,
+          faction: searchParams.faction || null,
+          speaker: searchParams.speaker || null,
+          startDate: searchParams.startDate || null,
+          endDate: searchParams.endDate || null,
+          sortBy: searchParams.sortBy,
+        },
+        abortController.signal
+      );
+      if (currentRequestId !== searchRequestIdRef.current) return;
       setSpeeches(searchData.results || []);
       setTotalCount(searchData.total_count || 0);
       setSearchPage(newPage);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
+      if (error.name === "AbortError") return;
+      if (currentRequestId !== searchRequestIdRef.current) return;
       console.error("Failed to load page:", error);
       setErrorMessage(error.message || "Lehe laadimine ebaõnnestus.");
     } finally {
-      setLoading(false);
+      if (currentRequestId === searchRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const handleOpenContext = async (speechId) => {
     setErrorMessage(null);
     try {
-      const finalQuery = buildBackendQuery();
-      const data = await fetchSpeechContext(speechId, finalQuery || null);
+      const query = lastExecutedSearch ? lastExecutedSearch.query : buildBackendQuery();
+      const data = await fetchSpeechContext(speechId, query || null);
       setActiveSpeechContext(data);
     } catch (error) {
       console.error("Failed to load transcript context:", error);
@@ -1052,7 +1170,7 @@ function App() {
                 onChange={(e) => setSearchFaction(e.target.value)}
               >
                 <option value="">Kõik fraktsioonid</option>
-                {factionsList.map((fac, idx) => (
+                {searchFactionsList.map((fac, idx) => (
                   <option key={idx} value={fac}>
                     {formatFactionName(fac)}
                   </option>
@@ -1436,14 +1554,16 @@ function App() {
                   <span className="export-label">Eksport:</span>
                   <a
                     href={getExportUrl({
-                      query: buildBackendQuery(),
+                      ...(lastExecutedSearch || {
+                        query: buildBackendQuery(),
+                        membership: searchMembership,
+                        faction: searchFaction || null,
+                        speaker: searchSpeaker || null,
+                        startDate: searchDateRange.startDate || null,
+                        endDate: searchDateRange.endDate || null,
+                        sortBy: searchSortBy,
+                      }),
                       format: "csv",
-                      membership: searchMembership,
-                      faction: searchFaction || null,
-                      speaker: searchSpeaker || null,
-                      startDate: searchDateRange.startDate || null,
-                      endDate: searchDateRange.endDate || null,
-                      sortBy: searchSortBy,
                     })}
                     className="export-btn-link"
                     download
@@ -1453,14 +1573,16 @@ function App() {
                   </a>
                   <a
                     href={getExportUrl({
-                      query: buildBackendQuery(),
+                      ...(lastExecutedSearch || {
+                        query: buildBackendQuery(),
+                        membership: searchMembership,
+                        faction: searchFaction || null,
+                        speaker: searchSpeaker || null,
+                        startDate: searchDateRange.startDate || null,
+                        endDate: searchDateRange.endDate || null,
+                        sortBy: searchSortBy,
+                      }),
                       format: "json",
-                      membership: searchMembership,
-                      faction: searchFaction || null,
-                      speaker: searchSpeaker || null,
-                      startDate: searchDateRange.startDate || null,
-                      endDate: searchDateRange.endDate || null,
-                      sortBy: searchSortBy,
                     })}
                     className="export-btn-link"
                     download
@@ -1508,12 +1630,15 @@ function App() {
 
                     <p className="speech-text">
                       {highlightKeywords(
-                        speech.text.slice(0, 380),
+                        getSnippet(
+                          speech.text,
+                          speech.matched_words,
+                          isSessionBrowseMode ? [[]] : groups
+                        ),
                         isSessionBrowseMode ? [[]] : groups,
                         "",
                         speech.matched_words
                       )}
-                      ...
                     </p>
 
                     <div className="speech-card-actions">
@@ -1557,7 +1682,7 @@ function App() {
                 ))}
               </div>
 
-              {totalPages > 1 && (
+              {!isSessionBrowseMode && totalPages > 1 && (
                 <div className="pagination-container">
                   <button
                     type="button"
@@ -1588,10 +1713,18 @@ function App() {
       {/* Transcript Full Context Modal */}
       {activeSpeechContext && (
         <div className="modal-backdrop" onClick={handleCloseContext}>
-          <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-content glass-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="transcript-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-top-bar">
               <div>
-                <h2 className="modal-heading">Istungi stenogramm</h2>
+                <h2 id="transcript-modal-title" className="modal-heading">
+                  Istungi stenogramm
+                </h2>
                 <div className="modal-meta-row">
                   <span>{formatDateTime(activeSpeechContext.date, activeSpeechContext.time)}</span>
                   <span>•</span>
@@ -1709,7 +1842,7 @@ function App() {
                 ? "(XV Riigikogu, 2023–praegu)"
                 : attendanceMembership === "14"
                   ? "(XIV Riigikogu, 2019–2023)"
-                  : "(2019–2026)"}
+                  : "(2019–praegu)"}
             </h2>
           </div>
 
@@ -1750,7 +1883,7 @@ function App() {
                 >
                   <option value="15">XV Riigikogu (2023–praegu)</option>
                   <option value="14">XIV Riigikogu (2019–2023)</option>
-                  <option value="all">Kõik kokku (2019–2026)</option>
+                  <option value="all">Kõik kokku (2019–praegu)</option>
                 </select>
               </div>
 
@@ -1766,7 +1899,7 @@ function App() {
                     onChange={(e) => setSelectedFaction(e.target.value)}
                   >
                     <option value="">Kõik fraktsioonid</option>
-                    {factionsList.map((fac, idx) => (
+                    {attendanceFactionsList.map((fac, idx) => (
                       <option key={idx} value={fac}>
                         {formatFactionName(fac)}
                       </option>
@@ -1801,8 +1934,16 @@ function App() {
               <div className="attendance-header-row">
                 <div className="att-col-rank">#</div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-name cursor-pointer"
                   onClick={() => requestSort("member_name")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("member_name");
+                    }
+                  }}
                 >
                   Saadik{" "}
                   {sortConfig.key === "member_name"
@@ -1812,8 +1953,16 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-faction cursor-pointer"
                   onClick={() => requestSort("faction")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("faction");
+                    }
+                  }}
                 >
                   Fraktsioon{" "}
                   {sortConfig.key === "faction"
@@ -1823,10 +1972,18 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-total cursor-pointer"
                   onClick={() => requestSort("total_sessions")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("total_sessions");
+                    }
+                  }}
                 >
-                  Istungeid{" "}
+                  Kontrolle{" "}
                   {sortConfig.key === "total_sessions"
                     ? sortConfig.direction === "ascending"
                       ? "↑"
@@ -1834,8 +1991,16 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-present cursor-pointer"
                   onClick={() => requestSort("present_sessions")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("present_sessions");
+                    }
+                  }}
                 >
                   Kohal{" "}
                   {sortConfig.key === "present_sessions"
@@ -1845,8 +2010,16 @@ function App() {
                     : ""}
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="att-col-percent cursor-pointer"
                   onClick={() => requestSort("attendance_percentage")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      requestSort("attendance_percentage");
+                    }
+                  }}
                 >
                   %{" "}
                   {sortConfig.key === "attendance_percentage"

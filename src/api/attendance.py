@@ -4,14 +4,9 @@ from datetime import datetime
 
 from sqlalchemy import case, func
 
-from config import OUTPUT_DIR_PROCESSED
+from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
 from src.load.database import SessionLocal
 from src.load.models import Attendance
-
-MEMBERSHIP_DATES = {
-    "14": ("2019-04-04", "2023-03-31T23:59:59"),
-    "15": ("2023-04-01", "2099-12-31"),
-}
 
 
 def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]:
@@ -72,7 +67,8 @@ def get_attendance_stats(
         if membership in MEMBERSHIP_DATES:
             start_d, end_d = MEMBERSHIP_DATES[membership]
             query = query.filter(
-                Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                Attendance.session_date >= start_d,
+                Attendance.session_date <= f"{end_d}T23:59:59",
             )
 
         if target_members is not None:
@@ -92,7 +88,8 @@ def get_attendance_stats(
             if membership in MEMBERSHIP_DATES:
                 start_d, end_d = MEMBERSHIP_DATES[membership]
                 f_query = f_query.filter(
-                    Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                    Attendance.session_date >= start_d,
+                    Attendance.session_date <= f"{end_d}T23:59:59",
                 )
             if faction:
                 f_query = f_query.filter(Attendance.faction == faction)

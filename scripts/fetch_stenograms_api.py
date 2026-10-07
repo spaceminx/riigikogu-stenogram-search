@@ -16,6 +16,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import OUTPUT_DIR_PROCESSED, START_DATE
 from src.transform.lemmatizer import lemmatize_text
 
+IGNORED_SPEECH_TYPES = {
+    "PRESENCE_CHECK",
+    "SESSION_START",
+    "SESSION_END",
+    "VOTING_EVENT",
+}
+
+IGNORED_SPEAKER_NAMES = {
+    "kohaloleku kontroll",
+    "istung lõppes",
+    "istung algas",
+    "hääletustulemused",
+}
+
 
 def clean_html(raw_html: str) -> str:
     """Remove HTML tags, decode HTML entities (&nbsp;, &quot;, etc.) and normalize whitespace."""
@@ -60,8 +74,27 @@ def format_stenogram_url(
     return base
 
 
+KNOWN_ROLE_KEYWORDS = {
+    "minister",
+    "esimees",
+    "aseesimees",
+    "õiguskantsler",
+    "riigikontrolör",
+    "president",
+    "riigisekretär",
+    "kantsler",
+    "asekantsler",
+    "peadirektor",
+    "juhataja",
+    "ettekandja",
+    "kaasettekandja",
+    "nõunik",
+    "ekspert",
+}
+
+
 def split_speaker_role(full_name: str) -> tuple[str, str | None]:
-    """Separate official titles (e.g. 'Peaminister') from speaker's full name."""
+    """Separate official titles (e.g. 'Peaminister', 'Õiguskantsler', 'Riigikontrolör') from speaker's full name."""
     parts = full_name.strip().split(" ")
     if len(parts) <= 1:
         return full_name, None
@@ -70,12 +103,8 @@ def split_speaker_role(full_name: str) -> tuple[str, str | None]:
     i = len(parts) - 1
     while i >= 0:
         word = parts[i]
-        if (
-            word
-            and word[0].isupper()
-            and "minister" not in word.lower()
-            and "esimees" not in word.lower()
-        ):
+        word_lower = word.lower()
+        if word and word[0].isupper() and not any(kw in word_lower for kw in KNOWN_ROLE_KEYWORDS):
             name_parts.insert(0, word)
             i -= 1
         else:
@@ -116,33 +145,102 @@ def get_month_ranges(start_date: str, end_date: str) -> list[tuple[str, str]]:
     return ranges
 
 
+def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[dict]) -> None:
+    """Save or update session speeches in yearly JSONL dataset."""
+    out_file = os.path.join(OUTPUT_DIR_PROCESSED, f"{year_str}.jsonl")
+    if not os.path.exists(out_file):
+        with open(out_file, "w", encoding="utf-8") as f:
+            for s in speeches:
+                f.write(json.dumps(s, ensure_ascii=False) + "\n")
+        return
+
+    # Check if session already exists (e.g. updating an unedited session)
+    with open(out_file, encoding="utf-8") as f:
+        existing_lines = f.readlines()
+
+    target_needle = f'"source_file": "{source_file_key}"'
+    has_existing = any(target_needle in line for line in existing_lines)
+
+    if has_existing:
+        new_lines = [line for line in existing_lines if target_needle not in line]
+        for s in speeches:
+            new_lines.append(json.dumps(s, ensure_ascii=False) + "\n")
+        with open(out_file, "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+    else:
+        with open(out_file, "a", encoding="utf-8") as f:
+            for s in speeches:
+                f.write(json.dumps(s, ensure_ascii=False) + "\n")
+
+
 def fetch_and_process_stenograms(
     start_date: str | None = None,
     end_date: str | None = None,
-) -> None:
+) -> bool:
     """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
-    # Load existing verbatim links/dates from processed jsonl files
-    processed_uuids = set()
+    # Load existing meeting codes and source files from processed jsonl files
+    processed_meeting_codes = set()
+    processed_source_files = set()
+    unedited_meeting_codes = set()
+    unedited_source_files = set()
+    total_existing_records = 0
+    latest_existing_date = None
+
     for jsonl_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.jsonl")):
         if os.path.basename(jsonl_path) == "attendance.jsonl":
             continue
         try:
             with open(jsonl_path, encoding="utf-8") as f:
                 for line in f:
-                    if line.strip():
+                    if not line.strip():
+                        continue
+                    total_existing_records += 1
+                    try:
                         record = json.loads(line)
-                        if record.get("source_url"):
-                            processed_uuids.add(record["source_url"])
-                        if record.get("date"):
-                            processed_uuids.add(record["date"])
+                        src_file = record.get("source_file")
+                        src_url = record.get("source_url")
+                        rec_date = record.get("date")
+                        if rec_date and (
+                            latest_existing_date is None or rec_date > latest_existing_date
+                        ):
+                            latest_existing_date = rec_date
+
+                        code = None
+                        if src_url:
+                            candidate_code = src_url.split("#")[0].rstrip("/").split("/")[-1]
+                            if candidate_code.isdigit():
+                                code = candidate_code
+
+                        # Check if session is explicitly UNEDITED
+                        status = record.get("status")
+                        if status == "UNEDITED":
+                            if src_file:
+                                unedited_source_files.add(src_file)
+                            if code:
+                                unedited_meeting_codes.add(code)
+                        else:
+                            if src_file:
+                                processed_source_files.add(src_file)
+                            if code:
+                                processed_meeting_codes.add(code)
+                    except json.JSONDecodeError:
+                        continue
         except Exception as e:
             print(f"Notice: Could not read {jsonl_path}: {e}")
 
+    # Remove any unedited codes from finalized sets so they can be re-fetched
+    processed_meeting_codes.difference_update(unedited_meeting_codes)
+    processed_source_files.difference_update(unedited_source_files)
+
     if not start_date:
-        if processed_uuids:
-            # Incremental run: only fetch the last 14 days
+        if latest_existing_date:
+            # Incremental run: start from the latest existing date minus a 7-day safety buffer
+            latest_dt = datetime.strptime(latest_existing_date, "%Y-%m-%d")
+            start_dt = max(datetime.strptime(START_DATE, "%Y-%m-%d"), latest_dt - timedelta(days=7))
+            start_date = start_dt.strftime("%Y-%m-%d")
+        elif total_existing_records > 0:
             start_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
         else:
             start_date = START_DATE
@@ -161,6 +259,7 @@ def fetch_and_process_stenograms(
         faction_map = {}
 
     print(f"Starting API fetch from {start_date} to {end_date}")
+    has_errors = False
 
     for start, end in date_ranges:
         print(f"Fetching {start} to {end}...")
@@ -199,19 +298,14 @@ def fetch_and_process_stenograms(
                 time.sleep(5)
 
         if not isinstance(verbatims, list):
-            print(f"Notice: Skipping {start}-{end} (no valid data received).")
+            print(f"Warning: Skipping {start}-{end} (no valid data received).")
+            has_errors = True
             continue
 
-        try:
-            for verbatim in verbatims:
+        for verbatim in verbatims:
+            try:
                 verbatim_link = verbatim.get("link", "")
-                # If we don't have a reliable UUID in verbatim root, use the link as the unique ID
-                uid = verbatim_link if verbatim_link else str(verbatim.get("date"))
-
-                if uid in processed_uuids:
-                    continue
-
-                print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
+                meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
 
                 # Extract date and time for our JSONL format
                 v_date_str = verbatim.get("date")  # e.g. "2024-01-08T13:00:00.000+00:00"
@@ -223,29 +317,29 @@ def fetch_and_process_stenograms(
                 date_formatted = v_dt.strftime("%Y-%m-%d")
 
                 # Extract time from link if possible, or from date string
-                # e.g. https://stenogrammid.riigikogu.ee/202401081500
                 time_formatted = "0000"
                 if verbatim_link and len(verbatim_link) >= 4:
-                    time_formatted = verbatim_link[-4:]
-                    if not time_formatted.isdigit():
-                        time_formatted = "0000"
+                    candidate_time = verbatim_link[-4:]
+                    if candidate_time.isdigit():
+                        time_formatted = candidate_time
 
-                meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
+                source_file_key = f"{date_formatted}_{time_formatted}.api"
+
+                if (meeting_code and meeting_code in processed_meeting_codes) or (
+                    source_file_key in processed_source_files
+                ):
+                    continue
+
+                print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
+
                 rich_meeting = fetch_rich_meeting_data(meeting_code)
 
+                is_edited = (
+                    rich_meeting and rich_meeting.get("meetingStatus") == "EDITED"
+                ) or bool(verbatim.get("edited"))
+                meeting_status = "EDITED" if is_edited else "UNEDITED"
+
                 speeches_to_save = []
-                ignored_speech_types = {
-                    "PRESENCE_CHECK",
-                    "SESSION_START",
-                    "SESSION_END",
-                    "VOTING_EVENT",
-                }
-                ignored_speaker_names = {
-                    "kohaloleku kontroll",
-                    "istung lõppes",
-                    "istung algas",
-                    "hääletustulemused",
-                }
 
                 if rich_meeting and rich_meeting.get("stenograph", {}).get("agendaItems"):
                     agendas = rich_meeting["stenograph"]["agendaItems"]
@@ -268,8 +362,8 @@ def fetch_and_process_stenograms(
                             if (
                                 not raw_text
                                 or not speaker_raw
-                                or sp_type in ignored_speech_types
-                                or speaker_raw.lower() in ignored_speaker_names
+                                or sp_type in IGNORED_SPEECH_TYPES
+                                or speaker_raw.lower() in IGNORED_SPEAKER_NAMES
                                 or raw_text.startswith("http://")
                                 or raw_text.startswith("https://")
                             ):
@@ -294,7 +388,7 @@ def fetch_and_process_stenograms(
                                 {
                                     "date": date_formatted,
                                     "time": sp_time,
-                                    "source_file": f"{date_formatted}_{time_formatted}.api",
+                                    "source_file": source_file_key,
                                     "source_url": item_source_url,
                                     "agenda_title": agenda_title or None,
                                     "video_url": video_url,
@@ -303,6 +397,7 @@ def fetch_and_process_stenograms(
                                     "speaker_faction": speaker_faction,
                                     "text": raw_text,
                                     "text_lemmas": lemmas,
+                                    "status": meeting_status,
                                 }
                             )
                 else:
@@ -327,7 +422,7 @@ def fetch_and_process_stenograms(
                                     {
                                         "date": date_formatted,
                                         "time": time_formatted,
-                                        "source_file": f"{date_formatted}_{time_formatted}.api",
+                                        "source_file": source_file_key,
                                         "source_url": format_stenogram_url(
                                             meeting_code=meeting_code,
                                             verbatim_link=verbatim_link,
@@ -339,22 +434,34 @@ def fetch_and_process_stenograms(
                                         "speaker_faction": speaker_faction,
                                         "text": raw_text,
                                         "text_lemmas": lemmas,
+                                        "status": meeting_status,
                                     }
                                 )
 
                 if speeches_to_save:
-                    out_file = os.path.join(OUTPUT_DIR_PROCESSED, f"{year_str}.jsonl")
-                    with open(out_file, "a", encoding="utf-8") as f:
-                        for s in speeches_to_save:
-                            f.write(json.dumps(s, ensure_ascii=False) + "\n")
+                    save_session_to_jsonl(year_str, source_file_key, speeches_to_save)
+                    print(
+                        f"  -> Saved {len(speeches_to_save)} speeches ({meeting_status}) to {year_str}.jsonl"
+                    )
 
-                    print(f"  -> Saved {len(speeches_to_save)} speeches to {year_str}.jsonl")
+                if meeting_status == "EDITED":
+                    if meeting_code:
+                        processed_meeting_codes.add(meeting_code)
+                    processed_source_files.add(source_file_key)
+                    unedited_meeting_codes.discard(meeting_code)
+                    unedited_source_files.discard(source_file_key)
+                else:
+                    if meeting_code:
+                        unedited_meeting_codes.add(meeting_code)
+                    unedited_source_files.add(source_file_key)
 
-                processed_uuids.add(uid)
+            except Exception as e:
+                print(f"Error processing verbatim {verbatim.get('title')}: {e}")
+                has_errors = True
 
-        except Exception as e:
-            print(f"Error on {start}-{end}: {e}")
+    return not has_errors
 
 
 if __name__ == "__main__":
-    fetch_and_process_stenograms()
+    success = fetch_and_process_stenograms()
+    sys.exit(0 if success else 1)

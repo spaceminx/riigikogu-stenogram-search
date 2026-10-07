@@ -19,8 +19,7 @@ class Speech(Base):
     speaker_faction = Column(Text, nullable=True)
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
-
-    __table_args__ = (UniqueConstraint("source_file", "speaker", "text", name="uq_speech"),)
+    status = Column(Text, nullable=True, default="EDITED")
 
 
 class Lemma(Base):
@@ -40,6 +39,8 @@ class SpeechTerm(Base):
     lemma_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
 
     count = Column(Integer, nullable=False, default=1)
+
+    __table_args__ = (UniqueConstraint("speech_id", "lemma_id", name="uq_speech_lemma"),)
 
 
 class Attendance(Base):

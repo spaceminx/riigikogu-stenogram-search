@@ -1,13 +1,11 @@
-pandas>=2.3.3
 fastapi>=0.142.2
 requests>=2.34.2
-beautifulsoup4>=4.15.0
 sqlalchemy>=2.0.54
 estnltk~=1.7.4
-nltk
 boto3
 uvicorn
 python-dotenv
+tqdm>=4.66.0
 ruff
 pytest
 httpx

@@ -1,9 +1,12 @@
 import csv
 import io
 import json
+import logging
 from datetime import date
+from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
+from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from src.api.attendance import (
@@ -20,13 +23,27 @@ from src.api.search import (
     keyword_top_speakers,
     search_by_keyword,
 )
+from src.load.database import SessionLocal
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
 @router.get("/")
 def root():
-    return {"status": "ok"}
+    session = SessionLocal()
+    try:
+        session.execute(text("SELECT 1"))
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error("Healthcheck database query failed: %s", e)
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaasi ühendus puudub.",
+        ) from e
+    finally:
+        session.close()
 
 
 @router.get("/overview")
@@ -39,6 +56,7 @@ def dashboard_overview():
             detail="Arhiivi koondandmed pole praegu kättesaadavad.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Overview query failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
             detail="Arhiivi koondandmete päring ebaõnnestus.",
@@ -55,6 +73,7 @@ def plenary_session_dates():
             detail="Istungite kuupäevad pole praegu kättesaadavad.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Session dates query failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
             detail="Istungite kuupäevade päring ebaõnnestus.",
@@ -73,6 +92,9 @@ def plenary_session(session_date: date):
             detail="Istungi stenogramm pole praegu kättesaadav.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error(
+            "Session transcript query failed for date %s: %s", session_date, e, exc_info=True
+        )
         raise HTTPException(
             status_code=500,
             detail="Istungi stenogrammi päring ebaõnnestus.",
@@ -81,7 +103,9 @@ def plenary_session(session_date: date):
 
 @router.get("/attendance/stats")
 def attendance_stats(
-    membership: str = Query("15", description="Riigikogu koosseis (14, 15 või all)"),
+    membership: str = Query(
+        "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    ),
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
 ):
@@ -93,15 +117,18 @@ def attendance_stats(
             detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud. Käivita scripts/fetch_attendance.py või scripts/build_full_database.py.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Attendance stats query failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Andmebaasipäring ebaõnnestus: {e}",
+            detail="Kohalolekuandmete päring ebaõnnestus.",
         ) from e
 
 
 @router.get("/attendance/factions")
 def attendance_factions(
-    membership: str = Query("15", description="Riigikogu koosseis (14, 15 või all)"),
+    membership: str = Query(
+        "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    ),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
 ):
     try:
@@ -112,15 +139,18 @@ def attendance_factions(
             detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud. Käivita scripts/fetch_attendance.py või scripts/build_full_database.py.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Faction attendance stats query failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Andmebaasipäring ebaõnnestus: {e}",
+            detail="Fraktsioonide kohaloleku päring ebaõnnestus.",
         ) from e
 
 
 @router.get("/attendance/factions/list")
 def factions_list(
-    membership: str = Query("15", description="Riigikogu koosseis (14, 15 või all)"),
+    membership: str = Query(
+        "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    ),
 ):
     try:
         return get_factions_list(membership=membership)
@@ -130,9 +160,10 @@ def factions_list(
             detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Factions list query failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Andmebaasipäring ebaõnnestus: {e}",
+            detail="Fraktsioonide nimekirja päring ebaõnnestus.",
         ) from e
 
 
@@ -141,11 +172,17 @@ def search(
     q: str = Query(..., min_length=1, max_length=1000),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    membership: str = Query("all", description="Riigikogu koosseis (14, 15 või all)"),
+    membership: str = Query(
+        "all", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    ),
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     speaker: str | None = Query(None, description="Filtreeri esineja nime järgi"),
-    start_date: str | None = Query(None, description="Alguskuupäev (YYYY-MM-DD)"),
-    end_date: str | None = Query(None, description="Lõppkuupäev (YYYY-MM-DD)"),
+    start_date: str | None = Query(
+        None, description="Alguskuupäev (YYYY-MM-DD)", pattern=r"^\d{4}-\d{2}-\d{2}$"
+    ),
+    end_date: str | None = Query(
+        None, description="Lõppkuupäev (YYYY-MM-DD)", pattern=r"^\d{4}-\d{2}-\d{2}$"
+    ),
     sort_by: str = Query(
         "date_desc",
         description="Sorteerimine: date_desc (uuemad enne), date_asc (vanemad enne), match_count_desc (sagedus)",
@@ -183,9 +220,10 @@ def search(
             detail="Andmebaas või otsingutabelid ei ole initsialiseeritud. Käivita scripts/build_full_database.py.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Search query failed for %r: %s", q, e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Otsingupäring ebaõnnestus: {e}",
+            detail="Otsingupäring ebaõnnestus.",
         ) from e
 
 
@@ -193,11 +231,11 @@ def search(
 def search_activity(
     q: str = Query(..., min_length=1, max_length=1000),
     interval: str = Query("monthly"),
-    membership: str = Query("all"),
+    membership: str = Query("all", pattern=r"^(\d+|all)$"),
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
-    start_date: str | None = Query(None),
-    end_date: str | None = Query(None),
+    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
 ):
     if interval not in ("daily", "weekly", "monthly"):
         raise HTTPException(
@@ -229,9 +267,10 @@ def search_activity(
             detail="Andmebaas või otsingutabelid ei ole initsialiseeritud. Käivita scripts/build_full_database.py.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Search activity query failed for %r: %s", q, e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Aktiivsuse päring ebaõnnestus: {e}",
+            detail="Aktiivsuse päring ebaõnnestus.",
         ) from e
 
 
@@ -239,11 +278,11 @@ def search_activity(
 def search_speakers(
     q: str = Query(..., min_length=1, max_length=1000),
     limit: int = Query(20, ge=1, le=100),
-    membership: str = Query("all"),
+    membership: str = Query("all", pattern=r"^(\d+|all)$"),
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
-    start_date: str | None = Query(None),
-    end_date: str | None = Query(None),
+    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
 ):
     try:
         return {
@@ -269,9 +308,10 @@ def search_speakers(
             detail="Andmebaas või otsingutabelid ei ole initsialiseeritud. Käivita scripts/build_full_database.py.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Search speakers query failed for %r: %s", q, e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Kõnelejate päring ebaõnnestus: {e}",
+            detail="Kõnelejate päring ebaõnnestus.",
         ) from e
 
 
@@ -291,9 +331,12 @@ def speech_context(
             detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error(
+            "Speech context query failed for speech_id %d: %s", speech_id, e, exc_info=True
+        )
         raise HTTPException(
             status_code=500,
-            detail=f"Andmebaasipäring ebaõnnestus: {e}",
+            detail="Kõne konteksti päring ebaõnnestus.",
         ) from e
 
 
@@ -301,11 +344,11 @@ def speech_context(
 def search_export(
     q: str = Query(..., min_length=1, max_length=1000),
     format: str = Query("csv", description="Ekspordi formaat: 'csv' või 'json'"),
-    membership: str = Query("all"),
+    membership: str = Query("all", pattern=r"^(\d+|all)$"),
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
-    start_date: str | None = Query(None),
-    end_date: str | None = Query(None),
+    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     sort_by: str = Query("date_desc", pattern="^(date_desc|date_asc|match_count_desc)$"),
     limit: int = Query(2000, ge=1, le=5000),
 ):
@@ -313,7 +356,7 @@ def search_export(
         raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
 
     try:
-        results, _ = search_by_keyword(
+        results, total_count = search_by_keyword(
             query=q,
             limit=limit,
             offset=0,
@@ -327,12 +370,28 @@ def search_export(
         )
 
         safe_q = "".join(c for c in q if c.isalnum() or c in ("-", "_")).strip() or "otsing"
+        ascii_fallback = (
+            "".join(c for c in safe_q if c.isascii() and (c.isalnum() or c in ("-", "_"))).strip()
+            or "otsing"
+        )
+        encoded_json_filename = quote(f"riigikogu_{safe_q}.json")
+        encoded_csv_filename = quote(f"riigikogu_{safe_q}.csv")
+
+        is_truncated = "true" if total_count > len(results) else "false"
+        common_headers = {
+            "X-Total-Count": str(total_count),
+            "X-Export-Count": str(len(results)),
+            "X-Export-Truncated": is_truncated,
+        }
 
         if format == "json":
             return Response(
                 content=json.dumps(results, ensure_ascii=False, indent=2),
                 media_type="application/json; charset=utf-8",
-                headers={"Content-Disposition": f'attachment; filename="riigikogu_{safe_q}.json"'},
+                headers={
+                    **common_headers,
+                    "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.json\"; filename*=UTF-8''{encoded_json_filename}",
+                },
             )
 
         output = io.StringIO()
@@ -373,7 +432,10 @@ def search_export(
         return Response(
             content=csv_bytes,
             media_type="text/csv; charset=utf-8",
-            headers={"Content-Disposition": f'attachment; filename="riigikogu_{safe_q}.csv"'},
+            headers={
+                **common_headers,
+                "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.csv\"; filename*=UTF-8''{encoded_csv_filename}",
+            },
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -383,7 +445,8 @@ def search_export(
             detail="Andmebaas või otsingutabelid ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
+        logger.error("Export query failed for %r: %s", q, e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Eksport ebaõnnestus: {e}",
+            detail="Eksport ebaõnnestus.",
         ) from e

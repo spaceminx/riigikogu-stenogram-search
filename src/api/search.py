@@ -1,15 +1,15 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from estnltk.vabamorf.morf import Vabamorf
 from sqlalchemy import func, or_
 
-from config import STOPWORDS
+from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
 from src.load.models import Lemma, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
-_WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ]+\b")
+_WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ0-9\-]+\b")
 _VABAMORF = Vabamorf.instance()
 
 
@@ -46,7 +46,7 @@ def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
 
 
 def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]:
-    """Fill gaps in monthly timeline results with zero-count intervals."""
+    """Fill gaps in timeline results with zero-count intervals."""
     if not results:
         return []
 
@@ -59,18 +59,26 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
         end = datetime.strptime(periods[-1], "%Y-%m")
 
         filled = []
-
         current = start
         while current <= end:
             period = current.strftime("%Y-%m")
-
             filled.append({label: period, "count": data.get(period, 0)})
-
             if current.month == 12:
                 current = current.replace(year=current.year + 1, month=1)
             else:
                 current = current.replace(month=current.month + 1)
+        return filled
 
+    if interval == "daily":
+        start = datetime.strptime(periods[0], "%Y-%m-%d")
+        end = datetime.strptime(periods[-1], "%Y-%m-%d")
+
+        filled = []
+        current = start
+        while current <= end:
+            period = current.strftime("%Y-%m-%d")
+            filled.append({label: period, "count": data.get(period, 0)})
+            current += timedelta(days=1)
         return filled
 
     return [{label: period, "count": count} for period, count in results]
@@ -98,7 +106,7 @@ def parse_query_groups(query: str) -> list[list[str]]:
         lemmas = lemmatize_text(group).split()
         lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
         if lemmas:
-            groups.append(lemmas)
+            groups.append(list(dict.fromkeys(lemmas)))
 
     return groups
 
@@ -159,10 +167,10 @@ def build_speech_filters(
     """Build list of SQLAlchemy filter clauses for Speech table."""
     filters = []
 
-    if membership == "15":
-        filters.append(Speech.date >= "2023-04-10")
-    elif membership == "14":
-        filters.append(Speech.date < "2023-04-10")
+    if membership in MEMBERSHIP_DATES:
+        start_bound, end_bound = MEMBERSHIP_DATES[membership]
+        filters.append(Speech.date >= start_bound)
+        filters.append(Speech.date <= end_bound)
 
     if faction:
         filters.append(Speech.speaker_faction == faction)
@@ -196,6 +204,9 @@ def search_by_keyword(
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
         )
+
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Alguskuupäev ei saa olla hilisem kui lõppkuupäev.")
 
     session = SessionLocal()
 
@@ -297,6 +308,9 @@ def keyword_activity(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
         )
 
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Alguskuupäev ei saa olla hilisem kui lõppkuupäev.")
+
     session = SessionLocal()
     try:
         groups = parse_query_groups(query)
@@ -329,7 +343,7 @@ def keyword_activity(
             query_builder = query_builder.filter(*speech_filters)
 
         results = query_builder.group_by(date_group).order_by(date_group).all()
-        if interval == "monthly":
+        if interval in ("monthly", "daily"):
             return fill_missing_periods(results, interval, label)
         return [{label: period, "count": int(total_count)} for period, total_count in results]
     finally:
@@ -365,7 +379,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
         speeches = (
             session.query(Speech)
             .filter(Speech.date == session_date)
-            .order_by(Speech.time.asc(), Speech.id.asc())
+            .order_by(Speech.id.asc())
             .all()
         )
         return [
@@ -489,6 +503,9 @@ def keyword_top_speakers(
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
         )
+
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Alguskuupäev ei saa olla hilisem kui lõppkuupäev.")
 
     session = SessionLocal()
     try:
