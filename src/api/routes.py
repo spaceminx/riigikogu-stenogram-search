@@ -343,7 +343,7 @@ def search_export(
         raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
 
     try:
-        results, _ = search_by_keyword(
+        results, total_count = search_by_keyword(
             query=q,
             limit=limit,
             offset=0,
@@ -364,12 +364,20 @@ def search_export(
         encoded_json_filename = quote(f"riigikogu_{safe_q}.json")
         encoded_csv_filename = quote(f"riigikogu_{safe_q}.csv")
 
+        is_truncated = "true" if total_count > len(results) else "false"
+        common_headers = {
+            "X-Total-Count": str(total_count),
+            "X-Export-Count": str(len(results)),
+            "X-Export-Truncated": is_truncated,
+        }
+
         if format == "json":
             return Response(
                 content=json.dumps(results, ensure_ascii=False, indent=2),
                 media_type="application/json; charset=utf-8",
                 headers={
-                    "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.json\"; filename*=UTF-8''{encoded_json_filename}"
+                    **common_headers,
+                    "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.json\"; filename*=UTF-8''{encoded_json_filename}",
                 },
             )
 
@@ -412,7 +420,8 @@ def search_export(
             content=csv_bytes,
             media_type="text/csv; charset=utf-8",
             headers={
-                "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.csv\"; filename*=UTF-8''{encoded_csv_filename}"
+                **common_headers,
+                "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.csv\"; filename*=UTF-8''{encoded_csv_filename}",
             },
         )
     except ValueError as e:

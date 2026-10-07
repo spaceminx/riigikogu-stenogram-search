@@ -37,6 +37,7 @@ STOPWORDS = {
     "ma",
     "sa",
     "ta",
+    "tema",
     "nad",
     "meie",
     "teie",

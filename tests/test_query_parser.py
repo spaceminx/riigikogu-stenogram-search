@@ -63,3 +63,18 @@ def test_fill_missing_periods_monthly():
     assert filled[0] == {"month": "2024-01", "count": 5}
     assert filled[1] == {"month": "2024-02", "count": 0}
     assert filled[2] == {"month": "2024-03", "count": 10}
+
+
+def test_duplicate_lemmas_deduplicated_in_group():
+    # 'maks' and 'maksud' both lemmatize to 'maks'. The AND group should deduplicate lemmas.
+    groups = parse_query_groups("maks maksud")
+    assert len(groups) == 1
+    assert groups[0] == ["maks"]
+
+
+def test_pronoun_stopwords_filtered():
+    # 'tema', 'ta', 'nad' should be filtered out
+    assert is_only_stopwords("tema ta nad") is True
+    groups = parse_query_groups("tema räägib")
+    assert len(groups) == 1
+    assert "tema" not in groups[0]

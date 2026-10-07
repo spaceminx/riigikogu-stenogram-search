@@ -98,7 +98,7 @@ def parse_query_groups(query: str) -> list[list[str]]:
         lemmas = lemmatize_text(group).split()
         lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
         if lemmas:
-            groups.append(lemmas)
+            groups.append(list(dict.fromkeys(lemmas)))
 
     return groups
 
@@ -371,7 +371,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
         speeches = (
             session.query(Speech)
             .filter(Speech.date == session_date)
-            .order_by(Speech.time.asc(), Speech.id.asc())
+            .order_by(Speech.id.asc())
             .all()
         )
         return [

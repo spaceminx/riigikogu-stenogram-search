@@ -67,7 +67,8 @@ def get_attendance_stats(
         if membership in MEMBERSHIP_DATES:
             start_d, end_d = MEMBERSHIP_DATES[membership]
             query = query.filter(
-                Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                Attendance.session_date >= start_d,
+                Attendance.session_date <= f"{end_d}T23:59:59",
             )
 
         if target_members is not None:
@@ -87,7 +88,8 @@ def get_attendance_stats(
             if membership in MEMBERSHIP_DATES:
                 start_d, end_d = MEMBERSHIP_DATES[membership]
                 f_query = f_query.filter(
-                    Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                    Attendance.session_date >= start_d,
+                    Attendance.session_date <= f"{end_d}T23:59:59",
                 )
             if faction:
                 f_query = f_query.filter(Attendance.faction == faction)
