@@ -71,21 +71,27 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                     if src_file not in speeches_by_session:
                         speeches_by_session[src_file] = []
 
-                    speech = Speech(
-                        date=data["date"],
-                        time=data["time"],
-                        source_file=src_file,
-                        source_url=data.get("source_url"),
-                        agenda_title=data.get("agenda_title"),
-                        video_url=data.get("video_url"),
-                        speaker=data.get("speaker", "Tundmatu"),
-                        speaker_role=data.get("speaker_role"),
-                        speaker_faction=data.get("speaker_faction"),
-                        text=data["text"],
-                        text_lemmas=data.get("text_lemmas"),
-                        status=rec_status,
-                    )
-                    speeches_by_session[src_file].append(speech)
+                    try:
+                        speech = Speech(
+                            date=data["date"],
+                            time=data["time"],
+                            source_file=src_file,
+                            source_url=data.get("source_url"),
+                            agenda_title=data.get("agenda_title"),
+                            video_url=data.get("video_url"),
+                            speaker=data.get("speaker", "Tundmatu"),
+                            speaker_role=data.get("speaker_role"),
+                            speaker_faction=data.get("speaker_faction"),
+                            text=data["text"],
+                            text_lemmas=data.get("text_lemmas"),
+                            status=rec_status,
+                        )
+                        speeches_by_session[src_file].append(speech)
+                    except KeyError as e:
+                        print(
+                            f"Warning: Missing required field {e} on line {line_num} in {year_file.name}. Skipping."
+                        )
+                        continue
 
             for src_file, speeches_list in speeches_by_session.items():
                 try:

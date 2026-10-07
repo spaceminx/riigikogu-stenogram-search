@@ -5,7 +5,7 @@ from pathlib import Path
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import OUTPUT_DIR_PROCESSED
+from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
 
 try:
     from dotenv import load_dotenv
@@ -30,8 +30,8 @@ def download_from_b2() -> bool:
         print("ERROR: B2_KEY_ID or B2_APP_KEY not found in environment or .env.")
         return False
 
-    endpoint = "https://s3.eu-central-003.backblazeb2.com"
-    bucket_name = "riigikogu-stenograms"
+    endpoint = B2_ENDPOINT_URL
+    bucket_name = B2_BUCKET_NAME
 
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 

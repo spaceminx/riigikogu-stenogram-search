@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from config import B2_BUCKET_NAME, B2_ENDPOINT_URL
+
 try:
     from dotenv import load_dotenv
 
@@ -32,8 +34,8 @@ def download_all_from_b2() -> bool:
         print("=" * 60)
         return False
 
-    endpoint = "https://s3.eu-central-003.backblazeb2.com"
-    bucket_name = "riigikogu-stenograms"
+    endpoint = B2_ENDPOINT_URL
+    bucket_name = B2_BUCKET_NAME
 
     Path("data/processed").mkdir(parents=True, exist_ok=True)
 
