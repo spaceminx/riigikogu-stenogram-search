@@ -485,3 +485,12 @@ def test_alphanumeric_lemmatization():
     lemmas = lemmatize_text(text)
     assert "5g" in lemmas
     assert "riik" in lemmas
+
+
+def test_speech_type_filtering():
+    from scripts.fetch_stenograms_api import IGNORED_SPEAKER_NAMES, IGNORED_SPEECH_TYPES
+
+    assert "PRESENCE_CHECK" in IGNORED_SPEECH_TYPES
+    assert "SESSION_END" in IGNORED_SPEECH_TYPES
+    assert "SPEECH" not in IGNORED_SPEECH_TYPES
+    assert "istung lõppes" in IGNORED_SPEAKER_NAMES

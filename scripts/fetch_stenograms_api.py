@@ -16,6 +16,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import OUTPUT_DIR_PROCESSED, START_DATE
 from src.transform.lemmatizer import lemmatize_text
 
+IGNORED_SPEECH_TYPES = {
+    "PRESENCE_CHECK",
+    "SESSION_START",
+    "SESSION_END",
+    "VOTING_EVENT",
+}
+
+IGNORED_SPEAKER_NAMES = {
+    "kohaloleku kontroll",
+    "istung lõppes",
+    "istung algas",
+    "hääletustulemused",
+}
+
 
 def clean_html(raw_html: str) -> str:
     """Remove HTML tags, decode HTML entities (&nbsp;, &quot;, etc.) and normalize whitespace."""
@@ -250,18 +264,6 @@ def fetch_and_process_stenograms(
                 rich_meeting = fetch_rich_meeting_data(meeting_code)
 
                 speeches_to_save = []
-                ignored_speech_types = {
-                    "PRESENCE_CHECK",
-                    "SESSION_START",
-                    "SESSION_END",
-                    "VOTING_EVENT",
-                }
-                ignored_speaker_names = {
-                    "kohaloleku kontroll",
-                    "istung lõppes",
-                    "istung algas",
-                    "hääletustulemused",
-                }
 
                 if rich_meeting and rich_meeting.get("stenograph", {}).get("agendaItems"):
                     agendas = rich_meeting["stenograph"]["agendaItems"]
@@ -284,8 +286,8 @@ def fetch_and_process_stenograms(
                             if (
                                 not raw_text
                                 or not speaker_raw
-                                or sp_type in ignored_speech_types
-                                or speaker_raw.lower() in ignored_speaker_names
+                                or sp_type in IGNORED_SPEECH_TYPES
+                                or speaker_raw.lower() in IGNORED_SPEAKER_NAMES
                                 or raw_text.startswith("http://")
                                 or raw_text.startswith("https://")
                             ):
