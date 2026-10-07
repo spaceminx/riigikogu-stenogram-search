@@ -16,9 +16,13 @@ const MONTHS = [
   "november",
   "detsember",
 ];
-const YEARS = Array.from({ length: 8 }, (_, index) => 2019 + index);
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from(
+  { length: Math.max(8, currentYear - 2019 + 2) },
+  (_, index) => 2019 + index
+);
 const CALENDAR_MIN_MONTH = new Date(2019, 0, 1);
-const CALENDAR_MAX_MONTH = new Date(2026, 11, 1);
+const CALENDAR_MAX_MONTH = new Date(currentYear + 1, 11, 1);
 const QUICK_PRESETS = [
   { id: "xv", label: "XV Riigikogu (2023–praegu)" },
   { id: "xiv", label: "XIV Riigikogu (2019–2023)" },
@@ -36,7 +40,7 @@ function getPresetRange(presetId, dates) {
   const today = new Date();
   const todayKey = toDateKey(today);
   if (presetId === "xv") return { startDate: "2023-04-10", endDate: todayKey };
-  if (presetId === "xiv") return { startDate: "2019-04-04", endDate: "2023-04-10" };
+  if (presetId === "xiv") return { startDate: "2019-04-04", endDate: "2023-04-09" };
   if (presetId === "year") {
     const yearAgo = new Date(today);
     yearAgo.setFullYear(yearAgo.getFullYear() - 1);

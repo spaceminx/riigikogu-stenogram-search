@@ -151,6 +151,37 @@ function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
   });
 }
 
+function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 380) {
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+
+  const terms = [
+    ...(Array.isArray(matchedWords) ? matchedWords : []),
+    ...(Array.isArray(groups) ? groups.flat() : []),
+  ]
+    .map((w) => (typeof w === "string" ? w.trim().toLowerCase() : ""))
+    .filter((w) => w.length >= 2);
+
+  let firstIndex = -1;
+  const lowerText = text.toLowerCase();
+  for (const term of terms) {
+    const idx = lowerText.indexOf(term);
+    if (idx !== -1 && (firstIndex === -1 || idx < firstIndex)) {
+      firstIndex = idx;
+    }
+  }
+
+  if (firstIndex === -1 || firstIndex < 120) {
+    return text.slice(0, maxLength).trim() + "...";
+  }
+
+  const start = Math.max(0, firstIndex - 100);
+  const end = Math.min(text.length, start + maxLength);
+  const prefix = start > 0 ? "..." : "";
+  const suffix = end < text.length ? "..." : "";
+  return prefix + text.slice(start, end).trim() + suffix;
+}
+
 function parseQueryToGroups(queryString) {
   if (!queryString || !queryString.trim()) return [[]];
   const parts = queryString
@@ -270,7 +301,8 @@ function App() {
   const [activeOnly, setActiveOnly] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState([]);
   const [factionStats, setFactionStats] = useState([]);
-  const [factionsList, setFactionsList] = useState([]);
+  const [searchFactionsList, setSearchFactionsList] = useState([]);
+  const [attendanceFactionsList, setAttendanceFactionsList] = useState([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
 
   const [sortConfig, setSortConfig] = useState({
@@ -528,7 +560,8 @@ function App() {
       try {
         const list = await fetchFactionsList("all");
         if (list && list.length > 0) {
-          setFactionsList(list);
+          setSearchFactionsList(list);
+          setAttendanceFactionsList(list);
         }
       } catch {
         // silent fallback
@@ -598,7 +631,7 @@ function App() {
         if (isMounted) {
           setAttendanceStats(membersData || []);
           setFactionStats(factionsData || []);
-          setFactionsList(listData || []);
+          setAttendanceFactionsList(listData || []);
         }
       } catch (error) {
         console.error("Failed to fetch attendance data:", error);
@@ -1052,7 +1085,7 @@ function App() {
                 onChange={(e) => setSearchFaction(e.target.value)}
               >
                 <option value="">Kõik fraktsioonid</option>
-                {factionsList.map((fac, idx) => (
+                {searchFactionsList.map((fac, idx) => (
                   <option key={idx} value={fac}>
                     {formatFactionName(fac)}
                   </option>
@@ -1508,12 +1541,15 @@ function App() {
 
                     <p className="speech-text">
                       {highlightKeywords(
-                        speech.text.slice(0, 380),
+                        getSnippet(
+                          speech.text,
+                          speech.matched_words,
+                          isSessionBrowseMode ? [[]] : groups
+                        ),
                         isSessionBrowseMode ? [[]] : groups,
                         "",
                         speech.matched_words
                       )}
-                      ...
                     </p>
 
                     <div className="speech-card-actions">
@@ -1557,7 +1593,7 @@ function App() {
                 ))}
               </div>
 
-              {totalPages > 1 && (
+              {!isSessionBrowseMode && totalPages > 1 && (
                 <div className="pagination-container">
                   <button
                     type="button"
@@ -1588,10 +1624,18 @@ function App() {
       {/* Transcript Full Context Modal */}
       {activeSpeechContext && (
         <div className="modal-backdrop" onClick={handleCloseContext}>
-          <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-content glass-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="transcript-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-top-bar">
               <div>
-                <h2 className="modal-heading">Istungi stenogramm</h2>
+                <h2 id="transcript-modal-title" className="modal-heading">
+                  Istungi stenogramm
+                </h2>
                 <div className="modal-meta-row">
                   <span>{formatDateTime(activeSpeechContext.date, activeSpeechContext.time)}</span>
                   <span>•</span>
@@ -1709,7 +1753,7 @@ function App() {
                 ? "(XV Riigikogu, 2023–praegu)"
                 : attendanceMembership === "14"
                   ? "(XIV Riigikogu, 2019–2023)"
-                  : "(2019–2026)"}
+                  : "(2019–praegu)"}
             </h2>
           </div>
 
@@ -1750,7 +1794,7 @@ function App() {
                 >
                   <option value="15">XV Riigikogu (2023–praegu)</option>
                   <option value="14">XIV Riigikogu (2019–2023)</option>
-                  <option value="all">Kõik kokku (2019–2026)</option>
+                  <option value="all">Kõik kokku (2019–praegu)</option>
                 </select>
               </div>
 
@@ -1766,7 +1810,7 @@ function App() {
                     onChange={(e) => setSelectedFaction(e.target.value)}
                   >
                     <option value="">Kõik fraktsioonid</option>
-                    {factionsList.map((fac, idx) => (
+                    {attendanceFactionsList.map((fac, idx) => (
                       <option key={idx} value={fac}>
                         {formatFactionName(fac)}
                       </option>

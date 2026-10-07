@@ -8,7 +8,15 @@ async function handleResponse(res) {
     try {
       const data = await res.json();
       if (data && data.detail) {
-        errorDetail = data.detail;
+        if (typeof data.detail === "string") {
+          errorDetail = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          errorDetail = data.detail.map((d) => (d && d.msg ? d.msg : JSON.stringify(d))).join(", ");
+        } else if (typeof data.detail === "object") {
+          errorDetail = JSON.stringify(data.detail);
+        } else {
+          errorDetail = String(data.detail);
+        }
       }
     } catch {
       // response body was not JSON
