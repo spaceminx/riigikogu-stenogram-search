@@ -5070,14 +5070,105 @@ html[data-theme="dark"] .sample-chart {
 }
 
 .speech-card-actions .speech-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   flex: 0 0 auto;
   margin-top: 0;
   color: #315b84;
   white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
 }
 
 .speech-card-actions .speech-link:hover {
   color: #1e3a5f;
+  text-decoration: underline;
+}
+
+.speech-card-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.speech-video-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.speech-video-link:hover {
+  color: #991b1b;
+  text-decoration: underline;
+}
+
+.speech-agenda-tag {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  background: #f1f5f9;
+  border-left: 3px solid #315b84;
+  border-radius: 0 4px 4px 0;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.agenda-kicker {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.agenda-title-text {
+  color: #334155;
+  font-weight: 500;
+}
+
+.transcript-agenda-badge {
+  display: inline-block;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.transcript-video-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #b91c1c;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 2px 6px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.transcript-video-btn:hover {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 @media (max-width: 720px) {

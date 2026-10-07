@@ -9,6 +9,7 @@ import {
   Moon,
   Search,
   Sun,
+  Video,
 } from "lucide-react";
 import useSWR from "swr";
 import { fetchDashboardOverview, fetchPlenarySession, fetchPlenarySessionDates } from "./api";
@@ -1490,6 +1491,13 @@ function App() {
                       </span>
                     </div>
 
+                    {speech.agenda_title && (
+                      <div className="speech-agenda-tag" title={speech.agenda_title}>
+                        <span className="agenda-kicker">Päevakord:</span>
+                        <span className="agenda-title-text">{speech.agenda_title}</span>
+                      </div>
+                    )}
+
                     <p className="speech-text">
                       {highlightKeywords(
                         speech.text.slice(0, 380),
@@ -1512,30 +1520,30 @@ function App() {
                           : `Vaata tervet istungit (${speech.count} mainimist)`}
                       </button>
 
-                      <a
-                        href={speech.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="speech-link"
-                      >
-                        Ava allikas
-                        <svg
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          style={{ marginLeft: "4px" }}
+                      <div className="speech-card-links">
+                        {speech.video_url && (
+                          <a
+                            href={speech.video_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="speech-video-link"
+                            title="Vaata kõnet YouTube'is alates kõne algusest"
+                          >
+                            <Video size={14} aria-hidden="true" />
+                            <span>Vaata videot</span>
+                          </a>
+                        )}
+
+                        <a
+                          href={speech.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="speech-link"
                         >
-                          <path
-                            d="M7 17L17 7M17 7H7M17 7V17"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </a>
+                          <span>Ava allikas</span>
+                          <ExternalLink size={14} aria-hidden="true" />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1647,8 +1655,26 @@ function App() {
                               {formatFactionName(speech.speaker_faction)}
                             </span>
                           )}
+                          {speech.agenda_title && (
+                            <span className="transcript-agenda-badge" title={speech.agenda_title}>
+                              {speech.agenda_title}
+                            </span>
+                          )}
                           {isTarget && <span className="target-speech-badge">Otsitud kõne</span>}
                         </div>
+
+                        {speech.video_url && (
+                          <a
+                            href={speech.video_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="transcript-video-btn"
+                            title="Vaata kõnet videost alates selle algusest"
+                          >
+                            <Video size={13} aria-hidden="true" />
+                            <span>Video</span>
+                          </a>
+                        )}
                       </div>
                       <div className="transcript-row-text">
                         {highlightKeywords(
