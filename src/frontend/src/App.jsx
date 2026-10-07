@@ -27,6 +27,14 @@ import {
 } from "./api";
 import "./App.css";
 
+function normalizeSourceUrl(url) {
+  if (!url) return url;
+  return url.replace(
+    /^https?:\/\/stenogrammid\.riigikogu\.ee\/(?!et\/|en\/|ru\/)(\d{12})(.*)$/,
+    "https://stenogrammid.riigikogu.ee/et/$1$2"
+  );
+}
+
 function formatDateTime(dateStr, timeStr) {
   if (!dateStr && !timeStr) return "";
   const months = [
@@ -1349,7 +1357,7 @@ function App() {
                             {session.source_url && (
                               <a
                                 className="session-source-link"
-                                href={session.source_url}
+                                href={normalizeSourceUrl(session.source_url)}
                                 target="_blank"
                                 rel="noreferrer"
                                 aria-label="Ava istungi allikas"
@@ -1535,7 +1543,7 @@ function App() {
                         )}
 
                         <a
-                          href={speech.source_url}
+                          href={normalizeSourceUrl(speech.source_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="speech-link"
@@ -1590,7 +1598,7 @@ function App() {
                   <span>{activeSpeechContext.total_speeches} kõnet/repliiki</span>
                   <span>•</span>
                   <a
-                    href={activeSpeechContext.source_url}
+                    href={normalizeSourceUrl(activeSpeechContext.source_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="modal-external-link"

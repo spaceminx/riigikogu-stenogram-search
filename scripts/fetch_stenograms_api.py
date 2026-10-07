@@ -38,6 +38,26 @@ def fetch_rich_meeting_data(meeting_code: str) -> dict | None:
     return None
 
 
+def format_stenogram_url(
+    meeting_code: str, verbatim_link: str = "", agenda_id: int | str | None = None
+) -> str:
+    """Construct Riigikogu stenogram URL with the required /et/ language prefix and optional PKP anchor."""
+    if meeting_code and meeting_code.isdigit():
+        base = f"https://stenogrammid.riigikogu.ee/et/{meeting_code}"
+    elif verbatim_link:
+        base = re.sub(
+            r"^https?://stenogrammid\.riigikogu\.ee/(?!et/|en/|ru/)(\d{12})(.*)$",
+            r"https://stenogrammid.riigikogu.ee/et/\1\2",
+            verbatim_link,
+        )
+    else:
+        base = verbatim_link
+
+    if base and agenda_id:
+        return f"{base}#PKP-{agenda_id}"
+    return base
+
+
 def split_speaker_role(full_name: str) -> tuple[str, str | None]:
     """Separate official titles (e.g. 'Peaminister') from speaker's full name."""
     parts = full_name.strip().split(" ")
@@ -219,10 +239,10 @@ def fetch_and_process_stenograms(
                         agenda_id = agenda_item.get("id")
                         raw_agenda_name = agenda_item.get("name", "")
                         agenda_title = clean_html(raw_agenda_name)
-                        item_source_url = (
-                            f"{verbatim_link}#PKP-{agenda_id}"
-                            if (verbatim_link and agenda_id)
-                            else verbatim_link
+                        item_source_url = format_stenogram_url(
+                            meeting_code=meeting_code,
+                            verbatim_link=verbatim_link,
+                            agenda_id=agenda_id,
                         )
 
                         for sp in agenda_item.get("speeches", []):
@@ -285,7 +305,10 @@ def fetch_and_process_stenograms(
                                         "date": date_formatted,
                                         "time": time_formatted,
                                         "source_file": f"{date_formatted}_{time_formatted}.api",
-                                        "source_url": verbatim_link,
+                                        "source_url": format_stenogram_url(
+                                            meeting_code=meeting_code,
+                                            verbatim_link=verbatim_link,
+                                        ),
                                         "agenda_title": agenda_title or None,
                                         "video_url": None,
                                         "speaker": speaker_name,

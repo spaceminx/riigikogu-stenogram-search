@@ -13,6 +13,17 @@ _WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ]+\b")
 _VABAMORF = Vabamorf.instance()
 
 
+def normalize_source_url(url: str | None) -> str | None:
+    """Ensure Riigikogu stenogram URLs include the required language prefix /et/."""
+    if not url:
+        return url
+    return re.sub(
+        r"^https?://stenogrammid\.riigikogu\.ee/(?!et/|en/|ru/)(\d{12})(.*)$",
+        r"https://stenogrammid.riigikogu.ee/et/\1\2",
+        url,
+    )
+
+
 def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
     """Extract surface word tokens from text matching any of target lemmas with high-speed morphological analysis."""
     if not text or not target_lemmas:
@@ -260,7 +271,7 @@ def search_by_keyword(
                     "date": speech.date,
                     "time": speech.time,
                     "source_file": speech.source_file,
-                    "source_url": speech.source_url,
+                    "source_url": normalize_source_url(speech.source_url),
                     "agenda_title": speech.agenda_title,
                     "video_url": speech.video_url,
                 }
@@ -369,7 +380,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
                 "date": speech.date,
                 "time": speech.time,
                 "source_file": speech.source_file,
-                "source_url": speech.source_url,
+                "source_url": normalize_source_url(speech.source_url),
                 "agenda_title": speech.agenda_title,
                 "video_url": speech.video_url,
             }
@@ -452,7 +463,7 @@ def get_dashboard_overview() -> dict:
         sessions = [
             {
                 "date": row.date,
-                "source_url": row.source_url,
+                "source_url": normalize_source_url(row.source_url),
                 "topics": topics_by_source.get(row.source_file, []),
             }
             for row in session_rows
@@ -557,7 +568,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
             "date": target_speech.date,
             "time": target_speech.time,
             "source_file": target_speech.source_file,
-            "source_url": target_speech.source_url,
+            "source_url": normalize_source_url(target_speech.source_url),
             "agenda_title": target_speech.agenda_title,
             "video_url": target_speech.video_url,
             "total_speeches": len(speeches),
@@ -570,7 +581,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
                     "speaker_role": s.speaker_role,
                     "speaker_faction": s.speaker_faction,
                     "text": s.text,
-                    "source_url": s.source_url,
+                    "source_url": normalize_source_url(s.source_url),
                     "agenda_title": s.agenda_title,
                     "video_url": s.video_url,
                     "matched_words": extract_matched_words(s.text, target_lemmas)
