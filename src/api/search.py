@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from estnltk.vabamorf.morf import Vabamorf
 from sqlalchemy import func, or_
@@ -46,7 +46,7 @@ def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
 
 
 def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]:
-    """Fill gaps in monthly timeline results with zero-count intervals."""
+    """Fill gaps in timeline results with zero-count intervals."""
     if not results:
         return []
 
@@ -59,18 +59,26 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
         end = datetime.strptime(periods[-1], "%Y-%m")
 
         filled = []
-
         current = start
         while current <= end:
             period = current.strftime("%Y-%m")
-
             filled.append({label: period, "count": data.get(period, 0)})
-
             if current.month == 12:
                 current = current.replace(year=current.year + 1, month=1)
             else:
                 current = current.replace(month=current.month + 1)
+        return filled
 
+    if interval == "daily":
+        start = datetime.strptime(periods[0], "%Y-%m-%d")
+        end = datetime.strptime(periods[-1], "%Y-%m-%d")
+
+        filled = []
+        current = start
+        while current <= end:
+            period = current.strftime("%Y-%m-%d")
+            filled.append({label: period, "count": data.get(period, 0)})
+            current += timedelta(days=1)
         return filled
 
     return [{label: period, "count": count} for period, count in results]
@@ -335,7 +343,7 @@ def keyword_activity(
             query_builder = query_builder.filter(*speech_filters)
 
         results = query_builder.group_by(date_group).order_by(date_group).all()
-        if interval == "monthly":
+        if interval in ("monthly", "daily"):
             return fill_missing_periods(results, interval, label)
         return [{label: period, "count": int(total_count)} for period, total_count in results]
     finally:

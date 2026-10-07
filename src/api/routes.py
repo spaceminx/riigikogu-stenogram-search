@@ -6,6 +6,7 @@ from datetime import date
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
+from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from src.api.attendance import (
@@ -22,6 +23,7 @@ from src.api.search import (
     keyword_top_speakers,
     search_by_keyword,
 )
+from src.load.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,18 @@ router = APIRouter()
 
 @router.get("/")
 def root():
-    return {"status": "ok"}
+    session = SessionLocal()
+    try:
+        session.execute(text("SELECT 1"))
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error("Healthcheck database query failed: %s", e)
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaasi ühendus puudub.",
+        ) from e
+    finally:
+        session.close()
 
 
 @router.get("/overview")
