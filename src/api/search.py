@@ -4,12 +4,12 @@ from datetime import datetime
 from estnltk.vabamorf.morf import Vabamorf
 from sqlalchemy import func, or_
 
-from config import STOPWORDS
+from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
 from src.load.models import Lemma, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
-_WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ]+\b")
+_WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ0-9\-]+\b")
 _VABAMORF = Vabamorf.instance()
 
 
@@ -159,10 +159,10 @@ def build_speech_filters(
     """Build list of SQLAlchemy filter clauses for Speech table."""
     filters = []
 
-    if membership == "15":
-        filters.append(Speech.date >= "2023-04-10")
-    elif membership == "14":
-        filters.append(Speech.date < "2023-04-10")
+    if membership in MEMBERSHIP_DATES:
+        start_bound, end_bound = MEMBERSHIP_DATES[membership]
+        filters.append(Speech.date >= start_bound)
+        filters.append(Speech.date <= end_bound)
 
     if faction:
         filters.append(Speech.speaker_faction == faction)
@@ -196,6 +196,9 @@ def search_by_keyword(
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
         )
+
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Alguskuupäev ei saa olla hilisem kui lõppkuupäev.")
 
     session = SessionLocal()
 
@@ -296,6 +299,9 @@ def keyword_activity(
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
         )
+
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Alguskuupäev ei saa olla hilisem kui lõppkuupäev.")
 
     session = SessionLocal()
     try:
@@ -489,6 +495,9 @@ def keyword_top_speakers(
         raise ValueError(
             "Otsingupäring on liiga üldine (sisaldab ainult stopsõnu). Palun sisesta täpsem märksõna."
         )
+
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("Alguskuupäev ei saa olla hilisem kui lõppkuupäev.")
 
     session = SessionLocal()
     try:

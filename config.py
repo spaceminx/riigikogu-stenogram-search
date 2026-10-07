@@ -10,6 +10,12 @@ DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 
 START_DATE = "2019-04-04"
 
+MEMBERSHIP_DATES: dict[str, tuple[str, str]] = {
+    "13": ("2015-03-30", "2019-04-03"),
+    "14": ("2019-04-04", "2023-04-09"),
+    "15": ("2023-04-10", "2099-12-31"),
+}
+
 STOPWORDS = {
     "ja",
     "ning",

@@ -1,3 +1,4 @@
+import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -7,6 +8,8 @@ from tqdm import tqdm
 
 from src.load.database import SessionLocal, engine
 from src.load.models import Speech
+
+logger = logging.getLogger(__name__)
 
 
 def get_default_workers() -> int:
@@ -27,11 +30,14 @@ def lemmatize_text(text: str) -> str:
         lemmas = []
         for word in est_text.words:
             lemma = word.lemma[0]
-            if lemma and lemma.isalpha():
-                lemmas.append(lemma.lower())
+            if lemma:
+                clean_lemma = lemma.strip(".,;:!?\"'()[]{}«»`~^/*+=<>@#$%&|\\_")
+                if clean_lemma and any(c.isalnum() for c in clean_lemma):
+                    lemmas.append(clean_lemma.lower())
 
         return " ".join(lemmas)
-    except Exception:
+    except Exception as e:
+        logger.error("Lemmatization failed on text slice %r: %s", text[:100], e)
         return ""
 
 

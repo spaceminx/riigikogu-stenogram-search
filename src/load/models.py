@@ -39,6 +39,8 @@ class SpeechTerm(Base):
 
     count = Column(Integer, nullable=False, default=1)
 
+    __table_args__ = (UniqueConstraint("speech_id", "lemma_id", name="uq_speech_lemma"),)
+
 
 class Attendance(Base):
     __tablename__ = "attendance"

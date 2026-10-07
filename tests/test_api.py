@@ -451,3 +451,37 @@ def test_format_stenogram_url_and_normalization():
     raw_url = "https://stenogrammid.riigikogu.ee/202609171000#PKP-1319712"
     normalized = normalize_source_url(raw_url)
     assert normalized == "https://stenogrammid.riigikogu.ee/et/202609171000#PKP-1319712"
+
+
+def test_search_export_special_characters():
+    # Test CSV export with Estonian umlauts and special characters
+    res_csv = client.get("/search/export?q=õpetaja&format=csv")
+    assert res_csv.status_code == 200
+    assert "filename*=UTF-8''" in res_csv.headers["content-disposition"]
+
+    # Test JSON export with special characters (š, ž)
+    res_json = client.get("/search/export?q=šüžee&format=json")
+    assert res_json.status_code == 200
+    assert "filename*=UTF-8''" in res_json.headers["content-disposition"]
+
+
+def test_search_date_validation():
+    # Invalid date format should return 422
+    res_invalid_format = client.get("/search?q=kliimamuutus&start_date=2024-1-1")
+    assert res_invalid_format.status_code == 422
+
+    # start_date > end_date should return 400
+    res_invalid_range = client.get(
+        "/search?q=kliimamuutus&start_date=2024-05-01&end_date=2024-01-01"
+    )
+    assert res_invalid_range.status_code == 400
+    assert "hilisem" in res_invalid_range.json()["detail"]
+
+
+def test_alphanumeric_lemmatization():
+    from src.transform.lemmatizer import lemmatize_text
+
+    text = "COVID-19 kriis ja 5G võrk ning e-riik."
+    lemmas = lemmatize_text(text)
+    assert "5g" in lemmas
+    assert "riik" in lemmas
