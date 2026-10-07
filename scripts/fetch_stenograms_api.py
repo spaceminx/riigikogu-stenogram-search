@@ -1,6 +1,8 @@
 import glob
+import html
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timedelta
@@ -13,6 +15,49 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from config import OUTPUT_DIR_PROCESSED, START_DATE
 from src.transform.lemmatizer import lemmatize_text
+
+
+def clean_html(raw_html: str) -> str:
+    """Remove HTML tags, decode HTML entities (&nbsp;, &quot;, etc.) and normalize whitespace."""
+    if not raw_html:
+        return ""
+    clean = re.sub(r"<[^>]+>", " ", raw_html)
+    clean = html.unescape(clean)
+    return " ".join(clean.split()).strip()
+
+
+def fetch_rich_meeting_data(meeting_code: str) -> dict | None:
+    """Fetch rich meeting details (agenda item PKP IDs and video timestamps) from new stenogram API."""
+    if not meeting_code or not meeting_code.isdigit():
+        return None
+    url = f"https://stenogrammid.riigikogu.ee/api/meeting/{meeting_code}"
+    try:
+        resp = requests.get(url, timeout=(5, 20), headers={"User-Agent": "Mozilla/5.0"})
+        if resp.status_code == 200:
+            return resp.json()
+    except Exception as e:
+        print(f"Notice: Could not fetch rich meeting details for {meeting_code}: {e}")
+    return None
+
+
+def format_stenogram_url(
+    meeting_code: str, verbatim_link: str = "", agenda_id: int | str | None = None
+) -> str:
+    """Construct Riigikogu stenogram URL with the required /et/ language prefix and optional PKP anchor."""
+    if meeting_code and meeting_code.isdigit():
+        base = f"https://stenogrammid.riigikogu.ee/et/{meeting_code}"
+    elif verbatim_link:
+        base = re.sub(
+            r"^https?://stenogrammid\.riigikogu\.ee/(?!et/|en/|ru/)(\d{12})(.*)$",
+            r"https://stenogrammid.riigikogu.ee/et/\1\2",
+            verbatim_link,
+        )
+    else:
+        base = verbatim_link
+
+    if base and agenda_id:
+        return f"{base}#PKP-{agenda_id}"
+    return base
 
 
 def split_speaker_role(full_name: str) -> tuple[str, str | None]:
@@ -110,7 +155,7 @@ def fetch_and_process_stenograms(
     factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
 
     if os.path.exists(factions_file):
-        with open(factions_file) as f:
+        with open(factions_file, encoding="utf-8") as f:
             faction_map = json.load(f)
     else:
         faction_map = {}
@@ -185,15 +230,49 @@ def fetch_and_process_stenograms(
                     if not time_formatted.isdigit():
                         time_formatted = "0000"
 
+                meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
+                rich_meeting = fetch_rich_meeting_data(meeting_code)
+
                 speeches_to_save = []
+                ignored_speech_types = {
+                    "PRESENCE_CHECK",
+                    "SESSION_START",
+                    "SESSION_END",
+                    "VOTING_EVENT",
+                }
+                ignored_speaker_names = {
+                    "kohaloleku kontroll",
+                    "istung lõppes",
+                    "istung algas",
+                    "hääletustulemused",
+                }
 
-                for agenda_item in verbatim.get("agendaItems", []):
-                    for event in agenda_item.get("events", []):
-                        if event.get("type") == "SPEECH":
-                            raw_text = event.get("text", "")
-                            speaker_raw = event.get("speaker", "")
+                if rich_meeting and rich_meeting.get("stenograph", {}).get("agendaItems"):
+                    agendas = rich_meeting["stenograph"]["agendaItems"]
+                    for agenda_item in agendas:
+                        agenda_id = agenda_item.get("id")
+                        raw_agenda_name = agenda_item.get("name", "")
+                        agenda_title = clean_html(raw_agenda_name)
+                        item_source_url = format_stenogram_url(
+                            meeting_code=meeting_code,
+                            verbatim_link=verbatim_link,
+                            agenda_id=agenda_id,
+                        )
 
-                            if not raw_text or not speaker_raw:
+                        for sp in agenda_item.get("speeches", []):
+                            speaker_raw = sp.get("name", "")
+                            raw_content = sp.get("content", "")
+                            raw_text = clean_html(raw_content)
+                            sp_type = sp.get("speechType")
+
+                            if (
+                                not raw_text
+                                or not speaker_raw
+                                or sp_type in ignored_speech_types
+                                or speaker_raw.lower() in ignored_speaker_names
+                                or raw_text.startswith("http://")
+                                or raw_text.startswith("https://")
+                            ):
                                 continue
 
                             speaker_name, speaker_role = split_speaker_role(speaker_raw)
@@ -201,13 +280,24 @@ def fetch_and_process_stenograms(
                                 faction_map, speaker_name, date_formatted
                             )
                             lemmas = lemmatize_text(raw_text)
+                            video_url = sp.get("parsedVideoLink")
+
+                            # Extract speech specific start time if available
+                            sp_time_raw = sp.get("startTime")
+                            sp_time = time_formatted
+                            if sp_time_raw and "T" in sp_time_raw:
+                                time_part = sp_time_raw.split("T")[1].replace(":", "")[:4]
+                                if len(time_part) == 4 and time_part.isdigit():
+                                    sp_time = time_part
 
                             speeches_to_save.append(
                                 {
                                     "date": date_formatted,
-                                    "time": time_formatted,
+                                    "time": sp_time,
                                     "source_file": f"{date_formatted}_{time_formatted}.api",
-                                    "source_url": verbatim_link,
+                                    "source_url": item_source_url,
+                                    "agenda_title": agenda_title or None,
+                                    "video_url": video_url,
                                     "speaker": speaker_name,
                                     "speaker_role": speaker_role,
                                     "speaker_faction": speaker_faction,
@@ -215,6 +305,42 @@ def fetch_and_process_stenograms(
                                     "text_lemmas": lemmas,
                                 }
                             )
+                else:
+                    for agenda_item in verbatim.get("agendaItems", []):
+                        raw_agenda_name = agenda_item.get("title", "")
+                        agenda_title = clean_html(raw_agenda_name)
+                        for event in agenda_item.get("events", []):
+                            if event.get("type") == "SPEECH":
+                                raw_text = event.get("text", "")
+                                speaker_raw = event.get("speaker", "")
+
+                                if not raw_text or not speaker_raw:
+                                    continue
+
+                                speaker_name, speaker_role = split_speaker_role(speaker_raw)
+                                speaker_faction = get_faction_for_date(
+                                    faction_map, speaker_name, date_formatted
+                                )
+                                lemmas = lemmatize_text(raw_text)
+
+                                speeches_to_save.append(
+                                    {
+                                        "date": date_formatted,
+                                        "time": time_formatted,
+                                        "source_file": f"{date_formatted}_{time_formatted}.api",
+                                        "source_url": format_stenogram_url(
+                                            meeting_code=meeting_code,
+                                            verbatim_link=verbatim_link,
+                                        ),
+                                        "agenda_title": agenda_title or None,
+                                        "video_url": None,
+                                        "speaker": speaker_name,
+                                        "speaker_role": speaker_role,
+                                        "speaker_faction": speaker_faction,
+                                        "text": raw_text,
+                                        "text_lemmas": lemmas,
+                                    }
+                                )
 
                 if speeches_to_save:
                     out_file = os.path.join(OUTPUT_DIR_PROCESSED, f"{year_str}.jsonl")
