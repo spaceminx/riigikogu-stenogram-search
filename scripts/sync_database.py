@@ -98,6 +98,7 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                             speaker_role=data.get("speaker_role"),
                             speaker_faction=data.get("speaker_faction"),
                             speaker_uuid=data.get("speaker_uuid"),
+                            ems_id=data.get("ems_id"),
                             speech_type=data.get("speech_type"),
                             external_id=data.get("external_id"),
                             start_time=data.get("start_time"),

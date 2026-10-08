@@ -18,6 +18,7 @@ class Speech(Base):
     speaker_role = Column(Text, nullable=True)
     speaker_faction = Column(Text, nullable=True)
     speaker_uuid = Column(Text, nullable=True, index=True)
+    ems_id = Column(Text, nullable=True)
     speech_type = Column(Text, nullable=True)
     external_id = Column(Integer, nullable=True, index=True)
     start_time = Column(Text, nullable=True)

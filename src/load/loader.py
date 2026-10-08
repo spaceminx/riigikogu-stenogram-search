@@ -24,6 +24,8 @@ def create_tables() -> None:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN status TEXT;"))
             if "speaker_uuid" not in existing_cols:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN speaker_uuid TEXT;"))
+            if "ems_id" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN ems_id TEXT;"))
             if "speech_type" not in existing_cols:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN speech_type TEXT;"))
             if "external_id" not in existing_cols:
@@ -188,7 +190,8 @@ def load_persons_to_database() -> None:
 
 
 def backfill_speaker_uuids() -> int:
-    """Populate speaker_uuid on speeches that match unique MP names in persons table."""
+    """Populate speaker_uuid on speeches that match unique MP names in persons table,
+    and disambiguate known same-name members across terms (e.g. Tarmo Tamm)."""
     with engine.connect() as conn:
         res = conn.execute(
             text(
@@ -202,8 +205,27 @@ def backfill_speaker_uuids() -> int:
                 ");"
             )
         )
+        # Disambiguate Tarmo Tamm: XIII/XIV term (< 2023-04-10) vs XV term (>= 2023-04-10)
+        res_tt1 = conn.execute(
+            text(
+                "UPDATE speeches "
+                "SET speaker_uuid = '76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5' "
+                "WHERE speaker = 'Tarmo Tamm' "
+                "  AND speaker_uuid IS NULL "
+                "  AND date < '2023-04-10';"
+            )
+        )
+        res_tt2 = conn.execute(
+            text(
+                "UPDATE speeches "
+                "SET speaker_uuid = '236e49d6-eecb-4562-8ad4-bedd586bb149' "
+                "WHERE speaker = 'Tarmo Tamm' "
+                "  AND speaker_uuid IS NULL "
+                "  AND date >= '2023-04-10';"
+            )
+        )
         conn.commit()
-        return res.rowcount
+        return res.rowcount + res_tt1.rowcount + res_tt2.rowcount
 
 
 def load_jsonl_to_database(batch_size: int = 2000) -> None:
@@ -267,6 +289,7 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             speaker_role=data.get("speaker_role"),
                             speaker_faction=data.get("speaker_faction"),
                             speaker_uuid=data.get("speaker_uuid"),
+                            ems_id=data.get("ems_id"),
                             speech_type=data.get("speech_type"),
                             external_id=data.get("external_id"),
                             start_time=data.get("start_time"),
