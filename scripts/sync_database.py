@@ -107,31 +107,11 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
 
                 try:
                     # If replacing an existing session in DB, preserve old external_ids for permalink aliases
-                    old_by_ems_start = {}
-                    old_by_speaker_time = {}
-                    old_by_pos = {}
-
                     if is_replacement:
                         old_rows = (
-                            session.query(
-                                Speech.id,
-                                Speech.external_id,
-                                Speech.ems_id,
-                                Speech.start_time,
-                                Speech.time,
-                                Speech.speaker,
-                            )
-                            .filter(Speech.source_file == src_file)
-                            .all()
+                            session.query(Speech.id).filter(Speech.source_file == src_file).all()
                         )
                         old_ids = [r.id for r in old_rows]
-                        for idx, r in enumerate(old_rows):
-                            if r.external_id:
-                                if r.ems_id and r.start_time:
-                                    old_by_ems_start[(r.ems_id, r.start_time)] = r.external_id
-                                if r.speaker and r.time:
-                                    old_by_speaker_time[(r.speaker, r.time)] = r.external_id
-                                old_by_pos[idx] = r.external_id
 
                         if old_ids:
                             session.query(SpeechTerm).filter(
@@ -166,32 +146,26 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                             text_lemmas=data.get("text_lemmas"),
                             status=data.get("status", "EDITED"),
                         )
+                        sp_obj._prev_ext_ids = data.get("previous_external_ids", [])
+                        sp_obj._prev_keys = data.get("previous_speech_keys", [])
                         new_speech_objects.append(sp_obj)
 
                     session.add_all(new_speech_objects)
                     session.flush()
 
-                    # Write aliases for any old external_ids that shifted on editorial confirmation
-                    if is_replacement:
-                        aliases_to_add = []
-                        for idx, new_sp in enumerate(new_speech_objects):
-                            old_ext = None
-                            if new_sp.ems_id and new_sp.start_time:
-                                old_ext = old_by_ems_start.get((new_sp.ems_id, new_sp.start_time))
-                            if not old_ext and new_sp.speaker and new_sp.time:
-                                old_ext = old_by_speaker_time.get((new_sp.speaker, new_sp.time))
-                            if not old_ext and idx in old_by_pos:
-                                old_ext = old_by_pos[idx]
+                    aliases_to_add = []
+                    for sp in new_speech_objects:
+                        for p_ext in getattr(sp, "_prev_ext_ids", []):
+                            aliases_to_add.append(
+                                SpeechAlias(alias_external_id=p_ext, speech_id=sp.id)
+                            )
+                        for p_key in getattr(sp, "_prev_keys", []):
+                            aliases_to_add.append(
+                                SpeechAlias(alias_speech_key=p_key, speech_id=sp.id)
+                            )
 
-                            if old_ext and old_ext != new_sp.external_id:
-                                aliases_to_add.append(
-                                    SpeechAlias(
-                                        alias_external_id=old_ext,
-                                        speech_id=new_sp.id,
-                                    )
-                                )
-                        if aliases_to_add:
-                            session.add_all(aliases_to_add)
+                    if aliases_to_add:
+                        session.add_all(aliases_to_add)
 
                     session.commit()
                     new_count += len(new_speech_objects)

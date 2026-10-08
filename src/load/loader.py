@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from config import OUTPUT_DIR_PROCESSED
 from src.load.database import SessionLocal, engine
-from src.load.models import Attendance, Base, Person, Speech, SpeechTerm
+from src.load.models import Attendance, Base, Person, Speech, SpeechAlias, SpeechTerm
 
 
 def create_tables() -> None:
@@ -302,6 +302,8 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             text_lemmas=data.get("text_lemmas"),
                             status=rec_status,
                         )
+                        speech._prev_ext_ids = data.get("previous_external_ids", [])
+                        speech._prev_keys = data.get("previous_speech_keys", [])
                         speeches_by_session[src_file].append(speech)
                     except KeyError as e:
                         print(
@@ -325,7 +327,22 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             session.query(Speech).filter(Speech.source_file == src_file).delete(
                                 synchronize_session=False
                             )
-                    session.bulk_save_objects(speeches_list)
+
+                    session.add_all(speeches_list)
+                    session.flush()
+
+                    aliases = []
+                    for sp in speeches_list:
+                        prev_exts = getattr(sp, "_prev_ext_ids", [])
+                        prev_keys = getattr(sp, "_prev_keys", [])
+                        for p_ext in prev_exts:
+                            aliases.append(SpeechAlias(alias_external_id=p_ext, speech_id=sp.id))
+                        for p_key in prev_keys:
+                            aliases.append(SpeechAlias(alias_speech_key=p_key, speech_id=sp.id))
+
+                    if aliases:
+                        session.add_all(aliases)
+
                     session.commit()
                     existing_source_files.add(src_file)
                     unedited_db_files.discard(src_file)
