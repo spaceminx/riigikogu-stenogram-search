@@ -21,6 +21,10 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 - **Aktiivsus ajas:** Visualiseerib märksõnade sagedust kuude, nädalate või päevade lõikes pideva graafikuna.
 - **Top kõnelejad:** Kuvab saadikud, kes on valitud märksõnu enim kasutanud.
 - **Kohaloleku ja fraktsioonide seosed:** Seob stenogrammid saadikute kohalolekukontrolli andmetega.
+- **Püsivad isikud ja püsilingid:** Kõik kõned on seotud saadikute ametlike UUID-dega ja varustatud Riigikogu püsivate identifikaatoritega (permalink).
+- **Dünaamilised koosseisud:** Koosseisude kuupäevad ja valikud laetakse automaatselt Riigikogu ametlikust API-st.
+- **Ametliku statistika verifitseerimine:** Andmetoru võrdleb kõnede arvu Riigikogu ametliku statistikaga ja monitoorib arhiivi terviklikkust (`/system/status`).
+- **Läbipaistev metoodika:** Kasutajaliideses on selgitatud kohaloleku, kõnede ja toimetamata tekstide arvestuse põhimõtted.
 - **Kasutajaliides:** Reageeriv React rakendus Dark / Light režiimi toega.
 - **Automaatne andmetoru:** Igaöine GitHub Actions töövoog laeb uued stenogrammid ja sünkroniseerib need Backblaze B2 pilvesalvestusega.
 
@@ -139,10 +143,12 @@ riigikogu-stenogram-search/
 │   ├── build_full_database.py     # Paralleelne täielik andmebaasi ehitaja
 │   ├── download_all_from_b2.py    # Kõigi andmete ja olekute allalaadija B2-st
 │   ├── download_from_b2.py        # Igapäevane inkrementaalne B2 allalaadija
-│   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
-│   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo allalaadija
 │   ├── fetch_attendance.py        # Kohaloleku ja hääletuste allalaadija
-│   └── upload_to_b2.py            # Backblaze B2 uleslaadija andmetele ja olekutele
+│   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo ja isikute allalaadija
+│   ├── fetch_memberships.py       # Koosseisude (XIV, XV jne) allalaadija Riigikogu API-st
+│   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
+│   ├── upload_to_b2.py            # Backblaze B2 üleslaadija andmetele ja olekutele
+│   └── verify_statistics.py       # Ametliku kõnestatistika ristkontrolli skript
 ├── src/
 │   ├── api/                       # FastAPI marsruudid ja loogika
 │   │   ├── main.py                # Rakenduse peafail ja CORS seaded

@@ -21,6 +21,10 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 - **Activity Over Time:** Visualizes keyword mentions by month, week, or day with continuous timeline smoothing.
 - **Top Speakers:** Identifies members of parliament who speak most about given topics.
 - **Attendance & Voting Stats:** Cross-references transcripts with MP attendance records.
+- **Persistent MP UUIDs & Permalinks:** Speeches are linked to canonical member UUIDs and Riigikogu permalinks.
+- **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API.
+- **Official Statistics Verification:** Pipeline cross-checks speech counts against the official Riigikogu statistics API and monitors archive health (`/system/status`).
+- **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
 - **Modern UI:** Responsive single-page application with Dark / Light mode toggle.
 - **Automated Daily Pipeline:** Nightly GitHub Actions workflow fetches new transcripts and syncs them to Backblaze B2.
 
@@ -139,10 +143,12 @@ riigikogu-stenogram-search/
 │   ├── build_full_database.py     # End-to-end parallel DB build pipeline
 │   ├── download_all_from_b2.py    # Downloads all data & sync states from Backblaze B2
 │   ├── download_from_b2.py        # Incremental daily B2 downloader
-│   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
-│   ├── fetch_factions.py          # MP faction history scraper
 │   ├── fetch_attendance.py        # Voting & attendance scraper
-│   └── upload_to_b2.py            # Backblaze B2 uploader for data and sync states
+│   ├── fetch_factions.py          # MP faction history and person metadata scraper
+│   ├── fetch_memberships.py       # Membership terms scraper from Riigikogu API
+│   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
+│   ├── upload_to_b2.py            # Backblaze B2 uploader for data and sync states
+│   └── verify_statistics.py       # Cross-verification script against official statistics
 ├── src/
 │   ├── api/                       # FastAPI routes & endpoints
 │   │   ├── main.py                # App entrypoint & CORS config
