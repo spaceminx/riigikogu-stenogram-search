@@ -510,18 +510,27 @@ def test_dynamic_membership_dates_reload(tmp_path, monkeypatch):
 
 
 def test_verify_pipeline_integrity(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
     import requests
 
     from scripts.verify_pipeline_integrity import verify_pipeline_integrity
 
     monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
 
-    # Create dummy JSONL file
-    year_file = tmp_path / "2026.jsonl"
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    two_days_ago = today - timedelta(days=2)
+
+    curr_year = today.year
+    year_file = tmp_path / f"{curr_year}.jsonl"
+
+    code_existing = f"{yesterday.strftime('%Y%m%d')}1200"
+    file_existing = f"{yesterday.strftime('%Y-%m-%d')}_1200.api"
     mock_speech = {
-        "source_file": "2026-09-23_1200.api",
-        "date": "2026-09-23",
-        "source_url": "https://stenogrammid.riigikogu.ee/et/194151#PKP-1",
+        "source_file": file_existing,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_existing}#PKP-1",
         "text": "Näidiskõne",
     }
     year_file.write_text(json.dumps(mock_speech) + "\n", encoding="utf-8")
@@ -532,9 +541,9 @@ def test_verify_pipeline_integrity(tmp_path, monkeypatch):
         def json(self):
             return [
                 {
-                    "date": "2026-09-23T12:00:00.000+00:00",
+                    "date": f"{yesterday.strftime('%Y-%m-%d')}T12:00:00.000+00:00",
                     "title": "Täiskogu istung",
-                    "link": "https://stenogrammid.riigikogu.ee/202609231200",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_existing}",
                     "edited": False,
                 }
             ]
@@ -545,20 +554,22 @@ def test_verify_pipeline_integrity(tmp_path, monkeypatch):
     assert ok is True
 
     # Test failure when official session is missing
+    code_missing = f"{two_days_ago.strftime('%Y%m%d')}1000"
+
     class MockRespMissing:
         status_code = 200
 
         def json(self):
             return [
                 {
-                    "date": "2026-09-23T12:00:00.000+00:00",
+                    "date": f"{yesterday.strftime('%Y-%m-%d')}T12:00:00.000+00:00",
                     "title": "Olemasolev istung",
-                    "link": "https://stenogrammid.riigikogu.ee/202609231200",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_existing}",
                 },
                 {
-                    "date": "2026-09-24T10:00:00.000+00:00",
+                    "date": f"{two_days_ago.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
                     "title": "Puuduv istung",
-                    "link": "https://stenogrammid.riigikogu.ee/202609241000",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_missing}",
                 },
             ]
 

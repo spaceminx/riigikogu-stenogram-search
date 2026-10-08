@@ -130,8 +130,6 @@ def verify_pipeline_integrity(
         matched_session = None
         if meeting_code and meeting_code in code_to_session:
             matched_session = code_to_session[meeting_code]
-        elif v_date and v_date in date_to_sessions:
-            matched_session = date_to_sessions[v_date][0]
 
         if matched_session:
             sp_count = matched_session["speech_count"]
@@ -144,9 +142,9 @@ def verify_pipeline_integrity(
         else:
             missing_sessions.append((meeting_code or title, v_date, title))
 
-    # Optional sample check of speech count against rich meeting API
+    # Optional sample check of speech count against rich meeting API (check newest sessions first)
     if sample_meeting_checks > 0 and matched_sessions:
-        sample_targets = [m for m in matched_sessions if str(m[0]).isdigit()][
+        sample_targets = [m for m in reversed(matched_sessions) if str(m[0]).isdigit()][
             :sample_meeting_checks
         ]
         for code, m_date, local_count in sample_targets:
@@ -158,9 +156,20 @@ def verify_pipeline_integrity(
                 if m_resp.status_code == 200:
                     rich_meeting = m_resp.json()
                     agendas = rich_meeting.get("stenograph", {}).get("agendaItems", [])
-                    official_speeches = sum(len(a.get("speeches", [])) for a in agendas)
-                    # Procedural events like SESSION_END are excluded locally, so local count is slightly lower
-                    if official_speeches > 5 and local_count < official_speeches * 0.5:
+                    official_speeches = 0
+                    for a in agendas:
+                        for sp in a.get("speeches", []):
+                            content = sp.get("content") or ""
+                            sp_name = sp.get("name") or ""
+                            sp_type = sp.get("speechType")
+                            if (
+                                sp_name
+                                and content
+                                and sp_type not in ["SESSION_END", "SESSION_START"]
+                            ):
+                                official_speeches += 1
+
+                    if official_speeches > 5 and local_count < official_speeches * 0.8:
                         truncated_sessions.append(
                             (
                                 code,
