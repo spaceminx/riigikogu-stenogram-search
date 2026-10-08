@@ -1,5 +1,7 @@
+import argparse
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Add project root to sys.path
@@ -21,8 +23,33 @@ except ImportError:
                     os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 
-def download_from_b2() -> bool:
-    """Download all processed datasets, attendance, and faction maps from Backblaze B2."""
+def is_active_daily_file(filename: str, active_years: set[str]) -> bool:
+    """Return True if the file is part of daily active sync (metadata, attendance, current year)."""
+    if filename.endswith(".json"):
+        return True
+    if filename == "attendance.jsonl":
+        return True
+    for y in active_years:
+        if filename == f"{y}.jsonl":
+            return True
+    return False
+
+
+def download_from_b2(
+    active_year: str | None = None,
+    include_all_history: bool = False,
+) -> bool:
+    """Download daily active datasets (current year, attendance, metadata) from Backblaze B2.
+
+    By default, only active/frequently updated files are downloaded:
+    - Current year transcripts ({active_year}.jsonl)
+    - Attendance records (attendance.jsonl)
+    - Metadata and sync state files (*.json)
+
+    Historical years (2019-{active_year-1}) are static and not re-downloaded
+    daily to stay safely within Backblaze B2's daily free bandwidth tier (1 GB/day).
+    Pass include_all_history=True (or CLI flag --all) to download all historical files.
+    """
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
@@ -34,6 +61,13 @@ def download_from_b2() -> bool:
     bucket_name = B2_BUCKET_NAME
 
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
+
+    now = datetime.now()
+    curr_y = str(now.year) if active_year is None else str(active_year)
+    active_years = {curr_y}
+    # In January, also include previous year in case late December sessions were finalized
+    if active_year is None and now.month == 1:
+        active_years.add(str(now.year - 1))
 
     print("Connecting to Backblaze B2...")
 
@@ -48,16 +82,40 @@ def download_from_b2() -> bool:
         return False
 
     downloaded_count = 0
+    skipped_count = 0
     try:
-        # List and download all available dataset files in the bucket
+        # List and download matching dataset files in the bucket
         paginator = s3.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=bucket_name):
             for obj in page.get("Contents", []):
                 key = obj.get("Key")
                 if not key or not (key.endswith(".jsonl") or key.endswith(".json")):
                     continue
-                local_path = os.path.join(OUTPUT_DIR_PROCESSED, key)
-                print(f"Downloading {key} from {bucket_name}...")
+
+                filename = os.path.basename(key)
+                if not filename:
+                    continue
+
+                # Filter active vs historical files
+                if not include_all_history and not is_active_daily_file(filename, active_years):
+                    skipped_count += 1
+                    continue
+
+                local_path = os.path.join(OUTPUT_DIR_PROCESSED, filename)
+                remote_size = obj.get("Size")
+
+                # If historical file already exists locally with matching size, skip re-download
+                if (
+                    include_all_history
+                    and not is_active_daily_file(filename, active_years)
+                    and os.path.exists(local_path)
+                    and remote_size is not None
+                    and os.path.getsize(local_path) == remote_size
+                ):
+                    skipped_count += 1
+                    continue
+
+                print(f"Downloading {key} from {bucket_name} -> {local_path}...")
                 s3.download_file(bucket_name, key, local_path)
                 print(f"Downloaded: {local_path}")
                 downloaded_count += 1
@@ -65,10 +123,32 @@ def download_from_b2() -> bool:
         print(f"Error listing/downloading files from B2: {e}")
         return False
 
-    print(f"Daily data download step completed. ({downloaded_count} files downloaded)")
+    mode_label = (
+        "all historical files"
+        if include_all_history
+        else f"active files ({', '.join(sorted(active_years))})"
+    )
+    print(
+        f"Daily data download step completed ({mode_label}): {downloaded_count} downloaded, {skipped_count} skipped."
+    )
     return True
 
 
 if __name__ == "__main__":
-    success = download_from_b2()
+    parser = argparse.ArgumentParser(description="Download dataset files from Backblaze B2.")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        dest="include_all",
+        help="Download all historical datasets (default is active year and metadata only).",
+    )
+    parser.add_argument(
+        "--year",
+        type=str,
+        default=None,
+        help="Specific active year to download (default: current year).",
+    )
+    args = parser.parse_args()
+
+    success = download_from_b2(active_year=args.year, include_all_history=args.include_all)
     sys.exit(0 if success else 1)

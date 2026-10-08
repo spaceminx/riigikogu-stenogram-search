@@ -1,4 +1,6 @@
 import json
+import sys
+from pathlib import Path
 
 from scripts.fetch_stenograms_api import (
     compute_duration_seconds,
@@ -635,3 +637,100 @@ def test_sync_database_replaces_unedited_and_writes_alias(tmp_path, monkeypatch)
     assert alias_rec is not None
     assert alias_rec.speech_id == updated_sp.id
     session.close()
+
+
+def test_download_from_b2_active_only(tmp_path, monkeypatch):
+    from scripts.download_from_b2 import download_from_b2
+
+    monkeypatch.setattr("scripts.download_from_b2.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setenv("B2_KEY_ID", "dummy_key")
+    monkeypatch.setenv("B2_APP_KEY", "dummy_secret")
+
+    downloaded = []
+
+    class MockPaginator:
+        def paginate(self, Bucket):
+            return [
+                {
+                    "Contents": [
+                        {"Key": "2021.jsonl", "Size": 50000000},
+                        {"Key": "2026.jsonl", "Size": 45000000},
+                        {"Key": "attendance.jsonl", "Size": 25000000},
+                        {"Key": "memberships.json", "Size": 1000},
+                        {"Key": "notes.txt", "Size": 50},
+                    ]
+                }
+            ]
+
+    class MockS3Client:
+        def get_paginator(self, operation_name):
+            return MockPaginator()
+
+        def download_file(self, bucket, key, local_path):
+            downloaded.append(key)
+            Path(local_path).write_text("dummy", encoding="utf-8")
+
+    class MockBoto3:
+        @staticmethod
+        def client(service, **kwargs):
+            return MockS3Client()
+
+    monkeypatch.setitem(sys.modules, "boto3", MockBoto3)
+
+    ok = download_from_b2(active_year="2026", include_all_history=False)
+    assert ok is True
+    # Only active files should be downloaded (2026.jsonl, attendance.jsonl, memberships.json)
+    assert set(downloaded) == {"2026.jsonl", "attendance.jsonl", "memberships.json"}
+    # Historical 2021.jsonl and non-jsonl notes.txt should NOT be downloaded
+    assert "2021.jsonl" not in downloaded
+    assert "notes.txt" not in downloaded
+
+
+def test_download_from_b2_include_all(tmp_path, monkeypatch):
+    from scripts.download_from_b2 import download_from_b2
+
+    monkeypatch.setattr("scripts.download_from_b2.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setenv("B2_KEY_ID", "dummy_key")
+    monkeypatch.setenv("B2_APP_KEY", "dummy_secret")
+
+    # Create a pre-existing 2021.jsonl with matching size 100 bytes
+    pre_existing = tmp_path / "2021.jsonl"
+    pre_existing.write_bytes(b"x" * 100)
+
+    downloaded = []
+
+    class MockPaginator:
+        def paginate(self, Bucket):
+            return [
+                {
+                    "Contents": [
+                        {"Key": "2021.jsonl", "Size": 100},  # Exactly matches local size -> skip!
+                        {"Key": "2022.jsonl", "Size": 200},  # Not local -> download!
+                        {"Key": "2026.jsonl", "Size": 300},
+                        {"Key": "attendance.jsonl", "Size": 400},
+                    ]
+                }
+            ]
+
+    class MockS3Client:
+        def get_paginator(self, operation_name):
+            return MockPaginator()
+
+        def download_file(self, bucket, key, local_path):
+            downloaded.append(key)
+            Path(local_path).write_text("dummy", encoding="utf-8")
+
+    class MockBoto3:
+        @staticmethod
+        def client(service, **kwargs):
+            return MockS3Client()
+
+    monkeypatch.setitem(sys.modules, "boto3", MockBoto3)
+
+    ok = download_from_b2(active_year="2026", include_all_history=True)
+    assert ok is True
+    # 2021.jsonl was skipped because size matches!
+    assert "2021.jsonl" not in downloaded
+    assert "2022.jsonl" in downloaded
+    assert "2026.jsonl" in downloaded
+    assert "attendance.jsonl" in downloaded
