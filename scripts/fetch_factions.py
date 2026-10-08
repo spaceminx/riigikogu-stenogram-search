@@ -72,11 +72,12 @@ def fetch_factions() -> bool:
     if members is None:
         if os.path.exists(out_file):
             print(
-                f"Error: Could not refresh factions from API. Retaining existing cache from {out_file}."
+                f"Warning: Could not refresh factions from API. Continuing with existing cache from {out_file}."
             )
+            return True
         else:
             print(f"Error: Failed to fetch factions from API and no cached {out_file} found.")
-        return False
+            return False
 
     faction_map: dict[str, list[dict]] = {}
 

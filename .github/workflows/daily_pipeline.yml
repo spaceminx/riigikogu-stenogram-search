@@ -30,24 +30,34 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Data Pipeline (Download B2 -> Sync API -> Upload B2)
+      - name: 1. Download current state and data from B2
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
           B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
-        run: |
-          # 1. Download current state and data from B2
-          python scripts/download_from_b2.py
+        run: python scripts/download_from_b2.py
 
-          # 2. Fetch member factions
-          python scripts/fetch_factions.py
+      - name: 2. Fetch member factions
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        continue-on-error: true
+        run: python scripts/fetch_factions.py
 
-          # 3. Fetch and process new stenograms from API
-          python scripts/fetch_stenograms_api.py
+      - name: 3. Fetch and process new stenograms from API
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/fetch_stenograms_api.py
 
-          # 4. Fetch new attendance records from API
-          python scripts/fetch_attendance.py
+      - name: 4. Fetch new attendance records from API
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/fetch_attendance.py
 
-          # 5. Upload updated data and sync state back to Backblaze B2
-          python scripts/upload_to_b2.py
+      - name: 5. Upload updated data and sync state back to Backblaze B2
+        if: always()
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
+        run: python scripts/upload_to_b2.py
 
