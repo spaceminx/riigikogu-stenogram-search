@@ -72,6 +72,13 @@ Build the full SQLite database (downloads data from B2, lemmatizes speeches with
 python scripts/build_full_database.py
 ```
 
+*Note on historical data updates:*
+The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, you must trigger a full download and rebuild on the server:
+```bash
+python scripts/download_from_b2.py --all
+python scripts/build_full_database.py
+```
+
 ### 4. Start the FastAPI Backend Server
 ```bash
 uvicorn src.api.main:app --reload --port 8000

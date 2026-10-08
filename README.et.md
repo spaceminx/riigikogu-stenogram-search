@@ -72,6 +72,13 @@ Käivita täielik andmebaasi ehitamise skript (laeb vajadusel B2-st andmed, lemm
 python scripts/build_full_database.py
 ```
 
+*Märkus ajaloo uuendamise kohta:*
+Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel), tuleb serveris käivitada täielik allalaadimine ja andmebaasi ümberehitus:
+```bash
+python scripts/download_from_b2.py --all
+python scripts/build_full_database.py
+```
+
 ### 4. FastAPI serveri käivitamine
 ```bash
 uvicorn src.api.main:app --reload --port 8000
