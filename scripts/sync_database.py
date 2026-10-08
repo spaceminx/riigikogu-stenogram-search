@@ -19,9 +19,20 @@ from src.transform.term_builder import build_missing_terms
 
 
 def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) -> int:
-    """Load new or updated speeches from recent years' JSONL files into SQLite session-by-session."""
+    """Load new or updated speeches from JSONL files into SQLite session-by-session."""
     current_year_int = datetime.today().year
-    years_to_check = [year] if year else [str(current_year_int - 1), str(current_year_int)]
+    if year:
+        years_to_check = [year]
+    else:
+        # Check all available year JSONL files (or at least recent years)
+        available_years = sorted(
+            [
+                p.stem
+                for p in Path(OUTPUT_DIR_PROCESSED).glob("*.jsonl")
+                if p.stem.isdigit() and len(p.stem) == 4
+            ]
+        )
+        years_to_check = available_years or [str(current_year_int - 1), str(current_year_int)]
 
     session = SessionLocal()
     new_count = 0
@@ -130,36 +141,41 @@ def sync_database() -> bool:
     print("STARTING INCREMENTAL DATABASE SYNC")
     print("=" * 60)
 
-    # 1. Download latest data and state from B2
-    print("\n[1/5] Downloading latest files from Backblaze B2...")
-    b2_ok = download_from_b2()
-    if not b2_ok:
-        print("Warning: B2 download was not successful. Continuing with available local files.")
+    try:
+        # 1. Download latest data and state from B2
+        print("\n[1/5] Downloading latest files from Backblaze B2...")
+        b2_ok = download_from_b2()
+        if not b2_ok:
+            print("Warning: B2 download was not successful. Continuing with available local files.")
 
-    # 2. Ensure tables and indexes exist
-    print("\n[2/5] Ensuring database tables and indexes exist...")
-    create_tables()
-    create_indexes()
+        # 2. Ensure tables and indexes exist
+        print("\n[2/5] Ensuring database tables and indexes exist...")
+        create_tables()
+        create_indexes()
 
-    # 3. Load current year speeches & attendance
-    print("\n[3/5] Inserting new speeches and attendance records...")
-    sync_current_year_speeches()
-    load_attendance_to_database()
+        # 3. Load current year speeches & attendance
+        print("\n[3/5] Inserting new speeches and attendance records...")
+        sync_current_year_speeches()
+        load_attendance_to_database()
 
-    # 4. Lemmatize any new speeches
-    print("\n[4/5] Checking and lemmatizing new speeches...")
-    build_missing_lemmas()
+        # 4. Lemmatize any new speeches
+        print("\n[4/5] Checking and lemmatizing new speeches...")
+        build_missing_lemmas()
 
-    # 5. Build term index for new speeches
-    print("\n[5/5] Indexing new terms...")
-    build_missing_terms()
+        # 5. Build term index for new speeches
+        print("\n[5/5] Indexing new terms...")
+        build_missing_terms()
 
-    duration = time.time() - t0
-    print("\n" + "=" * 60)
-    print(f"DATABASE SYNC COMPLETE in {duration:.2f} seconds!")
-    print("=" * 60)
-    return True
+        duration = time.time() - t0
+        print("\n" + "=" * 60)
+        print(f"DATABASE SYNC COMPLETE in {duration:.2f} seconds!")
+        print("=" * 60)
+        return True
+    except Exception as e:
+        print(f"\nDATABASE SYNC FAILED: {e}")
+        return False
 
 
 if __name__ == "__main__":
-    sync_database()
+    success = sync_database()
+    sys.exit(0 if success else 1)

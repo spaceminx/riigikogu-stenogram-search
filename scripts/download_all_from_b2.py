@@ -1,7 +1,11 @@
 import os
+import sys
 from pathlib import Path
 
-from config import B2_BUCKET_NAME, B2_ENDPOINT_URL
+# Add project root to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
 
 try:
     from dotenv import load_dotenv
@@ -37,7 +41,7 @@ def download_all_from_b2() -> bool:
     endpoint = B2_ENDPOINT_URL
     bucket_name = B2_BUCKET_NAME
 
-    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
     print("Connecting to Backblaze B2 (private bucket) via S3 API...")
 
@@ -62,7 +66,7 @@ def download_all_from_b2() -> bool:
                     continue
 
                 if key.endswith(".jsonl") or key.endswith(".json"):
-                    local_path = os.path.join("data", "processed", filename)
+                    local_path = os.path.join(OUTPUT_DIR_PROCESSED, filename)
                 else:
                     continue
 
@@ -84,4 +88,5 @@ def download_all_from_b2() -> bool:
 
 
 if __name__ == "__main__":
-    download_all_from_b2()
+    ok = download_all_from_b2()
+    sys.exit(0 if ok else 1)

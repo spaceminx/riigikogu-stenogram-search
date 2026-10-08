@@ -146,3 +146,64 @@ def test_loader_replaces_unedited_session(tmp_path, monkeypatch):
         db_session.query(SpeechTerm).filter(SpeechTerm.speech_id == unedited_speech_id).count() == 0
     )
     db_session.close()
+
+
+def test_save_session_to_jsonl_empty_speeches_guard(tmp_path, monkeypatch):
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    session_key = "2026-04-01_1000.api"
+    speeches = [{"date": "2026-04-01", "source_file": session_key, "text": "Original text"}]
+
+    save_session_to_jsonl("2026", session_key, speeches)
+    target_file = tmp_path / "2026.jsonl"
+    assert target_file.exists()
+
+    # Try saving empty list - should be rejected and file retained
+    save_session_to_jsonl("2026", session_key, [])
+    with open(target_file, encoding="utf-8") as f:
+        lines = f.readlines()
+    assert len(lines) == 1
+    assert "Original text" in lines[0]
+
+
+def test_parse_meeting_speeches_edited():
+    from scripts.fetch_stenograms_api import parse_meeting_speeches
+
+    mock_rich_meeting = {
+        "meetingStatus": "EDITED",
+        "stenograph": {
+            "agendaItems": [
+                {
+                    "id": 101,
+                    "name": "Päevakorrapunkt 1",
+                    "speeches": [
+                        {
+                            "name": "Jüri Ratas",
+                            "speechType": "SPEECH",
+                            "content": "<p>Tere päevast, austatud kolleegid!</p>",
+                            "startTime": "2026-04-01T10:15:00.000",
+                            "parsedVideoLink": "https://youtu.be/test?t=15",
+                        }
+                    ],
+                }
+            ]
+        },
+    }
+
+    speeches, status = parse_meeting_speeches(
+        rich_meeting=mock_rich_meeting,
+        verbatim=None,
+        meeting_code="202604011000",
+        verbatim_link="https://stenogrammid.riigikogu.ee/et/202604011000",
+        date_formatted="2026-04-01",
+        time_formatted="1000",
+        source_file_key="2026-04-01_1000.api",
+        faction_map={},
+    )
+
+    assert status == "EDITED"
+    assert len(speeches) == 1
+    assert speeches[0]["speaker"] == "Jüri Ratas"
+    assert speeches[0]["time"] == "1015"
+    assert speeches[0]["agenda_title"] == "Päevakorrapunkt 1"
+    assert speeches[0]["video_url"] == "https://youtu.be/test?t=15"
+    assert "austatud kolleegid" in speeches[0]["text"]

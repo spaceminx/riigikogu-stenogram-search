@@ -380,7 +380,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
         speeches = (
             session.query(Speech)
             .filter(Speech.date == session_date)
-            .order_by(Speech.id.asc())
+            .order_by(Speech.time.asc(), Speech.source_file.asc(), Speech.id.asc())
             .all()
         )
         return [

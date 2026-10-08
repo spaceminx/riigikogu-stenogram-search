@@ -34,13 +34,13 @@ router = APIRouter()
 def root():
     session = SessionLocal()
     try:
-        session.execute(text("SELECT 1"))
+        session.execute(text("SELECT id, status FROM speeches LIMIT 1"))
         return {"status": "ok"}
     except Exception as e:
         logger.error("Healthcheck database query failed: %s", e)
         raise HTTPException(
             status_code=503,
-            detail="Andmebaasi ühendus puudub.",
+            detail="Andmebaasi ühendus puudub või tabelid on vigased.",
         ) from e
     finally:
         session.close()
