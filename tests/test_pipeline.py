@@ -433,3 +433,24 @@ def test_verify_statistics_with_mock(tmp_path, monkeypatch):
     report_data = json.loads(report_path.read_text(encoding="utf-8"))
     assert report_data["summary"]["passed"] == 1
     assert report_data["summary"]["alerts"] == 0
+
+
+def test_dynamic_membership_dates_reload(tmp_path, monkeypatch):
+    from config import MEMBERSHIP_DATES
+
+    monkeypatch.setattr("config.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    # Without file, has defaults
+    assert "15" in MEMBERSHIP_DATES
+    assert "99" not in MEMBERSHIP_DATES
+
+    # Create memberships.json with membership 99
+    m_file = tmp_path / "memberships.json"
+    mock_data = {
+        "99": {"startDate": "2030-01-01", "endDate": "2034-01-01"},
+    }
+    m_file.write_text(json.dumps(mock_data), encoding="utf-8")
+
+    # MEMBERSHIP_DATES should immediately reflect new membership 99 without restart
+    assert "99" in MEMBERSHIP_DATES
+    assert MEMBERSHIP_DATES["99"] == ("2030-01-01", "2034-01-01")

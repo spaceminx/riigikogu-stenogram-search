@@ -41,7 +41,38 @@ def load_membership_dates() -> dict[str, tuple[str, str]]:
     return DEFAULT_MEMBERSHIP_DATES
 
 
-MEMBERSHIP_DATES: dict[str, tuple[str, str]] = load_membership_dates()
+class _DynamicMembershipDates(dict):
+    """Dynamic mapping that reloads from memberships.json cache on access."""
+
+    def _get_current(self) -> dict[str, tuple[str, str]]:
+        return load_membership_dates()
+
+    def __contains__(self, key: object) -> bool:
+        return key in self._get_current()
+
+    def __getitem__(self, key: str) -> tuple[str, str]:
+        return self._get_current()[key]
+
+    def get(self, key: str, default=None):
+        return self._get_current().get(key, default)
+
+    def items(self):
+        return self._get_current().items()
+
+    def keys(self):
+        return self._get_current().keys()
+
+    def values(self):
+        return self._get_current().values()
+
+    def __iter__(self):
+        return iter(self._get_current())
+
+    def __len__(self) -> int:
+        return len(self._get_current())
+
+
+MEMBERSHIP_DATES: dict[str, tuple[str, str]] = _DynamicMembershipDates()
 
 STOPWORDS = {
     "ja",
