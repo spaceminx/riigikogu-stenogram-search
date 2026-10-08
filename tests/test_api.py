@@ -715,13 +715,33 @@ def test_same_name_different_persons_disambiguation():
     session.commit()
     session.close()
 
+    pf_file = os.path.join(OUTPUT_DIR_PROCESSED, "person_factions.json")
+    with open(pf_file, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "uuid-tarmo-tamm-1": [
+                    {
+                        "faction": "Eesti Keskerakonna fraktsioon",
+                        "start": "2019-04-04",
+                        "end": "2023-04-10",
+                    }
+                ],
+                "uuid-tarmo-tamm-2": [
+                    {"faction": "Eesti 200 fraktsioon", "start": "2023-04-10", "end": "2099-12-31"}
+                ],
+            },
+            f,
+        )
+
     res1 = client.get("/persons/uuid-tarmo-tamm-1")
     assert res1.status_code == 200
     assert res1.json()["speeches_count"] == 2
+    assert res1.json()["factions"][0]["faction"] == "Eesti Keskerakonna fraktsioon"
 
     res2 = client.get("/persons/uuid-tarmo-tamm-2")
     assert res2.status_code == 200
     assert res2.json()["speeches_count"] == 1
+    assert res2.json()["factions"][0]["faction"] == "Eesti 200 fraktsioon"
 
 
 def test_get_speech_by_id_and_external_id():

@@ -117,7 +117,9 @@ def fetch_factions() -> bool:
             return False
 
     faction_map: dict[str, list[dict]] = {}
+    factions_by_uuid: dict[str, list[dict]] = {}
     persons_by_uuid: dict[str, dict] = {}
+    person_factions_file = os.path.join(OUTPUT_DIR_PROCESSED, "person_factions.json")
 
     for m in members:
         uuid_str = m.get("uuid")
@@ -149,10 +151,10 @@ def fetch_factions() -> bool:
                 faction_map[full_name].append(entry)
 
             if uuid_str:
-                if uuid_str not in faction_map:
-                    faction_map[uuid_str] = []
-                if entry not in faction_map[uuid_str]:
-                    faction_map[uuid_str].append(entry)
+                if uuid_str not in factions_by_uuid:
+                    factions_by_uuid[uuid_str] = []
+                if entry not in factions_by_uuid[uuid_str]:
+                    factions_by_uuid[uuid_str].append(entry)
 
         # Process person profile
         plenary_membership = m.get("plenaryMembership") or {}
@@ -192,13 +194,24 @@ def fetch_factions() -> bool:
     # Sort history by start date for each member
     for name in faction_map:
         faction_map[name].sort(key=lambda x: x["start"])
+    for uuid_key in factions_by_uuid:
+        factions_by_uuid[uuid_key].sort(key=lambda x: x["start"])
 
-    # Atomic write for factions_map.json
+    # Atomic write for factions_map.json (name-based only)
     out_tmp = f"{out_file}.tmp"
     with open(out_tmp, "w", encoding="utf-8") as f:
         json.dump(faction_map, f, ensure_ascii=False, indent=2)
     os.replace(out_tmp, out_file)
-    print(f"Saved faction history for {len(faction_map)} members to {out_file}")
+    print(f"Saved name-based faction history for {len(faction_map)} members to {out_file}")
+
+    # Atomic write for person_factions.json (UUID-based)
+    pf_tmp = f"{person_factions_file}.tmp"
+    with open(pf_tmp, "w", encoding="utf-8") as f:
+        json.dump(factions_by_uuid, f, ensure_ascii=False, indent=2)
+    os.replace(pf_tmp, person_factions_file)
+    print(
+        f"Saved UUID-based faction history for {len(factions_by_uuid)} members to {person_factions_file}"
+    )
 
     # Prepare persons list
     persons_list = []

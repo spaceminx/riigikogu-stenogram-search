@@ -585,13 +585,23 @@ def get_person(person_uuid: str):
                 .count()
             )
 
+        person_factions_path = os.path.join(OUTPUT_DIR_PROCESSED, "person_factions.json")
         factions_cache_path = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
         faction_history = []
-        if os.path.exists(factions_cache_path):
+        if os.path.exists(person_factions_path):
+            try:
+                with open(person_factions_path, encoding="utf-8") as f:
+                    pfmap = json.load(f)
+                    if person_uuid and person_uuid in pfmap:
+                        faction_history = pfmap[person_uuid]
+            except Exception:
+                pass
+
+        if not faction_history and os.path.exists(factions_cache_path):
             try:
                 with open(factions_cache_path, encoding="utf-8") as f:
                     fmap = json.load(f)
-                    faction_history = fmap.get(person_uuid) or fmap.get(person.full_name, [])
+                    faction_history = fmap.get(person.full_name, [])
             except Exception:
                 pass
 
