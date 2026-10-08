@@ -676,9 +676,10 @@ def system_status():
     session = SessionLocal()
     try:
         latest_date = session.query(func.max(Speech.date)).scalar()
-        total_speeches = session.query(func.count(Speech.id)).scalar()
-        total_persons = session.query(func.count(Person.uuid)).scalar()
-        total_attendance = session.query(func.count(Attendance.id)).scalar()
+        total_sessions = session.query(func.count(func.distinct(Speech.source_file))).scalar() or 0
+        total_speeches = session.query(func.count(Speech.id)).scalar() or 0
+        total_persons = session.query(func.count(Person.uuid)).scalar() or 0
+        total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
 
         latest_session = (
             session.query(Speech.source_file).order_by(Speech.date.desc(), Speech.id.desc()).first()
@@ -686,10 +687,16 @@ def system_status():
         latest_session_file = latest_session[0] if latest_session else None
 
         days_since_latest = None
+        warning = None
         if latest_date:
             try:
                 latest_dt = datetime.strptime(latest_date, "%Y-%m-%d").date()
                 days_since_latest = (date.today() - latest_dt).days
+                if days_since_latest > 4:
+                    warning = (
+                        f"Viimane istung toimus {days_since_latest} päeva tagasi ({latest_date}). "
+                        "Istungijärgu ajal võib see viidata andmeallika viivitusele."
+                    )
             except ValueError:
                 pass
 
@@ -698,15 +705,20 @@ def system_status():
             "data_as_of": latest_date,
             "days_since_latest_session": days_since_latest,
             "latest_session": latest_session_file,
+            "total_sessions": total_sessions,
+            "total_speeches": total_speeches,
+            "total_persons": total_persons,
+            "warning": warning,
             "totals": {
-                "speeches": total_speeches or 0,
-                "persons": total_persons or 0,
-                "attendance_records": total_attendance or 0,
+                "sessions": total_sessions,
+                "speeches": total_speeches,
+                "persons": total_persons,
+                "attendance_records": total_attendance,
             },
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
-                "speeches": "Kõned, repliigid ja küsimused vastavalt Riigikogu stenogrammidele. Istungi juhataja protseduurilised märkused on eraldi tähistatud.",
-                "transcripts": "Toimetamata stenogrammid asendatakse automaatselt Riigikogu kantselei poolt toimetatud lõplike stenogrammidega kohe pärast nende avaldamist.",
+                "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
+                "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega kohe pärast nende avaldamist.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
                 "sources": [
                     "Riigikogu avatud API (api.riigikogu.ee)",

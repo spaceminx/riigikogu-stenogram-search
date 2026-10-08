@@ -1997,10 +1997,10 @@ function App() {
               <div className="methodology-section">
                 <h3>2. Kõnede ja sõnavõttude loendamine</h3>
                 <p>
-                  Kõned on klassifitseeritud ametliku Riigikogu tüpoloogia alusel (kõned, küsimused,
-                  vastused ja protseduurilised repliigid). Istungi juhataja korraldavad repliigid on
-                  eristatud, et need ei moonutaks saadikute sisulise kõneaja ja sõnavõttude arvu
-                  edetabeleid. Kõikidel kõnedel on püsiv Riigikogu identifikaator (permalink).
+                  Kõned ja sõnavõtud pärinevad Riigikogu ametlikest stenogrammidest. Istungi
+                  juhataja ametikoht (Esimees, Aseesimees) on stenogrammis eraldi rollitunnusena
+                  talletatud. Täpne rollipõhine filtreerimine ja ametliku kõnetüpoloogia eristamine
+                  lisandub järgmistes arendusetappides.
                 </p>
               </div>
 
@@ -2024,9 +2024,8 @@ function App() {
                   <a href="https://stenogrammid.riigikogu.ee" target="_blank" rel="noreferrer">
                     stenogrammid.riigikogu.ee
                   </a>
-                  ). Otsingumootor on tehnoloogiline tööriist ega anna poliitilisi hinnanguid ega
-                  toeta ühtegi erakonda. Andmetoru teostab regulaarset kontrolli Riigikogu ametliku
-                  kõnestatistika vastu.
+                  ). Otsingumootor on erapooletu tehnoloogiline tööriist ega anna poliitilisi
+                  hinnanguid ega toeta ühtegi erakonda.
                 </p>
               </div>
             </div>
