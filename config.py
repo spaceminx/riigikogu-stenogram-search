@@ -53,10 +53,6 @@ class _DynamicMembershipDates(dict):
     def __getitem__(self, key: str) -> tuple[str, str]:
         return self._get_current()[key]
 
-    def __setitem__(self, key: str, value: tuple[str, str]) -> None:
-        curr = self._get_current()
-        curr[key] = value
-
     def get(self, key: str, default=None):
         return self._get_current().get(key, default)
 
