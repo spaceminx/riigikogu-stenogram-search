@@ -55,17 +55,19 @@ jobs:
         run: python scripts/fetch_stenograms_api.py
 
       - name: 5. Fetch new attendance records from API
+        if: ${{ !cancelled() }}
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/fetch_attendance.py
 
       - name: 6. Verify pipeline data integrity
+        if: ${{ !cancelled() }}
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/verify_pipeline_integrity.py
 
       - name: 7. Upload updated data and sync state back to Backblaze B2
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}

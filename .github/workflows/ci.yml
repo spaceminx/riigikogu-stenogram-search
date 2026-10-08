@@ -66,9 +66,22 @@ jobs:
         run: npm run build
 
 
+  workflow-lint:
+    name: GitHub Actions Workflow Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install and run actionlint
+        run: |
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint
+
+
   deploy:
     name: Auto-Deploy to Server
-    needs: [backend-test, frontend-check]
+    needs: [backend-test, frontend-check, workflow-lint]
     if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: self-hosted
     steps:
@@ -78,4 +91,5 @@ jobs:
           cd /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
           git pull origin master
           docker compose up -d --build
+
 
