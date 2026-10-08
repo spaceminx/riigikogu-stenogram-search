@@ -1575,7 +1575,11 @@ function App() {
                     })}
                     className="export-btn-link"
                     download
-                    title="Laadi otsingutulemused alla CSV failina"
+                    title={
+                      totalCount > 2000
+                        ? `Laadi esimesed 2000 tulemust alla CSV failina (kokku ${totalCount.toLocaleString("et-EE")})`
+                        : "Laadi otsingutulemused alla CSV failina"
+                    }
                   >
                     CSV
                   </a>
@@ -1594,10 +1598,23 @@ function App() {
                     })}
                     className="export-btn-link"
                     download
-                    title="Laadi otsingutulemused alla JSON failina"
+                    title={
+                      totalCount > 2000
+                        ? `Laadi esimesed 2000 tulemust alla JSON failina (kokku ${totalCount.toLocaleString("et-EE")})`
+                        : "Laadi otsingutulemused alla JSON failina"
+                    }
                   >
                     JSON
                   </a>
+                  {totalCount > 2000 && (
+                    <span
+                      className="export-limit-hint"
+                      style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #888)", marginLeft: "0.25rem" }}
+                      title={`Kokku leiti ${totalCount.toLocaleString("et-EE")} tulemust, fail sisaldab esimesed 2000.`}
+                    >
+                      (max 2000)
+                    </span>
+                  )}
                 </div>
               </div>
             )}
