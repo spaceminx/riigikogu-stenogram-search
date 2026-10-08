@@ -1,3 +1,4 @@
+import json
 import os
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -15,11 +16,32 @@ B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "riigikogu-stenograms")
 
 START_DATE = "2019-04-04"
 
-MEMBERSHIP_DATES: dict[str, tuple[str, str]] = {
+DEFAULT_MEMBERSHIP_DATES: dict[str, tuple[str, str]] = {
     "13": ("2015-03-30", "2019-04-03"),
     "14": ("2019-04-04", "2023-04-09"),
-    "15": ("2023-04-10", "2027-03-31"),
+    "15": ("2023-04-10", "2027-02-25"),
 }
+
+
+def load_membership_dates() -> dict[str, tuple[str, str]]:
+    """Load membership dates from memberships.json cache, or fallback to defaults."""
+    cache_path = os.path.join(OUTPUT_DIR_PROCESSED, "memberships.json")
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, encoding="utf-8") as f:
+                data = json.load(f)
+            dates = {}
+            for k, v in data.items():
+                if isinstance(v, dict) and "startDate" in v and "endDate" in v:
+                    dates[str(k)] = (v["startDate"], v["endDate"])
+            if dates:
+                return dates
+        except Exception:
+            pass
+    return DEFAULT_MEMBERSHIP_DATES
+
+
+MEMBERSHIP_DATES: dict[str, tuple[str, str]] = load_membership_dates()
 
 STOPWORDS = {
     "ja",
