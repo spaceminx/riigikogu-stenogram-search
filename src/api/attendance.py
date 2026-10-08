@@ -153,7 +153,8 @@ def get_faction_attendance_stats(
             if membership in MEMBERSHIP_DATES:
                 start_d, end_d = MEMBERSHIP_DATES[membership]
                 query = query.filter(
-                    Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                    Attendance.session_date >= start_d,
+                    Attendance.session_date <= f"{end_d}T23:59:59",
                 )
 
             query = query.filter(Attendance.member_name.in_(active_members))
@@ -198,7 +199,8 @@ def get_faction_attendance_stats(
         if membership in MEMBERSHIP_DATES:
             start_d, end_d = MEMBERSHIP_DATES[membership]
             query = query.filter(
-                Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                Attendance.session_date >= start_d,
+                Attendance.session_date <= f"{end_d}T23:59:59",
             )
 
         results = query.group_by(Attendance.faction).all()
@@ -241,7 +243,8 @@ def get_factions_list(membership: str | None = "15") -> list[str]:
         if membership in MEMBERSHIP_DATES:
             start_d, end_d = MEMBERSHIP_DATES[membership]
             query = query.filter(
-                Attendance.session_date >= start_d, Attendance.session_date <= end_d
+                Attendance.session_date >= start_d,
+                Attendance.session_date <= f"{end_d}T23:59:59",
             )
 
         return [r[0] for r in query.order_by(Attendance.faction).all()]

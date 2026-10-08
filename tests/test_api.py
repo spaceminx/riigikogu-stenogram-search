@@ -514,3 +514,58 @@ def test_split_speaker_role():
     name, role = split_speaker_role("Jüri Ratas")
     assert name == "Jüri Ratas"
     assert role is None
+
+
+def test_session_speeches_ordering():
+    from src.api.search import get_session_speeches
+
+    session = SessionLocal()
+    s_early = Speech(
+        id=999,
+        date="2025-05-20",
+        time="1000",
+        source_file="2025-05-20_1000.api",
+        source_url="https://stenogrammid.riigikogu.ee/202505201000",
+        speaker="Test Speaker",
+        text="Hommikune kõne.",
+    )
+    s_late = Speech(
+        id=555,
+        date="2025-05-20",
+        time="1400",
+        source_file="2025-05-20_1400.api",
+        source_url="https://stenogrammid.riigikogu.ee/202505201400",
+        speaker="Test Speaker",
+        text="Pärastlõunane kõne.",
+    )
+    session.add_all([s_early, s_late])
+    session.commit()
+    session.close()
+
+    speeches = get_session_speeches("2025-05-20")
+    assert len(speeches) == 2
+    assert speeches[0]["time"] == "1000"
+    assert speeches[0]["id"] == 999
+    assert speeches[1]["time"] == "1400"
+    assert speeches[1]["id"] == 555
+
+
+def test_attendance_membership_end_date_cutoff():
+    from src.api.attendance import get_faction_attendance_stats
+
+    session = SessionLocal()
+    att = Attendance(
+        session_date="2023-04-09T15:00:00",
+        voting_uuid="test-uuid-cutoff",
+        member_name="Jüri Ratas",
+        faction="Eesti Keskerakonna fraktsioon",
+        status="KOHAL",
+    )
+    session.add(att)
+    session.commit()
+    session.close()
+
+    stats = get_faction_attendance_stats(membership="14", active_only=False)
+    kesk = next((s for s in stats if "Keskerakonna" in s["faction"]), None)
+    assert kesk is not None
+    assert kesk["total_sessions"] == 2
