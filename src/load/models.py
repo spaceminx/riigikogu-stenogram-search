@@ -17,14 +17,14 @@ class Speech(Base):
     speaker = Column(Text, nullable=False)
     speaker_role = Column(Text, nullable=True)
     speaker_faction = Column(Text, nullable=True)
-    speaker_uuid = Column(Text, nullable=True, index=True)
+    speaker_uuid = Column(Text, nullable=True)
     ems_id = Column(Text, nullable=True)
     speech_type = Column(Text, nullable=True)
-    external_id = Column(Integer, nullable=True, index=True)
+    external_id = Column(Integer, nullable=True)
     start_time = Column(Text, nullable=True)
     end_time = Column(Text, nullable=True)
     duration_seconds = Column(Integer, nullable=True)
-    speech_key = Column(Text, nullable=True, index=True)
+    speech_key = Column(Text, nullable=True)
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
     status = Column(Text, nullable=True, default="EDITED")
@@ -34,8 +34,8 @@ class SpeechAlias(Base):
     __tablename__ = "speech_aliases"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    alias_external_id = Column(Integer, nullable=False, index=True)
-    speech_id = Column(Integer, ForeignKey("speeches.id"), nullable=False, index=True)
+    alias_external_id = Column(Integer, nullable=False)
+    speech_id = Column(Integer, ForeignKey("speeches.id"), nullable=False)
 
 
 class Person(Base):
@@ -44,7 +44,7 @@ class Person(Base):
     uuid = Column(Text, primary_key=True)
     first_name = Column(Text, nullable=False)
     last_name = Column(Text, nullable=False)
-    full_name = Column(Text, nullable=False, index=True)
+    full_name = Column(Text, nullable=False)
     gender = Column(Text, nullable=True)
     date_of_birth = Column(Text, nullable=True)
     email = Column(Text, nullable=True)

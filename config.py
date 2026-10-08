@@ -53,6 +53,10 @@ class _DynamicMembershipDates(dict):
     def __getitem__(self, key: str) -> tuple[str, str]:
         return self._get_current()[key]
 
+    def __setitem__(self, key: str, value: tuple[str, str]) -> None:
+        curr = self._get_current()
+        curr[key] = value
+
     def get(self, key: str, default=None):
         return self._get_current().get(key, default)
 
@@ -71,8 +75,25 @@ class _DynamicMembershipDates(dict):
     def __len__(self) -> int:
         return len(self._get_current())
 
+    def copy(self) -> dict[str, tuple[str, str]]:
+        return dict(self._get_current())
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, dict):
+            return dict(self._get_current()) == other
+        return False
+
+    def __repr__(self) -> str:
+        return repr(self._get_current())
+
 
 MEMBERSHIP_DATES: dict[str, tuple[str, str]] = _DynamicMembershipDates()
+
+
+def get_membership_dates() -> dict[str, tuple[str, str]]:
+    """Return dictionary of membership code -> (start_date, end_date)."""
+    return MEMBERSHIP_DATES.copy()
+
 
 STOPWORDS = {
     "ja",
