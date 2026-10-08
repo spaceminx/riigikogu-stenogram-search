@@ -12,7 +12,7 @@ from config import OUTPUT_DIR_PROCESSED
 from src.api.main import app
 from src.load.database import SessionLocal
 from src.load.loader import create_tables
-from src.load.models import Attendance, Lemma, Person, Speech, SpeechTerm
+from src.load.models import Attendance, Lemma, Person, Speech, SpeechAlias, SpeechTerm
 
 client = TestClient(app)
 
@@ -764,6 +764,26 @@ def test_get_speech_by_id_and_external_id():
     data_ext = res_ext.json()
     assert data_ext["id"] == 777888
     assert data_ext["external_id"] == 98765432
+
+    # Add historical alias and speech_key
+    session = SessionLocal()
+    alias = SpeechAlias(alias_external_id=12345678, speech_id=777888)
+    session.merge(alias)
+    session.query(Speech).filter(Speech.id == 777888).update(
+        {"speech_key": "2026-06-01_1100_hanno-pevkur_0"}
+    )
+    session.commit()
+    session.close()
+
+    # Lookup by replaced historical unedited external_id alias
+    res_alias = client.get("/speeches/12345678")
+    assert res_alias.status_code == 200
+    assert res_alias.json()["id"] == 777888
+
+    # Lookup by stable speech_key
+    res_key = client.get("/speeches/2026-06-01_1100_hanno-pevkur_0")
+    assert res_key.status_code == 200
+    assert res_key.json()["id"] == 777888
 
     # Not found
     res_404 = client.get("/speeches/111111111")

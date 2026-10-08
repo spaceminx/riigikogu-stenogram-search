@@ -36,6 +36,8 @@ def create_tables() -> None:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN end_time TEXT;"))
             if "duration_seconds" not in existing_cols:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN duration_seconds INTEGER;"))
+            if "speech_key" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN speech_key TEXT;"))
         conn.commit()
 
 
@@ -295,6 +297,7 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             start_time=data.get("start_time"),
                             end_time=data.get("end_time"),
                             duration_seconds=data.get("duration_seconds"),
+                            speech_key=data.get("speech_key"),
                             text=data["text"],
                             text_lemmas=data.get("text_lemmas"),
                             status=rec_status,

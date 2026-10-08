@@ -19,6 +19,8 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_speeches_speaker_uuid ON speeches(speaker_uuid)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_ems_id ON speeches(ems_id)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_external_id ON speeches(external_id)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_speech_key ON speeches(speech_key)",
+    "CREATE INDEX IF NOT EXISTS idx_speech_aliases_alias_id ON speech_aliases(alias_external_id)",
     "CREATE INDEX IF NOT EXISTS idx_persons_full_name ON persons(full_name)",
 ]
 

@@ -104,6 +104,7 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                             start_time=data.get("start_time"),
                             end_time=data.get("end_time"),
                             duration_seconds=data.get("duration_seconds"),
+                            speech_key=data.get("speech_key"),
                             text=data["text"],
                             text_lemmas=data.get("text_lemmas"),
                             status=rec_status,

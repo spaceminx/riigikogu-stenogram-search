@@ -24,9 +24,18 @@ class Speech(Base):
     start_time = Column(Text, nullable=True)
     end_time = Column(Text, nullable=True)
     duration_seconds = Column(Integer, nullable=True)
+    speech_key = Column(Text, nullable=True, index=True)
     text = Column(Text, nullable=False)
     text_lemmas = Column(Text, nullable=True)
     status = Column(Text, nullable=True, default="EDITED")
+
+
+class SpeechAlias(Base):
+    __tablename__ = "speech_aliases"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    alias_external_id = Column(Integer, nullable=False, index=True)
+    speech_id = Column(Integer, ForeignKey("speeches.id"), nullable=False, index=True)
 
 
 class Person(Base):

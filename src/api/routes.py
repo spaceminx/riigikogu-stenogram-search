@@ -26,7 +26,7 @@ from src.api.search import (
     search_by_keyword,
 )
 from src.load.database import SessionLocal
-from src.load.models import Attendance, Person, Speech
+from src.load.models import Attendance, Person, Speech, SpeechAlias
 
 logger = logging.getLogger(__name__)
 
@@ -627,14 +627,28 @@ def get_person(person_uuid: str):
         session.close()
 
 
-@router.get("/speeches/{speech_id}")
-def get_speech_by_id(speech_id: int):
-    """Get single speech by internal database ID or Riigikogu permalink external_id."""
+@router.get("/speeches/{speech_identifier}")
+def get_speech_by_id(speech_identifier: str):
+    """Get single speech by internal database ID, Riigikogu permalink external_id, historical alias, or stable speech_key."""
     session = SessionLocal()
     try:
-        speech = session.query(Speech).filter(Speech.id == speech_id).first()
+        speech = None
+        if speech_identifier.isdigit():
+            num_id = int(speech_identifier)
+            speech = session.query(Speech).filter(Speech.id == num_id).first()
+            if not speech:
+                speech = session.query(Speech).filter(Speech.external_id == num_id).first()
+            if not speech:
+                alias = (
+                    session.query(SpeechAlias)
+                    .filter(SpeechAlias.alias_external_id == num_id)
+                    .first()
+                )
+                if alias:
+                    speech = session.query(Speech).filter(Speech.id == alias.speech_id).first()
+
         if not speech:
-            speech = session.query(Speech).filter(Speech.external_id == speech_id).first()
+            speech = session.query(Speech).filter(Speech.speech_key == speech_identifier).first()
 
         if not speech:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
@@ -642,7 +656,9 @@ def get_speech_by_id(speech_id: int):
         return {
             "id": speech.id,
             "external_id": speech.external_id,
+            "speech_key": speech.speech_key,
             "speaker_uuid": speech.speaker_uuid,
+            "ems_id": speech.ems_id,
             "speaker": speech.speaker,
             "speaker_role": speech.speaker_role,
             "speaker_faction": speech.speaker_faction,
@@ -667,7 +683,7 @@ def get_speech_by_id(speech_id: int):
             detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
-        logger.error("Speech query failed for %s: %s", speech_id, e, exc_info=True)
+        logger.error("Speech query failed for %s: %s", speech_identifier, e, exc_info=True)
         raise HTTPException(
             status_code=500,
             detail="Kõne päring ebaõnnestus.",
