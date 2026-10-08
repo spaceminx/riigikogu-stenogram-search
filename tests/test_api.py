@@ -12,7 +12,7 @@ from config import OUTPUT_DIR_PROCESSED
 from src.api.main import app
 from src.load.database import SessionLocal
 from src.load.loader import create_tables
-from src.load.models import Attendance, Lemma, Speech, SpeechTerm
+from src.load.models import Attendance, Lemma, Person, Speech, SpeechTerm
 
 client = TestClient(app)
 
@@ -569,3 +569,145 @@ def test_attendance_membership_end_date_cutoff():
     kesk = next((s for s in stats if "Keskerakonna" in s["faction"]), None)
     assert kesk is not None
     assert kesk["total_sessions"] == 2
+
+
+def test_list_memberships():
+    res = client.get("/memberships")
+    assert res.status_code == 200
+    data = res.json()
+    assert isinstance(data, list)
+    assert len(data) >= 2
+    m15 = next((m for m in data if m["id"] == "15"), None)
+    m14 = next((m for m in data if m["id"] == "14"), None)
+    assert m15 is not None
+    assert m14 is not None
+    assert m15["start_date"] == "2023-04-10"
+    assert m14["start_date"] == "2019-04-04"
+
+
+def test_list_and_get_persons():
+    session = SessionLocal()
+    p1 = Person(
+        uuid="uuid-person-1",
+        first_name="Kaja",
+        last_name="Kallas",
+        full_name="Kaja Kallas",
+        gender="FEMALE",
+        date_of_birth="1977-06-18",
+        email="kaja.kallas@riigikogu.ee",
+        photo_url="https://api.riigikogu.ee/api/files/kaja/download",
+        electoral_district="Harju- ja Raplamaa",
+        seniority_days=1800,
+        active=0,
+    )
+    p2 = Person(
+        uuid="uuid-person-2",
+        first_name="Hanno",
+        last_name="Pevkur",
+        full_name="Hanno Pevkur",
+        gender="MALE",
+        date_of_birth="1977-04-02",
+        email="hanno.pevkur@riigikogu.ee",
+        photo_url="https://api.riigikogu.ee/api/files/hanno/download",
+        electoral_district="Võru-, Valga- ja Põlvamaa",
+        seniority_days=2500,
+        active=1,
+    )
+    session.merge(p1)
+    session.merge(p2)
+    session.commit()
+    session.close()
+
+    # List all
+    res = client.get("/persons")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_count"] >= 2
+    names = [p["full_name"] for p in data["results"]]
+    assert "Kaja Kallas" in names
+    assert "Hanno Pevkur" in names
+
+    # Filter active_only
+    res_active = client.get("/persons?active_only=true")
+    assert res_active.status_code == 200
+    active_names = [p["full_name"] for p in res_active.json()["results"]]
+    assert "Hanno Pevkur" in active_names
+    assert "Kaja Kallas" not in active_names
+
+    # Search filter
+    res_search = client.get("/persons?search=kallas")
+    assert res_search.status_code == 200
+    search_names = [p["full_name"] for p in res_search.json()["results"]]
+    assert "Kaja Kallas" in search_names
+
+    # Get single person
+    res_single = client.get("/persons/uuid-person-1")
+    assert res_single.status_code == 200
+    p_data = res_single.json()
+    assert p_data["uuid"] == "uuid-person-1"
+    assert p_data["full_name"] == "Kaja Kallas"
+    assert p_data["electoral_district"] == "Harju- ja Raplamaa"
+    assert "factions" in p_data
+    assert "speeches_count" in p_data
+
+    # Not found
+    res_404 = client.get("/persons/non-existent-uuid")
+    assert res_404.status_code == 404
+
+
+def test_get_speech_by_id_and_external_id():
+    session = SessionLocal()
+    sp = Speech(
+        id=777888,
+        date="2026-06-01",
+        time="1100",
+        source_file="2026-06-01_1100.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202606011100",
+        agenda_title="Oluline teema",
+        speaker="Hanno Pevkur",
+        speaker_uuid="uuid-person-2",
+        speech_type="SPEECH",
+        external_id=98765432,
+        start_time="2026-06-01T11:00:10.000",
+        end_time="2026-06-01T11:02:10.000",
+        duration_seconds=120,
+        text="Kõne kaitsepoliitikast riigikogus.",
+        text_lemmas="kõne kaitsepoliitika riigikogu",
+        status="EDITED",
+    )
+    session.merge(sp)
+    session.commit()
+    session.close()
+
+    # Lookup by internal id
+    res_id = client.get("/speeches/777888")
+    assert res_id.status_code == 200
+    data_id = res_id.json()
+    assert data_id["id"] == 777888
+    assert data_id["external_id"] == 98765432
+    assert data_id["speaker_uuid"] == "uuid-person-2"
+    assert data_id["speech_type"] == "SPEECH"
+    assert data_id["duration_seconds"] == 120
+
+    # Lookup by external_id (permalink)
+    res_ext = client.get("/speeches/98765432")
+    assert res_ext.status_code == 200
+    data_ext = res_ext.json()
+    assert data_ext["id"] == 777888
+    assert data_ext["external_id"] == 98765432
+
+    # Not found
+    res_404 = client.get("/speeches/111111111")
+    assert res_404.status_code == 404
+
+
+def test_system_status():
+    res = client.get("/system/status")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "ok"
+    assert "data_as_of" in data
+    assert "totals" in data
+    assert "methodology" in data
+    assert "attendance" in data["methodology"]
+    assert "impartiality" in data["methodology"]

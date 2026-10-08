@@ -1,9 +1,18 @@
 import json
 
-from scripts.fetch_stenograms_api import get_faction_for_date, save_session_to_jsonl
+from scripts.fetch_stenograms_api import (
+    compute_duration_seconds,
+    get_faction_for_date,
+    parse_meeting_speeches,
+    save_session_to_jsonl,
+)
 from src.load.database import SessionLocal
-from src.load.loader import create_tables, load_jsonl_to_database
-from src.load.models import Speech, SpeechTerm
+from src.load.loader import (
+    create_tables,
+    load_jsonl_to_database,
+    load_persons_to_database,
+)
+from src.load.models import Person, Speech, SpeechTerm
 
 
 def test_save_session_to_jsonl_replacement(tmp_path, monkeypatch):
@@ -166,8 +175,6 @@ def test_save_session_to_jsonl_empty_speeches_guard(tmp_path, monkeypatch):
 
 
 def test_parse_meeting_speeches_edited():
-    from scripts.fetch_stenograms_api import parse_meeting_speeches
-
     mock_rich_meeting = {
         "meetingStatus": "EDITED",
         "stenograph": {
@@ -177,10 +184,13 @@ def test_parse_meeting_speeches_edited():
                     "name": "Päevakorrapunkt 1",
                     "speeches": [
                         {
+                            "id": 45038588,
+                            "emsId": "uuid-ratas-123",
                             "name": "Jüri Ratas",
                             "speechType": "SPEECH",
                             "content": "<p>Tere päevast, austatud kolleegid!</p>",
                             "startTime": "2026-04-01T10:15:00.000",
+                            "endTime": "2026-04-01T10:17:30.000",
                             "parsedVideoLink": "https://youtu.be/test?t=15",
                         }
                     ],
@@ -203,7 +213,223 @@ def test_parse_meeting_speeches_edited():
     assert status == "EDITED"
     assert len(speeches) == 1
     assert speeches[0]["speaker"] == "Jüri Ratas"
+    assert speeches[0]["speaker_uuid"] == "uuid-ratas-123"
+    assert speeches[0]["speech_type"] == "SPEECH"
+    assert speeches[0]["external_id"] == 45038588
+    assert speeches[0]["duration_seconds"] == 150
     assert speeches[0]["time"] == "1015"
     assert speeches[0]["agenda_title"] == "Päevakorrapunkt 1"
     assert speeches[0]["video_url"] == "https://youtu.be/test?t=15"
     assert "austatud kolleegid" in speeches[0]["text"]
+
+
+def test_compute_duration_seconds():
+    # Valid ISO strings
+    assert compute_duration_seconds("2026-04-01T10:15:00.000", "2026-04-01T10:16:30.000") == 90
+    # With UTC Z suffix
+    assert compute_duration_seconds("2026-04-01T10:15:00Z", "2026-04-01T10:15:45Z") == 45
+    # Missing or invalid timestamps
+    assert compute_duration_seconds(None, "2026-04-01T10:16:30") is None
+    assert compute_duration_seconds("2026-04-01T10:15:00", None) is None
+    assert compute_duration_seconds("invalid", "times") is None
+
+
+def test_load_persons_to_database(tmp_path, monkeypatch):
+    create_tables()
+    monkeypatch.setattr("src.load.loader.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    mock_persons = [
+        {
+            "uuid": "test-mp-uuid-1",
+            "first_name": "Ants",
+            "last_name": "Kask",
+            "full_name": "Ants Kask",
+            "gender": "MALE",
+            "date_of_birth": "1975-01-01",
+            "email": "ants.kask@riigikogu.ee",
+            "photo_url": "https://api.riigikogu.ee/api/files/test/download",
+            "electoral_district": "Võrumaa",
+            "seniority_days": 1000,
+            "active": True,
+        }
+    ]
+    persons_file = tmp_path / "persons.json"
+    with open(persons_file, "w", encoding="utf-8") as f:
+        json.dump(mock_persons, f)
+
+    load_persons_to_database()
+
+    session = SessionLocal()
+    try:
+        person = session.query(Person).filter(Person.uuid == "test-mp-uuid-1").first()
+        assert person is not None
+        assert person.full_name == "Ants Kask"
+        assert person.electoral_district == "Võrumaa"
+        assert person.seniority_days == 1000
+        assert person.active == 1
+    finally:
+        session.close()
+
+
+def test_fetch_factions_and_persons_with_mock(tmp_path, monkeypatch):
+    import requests
+
+    from scripts.fetch_factions import fetch_factions
+
+    monkeypatch.setattr("scripts.fetch_factions.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    class MockResp:
+        status_code = 200
+
+        def json(self):
+            return [
+                {
+                    "uuid": "mock-mp-1",
+                    "firstName": "Mari",
+                    "lastName": "Maasikas",
+                    "fullName": "Mari Maasikas",
+                    "gender": "FEMALE",
+                    "dateOfBirth": "1985-05-15",
+                    "email": "mari.maasikas@riigikogu.ee",
+                    "parliamentSeniority": 500,
+                    "active": True,
+                    "photo": {
+                        "uuid": "photo-uuid-1",
+                        "_links": {
+                            "download": {
+                                "href": "https://api.riigikogu.ee/api/files/photo-uuid-1/download"
+                            }
+                        },
+                    },
+                    "electoralDistrictHistory": [
+                        {
+                            "membership": 15,
+                            "electoralDistrict": {"code": "TARTU", "value": "Tartu linn"},
+                        }
+                    ],
+                    "factions": [
+                        {
+                            "name": "Reformierakonna fraktsioon",
+                            "membership": {
+                                "startDate": "2023-04-10",
+                                "endDate": None,
+                            },
+                        }
+                    ],
+                }
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+
+    ok = fetch_factions()
+    assert ok is True
+
+    factions_file = tmp_path / "factions_map.json"
+    persons_file = tmp_path / "persons.json"
+    assert factions_file.exists()
+    assert persons_file.exists()
+
+    p_data = json.loads(persons_file.read_text(encoding="utf-8"))
+    assert len(p_data) == 1
+    assert p_data[0]["uuid"] == "mock-mp-1"
+    assert p_data[0]["full_name"] == "Mari Maasikas"
+    assert p_data[0]["electoral_district"] == "Tartu linn"
+    assert p_data[0]["photo_url"] == "https://api.riigikogu.ee/api/files/photo-uuid-1/download"
+    assert p_data[0]["active"] is True
+
+    f_data = json.loads(factions_file.read_text(encoding="utf-8"))
+    assert "Mari Maasikas" in f_data
+    assert f_data["Mari Maasikas"][0]["faction"] == "Reformierakonna fraktsioon"
+
+
+def test_fetch_memberships_with_mock(tmp_path, monkeypatch):
+    import requests
+
+    from scripts.fetch_memberships import fetch_memberships
+
+    monkeypatch.setattr("scripts.fetch_memberships.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    class MockResp:
+        status_code = 200
+
+        def json(self):
+            return [
+                {"number": 14, "startDate": "2019-04-04", "endDate": "2023-02-23"},
+                {"number": 15, "startDate": "2023-04-10", "endDate": "2027-02-25"},
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+
+    ok = fetch_memberships()
+    assert ok is True
+    out_file = tmp_path / "memberships.json"
+    assert out_file.exists()
+    data = json.loads(out_file.read_text(encoding="utf-8"))
+    assert "14" in data
+    assert "15" in data
+    assert data["14"]["endDate"] == "2023-04-09"
+    assert data["15"]["endDate"] == "2027-02-25"
+
+
+def test_verify_statistics_with_mock(tmp_path, monkeypatch):
+    import requests
+
+    from scripts.verify_statistics import verify_statistics
+
+    monkeypatch.setattr("scripts.verify_statistics.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    mock_persons = [
+        {
+            "uuid": "test-uuid-stats",
+            "full_name": "Ants Kask",
+            "active": True,
+        }
+    ]
+    persons_file = tmp_path / "persons.json"
+    with open(persons_file, "w", encoding="utf-8") as f:
+        json.dump(mock_persons, f)
+
+    class MockResp:
+        status_code = 200
+
+        def json(self):
+            return {
+                "uuid": "test-uuid-stats",
+                "fullName": "Ants Kask",
+                "speeches": 1,
+                "questions": 0,
+                "procedural": 0,
+                "total": 1,
+            }
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+
+    session = SessionLocal()
+    sp = Speech(
+        id=888111,
+        date="2026-07-01",
+        time="1000",
+        source_file="2026-07-01_1000.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/test",
+        speaker="Ants Kask",
+        speaker_uuid="test-uuid-stats",
+        speech_type="SPEECH",
+        text="Tere kõigile!",
+    )
+    session.merge(sp)
+    session.commit()
+    session.close()
+
+    report_path = tmp_path / "stats_report.json"
+    ok = verify_statistics(
+        start_date="2026-07-01",
+        end_date="2026-07-02",
+        sample_size=1,
+        delay=0.0,
+        output_path=str(report_path),
+    )
+    assert ok is True
+    assert report_path.exists()
+    report_data = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report_data["summary"]["passed"] == 1
+    assert report_data["summary"]["alerts"] == 0
