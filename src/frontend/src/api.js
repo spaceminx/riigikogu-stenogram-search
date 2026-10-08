@@ -132,3 +132,33 @@ export async function fetchFactionsList(membership = "15") {
   const res = await fetch(`${BASE_URL}/attendance/factions/list?${params.toString()}`);
   return handleResponse(res);
 }
+
+export async function fetchMemberships() {
+  const res = await fetch(`${BASE_URL}/memberships`);
+  return handleResponse(res);
+}
+
+export async function fetchSystemStatus() {
+  const res = await fetch(`${BASE_URL}/system/status`);
+  return handleResponse(res);
+}
+
+export async function fetchPersons({ search, activeOnly, limit, offset } = {}) {
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+  if (activeOnly) params.append("active_only", "true");
+  if (limit) params.append("limit", limit);
+  if (offset) params.append("offset", offset);
+  const res = await fetch(`${BASE_URL}/persons?${params.toString()}`);
+  return handleResponse(res);
+}
+
+export async function fetchPerson(uuid) {
+  const res = await fetch(`${BASE_URL}/persons/${encodeURIComponent(uuid)}`);
+  return handleResponse(res);
+}
+
+export async function fetchSpeech(speechId) {
+  const res = await fetch(`${BASE_URL}/speeches/${encodeURIComponent(speechId)}`);
+  return handleResponse(res);
+}
