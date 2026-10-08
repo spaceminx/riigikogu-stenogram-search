@@ -221,11 +221,13 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
             best_score = -1
 
             old_time_str = old_sp.get("start_time")
-            old_time = (
-                datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
-                if old_time_str
-                else None
-            )
+            old_time = None
+            if old_time_str:
+                try:
+                    old_time = datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
+                except Exception:
+                    pass
+
             old_text = old_sp.get("text", "")
             old_speaker = old_sp.get("speaker")
 
@@ -234,38 +236,57 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
                     continue
 
                 new_time_str = new_sp.get("start_time")
-                new_time = (
-                    datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
-                    if new_time_str
-                    else None
-                )
+                new_time = None
+                if new_time_str:
+                    try:
+                        new_time = datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
+                    except Exception:
+                        pass
 
                 time_diff = None
                 if old_time and new_time:
                     time_diff = abs((new_time - old_time).total_seconds())
 
-                score = 0
-                if time_diff is not None and time_diff <= 60:
-                    score += 100 - time_diff
-
                 sim = 0.0
-                if old_text and new_sp.get("text"):
-                    sim = difflib.SequenceMatcher(None, old_text, new_sp.get("text")).quick_ratio()
+                new_text = new_sp.get("text", "")
+                if old_text and new_text:
+                    if old_text in new_text:
+                        sim = 1.0
+                    else:
+                        sim = difflib.SequenceMatcher(None, old_text, new_text).ratio()
 
-                if sim > 0.8:
-                    score += sim * 100
+                # Matching rule: must have text overlap. Time alone is not enough.
+                score = 0
+                is_match = False
 
-                if score > 0 and score > best_score:
+                if time_diff is not None and time_diff <= 60:
+                    if sim >= 0.5:
+                        is_match = True
+                        score = sim * 100 + (60 - time_diff)
+                else:
+                    if sim >= 0.8:
+                        is_match = True
+                        score = sim * 100
+
+                if is_match and score > best_score:
                     best_score = score
                     best_match = new_sp
 
             if best_match:
                 if "previous_external_ids" not in best_match:
                     best_match["previous_external_ids"] = []
-                if old_ext not in best_match["previous_external_ids"]:
+                if (
+                    old_ext
+                    and old_ext != best_match.get("external_id")
+                    and old_ext not in best_match["previous_external_ids"]
+                ):
                     best_match["previous_external_ids"].append(old_ext)
                 for prev_ext in old_sp.get("previous_external_ids", []):
-                    if prev_ext not in best_match["previous_external_ids"]:
+                    if (
+                        prev_ext
+                        and prev_ext != best_match.get("external_id")
+                        and prev_ext not in best_match["previous_external_ids"]
+                    ):
                         best_match["previous_external_ids"].append(prev_ext)
 
                 if "previous_speech_keys" not in best_match:
@@ -364,6 +385,7 @@ def parse_meeting_speeches(
 
     if rich_meeting and rich_meeting.get("stenograph", {}).get("agendaItems"):
         agendas = rich_meeting["stenograph"]["agendaItems"]
+        speech_idx = 0
         for agenda_item in agendas:
             agenda_id = agenda_item.get("id")
             raw_agenda_name = agenda_item.get("name", "")
@@ -375,6 +397,7 @@ def parse_meeting_speeches(
             )
 
             for sp in agenda_item.get("speeches", []):
+                speech_idx += 1
                 speaker_raw = sp.get("name", "")
                 raw_content = sp.get("content", "")
                 raw_text = clean_html(raw_content)
@@ -445,7 +468,7 @@ def parse_meeting_speeches(
                 )
                 speaker_slug = slugify_estonian(speaker_name)
                 speech_key = (
-                    f"{meeting_code}_{clean_time}_{speaker_slug}"
+                    f"{meeting_code}_{clean_time}_{speech_idx}_{speaker_slug}"
                     if meeting_code and speaker_slug
                     else None
                 )
