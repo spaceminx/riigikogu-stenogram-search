@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [master, main]
   workflow_dispatch:
+ 
+permissions:
+  contents: read
 
 jobs:
   backend-test:
@@ -75,7 +78,7 @@ jobs:
 
       - name: Install and run actionlint
         run: |
-          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.7
           ./actionlint
 
 
@@ -88,7 +91,7 @@ jobs:
       - name: Pull latest code and rebuild Docker
         run: |
           git config --global --add safe.directory /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
-          cd /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search
+          cd /mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search || exit 1
           git pull origin master
           docker compose up -d --build
 
