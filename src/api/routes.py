@@ -648,26 +648,24 @@ def get_speech_by_id(speech_identifier: str):
             # Prioritize official Riigikogu permalink external_id and editorial aliases
             speech = session.query(Speech).filter(Speech.external_id == num_id).first()
             if not speech:
-                alias = (
-                    session.query(SpeechAlias)
+                speech = (
+                    session.query(Speech)
+                    .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
                     .filter(SpeechAlias.alias_external_id == num_id)
                     .first()
                 )
-                if alias:
-                    speech = session.query(Speech).filter(Speech.id == alias.speech_id).first()
             if not speech:
                 speech = session.query(Speech).filter(Speech.id == num_id).first()
 
         if not speech:
             speech = session.query(Speech).filter(Speech.speech_key == speech_identifier).first()
             if not speech:
-                alias = (
-                    session.query(SpeechAlias)
+                speech = (
+                    session.query(Speech)
+                    .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
                     .filter(SpeechAlias.alias_speech_key == speech_identifier)
                     .first()
                 )
-                if alias:
-                    speech = session.query(Speech).filter(Speech.id == alias.speech_id).first()
 
         if not speech:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
