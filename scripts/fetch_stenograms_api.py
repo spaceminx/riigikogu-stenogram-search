@@ -181,6 +181,42 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
                 f.write(json.dumps(s, ensure_ascii=False) + "\n")
 
 
+def compute_duration_seconds(start_time_str: str | None, end_time_str: str | None) -> int | None:
+    """Calculate speech duration in seconds from ISO start and end timestamps."""
+    if not start_time_str or not end_time_str:
+        return None
+    try:
+        dt_start = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
+        dt_end = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+        return max(0, round((dt_end - dt_start).total_seconds()))
+    except Exception:
+        return None
+
+
+def load_persons_name_map() -> dict[str, str]:
+    """Load full_name -> uuid mapping from persons.json for unambiguous MP names."""
+    p_path = os.path.join(OUTPUT_DIR_PROCESSED, "persons.json")
+    if not os.path.exists(p_path):
+        return {}
+    try:
+        with open(p_path, encoding="utf-8") as f:
+            persons = json.load(f)
+        name_counts: dict[str, int] = {}
+        for p in persons:
+            name = p.get("full_name")
+            if name:
+                name_counts[name] = name_counts.get(name, 0) + 1
+        name_map = {}
+        for p in persons:
+            name = p.get("full_name")
+            uuid_val = p.get("uuid")
+            if name and uuid_val and name_counts.get(name) == 1:
+                name_map[name] = uuid_val
+        return name_map
+    except Exception:
+        return {}
+
+
 def parse_meeting_speeches(
     rich_meeting: dict | None,
     verbatim: dict | None,
@@ -190,6 +226,7 @@ def parse_meeting_speeches(
     time_formatted: str,
     source_file_key: str,
     faction_map: dict,
+    person_name_map: dict | None = None,
 ) -> tuple[list[dict], str]:
     """Extract and lemmatize speech records from a meeting dataset."""
     is_edited = (rich_meeting and rich_meeting.get("meetingStatus") == "EDITED") or bool(
@@ -229,15 +266,28 @@ def parse_meeting_speeches(
 
                 speaker_name, speaker_role = split_speaker_role(speaker_raw)
                 speaker_faction = get_faction_for_date(faction_map, speaker_name, date_formatted)
+                speaker_uuid = sp.get("emsId")
+                if not speaker_uuid and person_name_map:
+                    speaker_uuid = person_name_map.get(speaker_name)
+
                 lemmas = lemmatize_text(raw_text)
                 video_url = sp.get("parsedVideoLink")
 
                 sp_time_raw = sp.get("startTime")
+                end_time_raw = sp.get("endTime")
+                duration_seconds = compute_duration_seconds(sp_time_raw, end_time_raw)
+
                 sp_time = time_formatted
                 if sp_time_raw and "T" in sp_time_raw:
                     time_part = sp_time_raw.split("T")[1].replace(":", "")[:4]
                     if len(time_part) == 4 and time_part.isdigit():
                         sp_time = time_part
+
+                ext_id = sp.get("id")
+                try:
+                    ext_id_int = int(ext_id) if ext_id is not None else None
+                except (ValueError, TypeError):
+                    ext_id_int = None
 
                 speeches_to_save.append(
                     {
@@ -250,6 +300,12 @@ def parse_meeting_speeches(
                         "speaker": speaker_name,
                         "speaker_role": speaker_role,
                         "speaker_faction": speaker_faction,
+                        "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
+                        "speech_type": sp_type,
+                        "external_id": ext_id_int,
+                        "start_time": sp_time_raw,
+                        "end_time": end_time_raw,
+                        "duration_seconds": duration_seconds,
                         "text": raw_text,
                         "text_lemmas": lemmas,
                         "status": meeting_status,
@@ -271,6 +327,7 @@ def parse_meeting_speeches(
                     speaker_faction = get_faction_for_date(
                         faction_map, speaker_name, date_formatted
                     )
+                    speaker_uuid = person_name_map.get(speaker_name) if person_name_map else None
                     lemmas = lemmatize_text(raw_text)
 
                     speeches_to_save.append(
@@ -287,6 +344,12 @@ def parse_meeting_speeches(
                             "speaker": speaker_name,
                             "speaker_role": speaker_role,
                             "speaker_faction": speaker_faction,
+                            "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
+                            "speech_type": "SPEECH",
+                            "external_id": None,
+                            "start_time": None,
+                            "end_time": None,
+                            "duration_seconds": None,
                             "text": raw_text,
                             "text_lemmas": lemmas,
                             "status": meeting_status,
@@ -393,6 +456,8 @@ def fetch_and_process_stenograms(
     else:
         faction_map = {}
 
+    person_name_map = load_persons_name_map()
+
     print(f"Starting API fetch from {start_date} to {end_date}")
     has_errors = False
 
@@ -475,6 +540,7 @@ def fetch_and_process_stenograms(
                     time_formatted=time_formatted,
                     source_file_key=source_file_key,
                     faction_map=faction_map,
+                    person_name_map=person_name_map,
                 )
 
                 if speeches_to_save:
@@ -550,6 +616,7 @@ def fetch_and_process_stenograms(
                     time_formatted=time_str,
                     source_file_key=src_file_key or f"{date_str}_{time_str}.api",
                     faction_map=faction_map,
+                    person_name_map=person_name_map,
                 )
 
                 if speeches_to_save:
