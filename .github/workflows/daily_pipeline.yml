@@ -60,7 +60,7 @@ jobs:
         run: python scripts/fetch_attendance.py
 
       - name: 6. Upload updated data and sync state back to Backblaze B2
-        if: always()
+        if: !cancelled()
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}

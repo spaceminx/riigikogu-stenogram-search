@@ -568,6 +568,7 @@ def fetch_and_process_stenograms(
 
             except Exception as e:
                 print(f"Warning: Error processing verbatim {verbatim.get('title')}: {e}")
+                has_errors = True
 
     # Re-fetch and update unedited meetings directly by code, regardless of date range
     if unedited_sessions:
@@ -596,6 +597,7 @@ def fetch_and_process_stenograms(
             time.sleep(2)
             rich_meeting = fetch_rich_meeting_data(meeting_code)
             if not rich_meeting:
+                has_errors = True
                 continue
 
             is_edited = rich_meeting.get("meetingStatus") == "EDITED"

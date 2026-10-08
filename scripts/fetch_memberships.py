@@ -84,13 +84,13 @@ def fetch_memberships() -> bool:
             print(
                 f"Warning: Failed to fetch memberships from API, continuing with existing cache in {out_file}."
             )
-            return True
+            return False
 
         print("Notice: API unavailable and no cache found. Initializing with fallback memberships.")
         with open(tmp_file, "w", encoding="utf-8") as f:
             json.dump(FALLBACK_MEMBERSHIPS, f, ensure_ascii=False, indent=2)
         os.replace(tmp_file, out_file)
-        return True
+        return False
 
     sorted_items = sorted(
         [it for it in data if it.get("number") and it.get("startDate")],

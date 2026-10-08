@@ -111,7 +111,7 @@ def fetch_factions() -> bool:
             print(
                 f"Warning: Could not refresh factions from API. Continuing with existing cache from {out_file}."
             )
-            return True
+            return False
         else:
             print(f"Error: Failed to fetch factions from API and no cached {out_file} found.")
             return False
