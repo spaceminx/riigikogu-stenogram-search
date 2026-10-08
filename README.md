@@ -21,9 +21,9 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 - **Activity Over Time:** Visualizes keyword mentions by month, week, or day with continuous timeline smoothing.
 - **Top Speakers:** Identifies members of parliament who speak most about given topics.
 - **Attendance & Voting Stats:** Cross-references transcripts with MP attendance records.
-- **Persistent MP UUIDs & Permalinks:** Speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that ensure unedited transcripts seamlessly resolve after being officially edited.
+- **Persistent MP UUIDs & Permalinks:** Speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that resolve historical IDs after transcripts are officially edited.
 - **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API with dynamic runtime reloading.
-- **Pipeline Integrity & Statistics Verification:** Pipeline verifies daily transcript fetching directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), cross-checks speech counts against the official Riigikogu statistics API (`verify_statistics.py`), and reports health via `/system/status`.
+- **Pipeline Integrity & Statistics Verification:** Nightly pipeline verifies transcripts directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), supports on-demand cross-checks against official statistics (`verify_statistics.py`), and reports health via `/system/status`.
 - **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
 - **Modern UI:** Responsive single-page application with Dark / Light mode toggle.
 - **Automated Daily Pipeline:** Nightly GitHub Actions workflow fetches new transcripts, validates integrity, and syncs data to Backblaze B2.

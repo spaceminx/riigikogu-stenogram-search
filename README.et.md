@@ -21,9 +21,9 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 - **Aktiivsus ajas:** Visualiseerib märksõnade sagedust kuude, nädalate või päevade lõikes pideva graafikuna.
 - **Top kõnelejad:** Kuvab saadikud, kes on valitud märksõnu enim kasutanud.
 - **Kohaloleku ja fraktsioonide seosed:** Seob stenogrammid saadikute kohalolekukontrolli andmetega.
-- **Püsivad isikud ja püsilingid:** Kõik kõned on seotud saadikute ametlike UUID-dega (koos `ems_id` talletamise ja ministrite-saadikute lahendamisega), stabiilse `speech_key` tunnusega ning püsilingi aliastabeliga (`speech_aliases`), mis tagab toimetamata kõnede linkide toimimise ka pärast toimetatud versiooni avalikustamist.
+- **Püsivad isikud ja püsilingid:** Kõik kõned on seotud saadikute ametlike UUID-dega (koos `ems_id` talletamise ja ministrite-saadikute lahendamisega), stabiilse `speech_key` tunnusega ning püsilingi aliastabeliga (`speech_aliases`), mis suunab toimetamata kõnede vanad Riigikogu ID-d toimetatud versiooni avalikustamisel uuele kõnele.
 - **Dünaamilised koosseisud:** Koosseisude kuupäevad ja valikud laetakse automaatselt Riigikogu ametlikust API-st koos jooksva dünaamilise uuendamisega.
-- **Andmetoru terviklikkus ja statistika verifitseerimine:** Andmetoru kontrollib istungite täielikkust otse Riigikogu API vastu (`verify_pipeline_integrity.py`), võrdleb kõnede mahtu ametliku statistikaga (`verify_statistics.py`) ja monitoorib süsteemi tervist (`/system/status`).
+- **Andmetoru terviklikkus ja statistika verifitseerimine:** Andmetoru kontrollib igaöiselt istungite täielikkust otse Riigikogu API vastu (`verify_pipeline_integrity.py`), toetab kõnede mahu pistelist kontrolli ametliku statistikaga (`verify_statistics.py`) ja monitoorib süsteemi tervist (`/system/status`).
 - **Läbipaistev metoodika:** Kasutajaliideses on selgitatud kohaloleku, kõnede ja toimetamata tekstide arvestuse põhimõtted.
 - **Kasutajaliides:** Reageeriv React rakendus Dark / Light režiimi toega.
 - **Automaatne andmetoru:** Igaöine GitHub Actions töövoog laeb uued stenogrammid, kontrollib andmete terviklikkust ja sünkroniseerib need Backblaze B2 pilvesalvestusega.

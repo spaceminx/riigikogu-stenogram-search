@@ -276,6 +276,15 @@ def test_parse_meeting_speeches_minister_ems_id_disambiguation():
     assert sp["speech_key"] == "202604011000_20260401T102000000_hanno-pevkur"
 
 
+def test_slugify_estonian():
+    from scripts.fetch_stenograms_api import slugify_estonian
+
+    assert slugify_estonian("Jüri Ratas") == "juri-ratas"
+    assert slugify_estonian("Õnne Pillak") == "onne-pillak"
+    assert slugify_estonian("Kaja Kallas") == "kaja-kallas"
+    assert slugify_estonian("Urmas Reinsalu (välisminister)") == "urmas-reinsalu-valisminister"
+
+
 def test_compute_duration_seconds():
     # Valid ISO strings
     assert compute_duration_seconds("2026-04-01T10:15:00.000", "2026-04-01T10:16:30.000") == 90

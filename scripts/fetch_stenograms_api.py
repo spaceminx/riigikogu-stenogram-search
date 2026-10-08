@@ -40,6 +40,28 @@ def clean_html(raw_html: str) -> str:
     return " ".join(clean.split()).strip()
 
 
+def slugify_estonian(text: str) -> str:
+    """Generate a clean ASCII slug transliterating Estonian special characters."""
+    tr_map = str.maketrans(
+        {
+            "ä": "a",
+            "ö": "o",
+            "õ": "o",
+            "ü": "u",
+            "Ä": "a",
+            "Ö": "o",
+            "Õ": "o",
+            "Ü": "u",
+            "š": "s",
+            "ž": "z",
+            "Š": "s",
+            "Ž": "z",
+        }
+    )
+    cleaned = text.translate(tr_map).lower()
+    return re.sub(r"[^a-z0-9]+", "-", cleaned).strip("-")
+
+
 def fetch_rich_meeting_data(meeting_code: str, max_retries: int = 3) -> dict | None:
     """Fetch rich meeting details (agenda item PKP IDs and video timestamps) from new stenogram API."""
     if not meeting_code or not meeting_code.isdigit():
@@ -336,7 +358,7 @@ def parse_meeting_speeches(
                     .replace("-", "")
                     .replace(".", "")
                 )
-                speaker_slug = re.sub(r"[^a-zA-Z0-9]+", "-", speaker_name.lower()).strip("-")
+                speaker_slug = slugify_estonian(speaker_name)
                 speech_key = (
                     f"{meeting_code}_{clean_time}_{speaker_slug}"
                     if meeting_code and speaker_slug
@@ -368,11 +390,13 @@ def parse_meeting_speeches(
                     }
                 )
     elif verbatim:
+        verbatim_idx = 0
         for agenda_item in verbatim.get("agendaItems", []):
             raw_agenda_name = agenda_item.get("title", "")
             agenda_title = clean_html(raw_agenda_name)
             for event in agenda_item.get("events", []):
                 if event.get("type") == "SPEECH":
+                    verbatim_idx += 1
                     raw_text = event.get("text", "")
                     speaker_raw = event.get("speaker", "")
 
@@ -393,9 +417,9 @@ def parse_meeting_speeches(
                         speaker_uuid = person_name_map[speaker_name]
 
                     lemmas = lemmatize_text(raw_text)
-                    speaker_slug = re.sub(r"[^a-zA-Z0-9]+", "-", speaker_name.lower()).strip("-")
+                    speaker_slug = slugify_estonian(speaker_name)
                     speech_key = (
-                        f"{meeting_code}_{time_formatted}_{speaker_slug}"
+                        f"{meeting_code}_{time_formatted}_{verbatim_idx}_{speaker_slug}"
                         if meeting_code and speaker_slug
                         else None
                     )
