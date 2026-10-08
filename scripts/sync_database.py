@@ -12,7 +12,11 @@ from config import OUTPUT_DIR_PROCESSED
 from scripts.download_from_b2 import download_from_b2
 from src.load.database import SessionLocal
 from src.load.indexes import create_indexes
-from src.load.loader import create_tables, load_attendance_to_database
+from src.load.loader import (
+    create_tables,
+    load_attendance_to_database,
+    load_persons_to_database,
+)
 from src.load.models import Speech, SpeechTerm
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
@@ -93,6 +97,12 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                             speaker=data.get("speaker", "Tundmatu"),
                             speaker_role=data.get("speaker_role"),
                             speaker_faction=data.get("speaker_faction"),
+                            speaker_uuid=data.get("speaker_uuid"),
+                            speech_type=data.get("speech_type"),
+                            external_id=data.get("external_id"),
+                            start_time=data.get("start_time"),
+                            end_time=data.get("end_time"),
+                            duration_seconds=data.get("duration_seconds"),
                             text=data["text"],
                             text_lemmas=data.get("text_lemmas"),
                             status=rec_status,
@@ -153,10 +163,11 @@ def sync_database() -> bool:
         create_tables()
         create_indexes()
 
-        # 3. Load current year speeches & attendance
-        print("\n[3/5] Inserting new speeches and attendance records...")
+        # 3. Load current year speeches, attendance & persons
+        print("\n[3/5] Inserting new speeches, attendance records, and persons...")
         sync_current_year_speeches()
         load_attendance_to_database()
+        load_persons_to_database()
 
         # 4. Lemmatize any new speeches
         print("\n[4/5] Checking and lemmatizing new speeches...")
