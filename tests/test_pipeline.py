@@ -454,3 +454,40 @@ def test_dynamic_membership_dates_reload(tmp_path, monkeypatch):
     # MEMBERSHIP_DATES should immediately reflect new membership 99 without restart
     assert "99" in MEMBERSHIP_DATES
     assert MEMBERSHIP_DATES["99"] == ("2030-01-01", "2034-01-01")
+
+
+def test_verify_pipeline_integrity(tmp_path, monkeypatch):
+    import requests
+
+    from scripts.verify_pipeline_integrity import verify_pipeline_integrity
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    # Create dummy JSONL file
+    year_file = tmp_path / "2026.jsonl"
+    mock_speech = {
+        "source_file": "2026-09-23_1200.api",
+        "date": "2026-09-23",
+        "source_url": "https://stenogrammid.riigikogu.ee/et/194151#PKP-1",
+        "text": "Näidiskõne",
+    }
+    year_file.write_text(json.dumps(mock_speech) + "\n", encoding="utf-8")
+
+    class MockResp:
+        status_code = 200
+
+        def json(self):
+            return [
+                {
+                    "date": "2026-09-23",
+                    "title": "Täiskogu istung",
+                    "_links": {
+                        "self": {"href": "https://api.riigikogu.ee/api/steno/verbatims/194151"}
+                    },
+                }
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+
+    ok = verify_pipeline_integrity(days=7, fail_on_missing=True)
+    assert ok is True

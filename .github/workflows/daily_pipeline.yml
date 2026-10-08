@@ -59,7 +59,12 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/fetch_attendance.py
 
-      - name: 6. Upload updated data and sync state back to Backblaze B2
+      - name: 6. Verify pipeline data integrity
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/verify_pipeline_integrity.py
+
+      - name: 7. Upload updated data and sync state back to Backblaze B2
         if: !cancelled()
         env:
           PYTHONPATH: ${{ github.workspace }}
