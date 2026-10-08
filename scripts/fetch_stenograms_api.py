@@ -232,6 +232,11 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
             old_speaker = old_sp.get("speaker")
 
             for new_sp in speeches:
+                # Fast path: identical external_id means it's the exact same speech
+                if old_ext and new_sp.get("external_id") == old_ext:
+                    best_match = new_sp
+                    break
+
                 if new_sp.get("speaker") != old_speaker:
                     continue
 
@@ -253,7 +258,11 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
                     if old_text in new_text:
                         sim = 1.0
                     else:
-                        sim = difflib.SequenceMatcher(None, old_text, new_text).ratio()
+                        q_ratio = difflib.SequenceMatcher(None, old_text, new_text).quick_ratio()
+                        if (time_diff is not None and time_diff <= 120) or q_ratio >= 0.8:
+                            sim = difflib.SequenceMatcher(
+                                None, old_text, new_text, autojunk=False
+                            ).ratio()
 
                 # Matching rule: must have text overlap. Time alone is not enough.
                 score = 0
@@ -467,10 +476,14 @@ def parse_meeting_speeches(
                     .replace(".", "")
                 )
                 speaker_slug = slugify_estonian(speaker_name)
+
+                if sp_time_raw:
+                    key_suffix = f"{clean_time}_{speaker_slug}"
+                else:
+                    key_suffix = f"{clean_time}_{speech_idx}_{speaker_slug}"
+
                 speech_key = (
-                    f"{meeting_code}_{clean_time}_{speech_idx}_{speaker_slug}"
-                    if meeting_code and speaker_slug
-                    else None
+                    f"{meeting_code}_{key_suffix}" if meeting_code and speaker_slug else None
                 )
 
                 speeches_to_save.append(

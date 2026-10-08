@@ -273,7 +273,7 @@ def test_parse_meeting_speeches_minister_ems_id_disambiguation():
     assert sp["speaker_role"] == "Kaitseminister"
     assert sp["ems_id"] == "minister-role-uuid-63db"
     assert sp["speaker_uuid"] == "canonical-saadik-uuid-cf42"
-    assert sp["speech_key"] == "202604011000_20260401T102000000_1_hanno-pevkur"
+    assert sp["speech_key"] == "202604011000_20260401T102000000_hanno-pevkur"
 
 
 def test_slugify_estonian():
