@@ -1,3 +1,4 @@
+import difflib
 import glob
 import html
 import json
@@ -198,9 +199,93 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
             print(f"Warning: Refusing to replace session {source_file_key} with 0 speeches.")
             return
 
-        new_lines = [line for line in existing_lines if target_needle not in line]
+        old_speeches = []
+        new_lines = []
+        for line in existing_lines:
+            if target_needle in line:
+                try:
+                    old_speeches.append(json.loads(line))
+                except Exception:
+                    pass
+            else:
+                new_lines.append(line)
+
+        # Bind previous aliases to preserve permalinks across edits
+        for old_sp in old_speeches:
+            old_ext = old_sp.get("external_id")
+            old_key = old_sp.get("speech_key")
+            if not old_ext:
+                continue
+
+            best_match = None
+            best_score = -1
+
+            old_time_str = old_sp.get("start_time")
+            old_time = (
+                datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
+                if old_time_str
+                else None
+            )
+            old_text = old_sp.get("text", "")
+            old_speaker = old_sp.get("speaker")
+
+            for new_sp in speeches:
+                if new_sp.get("speaker") != old_speaker:
+                    continue
+
+                new_time_str = new_sp.get("start_time")
+                new_time = (
+                    datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
+                    if new_time_str
+                    else None
+                )
+
+                time_diff = None
+                if old_time and new_time:
+                    time_diff = abs((new_time - old_time).total_seconds())
+
+                score = 0
+                if time_diff is not None and time_diff <= 60:
+                    score += 100 - time_diff
+
+                sim = 0.0
+                if old_text and new_sp.get("text"):
+                    sim = difflib.SequenceMatcher(None, old_text, new_sp.get("text")).quick_ratio()
+
+                if sim > 0.8:
+                    score += sim * 100
+
+                if score > 0 and score > best_score:
+                    best_score = score
+                    best_match = new_sp
+
+            if best_match:
+                if "previous_external_ids" not in best_match:
+                    best_match["previous_external_ids"] = []
+                if old_ext not in best_match["previous_external_ids"]:
+                    best_match["previous_external_ids"].append(old_ext)
+                for prev_ext in old_sp.get("previous_external_ids", []):
+                    if prev_ext not in best_match["previous_external_ids"]:
+                        best_match["previous_external_ids"].append(prev_ext)
+
+                if "previous_speech_keys" not in best_match:
+                    best_match["previous_speech_keys"] = []
+                if (
+                    old_key
+                    and old_key != best_match.get("speech_key")
+                    and old_key not in best_match["previous_speech_keys"]
+                ):
+                    best_match["previous_speech_keys"].append(old_key)
+                for prev_key in old_sp.get("previous_speech_keys", []):
+                    if (
+                        prev_key != best_match.get("speech_key")
+                        and prev_key not in best_match["previous_speech_keys"]
+                    ):
+                        best_match["previous_speech_keys"].append(prev_key)
+
         for s in speeches:
             new_lines.append(json.dumps(s, ensure_ascii=False) + "\n")
+
         with open(tmp_file, "w", encoding="utf-8") as f:
             f.writelines(new_lines)
         os.replace(tmp_file, out_file)
