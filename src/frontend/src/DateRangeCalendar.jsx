@@ -122,10 +122,12 @@ export default function DateRangeCalendar({
   };
 
   useLayoutEffect(() => {
-    if (!isOpen || compact) return undefined;
+    if (!isOpen) return undefined;
 
     const positionPopover = () => {
-      const trigger = rootRef.current?.querySelector(".date-range-trigger");
+      const trigger = rootRef.current?.querySelector(
+        compact ? ".compact-calendar-toggle" : ".date-range-trigger"
+      );
       const popover = popoverRef.current;
       if (!trigger || !popover) return;
 
@@ -134,12 +136,24 @@ export default function DateRangeCalendar({
       const availableBelow = window.innerHeight - triggerRect.bottom - 9;
       const availableAbove = triggerRect.top - 9;
       const maxHeight = Math.max(0, window.innerHeight - 32);
-      const top =
-        popoverRect.height <= availableBelow
-          ? triggerRect.bottom + 9
-          : popoverRect.height <= availableAbove
-            ? triggerRect.top - popoverRect.height - 9
-            : 16;
+
+      let top;
+      if (compact) {
+        // Compact calendar is located near the bottom of the sidebar - open upwards if space permits or if more room is above
+        if (availableAbove >= popoverRect.height || availableAbove >= availableBelow) {
+          top = Math.max(16, triggerRect.top - popoverRect.height - 8);
+        } else {
+          top = triggerRect.bottom + 8;
+        }
+      } else {
+        top =
+          popoverRect.height <= availableBelow
+            ? triggerRect.bottom + 9
+            : popoverRect.height <= availableAbove
+              ? triggerRect.top - popoverRect.height - 9
+              : 16;
+      }
+
       const left = Math.max(
         16,
         Math.min(triggerRect.right - popoverRect.width, window.innerWidth - popoverRect.width - 16)
@@ -150,7 +164,9 @@ export default function DateRangeCalendar({
         left: `${left}px`,
         top: `${top}px`,
         right: "auto",
+        bottom: "auto",
         maxHeight: `${maxHeight}px`,
+        zIndex: 1000,
       });
     };
 
@@ -348,6 +364,8 @@ export default function DateRangeCalendar({
         </button>
         {isOpen && (
           <div
+            ref={popoverRef}
+            style={popoverPosition || undefined}
             className="calendar-popover compact-calendar-popover"
             role="dialog"
             aria-label="Riigikogu istungite kalender"

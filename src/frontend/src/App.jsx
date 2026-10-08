@@ -1081,7 +1081,15 @@ function App() {
       {view !== "attendance" && (
         <form onSubmit={handleSearch} className="search-section">
           <div className="search-query-row">
-            <div className="search-groups-container">
+            <div
+              className="search-groups-container"
+              onClick={(e) => {
+                if (!e.target.closest("button") && !e.target.classList.contains("search-input")) {
+                  const input = e.currentTarget.querySelector(".search-input");
+                  if (input) input.focus();
+                }
+              }}
+            >
               {groups.map((group, gIndex) => (
                 <React.Fragment key={gIndex}>
                   {gIndex > 0 && <span className="or-divider">VÕI</span>}
@@ -1104,7 +1112,7 @@ function App() {
                         className="search-input"
                         placeholder={
                           group.length === 0 && groups.length === 1
-                            ? "Sisesta otsisõna (nt kliima, mets)..."
+                            ? "Sisesta otsisõna (nt kliima, mets, eelarve)..."
                             : "Lisa sõna..."
                         }
                         value={inputValue}

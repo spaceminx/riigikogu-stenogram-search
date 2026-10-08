@@ -3265,9 +3265,15 @@ body {
 
 .search-groups-container {
   min-height: 42px;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
+  background: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  cursor: text;
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease;
@@ -3279,7 +3285,20 @@ body {
 }
 
 .and-group-box {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   min-height: 32px;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+}
+
+.and-group-box:has(.search-input),
+.search-groups-container > .and-group-box:last-of-type {
+  flex: 1;
+  min-width: 220px;
 }
 
 .token-pill {
@@ -3289,8 +3308,29 @@ body {
   color: #334155;
 }
 
-.search-input {
+.search-input,
+input.search-input {
+  flex: 1;
+  width: 100%;
+  min-width: 200px;
+  min-height: 32px;
+  padding: 4px 6px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
   font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.search-input:focus,
+.search-input:focus-visible,
+input.search-input:focus,
+input.search-input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .search-controls {
@@ -4433,7 +4473,8 @@ body {
 }
 
 .compact-calendar-popover {
-  top: calc(100% + 5px);
+  top: auto;
+  bottom: calc(100% + 8px);
   right: 0;
   left: auto;
   width: min(300px, calc(100vw - 40px));
@@ -4730,7 +4771,6 @@ html[data-theme="dark"] .sidebar-empty-state {
   color: #a8b5c6;
 }
 
-html[data-theme="dark"] .search-input,
 html[data-theme="dark"] .filter-select,
 html[data-theme="dark"] .filter-text-input,
 html[data-theme="dark"] .search-select {
@@ -4880,9 +4920,27 @@ html[data-theme="dark"] .search-query-row .search-groups-container {
   background: #111c2d;
 }
 
-html[data-theme="dark"] .search-input {
-  background: transparent;
+html[data-theme="dark"] .search-groups-container:focus-within {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .search-input,
+html[data-theme="dark"] input.search-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   color: #e2e8f0;
+}
+
+html[data-theme="dark"] .search-input:focus,
+html[data-theme="dark"] .search-input:focus-visible,
+html[data-theme="dark"] input.search-input:focus,
+html[data-theme="dark"] input.search-input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 html[data-theme="dark"] .token-pill {
