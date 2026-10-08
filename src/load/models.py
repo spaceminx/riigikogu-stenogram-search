@@ -34,9 +34,9 @@ class SpeechAlias(Base):
     __tablename__ = "speech_aliases"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    alias_external_id = Column(Integer, nullable=True)
-    alias_speech_key = Column(Text, nullable=True)
-    speech_id = Column(Integer, ForeignKey("speeches.id"), nullable=False)
+    alias_external_id = Column(Integer, index=True, nullable=True)
+    alias_speech_key = Column(Text, index=True, nullable=True)
+    speech_id = Column(Integer, ForeignKey("speeches.id", ondelete="CASCADE"), nullable=False)
 
 
 class Person(Base):

@@ -117,6 +117,9 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                             session.query(SpeechTerm).filter(
                                 SpeechTerm.speech_id.in_(old_ids)
                             ).delete(synchronize_session=False)
+                            session.query(SpeechAlias).filter(
+                                SpeechAlias.speech_id.in_(old_ids)
+                            ).delete(synchronize_session=False)
                             session.query(Speech).filter(Speech.source_file == src_file).delete(
                                 synchronize_session=False
                             )
