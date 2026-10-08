@@ -193,14 +193,15 @@ def compute_duration_seconds(start_time_str: str | None, end_time_str: str | Non
         return None
 
 
-def load_persons_name_map() -> dict[str, str]:
-    """Load full_name -> uuid mapping from persons.json for unambiguous MP names."""
+def load_persons_metadata() -> tuple[set[str], dict[str, str]]:
+    """Load known MP UUIDs and unambiguous full_name -> uuid mapping from persons.json."""
     p_path = os.path.join(OUTPUT_DIR_PROCESSED, "persons.json")
     if not os.path.exists(p_path):
-        return {}
+        return set(), {}
     try:
         with open(p_path, encoding="utf-8") as f:
             persons = json.load(f)
+        known_uuids = {p.get("uuid") for p in persons if p.get("uuid")}
         name_counts: dict[str, int] = {}
         for p in persons:
             name = p.get("full_name")
@@ -212,9 +213,15 @@ def load_persons_name_map() -> dict[str, str]:
             uuid_val = p.get("uuid")
             if name and uuid_val and name_counts.get(name) == 1:
                 name_map[name] = uuid_val
-        return name_map
+        return known_uuids, name_map
     except Exception:
-        return {}
+        return set(), {}
+
+
+def load_persons_name_map() -> dict[str, str]:
+    """Compatibility wrapper returning name -> uuid map."""
+    _, name_map = load_persons_metadata()
+    return name_map
 
 
 def parse_meeting_speeches(
@@ -227,6 +234,7 @@ def parse_meeting_speeches(
     source_file_key: str,
     faction_map: dict,
     person_name_map: dict | None = None,
+    known_person_uuids: set[str] | None = None,
 ) -> tuple[list[dict], str]:
     """Extract and lemmatize speech records from a meeting dataset."""
     is_edited = (rich_meeting and rich_meeting.get("meetingStatus") == "EDITED") or bool(
@@ -266,9 +274,23 @@ def parse_meeting_speeches(
 
                 speaker_name, speaker_role = split_speaker_role(speaker_raw)
                 speaker_faction = get_faction_for_date(faction_map, speaker_name, date_formatted)
-                speaker_uuid = sp.get("emsId")
-                if not speaker_uuid and person_name_map:
-                    speaker_uuid = person_name_map.get(speaker_name)
+                raw_ems_id = sp.get("emsId")
+                speaker_uuid = None
+
+                # 1. Direct match with canonical MP UUID
+                if raw_ems_id and known_person_uuids and str(raw_ems_id) in known_person_uuids:
+                    speaker_uuid = str(raw_ems_id)
+                # 2. Specific disambiguation for Tarmo Tamm by date
+                elif speaker_name == "Tarmo Tamm":
+                    if date_formatted < "2023-04-10":
+                        speaker_uuid = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+                    else:
+                        speaker_uuid = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+                # 3. Canonical mapping for unique names (including ministers, e.g. Hanno Pevkur)
+                elif person_name_map and speaker_name in person_name_map:
+                    speaker_uuid = person_name_map[speaker_name]
+                elif raw_ems_id:
+                    speaker_uuid = str(raw_ems_id)
 
                 lemmas = lemmatize_text(raw_text)
                 video_url = sp.get("parsedVideoLink")
@@ -301,6 +323,7 @@ def parse_meeting_speeches(
                         "speaker_role": speaker_role,
                         "speaker_faction": speaker_faction,
                         "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
+                        "ems_id": str(raw_ems_id) if raw_ems_id else None,
                         "speech_type": sp_type,
                         "external_id": ext_id_int,
                         "start_time": sp_time_raw,
@@ -327,7 +350,15 @@ def parse_meeting_speeches(
                     speaker_faction = get_faction_for_date(
                         faction_map, speaker_name, date_formatted
                     )
-                    speaker_uuid = person_name_map.get(speaker_name) if person_name_map else None
+                    speaker_uuid = None
+                    if speaker_name == "Tarmo Tamm":
+                        if date_formatted < "2023-04-10":
+                            speaker_uuid = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+                        else:
+                            speaker_uuid = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+                    elif person_name_map and speaker_name in person_name_map:
+                        speaker_uuid = person_name_map[speaker_name]
+
                     lemmas = lemmatize_text(raw_text)
 
                     speeches_to_save.append(
@@ -345,6 +376,7 @@ def parse_meeting_speeches(
                             "speaker_role": speaker_role,
                             "speaker_faction": speaker_faction,
                             "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
+                            "ems_id": None,
                             "speech_type": "SPEECH",
                             "external_id": None,
                             "start_time": None,
@@ -456,7 +488,7 @@ def fetch_and_process_stenograms(
     else:
         faction_map = {}
 
-    person_name_map = load_persons_name_map()
+    known_person_uuids, person_name_map = load_persons_metadata()
 
     print(f"Starting API fetch from {start_date} to {end_date}")
     has_errors = False
@@ -541,6 +573,7 @@ def fetch_and_process_stenograms(
                     source_file_key=source_file_key,
                     faction_map=faction_map,
                     person_name_map=person_name_map,
+                    known_person_uuids=known_person_uuids,
                 )
 
                 if speeches_to_save:
@@ -619,6 +652,7 @@ def fetch_and_process_stenograms(
                     source_file_key=src_file_key or f"{date_str}_{time_str}.api",
                     faction_map=faction_map,
                     person_name_map=person_name_map,
+                    known_person_uuids=known_person_uuids,
                 )
 
                 if speeches_to_save:

@@ -148,6 +148,12 @@ def fetch_factions() -> bool:
             if entry not in faction_map[full_name]:
                 faction_map[full_name].append(entry)
 
+            if uuid_str:
+                if uuid_str not in faction_map:
+                    faction_map[uuid_str] = []
+                if entry not in faction_map[uuid_str]:
+                    faction_map[uuid_str].append(entry)
+
         # Process person profile
         plenary_membership = m.get("plenaryMembership") or {}
         membership_num = (

@@ -655,6 +655,75 @@ def test_list_and_get_persons():
     assert res_404.status_code == 404
 
 
+def test_same_name_different_persons_disambiguation():
+    session = SessionLocal()
+    tt1 = Person(
+        uuid="uuid-tarmo-tamm-1",
+        first_name="Tarmo",
+        last_name="Tamm",
+        full_name="Tarmo Tamm",
+        gender="MALE",
+        date_of_birth="1953-12-03",
+        active=0,
+    )
+    tt2 = Person(
+        uuid="uuid-tarmo-tamm-2",
+        first_name="Tarmo",
+        last_name="Tamm",
+        full_name="Tarmo Tamm",
+        gender="MALE",
+        date_of_birth="1966-07-27",
+        active=1,
+    )
+    session.merge(tt1)
+    session.merge(tt2)
+
+    # 2 speeches for tt1, 1 speech for tt2
+    sp_tt1_a = Speech(
+        id=701,
+        date="2021-05-10",
+        time="1000",
+        source_file="2021.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202105101000",
+        speaker="Tarmo Tamm",
+        speaker_uuid="uuid-tarmo-tamm-1",
+        text="Kõne 1",
+    )
+    sp_tt1_b = Speech(
+        id=702,
+        date="2022-05-10",
+        time="1000",
+        source_file="2022.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202205101000",
+        speaker="Tarmo Tamm",
+        speaker_uuid="uuid-tarmo-tamm-1",
+        text="Kõne 2",
+    )
+    sp_tt2 = Speech(
+        id=703,
+        date="2024-05-10",
+        time="1000",
+        source_file="2024.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202405101000",
+        speaker="Tarmo Tamm",
+        speaker_uuid="uuid-tarmo-tamm-2",
+        text="Kõne 3",
+    )
+    session.merge(sp_tt1_a)
+    session.merge(sp_tt1_b)
+    session.merge(sp_tt2)
+    session.commit()
+    session.close()
+
+    res1 = client.get("/persons/uuid-tarmo-tamm-1")
+    assert res1.status_code == 200
+    assert res1.json()["speeches_count"] == 2
+
+    res2 = client.get("/persons/uuid-tarmo-tamm-2")
+    assert res2.status_code == 200
+    assert res2.json()["speeches_count"] == 1
+
+
 def test_get_speech_by_id_and_external_id():
     session = SessionLocal()
     sp = Speech(

@@ -573,11 +573,17 @@ def get_person(person_uuid: str):
         if not person:
             raise HTTPException(status_code=404, detail="Isikut ei leitud.")
 
-        speeches_count = (
-            session.query(Speech)
-            .filter(or_(Speech.speaker_uuid == person_uuid, Speech.speaker == person.full_name))
-            .count()
-        )
+        same_name_count = session.query(Person).filter(Person.full_name == person.full_name).count()
+        if same_name_count > 1:
+            speeches_count = (
+                session.query(Speech).filter(Speech.speaker_uuid == person_uuid).count()
+            )
+        else:
+            speeches_count = (
+                session.query(Speech)
+                .filter(or_(Speech.speaker_uuid == person_uuid, Speech.speaker == person.full_name))
+                .count()
+            )
 
         factions_cache_path = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
         faction_history = []
@@ -585,7 +591,7 @@ def get_person(person_uuid: str):
             try:
                 with open(factions_cache_path, encoding="utf-8") as f:
                     fmap = json.load(f)
-                    faction_history = fmap.get(person.full_name, [])
+                    faction_history = fmap.get(person_uuid) or fmap.get(person.full_name, [])
             except Exception:
                 pass
 
