@@ -473,21 +473,43 @@ def test_verify_pipeline_integrity(tmp_path, monkeypatch):
     }
     year_file.write_text(json.dumps(mock_speech) + "\n", encoding="utf-8")
 
-    class MockResp:
+    class MockRespSuccess:
         status_code = 200
 
         def json(self):
             return [
                 {
-                    "date": "2026-09-23",
+                    "date": "2026-09-23T12:00:00.000+00:00",
                     "title": "Täiskogu istung",
-                    "_links": {
-                        "self": {"href": "https://api.riigikogu.ee/api/steno/verbatims/194151"}
-                    },
+                    "link": "https://stenogrammid.riigikogu.ee/202609231200",
+                    "edited": False,
                 }
             ]
 
-    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockRespSuccess())
 
-    ok = verify_pipeline_integrity(days=7, fail_on_missing=True)
+    ok = verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)
     assert ok is True
+
+    # Test failure when official session is missing
+    class MockRespMissing:
+        status_code = 200
+
+        def json(self):
+            return [
+                {
+                    "date": "2026-09-23T12:00:00.000+00:00",
+                    "title": "Olemasolev istung",
+                    "link": "https://stenogrammid.riigikogu.ee/202609231200",
+                },
+                {
+                    "date": "2026-09-24T10:00:00.000+00:00",
+                    "title": "Puuduv istung",
+                    "link": "https://stenogrammid.riigikogu.ee/202609241000",
+                },
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockRespMissing())
+
+    ok_missing = verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)
+    assert ok_missing is False

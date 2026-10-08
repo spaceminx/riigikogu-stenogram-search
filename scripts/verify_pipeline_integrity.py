@@ -9,6 +9,7 @@ or truncated in the processed archive.
 import json
 import os
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -19,7 +20,7 @@ from config import OUTPUT_DIR_PROCESSED
 
 
 def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
-    """Parse processed JSONL files and group speech counts and statuses by meeting code / source file."""
+    """Parse processed JSONL files and group speech counts and statuses by source file."""
     sessions: dict[str, dict] = {}
 
     for year in years:
@@ -37,14 +38,7 @@ def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
                     src_file = data.get("source_file", "")
                     date_val = data.get("date", "")
                     status = data.get("status", "EDITED")
-
-                    # Extract meeting code if embedded in source_url or source_file
-                    meeting_code = None
                     src_url = data.get("source_url") or ""
-                    if "/et/" in src_url:
-                        part = src_url.split("/et/")[1].split("#")[0].split("?")[0].strip("/")
-                        if part.isdigit():
-                            meeting_code = part
 
                     if src_file:
                         if src_file not in sessions:
@@ -56,8 +50,17 @@ def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
                             }
                         sessions[src_file]["speech_count"] += 1
                         sessions[src_file]["statuses"].add(status)
-                        if meeting_code:
-                            sessions[src_file]["meeting_codes"].add(meeting_code)
+
+                        # Extract meeting codes from source_url
+                        clean_url = src_url.split("#")[0].split("?")[0].rstrip("/")
+                        url_code = clean_url.split("/")[-1] if clean_url else ""
+                        if url_code.isdigit():
+                            sessions[src_file]["meeting_codes"].add(url_code)
+
+                        # Extract candidate code from source_file (e.g. 2026-10-01_1000.api -> 202610011000)
+                        file_code = src_file.replace("-", "").replace("_", "").replace(".api", "")
+                        if file_code.isdigit() and len(file_code) >= 8:
+                            sessions[src_file]["meeting_codes"].add(file_code)
                 except json.JSONDecodeError:
                     continue
 
@@ -78,13 +81,17 @@ def verify_pipeline_integrity(
     years_to_check = sorted(list({start_dt.year, end_dt.year}))
     local_sessions = load_local_sessions_from_jsonl(years_to_check)
 
-    # Collect all meeting codes present locally
-    all_local_meeting_codes = set()
-    all_local_dates = set()
+    # Index local sessions by meeting_code and date
+    code_to_session: dict[str, dict] = {}
+    date_to_sessions: dict[str, list[dict]] = {}
     for s_info in local_sessions.values():
-        all_local_meeting_codes.update(s_info["meeting_codes"])
-        if s_info.get("date"):
-            all_local_dates.add(s_info["date"])
+        for code in s_info["meeting_codes"]:
+            code_to_session[code] = s_info
+        d = s_info.get("date")
+        if d:
+            if d not in date_to_sessions:
+                date_to_sessions[d] = []
+            date_to_sessions[d].append(s_info)
 
     url = "https://api.riigikogu.ee/api/steno/verbatims"
     print(f"Checking official verbatims from {start_str} to {end_str} via {url}...")
@@ -111,42 +118,88 @@ def verify_pipeline_integrity(
 
     missing_sessions = []
     matched_sessions = []
+    truncated_sessions = []
 
     for v in official_verbatims:
-        meeting_code = None
-        link = v.get("_links", {}).get("self", {}).get("href", "")
-        if link and "/api/steno/verbatims/" in link:
-            meeting_code = link.split("/api/steno/verbatims/")[1].split("?")[0].strip("/")
-
-        v_date = v.get("date", "")
+        link = v.get("link") or ""
+        meeting_code = link.rstrip("/").split("/")[-1].split("?")[0] if link else ""
+        raw_date = v.get("date", "")
+        v_date = raw_date.split("T")[0] if raw_date else ""
         title = v.get("title", "")
 
-        is_present = False
-        if meeting_code and meeting_code in all_local_meeting_codes:
-            is_present = True
-        elif v_date and v_date in all_local_dates:
-            is_present = True
+        matched_session = None
+        if meeting_code and meeting_code in code_to_session:
+            matched_session = code_to_session[meeting_code]
+        elif v_date and v_date in date_to_sessions:
+            matched_session = date_to_sessions[v_date][0]
 
-        if is_present:
-            matched_sessions.append((meeting_code or title, v_date))
+        if matched_session:
+            sp_count = matched_session["speech_count"]
+            if sp_count == 0:
+                truncated_sessions.append(
+                    (meeting_code or title, v_date, "Empty session (0 speeches)")
+                )
+            else:
+                matched_sessions.append((meeting_code or title, v_date, sp_count))
         else:
             missing_sessions.append((meeting_code or title, v_date, title))
+
+    # Optional sample check of speech count against rich meeting API
+    if sample_meeting_checks > 0 and matched_sessions:
+        sample_targets = [m for m in matched_sessions if str(m[0]).isdigit()][
+            :sample_meeting_checks
+        ]
+        for code, m_date, local_count in sample_targets:
+            try:
+                meeting_url = f"https://stenogrammid.riigikogu.ee/api/meeting/{code}"
+                m_resp = requests.get(
+                    meeting_url, timeout=(5, 15), headers={"User-Agent": "Mozilla/5.0"}
+                )
+                if m_resp.status_code == 200:
+                    rich_meeting = m_resp.json()
+                    agendas = rich_meeting.get("stenograph", {}).get("agendaItems", [])
+                    official_speeches = sum(len(a.get("speeches", [])) for a in agendas)
+                    # Procedural events like SESSION_END are excluded locally, so local count is slightly lower
+                    if official_speeches > 5 and local_count < official_speeches * 0.5:
+                        truncated_sessions.append(
+                            (
+                                code,
+                                m_date,
+                                f"Truncated: local={local_count} vs official={official_speeches}",
+                            )
+                        )
+                    else:
+                        print(
+                            f"  Verified session {code} ({m_date}): {local_count} speeches (official: {official_speeches})"
+                        )
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"  Notice: Sample check skipped for {code}: {e}")
 
     print(f"\nVerification Results (last {days} days):")
     print(f"  Matched sessions in archive: {len(matched_sessions)}")
     print(f"  Missing sessions:            {len(missing_sessions)}")
+    print(f"  Truncated/empty sessions:    {len(truncated_sessions)}")
 
+    is_ok = True
     if missing_sessions:
+        is_ok = False
         print("\nAlert: The following official sessions are missing from local JSONL:")
         for code, dt, t in missing_sessions:
             print(f"  - [{dt}] Code: {code} | Title: {t}")
 
-        if fail_on_missing:
-            return False
+    if truncated_sessions:
+        is_ok = False
+        print("\nAlert: The following sessions appear truncated or empty:")
+        for code, dt, reason in truncated_sessions:
+            print(f"  - [{dt}] Code: {code} | Reason: {reason}")
+
+    if not is_ok and fail_on_missing:
+        return False
 
     return True
 
 
 if __name__ == "__main__":
-    ok = verify_pipeline_integrity(days=14, fail_on_missing=False)
+    ok = verify_pipeline_integrity(days=14, fail_on_missing=True)
     sys.exit(0 if ok else 1)

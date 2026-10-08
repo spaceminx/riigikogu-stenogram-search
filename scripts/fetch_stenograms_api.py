@@ -40,17 +40,24 @@ def clean_html(raw_html: str) -> str:
     return " ".join(clean.split()).strip()
 
 
-def fetch_rich_meeting_data(meeting_code: str) -> dict | None:
+def fetch_rich_meeting_data(meeting_code: str, max_retries: int = 3) -> dict | None:
     """Fetch rich meeting details (agenda item PKP IDs and video timestamps) from new stenogram API."""
     if not meeting_code or not meeting_code.isdigit():
         return None
     url = f"https://stenogrammid.riigikogu.ee/api/meeting/{meeting_code}"
-    try:
-        resp = requests.get(url, timeout=(5, 20), headers={"User-Agent": "Mozilla/5.0"})
-        if resp.status_code == 200:
-            return resp.json()
-    except Exception as e:
-        print(f"Notice: Could not fetch rich meeting details for {meeting_code}: {e}")
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.get(url, timeout=(5, 20), headers={"User-Agent": "Mozilla/5.0"})
+            if resp.status_code == 200:
+                return resp.json()
+            if resp.status_code == 429:
+                time.sleep(2 * attempt)
+            elif resp.status_code >= 500:
+                time.sleep(1 * attempt)
+        except Exception as e:
+            if attempt == max_retries:
+                print(f"Notice: Could not fetch rich meeting details for {meeting_code}: {e}")
+            time.sleep(1)
     return None
 
 
