@@ -711,3 +711,42 @@ def test_system_status():
     assert "methodology" in data
     assert "attendance" in data["methodology"]
     assert "impartiality" in data["methodology"]
+
+
+def test_overnight_session_speech_ordering():
+    session = SessionLocal()
+    # Speech before midnight (23:45)
+    sp1 = Speech(
+        id=990001,
+        date="2026-06-14",
+        time="2345",
+        source_file="2026-06-14_1400.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202606141400",
+        speaker="Speaker One",
+        start_time="2026-06-14T23:45:00.000",
+        text="Enne südaööd peetud kõne.",
+    )
+    # Speech after midnight (01:15 on next day, but part of 2026-06-14 session date in archive)
+    sp2 = Speech(
+        id=990002,
+        date="2026-06-14",
+        time="0115",
+        source_file="2026-06-14_1400.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202606141400",
+        speaker="Speaker Two",
+        start_time="2026-06-15T01:15:00.000",
+        text="Pärast südaööd peetud kõne.",
+    )
+    session.merge(sp1)
+    session.merge(sp2)
+    session.commit()
+    session.close()
+
+    res = client.get("/sessions/2026-06-14")
+    assert res.status_code == 200
+    items = res.json()["results"]
+    assert len(items) >= 2
+    # Ensure sp1 (23:45 on 06-14) comes BEFORE sp2 (01:15 on 06-15)
+    sp1_idx = next(i for i, s in enumerate(items) if s["id"] == 990001)
+    sp2_idx = next(i for i, s in enumerate(items) if s["id"] == 990002)
+    assert sp1_idx < sp2_idx

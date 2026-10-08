@@ -386,7 +386,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
         speeches = (
             session.query(Speech)
             .filter(Speech.date == session_date)
-            .order_by(Speech.time.asc(), Speech.source_file.asc(), Speech.id.asc())
+            .order_by(Speech.source_file.asc(), Speech.start_time.asc(), Speech.id.asc())
             .all()
         )
         return [
@@ -596,7 +596,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
         speeches = (
             session.query(Speech)
             .filter(Speech.source_file == target_speech.source_file)
-            .order_by(Speech.id.asc())
+            .order_by(Speech.start_time.asc(), Speech.id.asc())
             .all()
         )
 
