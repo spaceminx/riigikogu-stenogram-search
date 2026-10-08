@@ -223,6 +223,57 @@ def test_parse_meeting_speeches_edited():
     assert "austatud kolleegid" in speeches[0]["text"]
 
 
+def test_parse_meeting_speeches_minister_ems_id_disambiguation():
+    mock_rich_meeting = {
+        "meetingStatus": "EDITED",
+        "stenograph": {
+            "agendaItems": [
+                {
+                    "id": 102,
+                    "name": "Päevakorrapunkt 2",
+                    "speeches": [
+                        {
+                            "id": 45038599,
+                            "emsId": "minister-role-uuid-63db",
+                            "name": "Kaitseminister Hanno Pevkur",
+                            "speechType": "SPEECH",
+                            "content": "<p>Austatud Riigikogu!</p>",
+                            "startTime": "2026-04-01T10:20:00.000",
+                            "endTime": "2026-04-01T10:25:00.000",
+                        }
+                    ],
+                }
+            ]
+        },
+    }
+
+    known_uuids = {"canonical-saadik-uuid-cf42"}
+    name_map = {"Hanno Pevkur": "canonical-saadik-uuid-cf42"}
+    uuid_to_name = {"canonical-saadik-uuid-cf42": "Hanno Pevkur"}
+
+    speeches, _ = parse_meeting_speeches(
+        rich_meeting=mock_rich_meeting,
+        verbatim=None,
+        meeting_code="202604011000",
+        verbatim_link="https://stenogrammid.riigikogu.ee/et/202604011000",
+        date_formatted="2026-04-01",
+        time_formatted="1000",
+        source_file_key="2026-04-01_1000.api",
+        faction_map={},
+        person_name_map=name_map,
+        known_person_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name,
+    )
+
+    assert len(speeches) == 1
+    sp = speeches[0]
+    assert sp["speaker"] == "Hanno Pevkur"
+    assert sp["speaker_role"] == "Kaitseminister"
+    assert sp["ems_id"] == "minister-role-uuid-63db"
+    assert sp["speaker_uuid"] == "canonical-saadik-uuid-cf42"
+    assert sp["speech_key"] == "202604011000_20260401T102000000_hanno-pevkur"
+
+
 def test_compute_duration_seconds():
     # Valid ISO strings
     assert compute_duration_seconds("2026-04-01T10:15:00.000", "2026-04-01T10:16:30.000") == 90
