@@ -1609,7 +1609,11 @@ function App() {
                   {totalCount > 2000 && (
                     <span
                       className="export-limit-hint"
-                      style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #888)", marginLeft: "0.25rem" }}
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "var(--color-text-muted, #888)",
+                        marginLeft: "0.25rem",
+                      }}
                       title={`Kokku leiti ${totalCount.toLocaleString("et-EE")} tulemust, fail sisaldab esimesed 2000.`}
                     >
                       (max 2000)
