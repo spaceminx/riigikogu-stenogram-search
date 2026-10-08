@@ -273,7 +273,7 @@ def test_parse_meeting_speeches_minister_ems_id_disambiguation():
     assert sp["speaker_role"] == "Kaitseminister"
     assert sp["ems_id"] == "minister-role-uuid-63db"
     assert sp["speaker_uuid"] == "canonical-saadik-uuid-cf42"
-    assert sp["speech_key"] == "202604011000_20260401T102000000_hanno-pevkur"
+    assert sp["speech_key"] == "202604011000_20260401T102000000_1_hanno-pevkur"
 
 
 def test_slugify_estonian():
@@ -379,7 +379,7 @@ def test_fetch_factions_and_persons_with_mock(tmp_path, monkeypatch):
                         }
                     ],
                 }
-            ]
+            ] * 105
 
     monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
 
@@ -638,6 +638,8 @@ def test_sync_database_replaces_unedited_and_writes_alias(tmp_path, monkeypatch)
         "text": "Lõplik toimetatud kõne.",
         "text_lemmas": "lõplik toimetatud kõne",
         "status": "EDITED",
+        "previous_external_ids": [19414011],
+        "previous_speech_keys": ["194140_20260923T120010_hanno-pevkur"],
     }
     year_file.write_text(json.dumps(edited_data) + "\n", encoding="utf-8")
 

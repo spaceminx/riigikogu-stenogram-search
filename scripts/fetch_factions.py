@@ -116,6 +116,12 @@ def fetch_factions() -> bool:
             print(f"Error: Failed to fetch factions from API and no cached {out_file} found.")
             return False
 
+    if len(members) < 101:
+        print(
+            f"Error: API returned only {len(members)} members, expected at least 101. Aborting to protect JSON cache."
+        )
+        return False
+
     faction_map: dict[str, list[dict]] = {}
     factions_by_uuid: dict[str, list[dict]] = {}
     persons_by_uuid: dict[str, dict] = {}
