@@ -16,6 +16,9 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_speeches_speaker_faction ON speeches(speaker, speaker_faction)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_faction ON speeches(speaker_faction)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_source_file ON speeches(source_file)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_speaker_uuid ON speeches(speaker_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_external_id ON speeches(external_id)",
+    "CREATE INDEX IF NOT EXISTS idx_persons_full_name ON persons(full_name)",
 ]
 
 
