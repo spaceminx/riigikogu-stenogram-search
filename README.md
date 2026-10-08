@@ -21,12 +21,12 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 - **Activity Over Time:** Visualizes keyword mentions by month, week, or day with continuous timeline smoothing.
 - **Top Speakers:** Identifies members of parliament who speak most about given topics.
 - **Attendance & Voting Stats:** Cross-references transcripts with MP attendance records.
-- **Persistent MP UUIDs & Permalinks:** Speeches are linked to canonical member UUIDs and Riigikogu permalinks.
-- **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API.
-- **Official Statistics Verification:** Pipeline cross-checks speech counts against the official Riigikogu statistics API and monitors archive health (`/system/status`).
+- **Persistent MP UUIDs & Permalinks:** Speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that ensure unedited transcripts seamlessly resolve after being officially edited.
+- **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API with dynamic runtime reloading.
+- **Pipeline Integrity & Statistics Verification:** Pipeline verifies daily transcript fetching directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), cross-checks speech counts against the official Riigikogu statistics API (`verify_statistics.py`), and reports health via `/system/status`.
 - **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
 - **Modern UI:** Responsive single-page application with Dark / Light mode toggle.
-- **Automated Daily Pipeline:** Nightly GitHub Actions workflow fetches new transcripts and syncs them to Backblaze B2.
+- **Automated Daily Pipeline:** Nightly GitHub Actions workflow fetches new transcripts, validates integrity, and syncs data to Backblaze B2.
 
 ---
 
@@ -133,8 +133,8 @@ riigikogu-stenogram-search/
 │   ├── dependabot.yml             # Dependabot automated weekly dependency monitoring
 │   └── workflows/
 │       ├── ci.yml                 # Automated CI (Ruff, ESLint, Prettier, Pytest, Vite build)
-│       └── daily_pipeline.yml     # Nightly data pipeline (B2 sync & API fetch)
-├── config.py                      # Global configuration & paths
+│       └── daily_pipeline.yml     # Nightly data pipeline (B2 sync, API fetch, integrity verification)
+├── config.py                      # Global configuration & dynamic membership dates
 ├── docker-compose.yml             # Multi-container Docker deployment
 ├── Dockerfile                     # Production backend Docker container
 ├── pyproject.toml                 # Ruff, pytest, and project configuration
@@ -147,7 +147,9 @@ riigikogu-stenogram-search/
 │   ├── fetch_factions.py          # MP faction history and person metadata scraper
 │   ├── fetch_memberships.py       # Membership terms scraper from Riigikogu API
 │   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
+│   ├── sync_database.py           # SQLite database update with speech aliases
 │   ├── upload_to_b2.py            # Backblaze B2 uploader for data and sync states
+│   ├── verify_pipeline_integrity.py # Direct pipeline data integrity verification
 │   └── verify_statistics.py       # Cross-verification script against official statistics
 ├── src/
 │   ├── api/                       # FastAPI routes & endpoints
@@ -159,8 +161,8 @@ riigikogu-stenogram-search/
 │   │   ├── lemmatizer.py          # EstNLTK multiprocessing lemmatizer
 │   │   └── term_builder.py        # Term frequency & index builder
 │   ├── load/                      # Database models and table definitions
-│   │   ├── models.py              # SQLAlchemy ORM models
-│   │   └── loader.py              # Bulk JSONL to SQLite loader
+│   │   ├── models.py              # SQLAlchemy ORM models (Speeches, SpeechAlias, Attendance)
+│   │   └── loader.py              # Bulk JSONL to SQLite loader with alias mapping
 │   └── frontend/                  # React + Vite application
 │       ├── eslint.config.js       # ESLint flat configuration
 │       ├── package.json
@@ -169,6 +171,7 @@ riigikogu-stenogram-search/
 │           └── api.js             # Frontend API client
 ├── tests/
 │   ├── test_api.py                # FastAPI endpoint integration tests
+│   ├── test_pipeline.py           # Pipeline, dynamic dates, and integrity verification tests
 │   └── test_query_parser.py       # Query parser and search logic unit tests
 └── HOSTING.md                     # Hosting & architecture notes
 ```
