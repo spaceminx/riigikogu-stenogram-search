@@ -8,6 +8,8 @@ from pathlib import Path
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from sqlalchemy import func
+
 from config import OUTPUT_DIR_PROCESSED
 from scripts.download_from_b2 import download_from_b2
 from src.load.database import SessionLocal
@@ -17,7 +19,7 @@ from src.load.loader import (
     load_attendance_to_database,
     load_persons_to_database,
 )
-from src.load.models import Speech, SpeechTerm
+from src.load.models import Speech, SpeechAlias, SpeechTerm
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
@@ -42,33 +44,33 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
     new_count = 0
 
     try:
-        unedited_db_files = set(
-            r[0]
-            for r in session.query(Speech.source_file)
-            .filter(Speech.status == "UNEDITED")
-            .distinct()
-            .all()
-        )
-
         for yr in years_to_check:
             year_file = Path(OUTPUT_DIR_PROCESSED) / f"{yr}.jsonl"
             if not year_file.exists():
                 continue
 
             print(f"Checking {year_file.name} for new or updated speeches...")
-            existing_source_files = set(
-                r[0]
-                for r in session.query(Speech.source_file)
-                .filter(Speech.date >= f"{yr}-01-01")
-                .distinct()
-                .all()
-            )
 
-            speeches_by_session: dict[str, list[Speech]] = {}
+            # Map source_file -> {"count": count, "status": status}
+            db_sessions: dict[str, dict] = {}
+            for r in (
+                session.query(
+                    Speech.source_file,
+                    func.count(Speech.id),
+                    func.max(Speech.status),
+                )
+                .filter(Speech.date >= f"{yr}-01-01", Speech.date <= f"{yr}-12-31")
+                .group_by(Speech.source_file)
+                .all()
+            ):
+                db_sessions[r[0]] = {"count": r[1], "status": r[2]}
+
+            raw_speeches_by_session: dict[str, list[dict]] = {}
 
             with open(year_file, encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
-                    if not line.strip():
+                    line = line.strip()
+                    if not line:
                         continue
 
                     try:
@@ -77,17 +79,72 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                         continue
 
                     src_file = data.get("source_file", f"{year_file.name}:{line_num}")
-                    rec_status = data.get("status", "EDITED")
-                    if src_file in existing_source_files and not (
-                        src_file in unedited_db_files and rec_status == "EDITED"
-                    ):
-                        continue
+                    if src_file not in raw_speeches_by_session:
+                        raw_speeches_by_session[src_file] = []
+                    raw_speeches_by_session[src_file].append(data)
 
-                    if src_file not in speeches_by_session:
-                        speeches_by_session[src_file] = []
+            for src_file, raw_speeches in raw_speeches_by_session.items():
+                existing_info = db_sessions.get(src_file)
+                new_status = raw_speeches[0].get("status", "EDITED") if raw_speeches else "EDITED"
+                new_count_session = len(raw_speeches)
 
-                    try:
-                        speech = Speech(
+                needs_update = False
+                is_replacement = False
+
+                if existing_info is None:
+                    needs_update = True
+                elif existing_info["status"] == "UNEDITED":
+                    if new_status == "EDITED":
+                        needs_update = True
+                        is_replacement = True
+                    elif new_count_session > existing_info["count"]:
+                        # Incomplete unedited session received more speeches (e.g. overnight meeting completed next day)
+                        needs_update = True
+                        is_replacement = True
+
+                if not needs_update:
+                    continue
+
+                try:
+                    # If replacing an existing session in DB, preserve old external_ids for permalink aliases
+                    old_by_ems_start = {}
+                    old_by_speaker_time = {}
+                    old_by_pos = {}
+
+                    if is_replacement:
+                        old_rows = (
+                            session.query(
+                                Speech.id,
+                                Speech.external_id,
+                                Speech.ems_id,
+                                Speech.start_time,
+                                Speech.time,
+                                Speech.speaker,
+                            )
+                            .filter(Speech.source_file == src_file)
+                            .all()
+                        )
+                        old_ids = [r.id for r in old_rows]
+                        for idx, r in enumerate(old_rows):
+                            if r.external_id:
+                                if r.ems_id and r.start_time:
+                                    old_by_ems_start[(r.ems_id, r.start_time)] = r.external_id
+                                if r.speaker and r.time:
+                                    old_by_speaker_time[(r.speaker, r.time)] = r.external_id
+                                old_by_pos[idx] = r.external_id
+
+                        if old_ids:
+                            session.query(SpeechTerm).filter(
+                                SpeechTerm.speech_id.in_(old_ids)
+                            ).delete(synchronize_session=False)
+                            session.query(Speech).filter(Speech.source_file == src_file).delete(
+                                synchronize_session=False
+                            )
+
+                    # Build new Speech models
+                    new_speech_objects = []
+                    for data in raw_speeches:
+                        sp_obj = Speech(
                             date=data["date"],
                             time=data["time"],
                             source_file=src_file,
@@ -107,36 +164,38 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                             speech_key=data.get("speech_key"),
                             text=data["text"],
                             text_lemmas=data.get("text_lemmas"),
-                            status=rec_status,
+                            status=data.get("status", "EDITED"),
                         )
-                        speeches_by_session[src_file].append(speech)
-                    except KeyError as e:
-                        print(
-                            f"Warning: Missing required field {e} on line {line_num} in {year_file.name}. Skipping."
-                        )
-                        continue
+                        new_speech_objects.append(sp_obj)
 
-            for src_file, speeches_list in speeches_by_session.items():
-                try:
-                    if src_file in unedited_db_files:
-                        old_ids = [
-                            r[0]
-                            for r in session.query(Speech.id)
-                            .filter(Speech.source_file == src_file)
-                            .all()
-                        ]
-                        if old_ids:
-                            session.query(SpeechTerm).filter(
-                                SpeechTerm.speech_id.in_(old_ids)
-                            ).delete(synchronize_session=False)
-                            session.query(Speech).filter(Speech.source_file == src_file).delete(
-                                synchronize_session=False
-                            )
-                    session.bulk_save_objects(speeches_list)
+                    session.add_all(new_speech_objects)
+                    session.flush()
+
+                    # Write aliases for any old external_ids that shifted on editorial confirmation
+                    if is_replacement:
+                        aliases_to_add = []
+                        for idx, new_sp in enumerate(new_speech_objects):
+                            old_ext = None
+                            if new_sp.ems_id and new_sp.start_time:
+                                old_ext = old_by_ems_start.get((new_sp.ems_id, new_sp.start_time))
+                            if not old_ext and new_sp.speaker and new_sp.time:
+                                old_ext = old_by_speaker_time.get((new_sp.speaker, new_sp.time))
+                            if not old_ext and idx in old_by_pos:
+                                old_ext = old_by_pos[idx]
+
+                            if old_ext and old_ext != new_sp.external_id:
+                                aliases_to_add.append(
+                                    SpeechAlias(
+                                        alias_external_id=old_ext,
+                                        speech_id=new_sp.id,
+                                    )
+                                )
+                        if aliases_to_add:
+                            session.add_all(aliases_to_add)
+
                     session.commit()
-                    new_count += len(speeches_list)
-                    existing_source_files.add(src_file)
-                    unedited_db_files.discard(src_file)
+                    new_count += len(new_speech_objects)
+                    db_sessions[src_file] = {"count": new_count_session, "status": new_status}
                 except Exception as e:
                     session.rollback()
                     print(f"Notice: Error syncing session {src_file}: {e}")

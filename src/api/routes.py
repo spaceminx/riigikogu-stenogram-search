@@ -645,9 +645,8 @@ def get_speech_by_id(speech_identifier: str):
         speech = None
         if speech_identifier.isdigit():
             num_id = int(speech_identifier)
-            speech = session.query(Speech).filter(Speech.id == num_id).first()
-            if not speech:
-                speech = session.query(Speech).filter(Speech.external_id == num_id).first()
+            # Prioritize official Riigikogu permalink external_id and editorial aliases
+            speech = session.query(Speech).filter(Speech.external_id == num_id).first()
             if not speech:
                 alias = (
                     session.query(SpeechAlias)
@@ -656,6 +655,8 @@ def get_speech_by_id(speech_identifier: str):
                 )
                 if alias:
                     speech = session.query(Speech).filter(Speech.id == alias.speech_id).first()
+            if not speech:
+                speech = session.query(Speech).filter(Speech.id == num_id).first()
 
         if not speech:
             speech = session.query(Speech).filter(Speech.speech_key == speech_identifier).first()
@@ -750,7 +751,7 @@ def system_status():
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
-                "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega kohe pärast nende avaldamist.",
+                "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
                 "sources": [
                     "Riigikogu avatud API (api.riigikogu.ee)",

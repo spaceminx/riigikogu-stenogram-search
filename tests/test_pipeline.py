@@ -564,3 +564,74 @@ def test_verify_pipeline_integrity(tmp_path, monkeypatch):
 
     ok_missing = verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)
     assert ok_missing is False
+
+
+def test_sync_database_replaces_unedited_and_writes_alias(tmp_path, monkeypatch):
+    from scripts.sync_database import sync_current_year_speeches
+    from src.load.database import SessionLocal
+    from src.load.models import Speech, SpeechAlias
+
+    monkeypatch.setattr("scripts.sync_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    session = SessionLocal()
+    # 1. Seed unedited speech in DB
+    unedited_sp = Speech(
+        id=888999,
+        date="2026-09-23",
+        time="1200",
+        source_file="2026-09-23_1200.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/194140",
+        speaker="Hanno Pevkur",
+        speaker_uuid="uuid-person-2",
+        ems_id="ems-pevkur-1",
+        speech_type="SPEECH",
+        external_id=19414011,
+        start_time="2026-09-23T12:00:10.000",
+        end_time="2026-09-23T12:02:10.000",
+        duration_seconds=120,
+        speech_key="194140_20260923T120010_hanno-pevkur",
+        text="Esialgne toimetamata kõne.",
+        status="UNEDITED",
+    )
+    session.merge(unedited_sp)
+    session.commit()
+    session.close()
+
+    # 2. Write updated edited speech in JSONL with new external_id
+    year_file = tmp_path / "2026.jsonl"
+    edited_data = {
+        "date": "2026-09-23",
+        "time": "1200",
+        "source_file": "2026-09-23_1200.api",
+        "source_url": "https://stenogrammid.riigikogu.ee/et/194151",
+        "speaker": "Hanno Pevkur",
+        "speaker_uuid": "uuid-person-2",
+        "ems_id": "ems-pevkur-1",
+        "speech_type": "SPEECH",
+        "external_id": 19415122,  # New official edited external_id
+        "start_time": "2026-09-23T12:00:10.000",
+        "end_time": "2026-09-23T12:02:10.000",
+        "duration_seconds": 120,
+        "speech_key": "194151_20260923T120010_hanno-pevkur",
+        "text": "Lõplik toimetatud kõne.",
+        "text_lemmas": "lõplik toimetatud kõne",
+        "status": "EDITED",
+    }
+    year_file.write_text(json.dumps(edited_data) + "\n", encoding="utf-8")
+
+    # 3. Sync database
+    new_count = sync_current_year_speeches("2026")
+    assert new_count == 1
+
+    # 4. Verify speech was updated and alias was created
+    session = SessionLocal()
+    updated_sp = session.query(Speech).filter(Speech.source_file == "2026-09-23_1200.api").first()
+    assert updated_sp is not None
+    assert updated_sp.status == "EDITED"
+    assert updated_sp.external_id == 19415122
+    assert updated_sp.text == "Lõplik toimetatud kõne."
+
+    alias_rec = session.query(SpeechAlias).filter(SpeechAlias.alias_external_id == 19414011).first()
+    assert alias_rec is not None
+    assert alias_rec.speech_id == updated_sp.id
+    session.close()

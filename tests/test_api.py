@@ -790,7 +790,7 @@ def test_get_speech_by_id_and_external_id():
     alias = SpeechAlias(alias_external_id=12345678, speech_id=777888)
     session.merge(alias)
     session.query(Speech).filter(Speech.id == 777888).update(
-        {"speech_key": "2026-06-01_1100_hanno-pevkur_0"}
+        {"speech_key": "202606011100_110010_hanno-pevkur"}
     )
     session.commit()
     session.close()
@@ -801,7 +801,7 @@ def test_get_speech_by_id_and_external_id():
     assert res_alias.json()["id"] == 777888
 
     # Lookup by stable speech_key
-    res_key = client.get("/speeches/2026-06-01_1100_hanno-pevkur_0")
+    res_key = client.get("/speeches/202606011100_110010_hanno-pevkur")
     assert res_key.status_code == 200
     assert res_key.json()["id"] == 777888
 
