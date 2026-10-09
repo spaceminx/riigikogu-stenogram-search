@@ -111,7 +111,7 @@ To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`,
    # python scripts/backfill_history.py --year 2021
    # python scripts/backfill_history.py --upload-only --year 2021
    ```
-4. On the server: rebuild the database following the instructions above under "Building the Initial Database / Updating History" (build new file with `DATABASE_URL` in container, `docker compose stop backend`, verify WAL, `mv`, `docker compose start backend`).
+4. On the server: rebuild the database following the instructions above under "3. Build / Initialize the Database" -> "Note on historical data updates" (build new file with `DATABASE_URL` in container, `docker compose stop backend`, verify WAL, `mv`, `docker compose start backend`).
 
 > [!NOTE]
 > The default end date (today minus `UNEDITED_REFETCH_DAYS`) skips recently edited sessions that old code already saved as edited (e.g. September 2026). The daily pipeline will also not touch them. To backfill these recent sessions, run explicitly:
