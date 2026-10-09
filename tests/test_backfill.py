@@ -719,3 +719,130 @@ def test_upload_to_b2_updates_etag_and_subsequent_upload_succeeds(tmp_path, monk
     assert mock_client.upload_count == 2
     stored_etags_v2 = json.loads(etags_file.read_text(encoding="utf-8"))
     assert stored_etags_v2["2026.jsonl"] == "remote-etag-v2"
+
+
+def test_backfill_year_2019_respects_archive_start_date(tmp_path, monkeypatch, capsys):
+    """When running --year 2019, meetings prior to config.START_DATE (2019-04-04) are not processed."""
+    monkeypatch.setattr("config.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("scripts.backfill_history.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    seed_metadata(tmp_path)
+
+    year_file = tmp_path / "2019.jsonl"
+    existing_speech = {
+        "date": "2019-04-04",
+        "time": "1000",
+        "source_file": "2019-04-04_1000.api",
+        "source_url": "https://stenogrammid.riigikogu.ee/et/201904041000#PKP-1",
+        "speaker": "Jüri Ratas",
+        "text": "Existing speech.",
+        "text_lemmas": "existing speech",
+    }
+    year_file.write_text(json.dumps(existing_speech, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    fetched_verbatim_ranges = []
+
+    def mock_fetch_month_verbatims(start, end, **kwargs):
+        fetched_verbatim_ranges.append((start, end))
+        res = []
+        if start <= "2019-03-20" <= end:
+            res.append(
+                {
+                    "link": "https://stenogrammid.riigikogu.ee/201903201000",
+                    "date": "2019-03-20T10:00:00.000+00:00",
+                    "title": "Märtsi istung",
+                }
+            )
+        if start <= "2019-04-04" <= end:
+            res.append(
+                {
+                    "link": "https://stenogrammid.riigikogu.ee/201904041000",
+                    "date": "2019-04-04T10:00:00.000+00:00",
+                    "title": "Aprilli istung",
+                }
+            )
+        return res
+
+    fetched_meeting_codes = []
+
+    def mock_fetch_rich_meeting_data(code, **kwargs):
+        fetched_meeting_codes.append(code)
+        return {
+            "meetingStatus": "EDITED",
+            "stenograph": {
+                "agendaItems": [
+                    {
+                        "id": 1,
+                        "name": "Päevakord",
+                        "speeches": [
+                            {
+                                "id": 12345,
+                                "name": "Jüri Ratas",
+                                "speechType": "SPEECH",
+                                "startTime": "2019-04-04T10:00:00Z",
+                                "content": "<p>Tere päevast</p>",
+                            }
+                        ],
+                    }
+                ]
+            },
+        }
+
+    monkeypatch.setattr(
+        "scripts.backfill_history.fetch_month_verbatims", mock_fetch_month_verbatims
+    )
+    monkeypatch.setattr(
+        "scripts.backfill_history.fetch_rich_meeting_data", mock_fetch_rich_meeting_data
+    )
+
+    report = run_backfill(
+        year=2019,
+        processed_dir=str(tmp_path),
+        dry_run=True,
+        sleep_delay=0,
+    )
+
+    captured = capsys.readouterr()
+    assert "Notice: start date (2019-01-01) is before archive start (2019-04-04)" in captured.out
+    assert "using archive start date 2019-04-04" in captured.out
+
+    # Verified: no requested date range begins before 2019-04-04
+    for r_start, _ in fetched_verbatim_ranges:
+        assert r_start >= "2019-04-04"
+
+    # Verified: meeting before 2019-04-04 (201903201000) was never fetched
+    assert "201903201000" not in fetched_meeting_codes
+    assert "201904041000" in fetched_meeting_codes
+
+    assert report["2019"]["processed"] == 1
+    assert report["2019"]["replaced"] == 1
+    assert report["2019"]["added"] == 0
+
+
+def test_backfill_year_2019_with_earlier_archive_start_date(tmp_path, monkeypatch, capsys):
+    """If config.START_DATE is earlier (e.g. 2015-03-30 for XIII Riigikogu), year 2019 starts at 2019-01-01."""
+    monkeypatch.setattr("config.START_DATE", "2015-03-30")
+    monkeypatch.setattr("config.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("scripts.backfill_history.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    seed_metadata(tmp_path)
+
+    fetched_verbatim_ranges = []
+
+    def mock_fetch_month_verbatims(start, end, **kwargs):
+        fetched_verbatim_ranges.append((start, end))
+        return []
+
+    monkeypatch.setattr(
+        "scripts.backfill_history.fetch_month_verbatims", mock_fetch_month_verbatims
+    )
+
+    run_backfill(
+        year=2019,
+        processed_dir=str(tmp_path),
+        dry_run=True,
+        sleep_delay=0,
+    )
+
+    captured = capsys.readouterr()
+    assert "is before archive start" not in captured.out
+    assert len(fetched_verbatim_ranges) > 0
+    assert fetched_verbatim_ranges[0][0] == "2019-01-01"

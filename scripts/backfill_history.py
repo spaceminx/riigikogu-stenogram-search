@@ -18,6 +18,7 @@ import requests
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import config
 from config import OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
 from scripts.fetch_stenograms_api import (
     fetch_rich_meeting_data,
@@ -253,7 +254,14 @@ def run_backfill(
     # Resolve dates
     effective_start = start_date
     if not effective_start:
-        effective_start = f"{year}-01-01" if year else START_DATE
+        effective_start = f"{year}-01-01" if year else config.START_DATE
+
+    if effective_start < config.START_DATE:
+        print(
+            f"Notice: start date ({effective_start}) is before archive start ({config.START_DATE}); "
+            f"using archive start date {config.START_DATE}."
+        )
+        effective_start = config.START_DATE
 
     effective_end = end_date
     if not effective_end:
