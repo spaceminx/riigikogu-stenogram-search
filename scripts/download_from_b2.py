@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -78,6 +79,7 @@ def download_from_b2(
 
     downloaded_count = 0
     skipped_count = 0
+    saved_etags: dict[str, str] = {}
     try:
         # List and download matching dataset files in the bucket
         paginator = s3.get_paginator("list_objects_v2")
@@ -90,6 +92,10 @@ def download_from_b2(
                 filename = os.path.basename(key)
                 if not filename:
                     continue
+
+                etag = obj.get("ETag")
+                if etag:
+                    saved_etags[filename] = etag.strip('"')
 
                 # Filter active vs historical files
                 if not include_all_history and not is_active_daily_file(filename, active_years):
@@ -114,6 +120,22 @@ def download_from_b2(
                 s3.download_file(bucket_name, key, local_path)
                 print(f"Downloaded: {local_path}")
                 downloaded_count += 1
+
+        if saved_etags:
+            etags_file = os.path.join(OUTPUT_DIR_PROCESSED, ".b2_etags.json")
+            existing_etags = {}
+            if os.path.exists(etags_file):
+                try:
+                    with open(etags_file, encoding="utf-8") as f:
+                        existing_etags = json.load(f)
+                except Exception:
+                    pass
+            existing_etags.update(saved_etags)
+            try:
+                with open(etags_file, "w", encoding="utf-8") as f:
+                    json.dump(existing_etags, f, indent=2)
+            except Exception:
+                pass
     except Exception as e:
         print(f"Error listing/downloading files from B2: {e}")
         return False

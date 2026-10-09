@@ -9,3 +9,6 @@ __pycache__/
 .agents/
 HOSTING.md
 .DS_Store
+backfill_state.json
+.b2_etags.json
+backfill_report*.json
