@@ -118,11 +118,10 @@ def build_matching_speech_ids_query(session, groups: list[list[str]]):
 
     for group in groups:
         q = (
-            session.query(Speech.id.label("speech_id"))
-            .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
+            session.query(SpeechTerm.speech_id.label("speech_id"))
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(Lemma.lemma.in_(group))
-            .group_by(Speech.id)
+            .group_by(SpeechTerm.speech_id)
             .having(func.count(func.distinct(Lemma.lemma)) == len(group))
         )
 
@@ -145,11 +144,10 @@ def build_matching_conditions(session, groups: list[list[str]]) -> list:
 
     for group in groups:
         group_query = (
-            session.query(Speech.id)
-            .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
+            session.query(SpeechTerm.speech_id)
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(Lemma.lemma.in_(group))
-            .group_by(Speech.id)
+            .group_by(SpeechTerm.speech_id)
             .having(func.count(func.distinct(Lemma.lemma)) == len(group))
         )
 
@@ -245,7 +243,7 @@ def search_by_keyword(
             )
             results = ordered_query.offset(offset).limit(limit).all()
         else:
-            base_query = session.query(Speech).filter(or_(*matching_conditions))
+            base_query = session.query(Speech.id).filter(or_(*matching_conditions))
             if speech_filters:
                 base_query = base_query.filter(*speech_filters)
 
@@ -254,27 +252,53 @@ def search_by_keyword(
             else:
                 ordered_query = base_query.order_by(Speech.date.desc(), Speech.id.desc())
 
-            speeches_only = ordered_query.offset(offset).limit(limit).all()
+            matching_speech_ids = [r[0] for r in ordered_query.offset(offset).limit(limit).all()]
 
-            if speeches_only:
-                speech_ids = [s.id for s in speeches_only]
+            if matching_speech_ids:
+                speeches_by_id = {
+                    s.id: s
+                    for s in session.query(Speech).filter(Speech.id.in_(matching_speech_ids)).all()
+                }
                 match_counts = dict(
                     session.query(SpeechTerm.speech_id, func.sum(SpeechTerm.count))
                     .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-                    .filter(SpeechTerm.speech_id.in_(speech_ids))
+                    .filter(SpeechTerm.speech_id.in_(matching_speech_ids))
                     .filter(Lemma.lemma.in_(all_lemmas))
                     .group_by(SpeechTerm.speech_id)
                     .all()
                 )
-                results = [(s, match_counts.get(s.id, 0)) for s in speeches_only]
+                results = [
+                    (speeches_by_id[s_id], match_counts.get(s_id, 0))
+                    for s_id in matching_speech_ids
+                    if s_id in speeches_by_id
+                ]
             else:
                 results = []
 
-        count_query = session.query(Speech.id).filter(or_(*matching_conditions))
-        if speech_filters:
-            count_query = count_query.filter(*speech_filters)
-
-        total_count = count_query.distinct().count()
+        if not speech_filters and len(groups) == 1:
+            if len(groups[0]) == 1:
+                total_count = (
+                    session.query(func.count(SpeechTerm.speech_id))
+                    .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                    .filter(Lemma.lemma == groups[0][0])
+                    .scalar()
+                    or 0
+                )
+            else:
+                sub_q = (
+                    session.query(SpeechTerm.speech_id)
+                    .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                    .filter(Lemma.lemma.in_(groups[0]))
+                    .group_by(SpeechTerm.speech_id)
+                    .having(func.count(func.distinct(Lemma.lemma)) == len(groups[0]))
+                    .subquery()
+                )
+                total_count = session.query(func.count()).select_from(sub_q).scalar() or 0
+        else:
+            count_query = session.query(Speech.id).filter(or_(*matching_conditions))
+            if speech_filters:
+                count_query = count_query.filter(*speech_filters)
+            total_count = count_query.distinct().count()
 
         target_lemmas_set = set(all_lemmas) if include_matched_words else set()
         output = []
