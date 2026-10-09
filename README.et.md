@@ -94,7 +94,30 @@ mv database/riigikogu_new.sqlite database/riigikogu.sqlite
 docker compose start backend
 ```
 
-### 4. FastAPI serveri käivitamine
+### 4. Ajaloo tagasitäitmine (`backfill_history.py`)
+Varasemate istungite (2019–2026) rikaste metaandmete (`external_id`, `ems_id`, `speech_type`, `start_time`, `end_time`, `duration_seconds`) tagasitäitmiseks:
+1. Laadi B2-st kõik ajaloolised failid alla eraldi kausta:
+   ```bash
+   python scripts/download_from_b2.py --all
+   ```
+2. Käivita testkäivitus aruande vaatamiseks:
+   ```bash
+   python scripts/backfill_history.py --dry-run
+   ```
+3. Käivita päriselt tagasitäitmine (valikuliselt ühe aasta kaupa):
+   ```bash
+   python scripts/backfill_history.py --year 2019
+   ```
+4. Laadi tulemused üles Backblaze B2-sse (koos samaaegsuse ja ETag kontrolliga):
+   ```bash
+   python scripts/backfill_history.py --upload
+   ```
+5. Serveris: andmebaasi uuesti ehitamine:
+   ```bash
+   python scripts/sync_database.py --rebuild
+   ```
+
+### 5. FastAPI serveri käivitamine
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
@@ -102,7 +125,7 @@ API dokumentatsiooniga saab tutvuda aadressidel:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 
-### 5. Frontendi käivitamine
+### 6. Frontendi käivitamine
 Ava uus terminaliaken:
 ```bash
 cd src/frontend
@@ -162,6 +185,7 @@ riigikogu-stenogram-search/
 ├── pyproject.toml                 # Ruffi, pytesti ja projekti seadistused
 ├── requirements.txt               # Backendi Pythoni sõltuvused
 ├── scripts/
+│   ├── backfill_history.py        # Ajalooliste stenogrammide rikaste andmete tagasitäitmine
 │   ├── build_full_database.py     # Paralleelne täielik andmebaasi ehitaja
 │   ├── download_all_from_b2.py    # Kõigi andmete ja olekute allalaadija B2-st
 │   ├── download_from_b2.py        # Igapäevane inkrementaalne B2 allalaadija

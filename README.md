@@ -94,7 +94,30 @@ mv database/riigikogu_new.sqlite database/riigikogu.sqlite
 docker compose start backend
 ```
 
-### 4. Start the FastAPI Backend Server
+### 4. Historical Data Backfill (`backfill_history.py`)
+To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`, `end_time`, `duration_seconds`) for historical sessions (2019–2026):
+1. Download all historical dataset files from B2 to a separate folder or workspace:
+   ```bash
+   python scripts/download_from_b2.py --all
+   ```
+2. Run a dry run to inspect the changes and summary report:
+   ```bash
+   python scripts/backfill_history.py --dry-run
+   ```
+3. Run the backfill (optionally restricted to a single year):
+   ```bash
+   python scripts/backfill_history.py --year 2019
+   ```
+4. Upload modified yearly dataset files to Backblaze B2 (with concurrency and ETag conflict protection):
+   ```bash
+   python scripts/backfill_history.py --upload
+   ```
+5. On the server: rebuild the database using:
+   ```bash
+   python scripts/sync_database.py --rebuild
+   ```
+
+### 5. Start the FastAPI Backend Server
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
@@ -102,7 +125,7 @@ API documentation is available at:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 
-### 5. Frontend Setup & Run
+### 6. Frontend Setup & Run
 In a separate terminal:
 ```bash
 cd src/frontend
@@ -162,6 +185,7 @@ riigikogu-stenogram-search/
 ├── pyproject.toml                 # Ruff, pytest, and project configuration
 ├── requirements.txt               # Python backend dependencies
 ├── scripts/
+│   ├── backfill_history.py        # History backfill script for rich Riigikogu stenograms
 │   ├── build_full_database.py     # End-to-end parallel DB build pipeline
 │   ├── download_all_from_b2.py    # Downloads all data & sync states from Backblaze B2
 │   ├── download_from_b2.py        # Incremental daily B2 downloader

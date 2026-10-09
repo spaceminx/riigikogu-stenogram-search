@@ -175,6 +175,119 @@ def get_month_ranges(start_date: str, end_date: str) -> list[tuple[str, str]]:
     return ranges
 
 
+def link_speech_aliases(old_speeches: list[dict], new_speeches: list[dict]) -> list[dict]:
+    """Bind previous aliases to preserve permalinks across edits."""
+    if not old_speeches or not new_speeches:
+        return new_speeches
+
+    new_speeches_by_ext_id = {sp["external_id"]: sp for sp in new_speeches if sp.get("external_id")}
+
+    for old_sp in old_speeches:
+        old_ext = old_sp.get("external_id")
+        old_key = old_sp.get("speech_key")
+        prev_exts = old_sp.get("previous_external_ids") or []
+        prev_keys = old_sp.get("previous_speech_keys") or []
+        if not old_ext and not old_key and not prev_exts and not prev_keys:
+            continue
+
+        best_match = None
+        if old_ext and old_ext in new_speeches_by_ext_id:
+            best_match = new_speeches_by_ext_id[old_ext]
+        else:
+            best_score = -1
+
+            old_time_str = old_sp.get("start_time")
+            old_time = None
+            if old_time_str:
+                try:
+                    old_time = datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
+                except Exception:
+                    pass
+
+            old_text = old_sp.get("text", "")
+            old_speaker = old_sp.get("speaker")
+
+            for new_sp in new_speeches:
+                if new_sp.get("speaker") != old_speaker:
+                    continue
+
+                new_time_str = new_sp.get("start_time")
+                new_time = None
+                if new_time_str:
+                    try:
+                        new_time = datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
+                    except Exception:
+                        pass
+
+                time_diff = None
+                if old_time and new_time:
+                    time_diff = abs((new_time - old_time).total_seconds())
+
+                sim = 0.0
+                new_text = new_sp.get("text", "")
+                if old_text and new_text:
+                    if old_text in new_text:
+                        sim = 1.0
+                    else:
+                        q_ratio = difflib.SequenceMatcher(None, old_text, new_text).quick_ratio()
+                        if (time_diff is not None and time_diff <= 120) or q_ratio >= 0.8:
+                            sim = difflib.SequenceMatcher(
+                                None, old_text, new_text, autojunk=False
+                            ).ratio()
+
+                # Matching rule: must have text overlap. Time alone is not enough.
+                score = 0
+                is_match = False
+
+                if time_diff is not None and time_diff <= 60:
+                    if sim >= 0.5:
+                        is_match = True
+                        score = sim * 100 + (60 - time_diff)
+                else:
+                    if sim >= 0.8:
+                        is_match = True
+                        score = sim * 100
+
+                if is_match and score > best_score:
+                    best_score = score
+                    best_match = new_sp
+
+        if best_match:
+            if "previous_external_ids" not in best_match:
+                best_match["previous_external_ids"] = []
+            if (
+                old_ext
+                and old_ext != best_match.get("external_id")
+                and old_ext not in best_match["previous_external_ids"]
+            ):
+                best_match["previous_external_ids"].append(old_ext)
+            for prev_ext in old_sp.get("previous_external_ids", []):
+                if (
+                    prev_ext
+                    and prev_ext != best_match.get("external_id")
+                    and prev_ext not in best_match["previous_external_ids"]
+                ):
+                    best_match["previous_external_ids"].append(prev_ext)
+
+            if "previous_speech_keys" not in best_match:
+                best_match["previous_speech_keys"] = []
+            if (
+                old_key
+                and old_key != best_match.get("speech_key")
+                and old_key not in best_match["previous_speech_keys"]
+            ):
+                best_match["previous_speech_keys"].append(old_key)
+            for prev_key in old_sp.get("previous_speech_keys", []):
+                if (
+                    prev_key
+                    and prev_key != best_match.get("speech_key")
+                    and prev_key not in best_match["previous_speech_keys"]
+                ):
+                    best_match["previous_speech_keys"].append(prev_key)
+
+    return new_speeches
+
+
 def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[dict]) -> None:
     """Save or update session speeches in yearly JSONL dataset using atomic file writes."""
     out_file = os.path.join(OUTPUT_DIR_PROCESSED, f"{year_str}.jsonl")
@@ -211,109 +324,7 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
                 new_lines.append(line)
 
         # Bind previous aliases to preserve permalinks across edits
-        new_speeches_by_ext_id = {sp["external_id"]: sp for sp in speeches if sp.get("external_id")}
-
-        for old_sp in old_speeches:
-            old_ext = old_sp.get("external_id")
-            old_key = old_sp.get("speech_key")
-            if not old_ext:
-                continue
-
-            best_match = None
-            if old_ext in new_speeches_by_ext_id:
-                best_match = new_speeches_by_ext_id[old_ext]
-            else:
-                best_score = -1
-
-                old_time_str = old_sp.get("start_time")
-                old_time = None
-                if old_time_str:
-                    try:
-                        old_time = datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
-                    except Exception:
-                        pass
-
-                old_text = old_sp.get("text", "")
-                old_speaker = old_sp.get("speaker")
-
-                for new_sp in speeches:
-                    if new_sp.get("speaker") != old_speaker:
-                        continue
-
-                    new_time_str = new_sp.get("start_time")
-                    new_time = None
-                    if new_time_str:
-                        try:
-                            new_time = datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
-                        except Exception:
-                            pass
-
-                    time_diff = None
-                    if old_time and new_time:
-                        time_diff = abs((new_time - old_time).total_seconds())
-
-                    sim = 0.0
-                    new_text = new_sp.get("text", "")
-                    if old_text and new_text:
-                        if old_text in new_text:
-                            sim = 1.0
-                        else:
-                            q_ratio = difflib.SequenceMatcher(
-                                None, old_text, new_text
-                            ).quick_ratio()
-                            if (time_diff is not None and time_diff <= 120) or q_ratio >= 0.8:
-                                sim = difflib.SequenceMatcher(
-                                    None, old_text, new_text, autojunk=False
-                                ).ratio()
-
-                    # Matching rule: must have text overlap. Time alone is not enough.
-                    score = 0
-                    is_match = False
-
-                    if time_diff is not None and time_diff <= 60:
-                        if sim >= 0.5:
-                            is_match = True
-                            score = sim * 100 + (60 - time_diff)
-                    else:
-                        if sim >= 0.8:
-                            is_match = True
-                            score = sim * 100
-
-                    if is_match and score > best_score:
-                        best_score = score
-                        best_match = new_sp
-
-            if best_match:
-                if "previous_external_ids" not in best_match:
-                    best_match["previous_external_ids"] = []
-                if (
-                    old_ext
-                    and old_ext != best_match.get("external_id")
-                    and old_ext not in best_match["previous_external_ids"]
-                ):
-                    best_match["previous_external_ids"].append(old_ext)
-                for prev_ext in old_sp.get("previous_external_ids", []):
-                    if (
-                        prev_ext
-                        and prev_ext != best_match.get("external_id")
-                        and prev_ext not in best_match["previous_external_ids"]
-                    ):
-                        best_match["previous_external_ids"].append(prev_ext)
-
-                if "previous_speech_keys" not in best_match:
-                    best_match["previous_speech_keys"] = []
-                if (
-                    old_key
-                    and old_key != best_match.get("speech_key")
-                    and old_key not in best_match["previous_speech_keys"]
-                ):
-                    best_match["previous_speech_keys"].append(old_key)
-                for prev_key in old_sp.get("previous_speech_keys", []):
-                    if (
-                        prev_key != best_match.get("speech_key")
-                        and prev_key not in best_match["previous_speech_keys"]
-                    ):
-                        best_match["previous_speech_keys"].append(prev_key)
+        link_speech_aliases(old_speeches, speeches)
 
         for s in speeches:
             new_lines.append(json.dumps(s, ensure_ascii=False) + "\n")
@@ -385,6 +396,7 @@ def parse_meeting_speeches(
     person_name_map: dict | None = None,
     known_person_uuids: set[str] | None = None,
     uuid_to_name_map: dict[str, str] | None = None,
+    lemma_cache: dict[str, str] | None = None,
 ) -> tuple[list[dict], str]:
     """Extract and lemmatize speech records from a meeting dataset."""
     is_edited = (rich_meeting and rich_meeting.get("meetingStatus") == "EDITED") or bool(
@@ -452,7 +464,10 @@ def parse_meeting_speeches(
                 elif person_name_map and speaker_name in person_name_map:
                     speaker_uuid = person_name_map[speaker_name]
 
-                lemmas = lemmatize_text(raw_text)
+                if lemma_cache is not None and raw_text in lemma_cache:
+                    lemmas = lemma_cache[raw_text]
+                else:
+                    lemmas = lemmatize_text(raw_text)
                 video_url = sp.get("parsedVideoLink")
 
                 sp_time_raw = sp.get("startTime")
@@ -539,7 +554,10 @@ def parse_meeting_speeches(
                     elif person_name_map and speaker_name in person_name_map:
                         speaker_uuid = person_name_map[speaker_name]
 
-                    lemmas = lemmatize_text(raw_text)
+                    if lemma_cache is not None and raw_text in lemma_cache:
+                        lemmas = lemma_cache[raw_text]
+                    else:
+                        lemmas = lemmatize_text(raw_text)
                     speaker_slug = slugify_estonian(speaker_name)
                     speech_key = (
                         f"{meeting_code}_{time_formatted}_{verbatim_idx}_{speaker_slug}"
