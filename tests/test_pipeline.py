@@ -756,3 +756,112 @@ def test_download_from_b2_include_all(tmp_path, monkeypatch):
     assert "2022.jsonl" in downloaded
     assert "2026.jsonl" in downloaded
     assert "attendance.jsonl" in downloaded
+
+
+def test_active_years_boundaries():
+    from datetime import datetime
+
+    from config import active_years
+
+    assert active_years(datetime(2026, 1, 15)) == ["2025", "2026"]
+    assert active_years(datetime(2026, 3, 1)) == ["2025", "2026"]
+    assert active_years(datetime(2026, 3, 2)) == ["2026"]
+    assert active_years(datetime(2026, 10, 9)) == ["2026"]
+
+
+def test_sync_current_year_speeches_active_years_only(tmp_path, monkeypatch):
+    from scripts.sync_database import sync_current_year_speeches
+    from src.load.loader import create_tables
+    from src.load.models import Speech
+
+    create_tables()
+
+    monkeypatch.setattr("scripts.sync_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("scripts.sync_database.active_years", lambda: ["2026"])
+
+    file_2019 = tmp_path / "2019.jsonl"
+    file_2026 = tmp_path / "2026.jsonl"
+
+    speech_2019 = {
+        "date": "2019-05-01",
+        "time": "1000",
+        "source_file": "2019-05-01_1000.api",
+        "source_url": "https://stenogrammid.riigikogu.ee/201905011000",
+        "speaker": "Test Speaker 2019",
+        "text": "Tekst 2019",
+        "status": "EDITED",
+    }
+    speech_2026 = {
+        "date": "2026-05-01",
+        "time": "1000",
+        "source_file": "2026-05-01_1000.api",
+        "source_url": "https://stenogrammid.riigikogu.ee/202605011000",
+        "speaker": "Test Speaker 2026",
+        "text": "Tekst 2026",
+        "status": "EDITED",
+    }
+
+    file_2019.write_text(json.dumps(speech_2019) + "\n", encoding="utf-8")
+    file_2026.write_text(json.dumps(speech_2026) + "\n", encoding="utf-8")
+
+    sync_current_year_speeches()
+
+    session = SessionLocal()
+    try:
+        s_2026 = session.query(Speech).filter(Speech.source_file == "2026-05-01_1000.api").first()
+        s_2019 = session.query(Speech).filter(Speech.source_file == "2019-05-01_1000.api").first()
+        assert s_2026 is not None
+        assert s_2019 is None
+    finally:
+        session.close()
+
+
+def test_download_from_b2_default_active_window(tmp_path, monkeypatch):
+    import config
+    from scripts.download_from_b2 import download_from_b2
+
+    monkeypatch.setattr("scripts.download_from_b2.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setenv("B2_KEY_ID", "dummy_key")
+    monkeypatch.setenv("B2_APP_KEY", "dummy_secret")
+
+    downloaded = []
+
+    class MockPaginator:
+        def paginate(self, Bucket):
+            return [
+                {
+                    "Contents": [
+                        {"Key": "2025.jsonl", "Size": 100},
+                        {"Key": "2026.jsonl", "Size": 200},
+                        {"Key": "2027.jsonl", "Size": 300},
+                    ]
+                }
+            ]
+
+    class MockS3Client:
+        def get_paginator(self, operation_name):
+            return MockPaginator()
+
+        def download_file(self, bucket, key, local_path):
+            downloaded.append(key)
+            Path(local_path).write_text("dummy", encoding="utf-8")
+
+    class MockBoto3:
+        @staticmethod
+        def client(service, **kwargs):
+            return MockS3Client()
+
+    monkeypatch.setitem(sys.modules, "boto3", MockBoto3)
+
+    # 1. On 2026-10-09, active_years() is ["2026"] -> only 2026.jsonl downloaded
+    monkeypatch.setattr(config, "active_years", lambda: ["2026"])
+    ok = download_from_b2()
+    assert ok is True
+    assert downloaded == ["2026.jsonl"]
+
+    # 2. On 2027-01-15, active_years() is ["2026", "2027"] -> both downloaded
+    downloaded.clear()
+    monkeypatch.setattr(config, "active_years", lambda: ["2026", "2027"])
+    ok = download_from_b2()
+    assert ok is True
+    assert set(downloaded) == {"2026.jsonl", "2027.jsonl"}

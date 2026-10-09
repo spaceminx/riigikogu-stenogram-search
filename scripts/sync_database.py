@@ -2,7 +2,6 @@ import json
 import os
 import sys
 import time
-from datetime import datetime
 from pathlib import Path
 
 # Add project root to sys.path
@@ -10,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from sqlalchemy import func
 
-from config import OUTPUT_DIR_PROCESSED
+from config import OUTPUT_DIR_PROCESSED, active_years
 from scripts.download_from_b2 import download_from_b2
 from src.load.database import SessionLocal
 from src.load.indexes import create_indexes
@@ -26,19 +25,10 @@ from src.transform.term_builder import build_missing_terms
 
 def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) -> int:
     """Load new or updated speeches from JSONL files into SQLite session-by-session."""
-    current_year_int = datetime.today().year
     if year:
-        years_to_check = [year]
+        years_to_check = [str(year)]
     else:
-        # Check all available year JSONL files (or at least recent years)
-        available_years = sorted(
-            [
-                p.stem
-                for p in Path(OUTPUT_DIR_PROCESSED).glob("*.jsonl")
-                if p.stem.isdigit() and len(p.stem) == 4
-            ]
-        )
-        years_to_check = available_years or [str(current_year_int - 1), str(current_year_int)]
+        years_to_check = active_years()
 
     session = SessionLocal()
     new_count = 0
