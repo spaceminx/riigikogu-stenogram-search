@@ -76,13 +76,21 @@ python scripts/build_full_database.py
 Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kustuta WAL ajutised failid:
 ```bash
 python scripts/download_from_b2.py --all
-DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
-# Kui ehitad konteineris, kasuta hoopis:
-# docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
 
+# 1. Ehita uus andmebaas (soovitatavalt konteineris, et tagada õiged failiõigused)
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+# Kui ehitad hostis, kontrolli ja muuda vajadusel uue faili omanikku (chown), et appuser saaks seda lugeda/kirjutada:
+# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+
+# 2. Peata API ja puhasta vanad WAL ajutised failid
 docker compose stop backend
-mv database/riigikogu_new.sqlite database/riigikogu.sqlite
 rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
+
+# 3. Kontrolli, et ka uuel failil ei oleks .sqlite-wal faili kõrval
+rm -f database/riigikogu_new.sqlite-wal database/riigikogu_new.sqlite-shm
+
+# 4. Asenda andmebaasifail ja taaskäivita
+mv database/riigikogu_new.sqlite database/riigikogu.sqlite
 docker compose start backend
 ```
 

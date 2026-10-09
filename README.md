@@ -76,13 +76,21 @@ python scripts/build_full_database.py
 The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and remove WAL temporary files:
 ```bash
 python scripts/download_from_b2.py --all
-DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
-# If building inside a Docker container, use instead:
-# docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
 
+# 1. Build the new database (preferably in a container to ensure correct file permissions)
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+# If building on the host, ensure the container's appuser has rw permissions to the new file (chown if needed):
+# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+
+# 2. Stop the API and clean up old WAL temporary files
 docker compose stop backend
-mv database/riigikogu_new.sqlite database/riigikogu.sqlite
 rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
+
+# 3. Ensure the new database file also doesn't have an orphaned .sqlite-wal next to it
+rm -f database/riigikogu_new.sqlite-wal database/riigikogu_new.sqlite-shm
+
+# 4. Swap the database file and restart
+mv database/riigikogu_new.sqlite database/riigikogu.sqlite
 docker compose start backend
 ```
 
