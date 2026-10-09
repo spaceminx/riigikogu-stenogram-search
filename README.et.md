@@ -73,12 +73,17 @@ python scripts/build_full_database.py
 ```
 
 *Märkus ajaloo uuendamise kohta:*
-Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, vaheta see vana vastu välja ja taaskäivita API (kuna aliased on salvestatud JSONL failidesse, ei lähe püsilingid uue andmebaasi ehitamisel kaduma):
+Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kustuta WAL ajutised failid:
 ```bash
 python scripts/download_from_b2.py --all
-DATABASE_PATH=data/uus_stenogrammid.sqlite python scripts/build_full_database.py
-mv data/uus_stenogrammid.sqlite data/stenogrammid.sqlite
-# Seejärel taaskäivita serveri protsess
+DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# Kui ehitad konteineris, kasuta hoopis:
+# docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+
+docker compose stop backend
+mv database/riigikogu_new.sqlite database/riigikogu.sqlite
+rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
+docker compose start backend
 ```
 
 ### 4. FastAPI serveri käivitamine

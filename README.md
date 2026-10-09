@@ -73,12 +73,17 @@ python scripts/build_full_database.py
 ```
 
 *Note on historical data updates:*
-The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, replace the old one, and restart the API (since aliases are safely stored in JSONL files, no permalinks are lost):
+The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and remove WAL temporary files:
 ```bash
 python scripts/download_from_b2.py --all
-DATABASE_PATH=data/new_stenograms.sqlite python scripts/build_full_database.py
-mv data/new_stenograms.sqlite data/stenogrammid.sqlite
-# Then restart the API process
+DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# If building inside a Docker container, use instead:
+# docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+
+docker compose stop backend
+mv database/riigikogu_new.sqlite database/riigikogu.sqlite
+rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
+docker compose start backend
 ```
 
 ### 4. Start the FastAPI Backend Server
