@@ -87,7 +87,7 @@ docker compose stop backend
 rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
 
 # 3. Ensure the new database file also doesn't have an orphaned .sqlite-wal next to it
-rm -f database/riigikogu_new.sqlite-wal database/riigikogu_new.sqlite-shm
+if [ -f database/riigikogu_new.sqlite-wal ]; then echo "ERROR: New database WAL file exists, data is not fully committed!"; exit 1; fi
 
 # 4. Swap the database file and restart
 mv database/riigikogu_new.sqlite database/riigikogu.sqlite

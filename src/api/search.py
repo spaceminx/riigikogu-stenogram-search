@@ -228,36 +228,49 @@ def search_by_keyword(
 
         all_lemmas = [lemma for group in groups for lemma in group]
 
-        base_query = (
-            session.query(Speech, func.sum(SpeechTerm.count).label("match_count"))
-            .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
-            .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-            .filter(or_(*matching_conditions))
-            .filter(Lemma.lemma.in_(all_lemmas))
-        )
+        if sort_by == "match_count_desc":
+            base_query = (
+                session.query(Speech, func.sum(SpeechTerm.count).label("match_count"))
+                .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
+                .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                .filter(or_(*matching_conditions))
+                .filter(Lemma.lemma.in_(all_lemmas))
+            )
+            if speech_filters:
+                base_query = base_query.filter(*speech_filters)
 
-        if speech_filters:
-            base_query = base_query.filter(*speech_filters)
-
-        grouped_query = base_query.group_by(Speech.id)
-        if sort_by == "date_asc":
-            ordered_query = grouped_query.order_by(Speech.date.asc(), Speech.id.asc())
-        elif sort_by == "match_count_desc":
+            grouped_query = base_query.group_by(Speech.id)
             ordered_query = grouped_query.order_by(
                 func.sum(SpeechTerm.count).desc(), Speech.date.desc(), Speech.id.desc()
             )
+            results = ordered_query.offset(offset).limit(limit).all()
         else:
-            ordered_query = grouped_query.order_by(Speech.date.desc(), Speech.id.desc())
+            base_query = session.query(Speech).filter(or_(*matching_conditions))
+            if speech_filters:
+                base_query = base_query.filter(*speech_filters)
 
-        results = ordered_query.offset(offset).limit(limit).all()
+            if sort_by == "date_asc":
+                ordered_query = base_query.order_by(Speech.date.asc(), Speech.id.asc())
+            else:
+                ordered_query = base_query.order_by(Speech.date.desc(), Speech.id.desc())
 
-        count_query = (
-            session.query(Speech.id)
-            .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
-            .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-            .filter(or_(*matching_conditions))
-            .filter(Lemma.lemma.in_(all_lemmas))
-        )
+            speeches_only = ordered_query.offset(offset).limit(limit).all()
+
+            if speeches_only:
+                speech_ids = [s.id for s in speeches_only]
+                match_counts = dict(
+                    session.query(SpeechTerm.speech_id, func.sum(SpeechTerm.count))
+                    .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                    .filter(SpeechTerm.speech_id.in_(speech_ids))
+                    .filter(Lemma.lemma.in_(all_lemmas))
+                    .group_by(SpeechTerm.speech_id)
+                    .all()
+                )
+                results = [(s, match_counts.get(s.id, 0)) for s in speeches_only]
+            else:
+                results = []
+
+        count_query = session.query(Speech.id).filter(or_(*matching_conditions))
         if speech_filters:
             count_query = count_query.filter(*speech_filters)
 
@@ -363,17 +376,7 @@ def get_plenary_session_dates() -> list[str]:
     try:
         return [
             row.date
-            for row in (
-                session.query(Speech.date)
-                .filter(
-                    Speech.date.like("____-__-__"),
-                    Speech.source_file.isnot(None),
-                    Speech.source_file != "",
-                )
-                .distinct()
-                .order_by(Speech.date.desc())
-                .all()
-            )
+            for row in (session.query(Speech.date).distinct().order_by(Speech.date.desc()).all())
         ]
     finally:
         session.close()

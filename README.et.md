@@ -86,8 +86,8 @@ docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite 
 docker compose stop backend
 rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
 
-# 3. Kontrolli, et ka uuel failil ei oleks .sqlite-wal faili kõrval
-rm -f database/riigikogu_new.sqlite-wal database/riigikogu_new.sqlite-shm
+# 3. Kontrolli, et uuel failil ei oleks .sqlite-wal faili kõrval
+if [ -f database/riigikogu_new.sqlite-wal ]; then echo "VIGA: Uue andmebaasi WAL fail on olemas, andmed pole lõplikud!"; exit 1; fi
 
 # 4. Asenda andmebaasifail ja taaskäivita
 mv database/riigikogu_new.sqlite database/riigikogu.sqlite
