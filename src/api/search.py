@@ -277,6 +277,12 @@ def search_by_keyword(
                     "speaker": speech.speaker,
                     "speaker_role": speech.speaker_role,
                     "speaker_faction": speech.speaker_faction,
+                    "speaker_uuid": speech.speaker_uuid,
+                    "speech_type": speech.speech_type,
+                    "external_id": speech.external_id,
+                    "start_time": speech.start_time,
+                    "end_time": speech.end_time,
+                    "duration_seconds": speech.duration_seconds,
                     "text": speech.text,
                     "count": int(match_count),
                     "matched_words": matched_words,
@@ -380,7 +386,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
         speeches = (
             session.query(Speech)
             .filter(Speech.date == session_date)
-            .order_by(Speech.time.asc(), Speech.source_file.asc(), Speech.id.asc())
+            .order_by(Speech.source_file.asc(), Speech.start_time.asc(), Speech.id.asc())
             .all()
         )
         return [
@@ -389,6 +395,12 @@ def get_session_speeches(session_date: str) -> list[dict]:
                 "speaker": speech.speaker,
                 "speaker_role": speech.speaker_role,
                 "speaker_faction": speech.speaker_faction,
+                "speaker_uuid": speech.speaker_uuid,
+                "speech_type": speech.speech_type,
+                "external_id": speech.external_id,
+                "start_time": speech.start_time,
+                "end_time": speech.end_time,
+                "duration_seconds": speech.duration_seconds,
                 "text": speech.text,
                 "count": 0,
                 "matched_words": [],
@@ -584,7 +596,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
         speeches = (
             session.query(Speech)
             .filter(Speech.source_file == target_speech.source_file)
-            .order_by(Speech.id.asc())
+            .order_by(Speech.start_time.asc(), Speech.id.asc())
             .all()
         )
 
@@ -606,6 +618,12 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
 
         return {
             "target_speech_id": target_speech.id,
+            "speaker_uuid": target_speech.speaker_uuid,
+            "speech_type": target_speech.speech_type,
+            "external_id": target_speech.external_id,
+            "start_time": target_speech.start_time,
+            "end_time": target_speech.end_time,
+            "duration_seconds": target_speech.duration_seconds,
             "date": target_speech.date,
             "time": target_speech.time,
             "source_file": target_speech.source_file,
@@ -621,6 +639,12 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
                     "speaker": s.speaker,
                     "speaker_role": s.speaker_role,
                     "speaker_faction": s.speaker_faction,
+                    "speaker_uuid": s.speaker_uuid,
+                    "speech_type": s.speech_type,
+                    "external_id": s.external_id,
+                    "start_time": s.start_time,
+                    "end_time": s.end_time,
+                    "duration_seconds": s.duration_seconds,
                     "text": s.text,
                     "source_url": normalize_source_url(s.source_url),
                     "agenda_title": s.agenda_title,

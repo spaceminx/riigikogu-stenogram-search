@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Database,
   ExternalLink,
+  Info,
   Landmark,
   Menu,
   Moon,
@@ -24,6 +25,8 @@ import {
   fetchAttendance,
   fetchFactionAttendance,
   fetchFactionsList,
+  fetchMemberships,
+  fetchSystemStatus,
 } from "./api";
 import "./App.css";
 
@@ -296,6 +299,8 @@ function App() {
   const [lastExecutedSearch, setLastExecutedSearch] = useState(null);
   const searchAbortRef = useRef(null);
   const searchRequestIdRef = useRef(0);
+  const [systemStatus, setSystemStatus] = useState(null);
+  const [showMethodologyModal, setShowMethodologyModal] = useState(false);
 
   // Attendance state
   const [attendanceTab, setAttendanceTab] = useState("members"); // "members" | "factions"
@@ -307,6 +312,10 @@ function App() {
   const [searchFactionsList, setSearchFactionsList] = useState([]);
   const [attendanceFactionsList, setAttendanceFactionsList] = useState([]);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [memberships, setMemberships] = useState([
+    { id: "15", number: 15, name: "XV Riigikogu (2023–praegu)" },
+    { id: "14", number: 14, name: "XIV Riigikogu (2019–2023)" },
+  ]);
 
   const [sortConfig, setSortConfig] = useState({
     key: "present_sessions",
@@ -529,7 +538,7 @@ function App() {
       if (initialView && ["dashboard", "speeches", "attendance"].includes(initialView)) {
         setView(initialView);
       }
-      if (membershipParam && ["15", "14", "all"].includes(membershipParam)) {
+      if (membershipParam && (membershipParam === "all" || /^\d+$/.test(membershipParam))) {
         setSearchMembership(membershipParam);
       }
       if (factionParam !== null) {
@@ -550,7 +559,10 @@ function App() {
       if (attTabParam && ["members", "factions"].includes(attTabParam)) {
         setAttendanceTab(attTabParam);
       }
-      if (attMembershipParam && ["15", "14", "all"].includes(attMembershipParam)) {
+      if (
+        attMembershipParam &&
+        (attMembershipParam === "all" || /^\d+$/.test(attMembershipParam))
+      ) {
         setAttendanceMembership(attMembershipParam);
       }
       if (attFactionParam !== null) {
@@ -590,33 +602,59 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pre-load factions list for search dropdown
+  // Pre-load metadata (factions, memberships, system status) for search and period dropdowns
   useEffect(() => {
-    async function loadFactions() {
+    async function loadMetadata() {
       try {
-        const list = await fetchFactionsList("all");
-        if (list && list.length > 0) {
-          setSearchFactionsList(list);
-          setAttendanceFactionsList(list);
+        const [factionsRes, membershipsRes, statusRes] = await Promise.allSettled([
+          fetchFactionsList("all"),
+          fetchMemberships(),
+          fetchSystemStatus(),
+        ]);
+        if (
+          factionsRes.status === "fulfilled" &&
+          Array.isArray(factionsRes.value) &&
+          factionsRes.value.length > 0
+        ) {
+          setSearchFactionsList(factionsRes.value);
+          setAttendanceFactionsList(factionsRes.value);
+        }
+        if (
+          membershipsRes.status === "fulfilled" &&
+          Array.isArray(membershipsRes.value) &&
+          membershipsRes.value.length > 0
+        ) {
+          const valid = membershipsRes.value.filter((m) => m.number >= 14);
+          if (valid.length > 0) {
+            setMemberships(valid);
+          }
+        }
+        if (statusRes.status === "fulfilled" && statusRes.value) {
+          setSystemStatus(statusRes.value);
         }
       } catch {
         // silent fallback
       }
     }
-    loadFactions();
+    loadMetadata();
   }, []);
 
-  // Handle ESC key to close context modal
+  // Handle ESC key to close context or methodology modal
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape" && activeSpeechContext) {
-        setActiveSpeechContext(null);
-        setContextSearchTerm("");
+      if (e.key === "Escape") {
+        if (activeSpeechContext) {
+          setActiveSpeechContext(null);
+          setContextSearchTerm("");
+        }
+        if (showMethodologyModal) {
+          setShowMethodologyModal(false);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeSpeechContext]);
+  }, [activeSpeechContext, showMethodologyModal]);
 
   // Auto-scroll to target speech when context modal opens
   useEffect(() => {
@@ -1002,6 +1040,18 @@ function App() {
                 {overviewError ? "Pole ühendust" : overviewLoading ? "Ühendun…" : "Valmis"}
               </span>
             </div>
+            {systemStatus?.data_as_of && (
+              <div className="menu-status-row" title={`Viimane istung: ${systemStatus.data_as_of}`}>
+                <CalendarDays aria-hidden="true" />
+                <span>Andmed seisuga</span>
+                <span
+                  className="menu-status"
+                  style={{ fontSize: "0.75rem", textTransform: "none" }}
+                >
+                  {systemStatus.data_as_of}
+                </span>
+              </div>
+            )}
             <div className="menu-status-row">
               <Activity aria-hidden="true" />
               <span>API olek</span>
@@ -1010,6 +1060,18 @@ function App() {
                 {overviewError ? "Pole saadaval" : overviewLoading ? "Kontrollin…" : "Aktiivne"}
               </span>
             </div>
+            <button
+              type="button"
+              className="menu-action"
+              onClick={() => {
+                setShowMethodologyModal(true);
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <Info aria-hidden="true" />
+              <span>Metoodika ja andmed</span>
+            </button>
             <div className="menu-divider" />
             <a
               className="menu-link"
@@ -1162,8 +1224,11 @@ function App() {
                 onChange={(e) => setSearchMembership(e.target.value)}
               >
                 <option value="all">Kõik (2019–praegu)</option>
-                <option value="15">XV Riigikogu (2023–praegu)</option>
-                <option value="14">XIV Riigikogu (2019–2023)</option>
+                {memberships.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name || `${m.id}. Riigikogu`}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -1862,6 +1927,112 @@ function App() {
         </div>
       )}
 
+      {/* Methodology & Data Modal */}
+      {showMethodologyModal && (
+        <div className="modal-backdrop" onClick={() => setShowMethodologyModal(false)}>
+          <div
+            className="modal-content glass-panel methodology-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="methodology-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-top-bar">
+              <div>
+                <h2 id="methodology-modal-title" className="modal-heading">
+                  Andmed ja metoodika
+                </h2>
+                <div className="modal-meta-row">
+                  {systemStatus?.data_as_of && (
+                    <span>Andmed seisuga: {systemStatus.data_as_of}</span>
+                  )}
+                  {typeof systemStatus?.total_sessions === "number" && (
+                    <>
+                      <span>•</span>
+                      <span>{systemStatus.total_sessions.toLocaleString("et-EE")} istungit</span>
+                    </>
+                  )}
+                  {typeof systemStatus?.total_speeches === "number" && (
+                    <>
+                      <span>•</span>
+                      <span>{systemStatus.total_speeches.toLocaleString("et-EE")} kõnet</span>
+                    </>
+                  )}
+                  {typeof systemStatus?.total_persons === "number" && (
+                    <>
+                      <span>•</span>
+                      <span>{systemStatus.total_persons} saadikut</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-icon-btn"
+                onClick={() => setShowMethodologyModal(false)}
+                title="Sulge aken (ESC)"
+              >
+                &times;
+              </button>
+            </div>
+
+            {systemStatus?.warning && (
+              <div className="methodology-warning">
+                <strong>Hoiatus:</strong> {systemStatus.warning}
+              </div>
+            )}
+
+            <div className="methodology-scroll">
+              <div className="methodology-section">
+                <h3>1. Kohaloleku mõõtmine</h3>
+                <p>
+                  Kohaloleku statistika põhineb Riigikogu täiskogu ametlikel kohalolekukontrollidel.
+                  Registreeritud kohalolek näitab osalemist kontrollil konkreetsel ajamomendil,
+                  mitte saadiku pidevat füüsilist viibimist istungisaalis mitmetunnise arutelu
+                  kestel. Samuti ei kajasta see tööd alatistes komisjonides, fraktsioonides ega
+                  kohtumisi valijatega.
+                </p>
+              </div>
+
+              <div className="methodology-section">
+                <h3>2. Kõnede ja sõnavõttude loendamine</h3>
+                <p>
+                  Kõned ja sõnavõtud pärinevad Riigikogu ametlikest stenogrammidest. Istungi
+                  juhataja ametikoht (Esimees, Aseesimees) on stenogrammis eraldi rollitunnusena
+                  talletatud. Täpne rollipõhine filtreerimine ja ametliku kõnetüpoloogia eristamine
+                  lisandub järgmistes arendusetappides.
+                </p>
+              </div>
+
+              <div className="methodology-section">
+                <h3>3. Toimetamata vs toimetatud stenogrammid</h3>
+                <p>
+                  Vahetult pärast istungit avaldatakse stenogramm toimetamata kujul. Toimetatud ja
+                  kinnitatud lõpliku stenogrammi valmimisel asendab andmetoru teksti automaatselt
+                  ametliku redaktsiooniga.
+                </p>
+              </div>
+
+              <div className="methodology-section">
+                <h3>4. Erapooletus ja avaandmete allikad</h3>
+                <p>
+                  Kõik andmed pärinevad ametlikest Riigikogu avaandmetest (
+                  <a href="https://api.riigikogu.ee" target="_blank" rel="noreferrer">
+                    api.riigikogu.ee
+                  </a>{" "}
+                  ja{" "}
+                  <a href="https://stenogrammid.riigikogu.ee" target="_blank" rel="noreferrer">
+                    stenogrammid.riigikogu.ee
+                  </a>
+                  ). Otsingumootor on erapooletu tehnoloogiline tööriist ega anna poliitilisi
+                  hinnanguid ega toeta ühtegi erakonda.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {view === "attendance" && (
         <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
           <div className="chart-header" style={{ marginBottom: "1.25rem" }}>
@@ -1910,8 +2081,11 @@ function App() {
                     }
                   }}
                 >
-                  <option value="15">XV Riigikogu (2023–praegu)</option>
-                  <option value="14">XIV Riigikogu (2019–2023)</option>
+                  {memberships.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name || `${m.id}. Riigikogu`}
+                    </option>
+                  ))}
                   <option value="all">Kõik kokku (2019–praegu)</option>
                 </select>
               </div>

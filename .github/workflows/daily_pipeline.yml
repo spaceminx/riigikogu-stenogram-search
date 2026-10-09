@@ -31,30 +31,44 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: 1. Download current state and data from B2
+        id: download
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
           B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
         run: python scripts/download_from_b2.py
 
-      - name: 2. Fetch member factions
+      - name: 2. Fetch parliamentary memberships
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        continue-on-error: true
+        run: python scripts/fetch_memberships.py
+
+      - name: 3. Fetch member factions
         env:
           PYTHONPATH: ${{ github.workspace }}
         continue-on-error: true
         run: python scripts/fetch_factions.py
 
-      - name: 3. Fetch and process new stenograms from API
+      - name: 4. Fetch and process new stenograms from API
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/fetch_stenograms_api.py
 
-      - name: 4. Fetch new attendance records from API
+      - name: 5. Fetch new attendance records from API
+        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/fetch_attendance.py
 
-      - name: 5. Upload updated data and sync state back to Backblaze B2
-        if: always()
+      - name: 6. Verify pipeline data integrity
+        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/verify_pipeline_integrity.py
+
+      - name: 7. Upload updated data and sync state back to Backblaze B2
+        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}

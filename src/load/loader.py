@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from config import OUTPUT_DIR_PROCESSED
 from src.load.database import SessionLocal, engine
-from src.load.models import Attendance, Base, Speech, SpeechTerm
+from src.load.models import Attendance, Base, Person, Speech, SpeechAlias, SpeechTerm
 
 
 def create_tables() -> None:
@@ -22,6 +22,22 @@ def create_tables() -> None:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN video_url TEXT;"))
             if "status" not in existing_cols:
                 conn.execute(text("ALTER TABLE speeches ADD COLUMN status TEXT;"))
+            if "speaker_uuid" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN speaker_uuid TEXT;"))
+            if "ems_id" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN ems_id TEXT;"))
+            if "speech_type" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN speech_type TEXT;"))
+            if "external_id" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN external_id INTEGER;"))
+            if "start_time" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN start_time TEXT;"))
+            if "end_time" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN end_time TEXT;"))
+            if "duration_seconds" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN duration_seconds INTEGER;"))
+            if "speech_key" not in existing_cols:
+                conn.execute(text("ALTER TABLE speeches ADD COLUMN speech_key TEXT;"))
         conn.commit()
 
 
@@ -108,6 +124,112 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
     print(f"Done loading attendance ({total_loaded} records added).")
 
 
+def load_persons_to_database() -> None:
+    """Load person profiles from persons.json into the persons table."""
+    persons_file = Path(OUTPUT_DIR_PROCESSED) / "persons.json"
+    if not persons_file.exists():
+        return
+
+    print(f"Loading persons from {persons_file.name}...")
+    session = SessionLocal()
+    try:
+        with open(persons_file, encoding="utf-8") as f:
+            persons_data = json.load(f)
+
+        existing_uuids = set(r[0] for r in session.query(Person.uuid).all())
+        new_objects = []
+        for p in persons_data:
+            uuid_val = p.get("uuid")
+            if not uuid_val:
+                continue
+            is_active = 1 if p.get("active") else 0
+            if uuid_val in existing_uuids:
+                session.query(Person).filter(Person.uuid == uuid_val).update(
+                    {
+                        "first_name": p.get("first_name", ""),
+                        "last_name": p.get("last_name", ""),
+                        "full_name": p.get("full_name", ""),
+                        "gender": p.get("gender"),
+                        "date_of_birth": p.get("date_of_birth"),
+                        "email": p.get("email"),
+                        "photo_url": p.get("photo_url"),
+                        "electoral_district": p.get("electoral_district"),
+                        "seniority_days": p.get("seniority_days"),
+                        "active": is_active,
+                    }
+                )
+            else:
+                new_objects.append(
+                    Person(
+                        uuid=uuid_val,
+                        first_name=p.get("first_name", ""),
+                        last_name=p.get("last_name", ""),
+                        full_name=p.get("full_name", ""),
+                        gender=p.get("gender"),
+                        date_of_birth=p.get("date_of_birth"),
+                        email=p.get("email"),
+                        photo_url=p.get("photo_url"),
+                        electoral_district=p.get("electoral_district"),
+                        seniority_days=p.get("seniority_days"),
+                        active=is_active,
+                    )
+                )
+
+        if new_objects:
+            session.bulk_save_objects(new_objects)
+        session.commit()
+        print(f"Done loading persons ({len(new_objects)} added, {len(existing_uuids)} updated).")
+    except Exception as e:
+        session.rollback()
+        print(f"Notice: Error loading persons: {e}")
+    finally:
+        session.close()
+
+    # Backfill missing speaker_uuid on speeches
+    backfilled = backfill_speaker_uuids()
+    if backfilled > 0:
+        print(f"Backfilled speaker_uuid on {backfilled} speeches.")
+
+
+def backfill_speaker_uuids() -> int:
+    """Populate speaker_uuid on speeches that match unique MP names in persons table,
+    and disambiguate known same-name members across terms (e.g. Tarmo Tamm)."""
+    with engine.connect() as conn:
+        res = conn.execute(
+            text(
+                "UPDATE speeches "
+                "SET speaker_uuid = ("
+                "  SELECT p.uuid FROM persons p WHERE p.full_name = speeches.speaker"
+                ") "
+                "WHERE speaker_uuid IS NULL "
+                "  AND speaker IN ("
+                "    SELECT full_name FROM persons GROUP BY full_name HAVING count(*) = 1"
+                ");"
+            )
+        )
+        # Disambiguate Tarmo Tamm: XIII/XIV term (< 2023-04-10) vs XV term (>= 2023-04-10)
+        res_tt1 = conn.execute(
+            text(
+                "UPDATE speeches "
+                "SET speaker_uuid = '76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5' "
+                "WHERE speaker = 'Tarmo Tamm' "
+                "  AND speaker_uuid IS NULL "
+                "  AND date < '2023-04-10';"
+            )
+        )
+        res_tt2 = conn.execute(
+            text(
+                "UPDATE speeches "
+                "SET speaker_uuid = '236e49d6-eecb-4562-8ad4-bedd586bb149' "
+                "WHERE speaker = 'Tarmo Tamm' "
+                "  AND speaker_uuid IS NULL "
+                "  AND date >= '2023-04-10';"
+            )
+        )
+        conn.commit()
+        return res.rowcount + res_tt1.rowcount + res_tt2.rowcount
+
+
 def load_jsonl_to_database(batch_size: int = 2000) -> None:
     """Load processed speech JSONL files into the speeches table in SQLite database."""
     with engine.connect() as conn:
@@ -168,10 +290,20 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             speaker=data.get("speaker", "Tundmatu"),
                             speaker_role=data.get("speaker_role"),
                             speaker_faction=data.get("speaker_faction"),
+                            speaker_uuid=data.get("speaker_uuid"),
+                            ems_id=data.get("ems_id"),
+                            speech_type=data.get("speech_type"),
+                            external_id=data.get("external_id"),
+                            start_time=data.get("start_time"),
+                            end_time=data.get("end_time"),
+                            duration_seconds=data.get("duration_seconds"),
+                            speech_key=data.get("speech_key"),
                             text=data["text"],
                             text_lemmas=data.get("text_lemmas"),
                             status=rec_status,
                         )
+                        speech._prev_ext_ids = data.get("previous_external_ids", [])
+                        speech._prev_keys = data.get("previous_speech_keys", [])
                         speeches_by_session[src_file].append(speech)
                     except KeyError as e:
                         print(
@@ -192,10 +324,28 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                             session.query(SpeechTerm).filter(
                                 SpeechTerm.speech_id.in_(old_ids)
                             ).delete(synchronize_session=False)
+                            session.query(SpeechAlias).filter(
+                                SpeechAlias.speech_id.in_(old_ids)
+                            ).delete(synchronize_session=False)
                             session.query(Speech).filter(Speech.source_file == src_file).delete(
                                 synchronize_session=False
                             )
-                    session.bulk_save_objects(speeches_list)
+
+                    session.add_all(speeches_list)
+                    session.flush()
+
+                    aliases = []
+                    for sp in speeches_list:
+                        prev_exts = getattr(sp, "_prev_ext_ids", [])
+                        prev_keys = getattr(sp, "_prev_keys", [])
+                        for p_ext in prev_exts:
+                            aliases.append(SpeechAlias(alias_external_id=p_ext, speech_id=sp.id))
+                        for p_key in prev_keys:
+                            aliases.append(SpeechAlias(alias_speech_key=p_key, speech_id=sp.id))
+
+                    if aliases:
+                        session.add_all(aliases)
+
                     session.commit()
                     existing_source_files.add(src_file)
                     unedited_db_files.discard(src_file)
@@ -207,5 +357,6 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
 
     session.close()
 
-    # Also load attendance records if attendance.jsonl is present
+    # Also load attendance and person records if files are present
     load_attendance_to_database(batch_size=batch_size)
+    load_persons_to_database()

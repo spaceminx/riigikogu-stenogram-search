@@ -1,3 +1,4 @@
+import difflib
 import glob
 import html
 import json
@@ -40,17 +41,46 @@ def clean_html(raw_html: str) -> str:
     return " ".join(clean.split()).strip()
 
 
-def fetch_rich_meeting_data(meeting_code: str) -> dict | None:
+def slugify_estonian(text: str) -> str:
+    """Generate a clean ASCII slug transliterating Estonian special characters."""
+    tr_map = str.maketrans(
+        {
+            "ä": "a",
+            "ö": "o",
+            "õ": "o",
+            "ü": "u",
+            "Ä": "a",
+            "Ö": "o",
+            "Õ": "o",
+            "Ü": "u",
+            "š": "s",
+            "ž": "z",
+            "Š": "s",
+            "Ž": "z",
+        }
+    )
+    cleaned = text.translate(tr_map).lower()
+    return re.sub(r"[^a-z0-9]+", "-", cleaned).strip("-")
+
+
+def fetch_rich_meeting_data(meeting_code: str, max_retries: int = 3) -> dict | None:
     """Fetch rich meeting details (agenda item PKP IDs and video timestamps) from new stenogram API."""
     if not meeting_code or not meeting_code.isdigit():
         return None
     url = f"https://stenogrammid.riigikogu.ee/api/meeting/{meeting_code}"
-    try:
-        resp = requests.get(url, timeout=(5, 20), headers={"User-Agent": "Mozilla/5.0"})
-        if resp.status_code == 200:
-            return resp.json()
-    except Exception as e:
-        print(f"Notice: Could not fetch rich meeting details for {meeting_code}: {e}")
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.get(url, timeout=(5, 20), headers={"User-Agent": "Mozilla/5.0"})
+            if resp.status_code == 200:
+                return resp.json()
+            if resp.status_code == 429:
+                time.sleep(2 * attempt)
+            elif resp.status_code >= 500:
+                time.sleep(1 * attempt)
+        except Exception as e:
+            if attempt == max_retries:
+                print(f"Notice: Could not fetch rich meeting details for {meeting_code}: {e}")
+            time.sleep(1)
     return None
 
 
@@ -169,9 +199,125 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
             print(f"Warning: Refusing to replace session {source_file_key} with 0 speeches.")
             return
 
-        new_lines = [line for line in existing_lines if target_needle not in line]
+        old_speeches = []
+        new_lines = []
+        for line in existing_lines:
+            if target_needle in line:
+                try:
+                    old_speeches.append(json.loads(line))
+                except Exception:
+                    pass
+            else:
+                new_lines.append(line)
+
+        # Bind previous aliases to preserve permalinks across edits
+        new_speeches_by_ext_id = {sp["external_id"]: sp for sp in speeches if sp.get("external_id")}
+
+        for old_sp in old_speeches:
+            old_ext = old_sp.get("external_id")
+            old_key = old_sp.get("speech_key")
+            if not old_ext:
+                continue
+
+            best_match = None
+            if old_ext in new_speeches_by_ext_id:
+                best_match = new_speeches_by_ext_id[old_ext]
+            else:
+                best_score = -1
+
+                old_time_str = old_sp.get("start_time")
+                old_time = None
+                if old_time_str:
+                    try:
+                        old_time = datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
+                    except Exception:
+                        pass
+
+                old_text = old_sp.get("text", "")
+                old_speaker = old_sp.get("speaker")
+
+                for new_sp in speeches:
+                    if new_sp.get("speaker") != old_speaker:
+                        continue
+
+                    new_time_str = new_sp.get("start_time")
+                    new_time = None
+                    if new_time_str:
+                        try:
+                            new_time = datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
+                        except Exception:
+                            pass
+
+                    time_diff = None
+                    if old_time and new_time:
+                        time_diff = abs((new_time - old_time).total_seconds())
+
+                    sim = 0.0
+                    new_text = new_sp.get("text", "")
+                    if old_text and new_text:
+                        if old_text in new_text:
+                            sim = 1.0
+                        else:
+                            q_ratio = difflib.SequenceMatcher(
+                                None, old_text, new_text
+                            ).quick_ratio()
+                            if (time_diff is not None and time_diff <= 120) or q_ratio >= 0.8:
+                                sim = difflib.SequenceMatcher(
+                                    None, old_text, new_text, autojunk=False
+                                ).ratio()
+
+                    # Matching rule: must have text overlap. Time alone is not enough.
+                    score = 0
+                    is_match = False
+
+                    if time_diff is not None and time_diff <= 60:
+                        if sim >= 0.5:
+                            is_match = True
+                            score = sim * 100 + (60 - time_diff)
+                    else:
+                        if sim >= 0.8:
+                            is_match = True
+                            score = sim * 100
+
+                    if is_match and score > best_score:
+                        best_score = score
+                        best_match = new_sp
+
+            if best_match:
+                if "previous_external_ids" not in best_match:
+                    best_match["previous_external_ids"] = []
+                if (
+                    old_ext
+                    and old_ext != best_match.get("external_id")
+                    and old_ext not in best_match["previous_external_ids"]
+                ):
+                    best_match["previous_external_ids"].append(old_ext)
+                for prev_ext in old_sp.get("previous_external_ids", []):
+                    if (
+                        prev_ext
+                        and prev_ext != best_match.get("external_id")
+                        and prev_ext not in best_match["previous_external_ids"]
+                    ):
+                        best_match["previous_external_ids"].append(prev_ext)
+
+                if "previous_speech_keys" not in best_match:
+                    best_match["previous_speech_keys"] = []
+                if (
+                    old_key
+                    and old_key != best_match.get("speech_key")
+                    and old_key not in best_match["previous_speech_keys"]
+                ):
+                    best_match["previous_speech_keys"].append(old_key)
+                for prev_key in old_sp.get("previous_speech_keys", []):
+                    if (
+                        prev_key != best_match.get("speech_key")
+                        and prev_key not in best_match["previous_speech_keys"]
+                    ):
+                        best_match["previous_speech_keys"].append(prev_key)
+
         for s in speeches:
             new_lines.append(json.dumps(s, ensure_ascii=False) + "\n")
+
         with open(tmp_file, "w", encoding="utf-8") as f:
             f.writelines(new_lines)
         os.replace(tmp_file, out_file)
@@ -179,6 +325,52 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
         with open(out_file, "a", encoding="utf-8") as f:
             for s in speeches:
                 f.write(json.dumps(s, ensure_ascii=False) + "\n")
+
+
+def compute_duration_seconds(start_time_str: str | None, end_time_str: str | None) -> int | None:
+    """Calculate speech duration in seconds from ISO start and end timestamps."""
+    if not start_time_str or not end_time_str:
+        return None
+    try:
+        dt_start = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
+        dt_end = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+        return max(0, round((dt_end - dt_start).total_seconds()))
+    except Exception:
+        return None
+
+
+def load_persons_metadata() -> tuple[set[str], dict[str, str], dict[str, str]]:
+    """Load known MP UUIDs, unambiguous full_name -> uuid mapping, and uuid -> full_name mapping from persons.json."""
+    p_path = os.path.join(OUTPUT_DIR_PROCESSED, "persons.json")
+    if not os.path.exists(p_path):
+        return set(), {}, {}
+    try:
+        with open(p_path, encoding="utf-8") as f:
+            persons = json.load(f)
+        known_uuids = {p.get("uuid") for p in persons if p.get("uuid")}
+        name_counts: dict[str, int] = {}
+        for p in persons:
+            name = p.get("full_name")
+            if name:
+                name_counts[name] = name_counts.get(name, 0) + 1
+        name_map = {}
+        uuid_to_name = {}
+        for p in persons:
+            name = p.get("full_name")
+            uuid_val = p.get("uuid")
+            if name and uuid_val:
+                uuid_to_name[uuid_val] = name
+                if name_counts.get(name) == 1:
+                    name_map[name] = uuid_val
+        return known_uuids, name_map, uuid_to_name
+    except Exception:
+        return set(), {}, {}
+
+
+def load_persons_name_map() -> dict[str, str]:
+    """Compatibility wrapper returning name -> uuid map."""
+    _, name_map, _ = load_persons_metadata()
+    return name_map
 
 
 def parse_meeting_speeches(
@@ -190,6 +382,9 @@ def parse_meeting_speeches(
     time_formatted: str,
     source_file_key: str,
     faction_map: dict,
+    person_name_map: dict | None = None,
+    known_person_uuids: set[str] | None = None,
+    uuid_to_name_map: dict[str, str] | None = None,
 ) -> tuple[list[dict], str]:
     """Extract and lemmatize speech records from a meeting dataset."""
     is_edited = (rich_meeting and rich_meeting.get("meetingStatus") == "EDITED") or bool(
@@ -201,6 +396,7 @@ def parse_meeting_speeches(
 
     if rich_meeting and rich_meeting.get("stenograph", {}).get("agendaItems"):
         agendas = rich_meeting["stenograph"]["agendaItems"]
+        speech_idx = 0
         for agenda_item in agendas:
             agenda_id = agenda_item.get("id")
             raw_agenda_name = agenda_item.get("name", "")
@@ -212,6 +408,7 @@ def parse_meeting_speeches(
             )
 
             for sp in agenda_item.get("speeches", []):
+                speech_idx += 1
                 speaker_raw = sp.get("name", "")
                 raw_content = sp.get("content", "")
                 raw_text = clean_html(raw_content)
@@ -229,15 +426,67 @@ def parse_meeting_speeches(
 
                 speaker_name, speaker_role = split_speaker_role(speaker_raw)
                 speaker_faction = get_faction_for_date(faction_map, speaker_name, date_formatted)
+                raw_ems_id = sp.get("emsId")
+                raw_ems_str = str(raw_ems_id) if raw_ems_id else None
+                speaker_uuid = None
+
+                # 1. Direct match with canonical MP UUID only if it also matches the speaker name
+                if raw_ems_str and (
+                    known_person_uuids is None
+                    or (
+                        raw_ems_str in known_person_uuids
+                        and (
+                            not uuid_to_name_map
+                            or uuid_to_name_map.get(raw_ems_str) == speaker_name
+                        )
+                    )
+                ):
+                    speaker_uuid = raw_ems_str
+                # 2. Specific disambiguation for Tarmo Tamm by date
+                elif speaker_name == "Tarmo Tamm":
+                    if date_formatted < "2023-04-10":
+                        speaker_uuid = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+                    else:
+                        speaker_uuid = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+                # 3. Canonical mapping for unique names (including ministers who are MPs)
+                elif person_name_map and speaker_name in person_name_map:
+                    speaker_uuid = person_name_map[speaker_name]
+
                 lemmas = lemmatize_text(raw_text)
                 video_url = sp.get("parsedVideoLink")
 
                 sp_time_raw = sp.get("startTime")
+                end_time_raw = sp.get("endTime")
+                duration_seconds = compute_duration_seconds(sp_time_raw, end_time_raw)
+
                 sp_time = time_formatted
                 if sp_time_raw and "T" in sp_time_raw:
                     time_part = sp_time_raw.split("T")[1].replace(":", "")[:4]
                     if len(time_part) == 4 and time_part.isdigit():
                         sp_time = time_part
+
+                ext_id = sp.get("id")
+                try:
+                    ext_id_int = int(ext_id) if ext_id is not None else None
+                except (ValueError, TypeError):
+                    ext_id_int = None
+
+                clean_time = (
+                    (sp_time_raw or sp_time or "0000")
+                    .replace(":", "")
+                    .replace("-", "")
+                    .replace(".", "")
+                )
+                speaker_slug = slugify_estonian(speaker_name)
+
+                if sp_time_raw:
+                    key_suffix = f"{clean_time}_{speaker_slug}"
+                else:
+                    key_suffix = f"{clean_time}_{speech_idx}_{speaker_slug}"
+
+                speech_key = (
+                    f"{meeting_code}_{key_suffix}" if meeting_code and speaker_slug else None
+                )
 
                 speeches_to_save.append(
                     {
@@ -250,17 +499,27 @@ def parse_meeting_speeches(
                         "speaker": speaker_name,
                         "speaker_role": speaker_role,
                         "speaker_faction": speaker_faction,
+                        "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
+                        "ems_id": raw_ems_str,
+                        "speech_type": sp_type,
+                        "external_id": ext_id_int,
+                        "start_time": sp_time_raw,
+                        "end_time": end_time_raw,
+                        "duration_seconds": duration_seconds,
+                        "speech_key": speech_key,
                         "text": raw_text,
                         "text_lemmas": lemmas,
                         "status": meeting_status,
                     }
                 )
     elif verbatim:
+        verbatim_idx = 0
         for agenda_item in verbatim.get("agendaItems", []):
             raw_agenda_name = agenda_item.get("title", "")
             agenda_title = clean_html(raw_agenda_name)
             for event in agenda_item.get("events", []):
                 if event.get("type") == "SPEECH":
+                    verbatim_idx += 1
                     raw_text = event.get("text", "")
                     speaker_raw = event.get("speaker", "")
 
@@ -271,7 +530,22 @@ def parse_meeting_speeches(
                     speaker_faction = get_faction_for_date(
                         faction_map, speaker_name, date_formatted
                     )
+                    speaker_uuid = None
+                    if speaker_name == "Tarmo Tamm":
+                        if date_formatted < "2023-04-10":
+                            speaker_uuid = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+                        else:
+                            speaker_uuid = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+                    elif person_name_map and speaker_name in person_name_map:
+                        speaker_uuid = person_name_map[speaker_name]
+
                     lemmas = lemmatize_text(raw_text)
+                    speaker_slug = slugify_estonian(speaker_name)
+                    speech_key = (
+                        f"{meeting_code}_{time_formatted}_{verbatim_idx}_{speaker_slug}"
+                        if meeting_code and speaker_slug
+                        else None
+                    )
 
                     speeches_to_save.append(
                         {
@@ -287,6 +561,14 @@ def parse_meeting_speeches(
                             "speaker": speaker_name,
                             "speaker_role": speaker_role,
                             "speaker_faction": speaker_faction,
+                            "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
+                            "ems_id": None,
+                            "speech_type": "SPEECH",
+                            "external_id": None,
+                            "start_time": None,
+                            "end_time": None,
+                            "duration_seconds": None,
+                            "speech_key": speech_key,
                             "text": raw_text,
                             "text_lemmas": lemmas,
                             "status": meeting_status,
@@ -393,6 +675,8 @@ def fetch_and_process_stenograms(
     else:
         faction_map = {}
 
+    known_person_uuids, person_name_map, uuid_to_name_map = load_persons_metadata()
+
     print(f"Starting API fetch from {start_date} to {end_date}")
     has_errors = False
 
@@ -475,6 +759,9 @@ def fetch_and_process_stenograms(
                     time_formatted=time_formatted,
                     source_file_key=source_file_key,
                     faction_map=faction_map,
+                    person_name_map=person_name_map,
+                    known_person_uuids=known_person_uuids,
+                    uuid_to_name_map=uuid_to_name_map,
                 )
 
                 if speeches_to_save:
@@ -502,6 +789,7 @@ def fetch_and_process_stenograms(
 
             except Exception as e:
                 print(f"Warning: Error processing verbatim {verbatim.get('title')}: {e}")
+                has_errors = True
 
     # Re-fetch and update unedited meetings directly by code, regardless of date range
     if unedited_sessions:
@@ -530,6 +818,7 @@ def fetch_and_process_stenograms(
             time.sleep(2)
             rich_meeting = fetch_rich_meeting_data(meeting_code)
             if not rich_meeting:
+                has_errors = True
                 continue
 
             is_edited = rich_meeting.get("meetingStatus") == "EDITED"
@@ -550,6 +839,9 @@ def fetch_and_process_stenograms(
                     time_formatted=time_str,
                     source_file_key=src_file_key or f"{date_str}_{time_str}.api",
                     faction_map=faction_map,
+                    person_name_map=person_name_map,
+                    known_person_uuids=known_person_uuids,
+                    uuid_to_name_map=uuid_to_name_map,
                 )
 
                 if speeches_to_save:

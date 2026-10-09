@@ -21,8 +21,12 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 - **Aktiivsus ajas:** Visualiseerib märksõnade sagedust kuude, nädalate või päevade lõikes pideva graafikuna.
 - **Top kõnelejad:** Kuvab saadikud, kes on valitud märksõnu enim kasutanud.
 - **Kohaloleku ja fraktsioonide seosed:** Seob stenogrammid saadikute kohalolekukontrolli andmetega.
+- **Püsivad isikud ja püsilingid:** Kõik saadikute kõned on seotud ametlike UUID-dega (koos `ems_id` talletamise ja ministrite-saadikute lahendamisega), stabiilse `speech_key` tunnusega ning püsilingi aliastabeliga (`speech_aliases`), mis suunab toimetamata kõnede vanad Riigikogu ID-d toimetatud versiooni avalikustamisel uuele kõnele.
+- **Dünaamilised koosseisud:** Koosseisude kuupäevad ja valikud laetakse automaatselt Riigikogu ametlikust API-st koos jooksva dünaamilise uuendamisega.
+- **Andmetoru terviklikkus ja statistika verifitseerimine:** Andmetoru kontrollib igaöiselt istungite täielikkust otse Riigikogu API vastu (`verify_pipeline_integrity.py`), toetab kõnede mahu pistelist kontrolli ametliku statistikaga (`verify_statistics.py`) ja monitoorib süsteemi tervist (`/system/status`).
+- **Läbipaistev metoodika:** Kasutajaliideses on selgitatud kohaloleku, kõnede ja toimetamata tekstide arvestuse põhimõtted.
 - **Kasutajaliides:** Reageeriv React rakendus Dark / Light režiimi toega.
-- **Automaatne andmetoru:** Igaöine GitHub Actions töövoog laeb uued stenogrammid ja sünkroniseerib need Backblaze B2 pilvesalvestusega.
+- **Automaatne andmetoru:** Igaöine GitHub Actions töövoog laeb uued stenogrammid, kontrollib andmete terviklikkust ja sünkroniseerib need Backblaze B2 pilvesalvestusega.
 
 ---
 
@@ -66,6 +70,20 @@ pip install -r requirements.txt
 Käivita täielik andmebaasi ehitamise skript (laeb vajadusel B2-st andmed, lemmatiseerib tekstid paralleelselt ja loob SQLite indeksid):
 ```bash
 python scripts/build_full_database.py
+```
+
+*Märkus ajaloo uuendamise kohta:*
+Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kustuta WAL ajutised failid:
+```bash
+python scripts/download_from_b2.py --all
+DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# Kui ehitad konteineris, kasuta hoopis:
+# docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+
+docker compose stop backend
+mv database/riigikogu_new.sqlite database/riigikogu.sqlite
+rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
+docker compose start backend
 ```
 
 ### 4. FastAPI serveri käivitamine
@@ -129,8 +147,8 @@ riigikogu-stenogram-search/
 │   ├── dependabot.yml             # Dependaboti iganädalane automaatne turvaseire
 │   └── workflows/
 │       ├── ci.yml                 # Automaatne CI (Ruff, ESLint, Prettier, Pytest, Vite build)
-│       └── daily_pipeline.yml     # Igaöine andmetoru (B2 sünkroonimine ja API kraapija)
-├── config.py                      # Globaalsed seadistused ja teekonnad
+│       └── daily_pipeline.yml     # Igaöine andmetoru (B2 sünkroonimine, API kraapija, terviklikkuse kontroll)
+├── config.py                      # Globaalsed seadistused ja dünaamilised koosseisude kuupäevad
 ├── docker-compose.yml             # Multi-container Docker paigaldus
 ├── Dockerfile                     # Tootmistasemel backend Docker konteiner
 ├── pyproject.toml                 # Ruffi, pytesti ja projekti seadistused
@@ -139,10 +157,14 @@ riigikogu-stenogram-search/
 │   ├── build_full_database.py     # Paralleelne täielik andmebaasi ehitaja
 │   ├── download_all_from_b2.py    # Kõigi andmete ja olekute allalaadija B2-st
 │   ├── download_from_b2.py        # Igapäevane inkrementaalne B2 allalaadija
-│   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
-│   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo allalaadija
 │   ├── fetch_attendance.py        # Kohaloleku ja hääletuste allalaadija
-│   └── upload_to_b2.py            # Backblaze B2 uleslaadija andmetele ja olekutele
+│   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo ja isikute allalaadija
+│   ├── fetch_memberships.py       # Koosseisude (XIV, XV jne) allalaadija Riigikogu API-st
+│   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
+│   ├── sync_database.py           # SQLite andmebaasi uuendaja ja aliashaldur
+│   ├── upload_to_b2.py            # Backblaze B2 üleslaadija andmetele ja olekutele
+│   ├── verify_pipeline_integrity.py # Andmetoru terviklikkuse ja istungite kontroll Riigikogu API vastu
+│   └── verify_statistics.py       # Ametliku kõnestatistika ristkontrolli skript
 ├── src/
 │   ├── api/                       # FastAPI marsruudid ja loogika
 │   │   ├── main.py                # Rakenduse peafail ja CORS seaded
@@ -153,8 +175,8 @@ riigikogu-stenogram-search/
 │   │   ├── lemmatizer.py          # EstNLTK paralleelne lemmatiseerija
 │   │   └── term_builder.py        # Lemmade sagedusindeksi ehitaja
 │   ├── load/                      # Andmebaasimudelid ja laadimine
-│   │   ├── models.py              # SQLAlchemy mudelid
-│   │   └── loader.py              # JSONL failide laadimine SQLite baasi
+│   │   ├── models.py              # SQLAlchemy mudelid (kõned, aliased, kohalolek)
+│   │   └── loader.py              # JSONL failide laadimine SQLite baasi koos aliastabeliga
 │   └── frontend/                  # React + Vite kasutajaliides
 │       ├── eslint.config.js       # ESLint konfiguratsioon
 │       ├── package.json
@@ -163,6 +185,7 @@ riigikogu-stenogram-search/
 │           └── api.js             # API klientpäringud
 ├── tests/
 │   ├── test_api.py                # FastAPI endpointide integratsioonitestid
+│   ├── test_pipeline.py           # Andmetoru, dünaamiliste kuupäevade ja terviklikkuse testid
 │   └── test_query_parser.py       # Päringuparsija ja otsinguloogika ühiktestid
 └── HOSTING.md                     # Majutuse ja arhitektuuri juhised
 ```

@@ -8,6 +8,12 @@ REDUNDANT_INDEXES = [
     "DROP INDEX IF EXISTS idx_speech_terms_speech_id",
     "DROP INDEX IF EXISTS idx_speech_terms_speech_lemma",
     "DROP INDEX IF EXISTS idx_speeches_speaker",
+    "DROP INDEX IF EXISTS ix_speeches_speaker_uuid",
+    "DROP INDEX IF EXISTS ix_speeches_external_id",
+    "DROP INDEX IF EXISTS ix_speeches_speech_key",
+    "DROP INDEX IF EXISTS ix_speech_aliases_alias_external_id",
+    "DROP INDEX IF EXISTS ix_speech_aliases_speech_id",
+    "DROP INDEX IF EXISTS ix_persons_full_name",
 ]
 
 INDEXES = [
@@ -16,6 +22,12 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_speeches_speaker_faction ON speeches(speaker, speaker_faction)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_faction ON speeches(speaker_faction)",
     "CREATE INDEX IF NOT EXISTS idx_speeches_source_file ON speeches(source_file)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_speaker_uuid ON speeches(speaker_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_ems_id ON speeches(ems_id)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_external_id ON speeches(external_id)",
+    "CREATE INDEX IF NOT EXISTS idx_speeches_speech_key ON speeches(speech_key)",
+    "CREATE INDEX IF NOT EXISTS idx_speech_aliases_alias_id ON speech_aliases(alias_external_id)",
+    "CREATE INDEX IF NOT EXISTS idx_persons_full_name ON persons(full_name)",
 ]
 
 

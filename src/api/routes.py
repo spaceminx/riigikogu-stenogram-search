@@ -2,13 +2,15 @@ import csv
 import io
 import json
 import logging
-from datetime import date
+import os
+from datetime import date, datetime
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from sqlalchemy import text
+from sqlalchemy import func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
+from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
 from src.api.attendance import (
     get_attendance_stats,
     get_faction_attendance_stats,
@@ -24,6 +26,7 @@ from src.api.search import (
     search_by_keyword,
 )
 from src.load.database import SessionLocal
+from src.load.models import Attendance, Person, Speech, SpeechAlias
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +47,54 @@ def root():
         ) from e
     finally:
         session.close()
+
+
+@router.get("/memberships")
+def list_memberships():
+    """Return available parliamentary memberships with names and date ranges."""
+    cache_path = os.path.join(OUTPUT_DIR_PROCESSED, "memberships.json")
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    results = []
+
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, encoding="utf-8") as f:
+                data = json.load(f)
+            for k, v in data.items():
+                if isinstance(v, dict):
+                    num = v.get("number") or int(k)
+                    start = v.get("startDate")
+                    end = v.get("endDate")
+                    name = v.get("name") or f"{k}. Riigikogu"
+                    is_current = bool(start and end and start <= today_str <= end)
+                    results.append(
+                        {
+                            "id": str(k),
+                            "number": num,
+                            "name": name,
+                            "start_date": start,
+                            "end_date": end,
+                            "is_current": is_current,
+                        }
+                    )
+        except Exception as e:
+            logger.warning("Failed to load memberships cache: %s", e)
+
+    if not results:
+        for k, (start, end) in sorted(MEMBERSHIP_DATES.items(), key=lambda x: int(x[0])):
+            results.append(
+                {
+                    "id": str(k),
+                    "number": int(k),
+                    "name": f"{k}. Riigikogu",
+                    "start_date": start,
+                    "end_date": end,
+                    "is_current": start <= today_str <= end,
+                }
+            )
+
+    results.sort(key=lambda x: x["number"], reverse=True)
+    return results
 
 
 @router.get("/overview")
@@ -450,3 +501,280 @@ def search_export(
             status_code=500,
             detail="Eksport ebaõnnestus.",
         ) from e
+
+
+@router.get("/persons")
+def list_persons(
+    search: str | None = Query(None, description="Otsi nime järgi"),
+    active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+):
+    """Return parliament members with optional name search and active status filter."""
+    session = SessionLocal()
+    try:
+        query = session.query(Person)
+        if active_only:
+            query = query.filter(Person.active == 1)
+        if search:
+            search_clean = f"%{search.strip()}%"
+            query = query.filter(Person.full_name.ilike(search_clean))
+
+        total_count = query.count()
+        results = (
+            query.order_by(Person.last_name.asc(), Person.first_name.asc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+        return {
+            "total_count": total_count,
+            "count": len(results),
+            "offset": offset,
+            "limit": limit,
+            "results": [
+                {
+                    "uuid": p.uuid,
+                    "first_name": p.first_name,
+                    "last_name": p.last_name,
+                    "full_name": p.full_name,
+                    "gender": p.gender,
+                    "date_of_birth": p.date_of_birth,
+                    "email": p.email,
+                    "photo_url": p.photo_url,
+                    "electoral_district": p.electoral_district,
+                    "seniority_days": p.seniority_days,
+                    "active": bool(p.active),
+                }
+                for p in results
+            ],
+        }
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või saadikute tabel ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Persons query failed: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Saadikute päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/persons/{person_uuid}")
+def get_person(person_uuid: str):
+    """Get MP profile, parliamentary faction history and total speech count."""
+    session = SessionLocal()
+    try:
+        person = session.query(Person).filter(Person.uuid == person_uuid).first()
+        if not person:
+            raise HTTPException(status_code=404, detail="Isikut ei leitud.")
+
+        same_name_count = session.query(Person).filter(Person.full_name == person.full_name).count()
+        if same_name_count > 1:
+            speeches_count = (
+                session.query(Speech).filter(Speech.speaker_uuid == person_uuid).count()
+            )
+        else:
+            speeches_count = (
+                session.query(Speech)
+                .filter(or_(Speech.speaker_uuid == person_uuid, Speech.speaker == person.full_name))
+                .count()
+            )
+
+        person_factions_path = os.path.join(OUTPUT_DIR_PROCESSED, "person_factions.json")
+        factions_cache_path = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
+        faction_history = []
+        if os.path.exists(person_factions_path):
+            try:
+                with open(person_factions_path, encoding="utf-8") as f:
+                    pfmap = json.load(f)
+                    if person_uuid and person_uuid in pfmap:
+                        faction_history = pfmap[person_uuid]
+            except Exception:
+                pass
+
+        if not faction_history and os.path.exists(factions_cache_path):
+            try:
+                with open(factions_cache_path, encoding="utf-8") as f:
+                    fmap = json.load(f)
+                    faction_history = fmap.get(person.full_name, [])
+            except Exception:
+                pass
+
+        return {
+            "uuid": person.uuid,
+            "first_name": person.first_name,
+            "last_name": person.last_name,
+            "full_name": person.full_name,
+            "gender": person.gender,
+            "date_of_birth": person.date_of_birth,
+            "email": person.email,
+            "photo_url": person.photo_url,
+            "electoral_district": person.electoral_district,
+            "seniority_days": person.seniority_days,
+            "active": bool(person.active),
+            "speeches_count": speeches_count,
+            "factions": faction_history,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või saadikute tabel ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Person query failed for %s: %s", person_uuid, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Isiku päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/speeches/{speech_identifier}")
+def get_speech_by_id(speech_identifier: str):
+    """Get single speech by internal database ID, Riigikogu permalink external_id, historical alias, or stable speech_key."""
+    session = SessionLocal()
+    try:
+        speech = None
+        if speech_identifier.isdigit():
+            num_id = int(speech_identifier)
+            # Prioritize official Riigikogu permalink external_id and editorial aliases
+            speech = session.query(Speech).filter(Speech.external_id == num_id).first()
+            if not speech:
+                speech = (
+                    session.query(Speech)
+                    .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
+                    .filter(SpeechAlias.alias_external_id == num_id)
+                    .first()
+                )
+            if not speech:
+                speech = session.query(Speech).filter(Speech.id == num_id).first()
+
+        if not speech:
+            speech = session.query(Speech).filter(Speech.speech_key == speech_identifier).first()
+            if not speech:
+                speech = (
+                    session.query(Speech)
+                    .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
+                    .filter(SpeechAlias.alias_speech_key == speech_identifier)
+                    .first()
+                )
+
+        if not speech:
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
+
+        return {
+            "id": speech.id,
+            "external_id": speech.external_id,
+            "speech_key": speech.speech_key,
+            "speaker_uuid": speech.speaker_uuid,
+            "ems_id": speech.ems_id,
+            "speaker": speech.speaker,
+            "speaker_role": speech.speaker_role,
+            "speaker_faction": speech.speaker_faction,
+            "speech_type": speech.speech_type,
+            "start_time": speech.start_time,
+            "end_time": speech.end_time,
+            "duration_seconds": speech.duration_seconds,
+            "date": speech.date,
+            "time": speech.time,
+            "source_file": speech.source_file,
+            "source_url": speech.source_url,
+            "agenda_title": speech.agenda_title,
+            "video_url": speech.video_url,
+            "status": speech.status,
+            "text": speech.text,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Speech query failed for %s: %s", speech_identifier, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Kõne päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/system/status")
+def system_status():
+    """Return archive sync status, latest session date, and methodology metadata."""
+    session = SessionLocal()
+    try:
+        latest_date = session.query(func.max(Speech.date)).scalar()
+        total_sessions = session.query(func.count(func.distinct(Speech.source_file))).scalar() or 0
+        total_speeches = session.query(func.count(Speech.id)).scalar() or 0
+        total_persons = session.query(func.count(Person.uuid)).scalar() or 0
+        total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
+
+        latest_session = (
+            session.query(Speech.source_file).order_by(Speech.date.desc(), Speech.id.desc()).first()
+        )
+        latest_session_file = latest_session[0] if latest_session else None
+
+        days_since_latest = None
+        warning = None
+        if latest_date:
+            try:
+                latest_dt = datetime.strptime(latest_date, "%Y-%m-%d").date()
+                days_since_latest = (date.today() - latest_dt).days
+                if days_since_latest > 4:
+                    warning = (
+                        f"Viimane istung toimus {days_since_latest} päeva tagasi ({latest_date}). "
+                        "Istungijärgu ajal võib see viidata andmeallika viivitusele."
+                    )
+            except ValueError:
+                pass
+
+        return {
+            "status": "ok",
+            "data_as_of": latest_date,
+            "days_since_latest_session": days_since_latest,
+            "latest_session": latest_session_file,
+            "total_sessions": total_sessions,
+            "total_speeches": total_speeches,
+            "total_persons": total_persons,
+            "warning": warning,
+            "totals": {
+                "sessions": total_sessions,
+                "speeches": total_speeches,
+                "persons": total_persons,
+                "attendance_records": total_attendance,
+            },
+            "methodology": {
+                "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
+                "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
+                "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
+                "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
+                "sources": [
+                    "Riigikogu avatud API (api.riigikogu.ee)",
+                    "Riigikogu stenogrammide portaal (stenogrammid.riigikogu.ee)",
+                ],
+            },
+        }
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või süsteemitabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("System status query failed: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Süsteemi oleku päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
