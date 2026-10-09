@@ -1,12 +1,12 @@
 import argparse
 import os
 import sys
-from datetime import datetime
 from pathlib import Path
 
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import config
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
 
 try:
@@ -39,14 +39,14 @@ def download_from_b2(
     active_year: str | None = None,
     include_all_history: bool = False,
 ) -> bool:
-    """Download daily active datasets (current year, attendance, metadata) from Backblaze B2.
+    """Download daily active datasets (active year window, attendance, metadata) from Backblaze B2.
 
     By default, only active/frequently updated files are downloaded:
-    - Current year transcripts ({active_year}.jsonl)
+    - Active year transcripts (current year and recent unedited window from previous year)
     - Attendance records (attendance.jsonl)
     - Metadata and sync state files (*.json)
 
-    Historical years (2019-{active_year-1}) are static and not re-downloaded
+    Historical years outside the active window are static and not re-downloaded
     daily to stay safely within Backblaze B2's daily free bandwidth tier (1 GB/day).
     Pass include_all_history=True (or CLI flag --all) to download all historical files.
     """
@@ -62,12 +62,7 @@ def download_from_b2(
 
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
-    now = datetime.now()
-    curr_y = str(now.year) if active_year is None else str(active_year)
-    active_years = {curr_y}
-    # In January, also include previous year in case late December sessions were finalized
-    if active_year is None and now.month == 1:
-        active_years.add(str(now.year - 1))
+    active_years = {str(active_year)} if active_year is not None else set(config.active_years())
 
     print("Connecting to Backblaze B2...")
 

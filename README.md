@@ -73,7 +73,7 @@ python scripts/build_full_database.py
 ```
 
 *Note on historical data updates:*
-The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and remove WAL temporary files:
+The daily database sync (`sync_database.py`) running on the server only downloads data for active years from B2 (the current year, plus the previous year as long as it falls within the 60-day window until around March 1st) and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and check for WAL temporary files:
 ```bash
 python scripts/download_from_b2.py --all
 

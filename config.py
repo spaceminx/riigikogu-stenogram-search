@@ -1,5 +1,15 @@
 import json
 import os
+from datetime import datetime, timedelta
+
+UNEDITED_REFETCH_DAYS = 60
+
+
+def active_years(now: datetime | None = None) -> list[str]:
+    """Jooksev aasta ja aasta, kuhu jääb kuupäev UNEDITED_REFETCH_DAYS päeva tagasi."""
+    now = now or datetime.now()
+    return sorted({str(now.year), str((now - timedelta(days=UNEDITED_REFETCH_DAYS)).year)})
+
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 

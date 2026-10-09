@@ -14,7 +14,7 @@ import requests
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import OUTPUT_DIR_PROCESSED, START_DATE
+from config import OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
 from src.transform.lemmatizer import lemmatize_text
 
 IGNORED_SPEECH_TYPES = {
@@ -593,7 +593,9 @@ def fetch_and_process_stenograms(
     unedited_sessions: dict[str, dict] = {}
     total_existing_records = 0
     latest_existing_date = None
-    cutoff_60d = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
+    unedited_refetch_cutoff = (datetime.now() - timedelta(days=UNEDITED_REFETCH_DAYS)).strftime(
+        "%Y-%m-%d"
+    )
 
     for jsonl_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.jsonl")):
         if os.path.basename(jsonl_path) == "attendance.jsonl":
@@ -626,7 +628,7 @@ def fetch_and_process_stenograms(
 
                         status = record.get("status")
                         if status == "UNEDITED" or (
-                            status is None and rec_date and rec_date >= cutoff_60d
+                            status is None and rec_date and rec_date >= unedited_refetch_cutoff
                         ):
                             if src_file:
                                 unedited_source_files.add(src_file)
@@ -807,9 +809,9 @@ def fetch_and_process_stenograms(
             if date_str:
                 try:
                     session_dt = datetime.strptime(date_str, "%Y-%m-%d")
-                    if datetime.now() - session_dt > timedelta(days=60):
+                    if datetime.now() - session_dt > timedelta(days=UNEDITED_REFETCH_DAYS):
                         print(
-                            f"Notice: Session {meeting_code} ({date_str}) is over 60 days old and still UNEDITED in API. Skipping."
+                            f"Notice: Session {meeting_code} ({date_str}) is over {UNEDITED_REFETCH_DAYS} days old and still UNEDITED in API. Skipping."
                         )
                         continue
                 except ValueError:
