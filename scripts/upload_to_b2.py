@@ -143,6 +143,32 @@ def upload_to_b2(
             print(f"Uploading file to cloud: {local_path} -> {bucket_name}/{remote_key} ...")
             s3.upload_file(local_path, bucket_name, remote_key)
             uploaded_count += 1
+
+            # Fetch fresh ETag after upload and atomically update .b2_etags.json
+            try:
+                new_head = s3.head_object(Bucket=bucket_name, Key=remote_key)
+                new_etag = new_head.get("ETag", "").strip('"')
+                if new_etag:
+                    etags_file = os.path.join(OUTPUT_DIR_PROCESSED, ".b2_etags.json")
+                    current_etags = {}
+                    if os.path.exists(etags_file):
+                        try:
+                            with open(etags_file, encoding="utf-8") as f:
+                                current_etags = json.load(f)
+                        except Exception:
+                            pass
+                    current_etags[remote_key] = new_etag
+                    base_name = os.path.basename(local_path)
+                    current_etags[base_name] = new_etag
+                    if expected_etags is not None:
+                        expected_etags[remote_key] = new_etag
+                        expected_etags[base_name] = new_etag
+                    tmp_etags_file = f"{etags_file}.tmp"
+                    with open(tmp_etags_file, "w", encoding="utf-8") as f:
+                        json.dump(current_etags, f, indent=2)
+                    os.replace(tmp_etags_file, etags_file)
+            except Exception as e:
+                print(f"Notice: Could not refresh post-upload ETag for {remote_key}: {e}")
         except Exception as e:
             print(f"Error uploading {local_path} to B2: {e}")
             failed_count += 1

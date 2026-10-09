@@ -96,26 +96,29 @@ docker compose start backend
 
 ### 4. Ajaloo tagasitäitmine (`backfill_history.py`)
 Varasemate istungite (2019–2026) rikaste metaandmete (`external_id`, `ems_id`, `speech_type`, `start_time`, `end_time`, `duration_seconds`) tagasitäitmiseks:
-1. Laadi B2-st kõik ajaloolised failid alla eraldi kausta:
+1. Laadi B2-st kõik ajaloolised failid alla:
    ```bash
    python scripts/download_from_b2.py --all
    ```
-2. Käivita testkäivitus aruande vaatamiseks:
+2. Käivita testkäivitus ühe aasta kohta aruande vaatamiseks:
    ```bash
-   python scripts/backfill_history.py --dry-run
+   python scripts/backfill_history.py --year 2021 --dry-run
    ```
-3. Käivita päriselt tagasitäitmine (valikuliselt ühe aasta kaupa):
+3. Käivita päriselt tagasitäitmine aasta kaupa koos `--upload`-iga või eraldi `--upload-only --year YYYY`:
    ```bash
-   python scripts/backfill_history.py --year 2019
+   python scripts/backfill_history.py --year 2021 --upload
+   # või eraldi sammudena:
+   # python scripts/backfill_history.py --year 2021
+   # python scripts/backfill_history.py --upload-only --year 2021
    ```
-4. Laadi tulemused üles Backblaze B2-sse (koos samaaegsuse ja ETag kontrolliga):
-   ```bash
-   python scripts/backfill_history.py --upload
-   ```
-5. Serveris: andmebaasi uuesti ehitamine:
-   ```bash
-   python scripts/sync_database.py --rebuild
-   ```
+4. Serveris: ehita andmebaas uuesti, järgides eespool toodud juhist jaotises "Märkus ajaloo uuendamise kohta" (uus fail `DATABASE_URL`-iga konteineris, `docker compose stop backend`, WAL-faili kontroll, `mv`, `docker compose start backend`).
+
+> [!NOTE]
+> Vaikimisi lõppkuupäev (täna miinus `UNEDITED_REFETCH_DAYS`) jätab vahele hiljuti toimetatud istungid, mida vana kood juba toimetatuna salvestas (näiteks september 2026). Neid ei uuenda ka igapäevane andmetoru. Nende uuendamiseks käivita eraldi:
+> ```bash
+> python scripts/backfill_history.py --start-date 2026-09-01 --end-date <täna> --upload
+> ```
+> Jooksva aasta faili kaitseb B2-s samaaegsuse ja ETag-i kontroll.
 
 ### 5. FastAPI serveri käivitamine
 ```bash

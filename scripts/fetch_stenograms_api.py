@@ -350,9 +350,11 @@ def compute_duration_seconds(start_time_str: str | None, end_time_str: str | Non
         return None
 
 
-def load_persons_metadata() -> tuple[set[str], dict[str, str], dict[str, str]]:
+def load_persons_metadata(
+    processed_dir: str = OUTPUT_DIR_PROCESSED,
+) -> tuple[set[str], dict[str, str], dict[str, str]]:
     """Load known MP UUIDs, unambiguous full_name -> uuid mapping, and uuid -> full_name mapping from persons.json."""
-    p_path = os.path.join(OUTPUT_DIR_PROCESSED, "persons.json")
+    p_path = os.path.join(processed_dir, "persons.json")
     if not os.path.exists(p_path):
         return set(), {}, {}
     try:
@@ -378,9 +380,9 @@ def load_persons_metadata() -> tuple[set[str], dict[str, str], dict[str, str]]:
         return set(), {}, {}
 
 
-def load_persons_name_map() -> dict[str, str]:
+def load_persons_name_map(processed_dir: str = OUTPUT_DIR_PROCESSED) -> dict[str, str]:
     """Compatibility wrapper returning name -> uuid map."""
-    _, name_map, _ = load_persons_metadata()
+    _, name_map, _ = load_persons_metadata(processed_dir=processed_dir)
     return name_map
 
 

@@ -162,6 +162,43 @@ def fetch_month_verbatims(
     return None
 
 
+def run_upload_only(
+    year: str | int | None = None,
+    processed_dir: str = OUTPUT_DIR_PROCESSED,
+) -> bool:
+    """Upload specified year or backfilled years to B2 without fetching or modifying data."""
+    files_to_upload: list[str] = []
+
+    if year:
+        files_to_upload.append(f"{year}.jsonl")
+    else:
+        report_file = os.path.join(processed_dir, "backfill_report.json")
+        if os.path.exists(report_file):
+            try:
+                with open(report_file, encoding="utf-8") as f:
+                    rep_data = json.load(f)
+                for y_key, y_val in rep_data.items():
+                    if isinstance(y_val, dict) and (
+                        y_val.get("replaced", 0) > 0 or y_val.get("added", 0) > 0
+                    ):
+                        files_to_upload.append(f"{y_key}.jsonl")
+            except Exception as e:
+                print(f"Error reading backfill report {report_file}: {e}")
+
+    if not files_to_upload:
+        print(
+            "ERROR: No files to upload found. Specify --year or ensure backfill_report.json has modified years."
+        )
+        return False
+
+    print(f"Uploading files to B2 (upload-only): {files_to_upload}")
+    success = upload_to_b2(only_files=files_to_upload)
+    if not success:
+        print("ERROR: B2 upload failed or was rejected.")
+        return False
+    return True
+
+
 def run_backfill(
     start_date: str | None = None,
     end_date: str | None = None,
@@ -170,10 +207,49 @@ def run_backfill(
     limit: int | None = None,
     sleep_delay: float = 2.0,
     upload: bool = False,
+    upload_only: bool = False,
     report_file: str | None = None,
     processed_dir: str = OUTPUT_DIR_PROCESSED,
+    year_speeches_dict: dict[str, list[dict]] | None = None,
 ) -> dict[str, Any]:
     """Execute the history backfill pipeline."""
+    if upload_only:
+        ok = run_upload_only(year=year, processed_dir=processed_dir)
+        if not ok:
+            raise RuntimeError("No files found to upload in upload-only mode or upload failed.")
+        return {}
+
+    # Mandatory metadata check before any network or processing activity
+    factions_file = os.path.join(processed_dir, "factions_map.json")
+    persons_file = os.path.join(processed_dir, "persons.json")
+
+    if not os.path.isfile(factions_file):
+        raise RuntimeError(f"Missing required metadata file: {factions_file}")
+    if not os.path.isfile(persons_file):
+        raise RuntimeError(f"Missing required metadata file: {persons_file}")
+
+    try:
+        with open(factions_file, encoding="utf-8") as f:
+            faction_map = json.load(f)
+    except Exception as e:
+        raise RuntimeError(f"Could not read metadata file {factions_file}: {e}") from e
+
+    if not isinstance(faction_map, dict) or not faction_map:
+        raise RuntimeError(f"Metadata file {factions_file} is empty or invalid.")
+
+    try:
+        with open(persons_file, encoding="utf-8") as f:
+            persons_list = json.load(f)
+    except Exception as e:
+        raise RuntimeError(f"Could not read metadata file {persons_file}: {e}") from e
+
+    if not isinstance(persons_list, list) or not persons_list:
+        raise RuntimeError(f"Metadata file {persons_file} is empty or invalid.")
+
+    known_person_uuids, person_name_map, uuid_to_name_map = load_persons_metadata(
+        processed_dir=processed_dir
+    )
+
     # Resolve dates
     effective_start = start_date
     if not effective_start:
@@ -193,23 +269,15 @@ def run_backfill(
     state_file = os.path.join(processed_dir, "backfill_state.json")
     processed_meeting_codes = load_backfill_state(state_file)
 
-    # Load metadata
-    factions_file = os.path.join(processed_dir, "factions_map.json")
-    if os.path.exists(factions_file):
-        with open(factions_file, encoding="utf-8") as f:
-            faction_map = json.load(f)
-    else:
-        faction_map = {}
-
-    known_person_uuids, person_name_map, uuid_to_name_map = load_persons_metadata()
-
     date_ranges = get_month_ranges(effective_start, effective_end)
     if year:
         date_ranges = [
             (s, e) for s, e in date_ranges if s.startswith(str(year)) or e.startswith(str(year))
         ]
 
-    year_speeches: dict[str, list[dict]] = {}
+    year_speeches: dict[str, list[dict]] = (
+        year_speeches_dict if year_speeches_dict is not None else {}
+    )
     year_speeches_by_source: dict[str, dict[str, list[dict]]] = {}
     year_lemma_caches: dict[str, dict[str, str]] = {}
     stats: dict[str, dict[str, Any]] = defaultdict(
@@ -221,10 +289,44 @@ def run_backfill(
             "suspicious": 0,
             "suspicious_sessions": [],
             "speeches_before": 0,
+            "speeches_after": 0,
+            "external_id_count": 0,
+            "speaker_uuid_count": 0,
         }
     )
     modified_years: set[str] = set()
     total_processed_meetings = 0
+    pending_month_updates: dict[str, dict[str, list[dict]]] = defaultdict(dict)
+    current_year: str | None = None
+
+    def finalize_year(y: str) -> None:
+        """Apply pending changes, record final stats, write to disk, and evict data from memory."""
+        if y not in year_speeches:
+            return
+
+        if y in pending_month_updates and pending_month_updates[y]:
+            for src_key, new_sp_list in pending_month_updates[y].items():
+                year_speeches[y] = replace_or_append_session(year_speeches[y], src_key, new_sp_list)
+                for sp in new_sp_list:
+                    t = sp.get("text")
+                    tl = sp.get("text_lemmas")
+                    if t and tl:
+                        year_lemma_caches[y][t] = tl
+            if not dry_run:
+                write_year_file_atomic(y, year_speeches[y], processed_dir)
+                modified_years.add(y)
+            pending_month_updates.pop(y, None)
+
+        sp_list = year_speeches[y]
+        stats[y]["speeches_after"] = len(sp_list)
+        stats[y]["external_id_count"] = sum(1 for s in sp_list if s.get("external_id") is not None)
+        stats[y]["speaker_uuid_count"] = sum(
+            1 for s in sp_list if s.get("speaker_uuid") is not None
+        )
+
+        year_speeches.pop(y, None)
+        year_speeches_by_source.pop(y, None)
+        year_lemma_caches.pop(y, None)
 
     print(
         f"Starting history backfill from {effective_start} to {effective_end} "
@@ -235,12 +337,15 @@ def run_backfill(
         if limit is not None and total_processed_meetings >= limit:
             break
 
+        m_year = m_start.split("-")[0]
+        if current_year is not None and m_year != current_year:
+            finalize_year(current_year)
+        current_year = m_year
+
         print(f"Checking verbatims for {m_start} .. {m_end}")
         verbatims = fetch_month_verbatims(m_start, m_end)
         if not verbatims:
             continue
-
-        pending_month_updates: dict[str, dict[str, list[dict]]] = defaultdict(dict)
 
         for verbatim in verbatims:
             if limit is not None and total_processed_meetings >= limit:
@@ -272,6 +377,13 @@ def run_backfill(
                 year_speeches_by_source[v_year] = by_src
                 year_lemma_caches[v_year] = l_cache
                 stats[v_year]["speeches_before"] = len(all_sp)
+                stats[v_year]["speeches_after"] = len(all_sp)
+                stats[v_year]["external_id_count"] = sum(
+                    1 for s in all_sp if s.get("external_id") is not None
+                )
+                stats[v_year]["speaker_uuid_count"] = sum(
+                    1 for s in all_sp if s.get("speaker_uuid") is not None
+                )
 
             time_formatted = "0000"
             if verbatim_link and len(verbatim_link) >= 4:
@@ -291,7 +403,7 @@ def run_backfill(
                 )
                 stats[v_year]["skipped_no_rich"] += 1
                 stats[v_year]["processed"] += 1
-                processed_meeting_codes.add(meeting_code)
+                # Transient error: do not add to processed_meeting_codes so it will be retried
                 total_processed_meetings += 1
                 continue
 
@@ -341,41 +453,49 @@ def run_backfill(
                 total_processed_meetings += 1
 
         # Apply monthly batch updates
-        for upd_year, upd_sessions in pending_month_updates.items():
-            for src_key, new_sp_list in upd_sessions.items():
-                year_speeches[upd_year] = replace_or_append_session(
-                    year_speeches[upd_year], src_key, new_sp_list
-                )
-                year_speeches_by_source[upd_year][src_key] = new_sp_list
-                for sp in new_sp_list:
-                    t = sp.get("text")
-                    tl = sp.get("text_lemmas")
-                    if t and tl:
-                        year_lemma_caches[upd_year][t] = tl
+        for upd_year, upd_sessions in list(pending_month_updates.items()):
+            if upd_year in year_speeches:
+                for src_key, new_sp_list in upd_sessions.items():
+                    year_speeches[upd_year] = replace_or_append_session(
+                        year_speeches[upd_year], src_key, new_sp_list
+                    )
+                    year_speeches_by_source[upd_year][src_key] = new_sp_list
+                    for sp in new_sp_list:
+                        t = sp.get("text")
+                        tl = sp.get("text_lemmas")
+                        if t and tl:
+                            year_lemma_caches[upd_year][t] = tl
 
-            if not dry_run:
-                write_year_file_atomic(upd_year, year_speeches[upd_year], processed_dir)
-                modified_years.add(upd_year)
+                if not dry_run:
+                    write_year_file_atomic(upd_year, year_speeches[upd_year], processed_dir)
+                    modified_years.add(upd_year)
 
-        if not dry_run and pending_month_updates:
+        if not dry_run and processed_meeting_codes:
             save_backfill_state(state_file, processed_meeting_codes)
+
+        pending_month_updates.clear()
+
+    # Finalize any remaining open year in memory
+    if current_year is not None:
+        finalize_year(current_year)
+    for remaining_y in list(year_speeches.keys()):
+        finalize_year(remaining_y)
 
     # Compile final report
     report: dict[str, Any] = {}
-    all_known_years = sorted(set(stats.keys()) | set(year_speeches.keys()))
-    for y in all_known_years:
-        sp_list = year_speeches.get(y, [])
+    for y in sorted(stats.keys()):
+        y_stats = stats[y]
         report[y] = {
-            "processed": stats[y]["processed"],
-            "replaced": stats[y]["replaced"],
-            "added": stats[y]["added"],
-            "skipped_no_rich": stats[y]["skipped_no_rich"],
-            "suspicious": stats[y]["suspicious"],
-            "suspicious_sessions": stats[y]["suspicious_sessions"],
-            "speeches_before": stats[y]["speeches_before"],
-            "speeches_after": len(sp_list),
-            "external_id_count": sum(1 for s in sp_list if s.get("external_id") is not None),
-            "speaker_uuid_count": sum(1 for s in sp_list if s.get("speaker_uuid") is not None),
+            "processed": y_stats["processed"],
+            "replaced": y_stats["replaced"],
+            "added": y_stats["added"],
+            "skipped_no_rich": y_stats["skipped_no_rich"],
+            "suspicious": y_stats["suspicious"],
+            "suspicious_sessions": y_stats["suspicious_sessions"],
+            "speeches_before": y_stats["speeches_before"],
+            "speeches_after": y_stats.get("speeches_after", y_stats["speeches_before"]),
+            "external_id_count": y_stats.get("external_id_count", 0),
+            "speaker_uuid_count": y_stats.get("speaker_uuid_count", 0),
         }
 
     # Print summary report
@@ -476,11 +596,19 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Upload modified year files to Backblaze B2.",
     )
+    parser.add_argument(
+        "--upload-only",
+        action="store_true",
+        help="Only upload modified files to Backblaze B2 without fetching or modifying transcripts.",
+    )
     return parser.parse_args(args)
 
 
 if __name__ == "__main__":
     cli_args = parse_args()
+    if cli_args.upload_only:
+        ok = run_upload_only(year=cli_args.year)
+        sys.exit(0 if ok else 1)
     try:
         run_backfill(
             start_date=cli_args.start_date,
@@ -490,6 +618,7 @@ if __name__ == "__main__":
             limit=cli_args.limit,
             sleep_delay=cli_args.sleep,
             upload=cli_args.upload,
+            upload_only=cli_args.upload_only,
         )
     except Exception as exc:
         print(f"Error during backfill: {exc}")

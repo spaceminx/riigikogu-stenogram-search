@@ -96,26 +96,29 @@ docker compose start backend
 
 ### 4. Historical Data Backfill (`backfill_history.py`)
 To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`, `end_time`, `duration_seconds`) for historical sessions (2019–2026):
-1. Download all historical dataset files from B2 to a separate folder or workspace:
+1. Download all historical dataset files from B2:
    ```bash
    python scripts/download_from_b2.py --all
    ```
-2. Run a dry run to inspect the changes and summary report:
+2. Run a dry run for a specific year to inspect changes and the summary report:
    ```bash
-   python scripts/backfill_history.py --dry-run
+   python scripts/backfill_history.py --year 2021 --dry-run
    ```
-3. Run the backfill (optionally restricted to a single year):
+3. Run the backfill year by year with `--upload`, or run backfill first and upload separately:
    ```bash
-   python scripts/backfill_history.py --year 2019
+   python scripts/backfill_history.py --year 2021 --upload
+   # or run backfill first, then upload separately:
+   # python scripts/backfill_history.py --year 2021
+   # python scripts/backfill_history.py --upload-only --year 2021
    ```
-4. Upload modified yearly dataset files to Backblaze B2 (with concurrency and ETag conflict protection):
-   ```bash
-   python scripts/backfill_history.py --upload
-   ```
-5. On the server: rebuild the database using:
-   ```bash
-   python scripts/sync_database.py --rebuild
-   ```
+4. On the server: rebuild the database following the instructions above under "Building the Initial Database / Updating History" (build new file with `DATABASE_URL` in container, `docker compose stop backend`, verify WAL, `mv`, `docker compose start backend`).
+
+> [!NOTE]
+> The default end date (today minus `UNEDITED_REFETCH_DAYS`) skips recently edited sessions that old code already saved as edited (e.g. September 2026). The daily pipeline will also not touch them. To backfill these recent sessions, run explicitly:
+> ```bash
+> python scripts/backfill_history.py --start-date 2026-09-01 --end-date <today> --upload
+> ```
+> The current year dataset file in B2 is protected against concurrency conflicts by ETag validation.
 
 ### 5. Start the FastAPI Backend Server
 ```bash
