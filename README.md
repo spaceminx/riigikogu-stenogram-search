@@ -21,7 +21,7 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 - **Activity Over Time:** Visualizes keyword mentions by month, week, or day with continuous timeline smoothing.
 - **Top Speakers:** Identifies members of parliament who speak most about given topics.
 - **Attendance & Voting Stats:** Cross-references transcripts with MP attendance records.
-- **Persistent MP UUIDs & Permalinks:** Speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that resolve historical IDs after transcripts are officially edited.
+- **Persistent MP UUIDs & Permalinks:** All MP speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that resolve historical IDs after transcripts are officially edited.
 - **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API with dynamic runtime reloading.
 - **Pipeline Integrity & Statistics Verification:** Nightly pipeline verifies transcripts directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), supports on-demand cross-checks against official statistics (`verify_statistics.py`), and reports health via `/system/status`.
 - **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
@@ -73,10 +73,12 @@ python scripts/build_full_database.py
 ```
 
 *Note on historical data updates:*
-The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, you must trigger a full download and rebuild on the server:
+The daily database sync (`sync_database.py`) running on the server only downloads the current active year's data from B2 and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, replace the old one, and restart the API (since aliases are safely stored in JSONL files, no permalinks are lost):
 ```bash
 python scripts/download_from_b2.py --all
-python scripts/build_full_database.py
+DATABASE_PATH=data/new_stenograms.sqlite python scripts/build_full_database.py
+mv data/new_stenograms.sqlite data/stenogrammid.sqlite
+# Then restart the API process
 ```
 
 ### 4. Start the FastAPI Backend Server

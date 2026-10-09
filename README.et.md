@@ -21,7 +21,7 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 - **Aktiivsus ajas:** Visualiseerib märksõnade sagedust kuude, nädalate või päevade lõikes pideva graafikuna.
 - **Top kõnelejad:** Kuvab saadikud, kes on valitud märksõnu enim kasutanud.
 - **Kohaloleku ja fraktsioonide seosed:** Seob stenogrammid saadikute kohalolekukontrolli andmetega.
-- **Püsivad isikud ja püsilingid:** Kõik kõned on seotud saadikute ametlike UUID-dega (koos `ems_id` talletamise ja ministrite-saadikute lahendamisega), stabiilse `speech_key` tunnusega ning püsilingi aliastabeliga (`speech_aliases`), mis suunab toimetamata kõnede vanad Riigikogu ID-d toimetatud versiooni avalikustamisel uuele kõnele.
+- **Püsivad isikud ja püsilingid:** Kõik saadikute kõned on seotud ametlike UUID-dega (koos `ems_id` talletamise ja ministrite-saadikute lahendamisega), stabiilse `speech_key` tunnusega ning püsilingi aliastabeliga (`speech_aliases`), mis suunab toimetamata kõnede vanad Riigikogu ID-d toimetatud versiooni avalikustamisel uuele kõnele.
 - **Dünaamilised koosseisud:** Koosseisude kuupäevad ja valikud laetakse automaatselt Riigikogu ametlikust API-st koos jooksva dünaamilise uuendamisega.
 - **Andmetoru terviklikkus ja statistika verifitseerimine:** Andmetoru kontrollib igaöiselt istungite täielikkust otse Riigikogu API vastu (`verify_pipeline_integrity.py`), toetab kõnede mahu pistelist kontrolli ametliku statistikaga (`verify_statistics.py`) ja monitoorib süsteemi tervist (`/system/status`).
 - **Läbipaistev metoodika:** Kasutajaliideses on selgitatud kohaloleku, kõnede ja toimetamata tekstide arvestuse põhimõtted.
@@ -73,10 +73,12 @@ python scripts/build_full_database.py
 ```
 
 *Märkus ajaloo uuendamise kohta:*
-Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel), tuleb serveris käivitada täielik allalaadimine ja andmebaasi ümberehitus:
+Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivse aasta andmed ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, vaheta see vana vastu välja ja taaskäivita API (kuna aliased on salvestatud JSONL failidesse, ei lähe püsilingid uue andmebaasi ehitamisel kaduma):
 ```bash
 python scripts/download_from_b2.py --all
-python scripts/build_full_database.py
+DATABASE_PATH=data/uus_stenogrammid.sqlite python scripts/build_full_database.py
+mv data/uus_stenogrammid.sqlite data/stenogrammid.sqlite
+# Seejärel taaskäivita serveri protsess
 ```
 
 ### 4. FastAPI serveri käivitamine

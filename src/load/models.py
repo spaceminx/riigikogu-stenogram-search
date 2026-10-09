@@ -36,7 +36,7 @@ class SpeechAlias(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     alias_external_id = Column(Integer, index=True, nullable=True)
     alias_speech_key = Column(Text, index=True, nullable=True)
-    speech_id = Column(Integer, ForeignKey("speeches.id", ondelete="CASCADE"), nullable=False)
+    speech_id = Column(Integer, ForeignKey("speeches.id"), nullable=False)
 
 
 class Person(Base):

@@ -211,6 +211,8 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
                 new_lines.append(line)
 
         # Bind previous aliases to preserve permalinks across edits
+        new_speeches_by_ext_id = {sp["external_id"]: sp for sp in speeches if sp.get("external_id")}
+
         for old_sp in old_speeches:
             old_ext = old_sp.get("external_id")
             old_key = old_sp.get("speech_key")
@@ -218,68 +220,68 @@ def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[di
                 continue
 
             best_match = None
-            best_score = -1
+            if old_ext in new_speeches_by_ext_id:
+                best_match = new_speeches_by_ext_id[old_ext]
+            else:
+                best_score = -1
 
-            old_time_str = old_sp.get("start_time")
-            old_time = None
-            if old_time_str:
-                try:
-                    old_time = datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
-                except Exception:
-                    pass
-
-            old_text = old_sp.get("text", "")
-            old_speaker = old_sp.get("speaker")
-
-            for new_sp in speeches:
-                # Fast path: identical external_id means it's the exact same speech
-                if old_ext and new_sp.get("external_id") == old_ext:
-                    best_match = new_sp
-                    break
-
-                if new_sp.get("speaker") != old_speaker:
-                    continue
-
-                new_time_str = new_sp.get("start_time")
-                new_time = None
-                if new_time_str:
+                old_time_str = old_sp.get("start_time")
+                old_time = None
+                if old_time_str:
                     try:
-                        new_time = datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
+                        old_time = datetime.fromisoformat(old_time_str.replace("Z", "+00:00"))
                     except Exception:
                         pass
 
-                time_diff = None
-                if old_time and new_time:
-                    time_diff = abs((new_time - old_time).total_seconds())
+                old_text = old_sp.get("text", "")
+                old_speaker = old_sp.get("speaker")
 
-                sim = 0.0
-                new_text = new_sp.get("text", "")
-                if old_text and new_text:
-                    if old_text in new_text:
-                        sim = 1.0
+                for new_sp in speeches:
+                    if new_sp.get("speaker") != old_speaker:
+                        continue
+
+                    new_time_str = new_sp.get("start_time")
+                    new_time = None
+                    if new_time_str:
+                        try:
+                            new_time = datetime.fromisoformat(new_time_str.replace("Z", "+00:00"))
+                        except Exception:
+                            pass
+
+                    time_diff = None
+                    if old_time and new_time:
+                        time_diff = abs((new_time - old_time).total_seconds())
+
+                    sim = 0.0
+                    new_text = new_sp.get("text", "")
+                    if old_text and new_text:
+                        if old_text in new_text:
+                            sim = 1.0
+                        else:
+                            q_ratio = difflib.SequenceMatcher(
+                                None, old_text, new_text
+                            ).quick_ratio()
+                            if (time_diff is not None and time_diff <= 120) or q_ratio >= 0.8:
+                                sim = difflib.SequenceMatcher(
+                                    None, old_text, new_text, autojunk=False
+                                ).ratio()
+
+                    # Matching rule: must have text overlap. Time alone is not enough.
+                    score = 0
+                    is_match = False
+
+                    if time_diff is not None and time_diff <= 60:
+                        if sim >= 0.5:
+                            is_match = True
+                            score = sim * 100 + (60 - time_diff)
                     else:
-                        q_ratio = difflib.SequenceMatcher(None, old_text, new_text).quick_ratio()
-                        if (time_diff is not None and time_diff <= 120) or q_ratio >= 0.8:
-                            sim = difflib.SequenceMatcher(
-                                None, old_text, new_text, autojunk=False
-                            ).ratio()
+                        if sim >= 0.8:
+                            is_match = True
+                            score = sim * 100
 
-                # Matching rule: must have text overlap. Time alone is not enough.
-                score = 0
-                is_match = False
-
-                if time_diff is not None and time_diff <= 60:
-                    if sim >= 0.5:
-                        is_match = True
-                        score = sim * 100 + (60 - time_diff)
-                else:
-                    if sim >= 0.8:
-                        is_match = True
-                        score = sim * 100
-
-                if is_match and score > best_score:
-                    best_score = score
-                    best_match = new_sp
+                    if is_match and score > best_score:
+                        best_score = score
+                        best_match = new_sp
 
             if best_match:
                 if "previous_external_ids" not in best_match:
