@@ -593,7 +593,9 @@ def fetch_and_process_stenograms(
     unedited_sessions: dict[str, dict] = {}
     total_existing_records = 0
     latest_existing_date = None
-    cutoff_60d = (datetime.now() - timedelta(days=UNEDITED_REFETCH_DAYS)).strftime("%Y-%m-%d")
+    unedited_refetch_cutoff = (datetime.now() - timedelta(days=UNEDITED_REFETCH_DAYS)).strftime(
+        "%Y-%m-%d"
+    )
 
     for jsonl_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.jsonl")):
         if os.path.basename(jsonl_path) == "attendance.jsonl":
@@ -626,7 +628,7 @@ def fetch_and_process_stenograms(
 
                         status = record.get("status")
                         if status == "UNEDITED" or (
-                            status is None and rec_date and rec_date >= cutoff_60d
+                            status is None and rec_date and rec_date >= unedited_refetch_cutoff
                         ):
                             if src_file:
                                 unedited_source_files.add(src_file)
