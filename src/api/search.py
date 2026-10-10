@@ -156,12 +156,22 @@ def build_matching_conditions(session, groups: list[list[str]]) -> list:
     return matching_conditions
 
 
+CHAIR_ROLES = ("Esimees", "Aseesimees")
+SPEECH_TYPE_CATEGORIES = {
+    "speeches": ["SPEECH", "SPEECH_CONTINUE"],
+    "questions": ["SMALL_SPEECH"],
+    "procedural": ["PROCEDURAL"],
+}
+
+
 def build_speech_filters(
     membership: str = "all",
     faction: str | None = None,
     speaker: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    exclude_chair: bool = False,
+    speech_category: str | None = None,
 ) -> list:
     """Build list of SQLAlchemy filter clauses for Speech table."""
     filters = []
@@ -183,6 +193,12 @@ def build_speech_filters(
     if end_date:
         filters.append(Speech.date <= end_date)
 
+    if exclude_chair:
+        filters.append(or_(Speech.speaker_role.is_(None), Speech.speaker_role.notin_(CHAIR_ROLES)))
+
+    if speech_category and speech_category in SPEECH_TYPE_CATEGORIES:
+        filters.append(Speech.speech_type.in_(SPEECH_TYPE_CATEGORIES[speech_category]))
+
     return filters
 
 
@@ -197,6 +213,8 @@ def search_by_keyword(
     end_date: str | None = None,
     sort_by: str = "date_desc",
     include_matched_words: bool = True,
+    exclude_chair: bool = False,
+    speech_category: str | None = None,
 ) -> tuple[list[dict], int]:
     """Search speeches by keyword query with lemma matching, filters, and frequency scoring."""
     if is_only_stopwords(query):
@@ -222,6 +240,8 @@ def search_by_keyword(
             speaker=speaker,
             start_date=start_date,
             end_date=end_date,
+            exclude_chair=exclude_chair,
+            speech_category=speech_category,
         )
 
         all_lemmas = [lemma for group in groups for lemma in group]
@@ -345,6 +365,8 @@ def keyword_activity(
     speaker: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    exclude_chair: bool = False,
+    speech_category: str | None = None,
 ) -> list[dict]:
     """Calculate timeline frequency of keyword occurrences aggregated by day, week, or month with filters."""
     if is_only_stopwords(query):
@@ -378,6 +400,8 @@ def keyword_activity(
             speaker=speaker,
             start_date=start_date,
             end_date=end_date,
+            exclude_chair=exclude_chair,
+            speech_category=speech_category,
         )
         query_builder = session.query(
             date_group.label("period"), func.count(Speech.id).label("total_count")
@@ -558,6 +582,8 @@ def keyword_top_speakers(
     speaker: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    exclude_chair: bool = False,
+    speech_category: str | None = None,
 ) -> list[dict]:
     """Rank parliament members by mention count for a given keyword query with filters."""
     if is_only_stopwords(query):
@@ -581,6 +607,8 @@ def keyword_top_speakers(
             speaker=speaker,
             start_date=start_date,
             end_date=end_date,
+            exclude_chair=exclude_chair,
+            speech_category=speech_category,
         )
 
         all_lemmas = [lemma for group in groups for lemma in group]

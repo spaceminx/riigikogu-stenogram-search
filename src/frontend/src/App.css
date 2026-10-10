@@ -858,6 +858,30 @@
   color: #f8fafc;
 }
 
+.filter-checkbox-item {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+}
+
+.filter-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}
+
+.speech-duration-badge {
+  font-variant-numeric: tabular-nums;
+}
+
 .reset-filters-btn {
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.3);
