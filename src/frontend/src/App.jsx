@@ -118,6 +118,19 @@ function getPercentageColor(percentage) {
   return "#ef4444"; // red
 }
 
+const SPEECH_TYPE_LABELS = {
+  SMALL_SPEECH: "Küsimus/repliik",
+  PROCEDURAL: "Protseduuriline",
+  SPEECH_CONTINUE: "Kõne jätk",
+};
+
+function formatDuration(seconds) {
+  if (typeof seconds !== "number" || seconds <= 0) return null;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
 function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
   if (!text) return "";
   const allTerms = groups ? groups.flat().map((w) => w.trim().toLowerCase()) : [];
@@ -227,6 +240,12 @@ function syncUrl(state) {
   if (state.page && state.page > 1) {
     params.set("page", String(state.page));
   }
+  if (state.excludeChair) {
+    params.set("exclude_chair", "true");
+  }
+  if (state.speechCategory) {
+    params.set("speech_category", state.speechCategory);
+  }
   if (state.view === "attendance") {
     if (state.attendanceTab && state.attendanceTab !== "members") {
       params.set("att_tab", state.attendanceTab);
@@ -287,6 +306,8 @@ function App() {
   const [searchFaction, setSearchFaction] = useState("");
   const [searchSpeaker, setSearchSpeaker] = useState("");
   const [searchDateRange, setSearchDateRange] = useState({ startDate: "", endDate: "" });
+  const [searchExcludeChair, setSearchExcludeChair] = useState(false);
+  const [searchSpeechCategory, setSearchSpeechCategory] = useState("");
   const [isSessionBrowseMode, setIsSessionBrowseMode] = useState(false);
   const [selectedSessionDate, setSelectedSessionDate] = useState("");
   const [searchSortBy, setSearchSortBy] = useState("date_desc"); // "date_desc" | "date_asc" | "match_count_desc"
@@ -350,6 +371,8 @@ function App() {
     intervalValue = interval,
     startDate = searchDateRange.startDate,
     endDate = searchDateRange.endDate,
+    excludeChair = searchExcludeChair,
+    speechCategory = searchSpeechCategory,
   } = {}) => {
     if (!query) return;
 
@@ -379,6 +402,8 @@ function App() {
             startDate: startDate || null,
             endDate: endDate || null,
             sortBy,
+            excludeChair,
+            speechCategory: speechCategory || null,
           },
           abortController.signal
         ),
@@ -391,6 +416,8 @@ function App() {
             speaker: speaker || null,
             startDate: startDate || null,
             endDate: endDate || null,
+            excludeChair,
+            speechCategory: speechCategory || null,
           },
           "monthly",
           abortController.signal
@@ -404,6 +431,8 @@ function App() {
             speaker: speaker || null,
             startDate: startDate || null,
             endDate: endDate || null,
+            excludeChair,
+            speechCategory: speechCategory || null,
           },
           20,
           abortController.signal
@@ -425,6 +454,8 @@ function App() {
         sortBy,
         startDate,
         endDate,
+        excludeChair,
+        speechCategory,
       });
 
       if (inputValue.trim()) {
@@ -497,6 +528,8 @@ function App() {
       attendanceMembership,
       selectedFaction,
       activeOnly,
+      excludeChair: searchExcludeChair,
+      speechCategory: searchSpeechCategory,
     });
   }, [
     view,
@@ -513,6 +546,8 @@ function App() {
     attendanceMembership,
     selectedFaction,
     activeOnly,
+    searchExcludeChair,
+    searchSpeechCategory,
   ]);
 
   // Read initial query params on mount and listen to browser back/forward (popstate)
@@ -529,6 +564,8 @@ function App() {
       const sortParam = params.get("sort");
       const intervalParam = params.get("interval");
       const pageParam = parseInt(params.get("page"), 10);
+      const excludeChairParam = params.get("exclude_chair");
+      const speechCategoryParam = params.get("speech_category");
 
       const attTabParam = params.get("att_tab");
       const attMembershipParam = params.get("att_membership");
@@ -556,6 +593,16 @@ function App() {
       if (intervalParam && ["daily", "weekly", "monthly"].includes(intervalParam)) {
         setSelectedInterval(intervalParam);
       }
+      const isExcludeChair = excludeChairParam === "true" || excludeChairParam === "1";
+      setSearchExcludeChair(isExcludeChair);
+
+      const validCategories = ["speeches", "questions", "procedural"];
+      const resolvedCategory =
+        speechCategoryParam && validCategories.includes(speechCategoryParam)
+          ? speechCategoryParam
+          : "";
+      setSearchSpeechCategory(resolvedCategory);
+
       if (attTabParam && ["members", "factions"].includes(attTabParam)) {
         setAttendanceTab(attTabParam);
       }
@@ -588,6 +635,8 @@ function App() {
           endDate: endDateParam || "",
           sortBy: sortParam || "date_desc",
           intervalValue: intervalParam || "monthly",
+          excludeChair: isExcludeChair,
+          speechCategory: resolvedCategory || null,
         });
       } else if (initialView === "speeches" && startDateParam && startDateParam === endDateParam) {
         handlePlenaryDateSelect(startDateParam);
@@ -831,6 +880,8 @@ function App() {
       speaker: searchSpeaker,
       startDate: searchDateRange.startDate,
       endDate: searchDateRange.endDate,
+      excludeChair: searchExcludeChair,
+      speechCategory: searchSpeechCategory,
     };
     if (!searchParams.query) return;
 
@@ -854,6 +905,8 @@ function App() {
           startDate: searchParams.startDate || null,
           endDate: searchParams.endDate || null,
           sortBy: newSort,
+          excludeChair: searchParams.excludeChair,
+          speechCategory: searchParams.speechCategory || null,
         },
         abortController.signal
       );
@@ -884,6 +937,8 @@ function App() {
       startDate: searchDateRange.startDate,
       endDate: searchDateRange.endDate,
       sortBy: searchSortBy,
+      excludeChair: searchExcludeChair,
+      speechCategory: searchSpeechCategory,
     };
     if (!searchParams.query) return;
 
@@ -908,6 +963,8 @@ function App() {
           startDate: searchParams.startDate || null,
           endDate: searchParams.endDate || null,
           sortBy: searchParams.sortBy,
+          excludeChair: searchParams.excludeChair,
+          speechCategory: searchParams.speechCategory || null,
         },
         abortController.signal
       );
@@ -957,6 +1014,8 @@ function App() {
         speaker: searchSpeaker || null,
         startDate: searchDateRange.startDate || null,
         endDate: searchDateRange.endDate || null,
+        excludeChair: searchExcludeChair,
+        speechCategory: searchSpeechCategory || null,
       })
         .then((data) => setActivity(data.activity || []))
         .catch(() => {});
@@ -968,6 +1027,8 @@ function App() {
     setSearchFaction("");
     setSearchSpeaker("");
     setSearchDateRange({ startDate: "", endDate: "" });
+    setSearchExcludeChair(false);
+    setSearchSpeechCategory("");
     setIsSessionBrowseMode(false);
     setSelectedSessionDate("");
   };
@@ -976,6 +1037,8 @@ function App() {
     searchMembership !== "all" ||
     searchFaction !== "" ||
     searchSpeaker.trim() !== "" ||
+    searchExcludeChair ||
+    searchSpeechCategory !== "" ||
     Boolean(searchDateRange.startDate || searchDateRange.endDate);
   const showingArchiveSpeakers = speakers.length === 0;
   const sidebarSpeakers = showingArchiveSpeakers
@@ -1282,6 +1345,35 @@ function App() {
                   </button>
                 )}
               </div>
+            </div>
+
+            <div className="filter-group-item">
+              <label htmlFor="filter-speech-type" className="filter-label">
+                Sõnavõtu liik:
+              </label>
+              <select
+                id="filter-speech-type"
+                className="filter-select"
+                value={searchSpeechCategory}
+                onChange={(e) => setSearchSpeechCategory(e.target.value)}
+              >
+                <option value="">Kõik</option>
+                <option value="speeches">Kõned</option>
+                <option value="questions">Küsimused ja repliigid</option>
+                <option value="procedural">Protseduurilised</option>
+              </select>
+            </div>
+
+            <div className="filter-group-item filter-checkbox-item">
+              <label htmlFor="filter-exclude-chair" className="filter-checkbox-label filter-label">
+                <input
+                  id="filter-exclude-chair"
+                  type="checkbox"
+                  checked={searchExcludeChair}
+                  onChange={(e) => setSearchExcludeChair(e.target.checked)}
+                />
+                <span>Jäta istungi juhataja välja</span>
+              </label>
             </div>
 
             {hasActiveFilters && (
@@ -1635,6 +1727,8 @@ function App() {
                         startDate: searchDateRange.startDate || null,
                         endDate: searchDateRange.endDate || null,
                         sortBy: searchSortBy,
+                        excludeChair: searchExcludeChair,
+                        speechCategory: searchSpeechCategory || null,
                       }),
                       format: "csv",
                     })}
@@ -1658,6 +1752,8 @@ function App() {
                         startDate: searchDateRange.startDate || null,
                         endDate: searchDateRange.endDate || null,
                         sortBy: searchSortBy,
+                        excludeChair: searchExcludeChair,
+                        speechCategory: searchSpeechCategory || null,
                       }),
                       format: "json",
                     })}
@@ -1703,6 +1799,16 @@ function App() {
                         <span className="speaker-name-highlight">{speech.speaker}</span>
                         {speech.speaker_role && (
                           <span className="speaker-role-tag">{speech.speaker_role}</span>
+                        )}
+                        {SPEECH_TYPE_LABELS[speech.speech_type] && (
+                          <span className="speaker-role-tag speech-type-badge">
+                            {SPEECH_TYPE_LABELS[speech.speech_type]}
+                          </span>
+                        )}
+                        {formatDuration(speech.duration_seconds) && (
+                          <span className="speaker-role-tag speech-duration-badge">
+                            {formatDuration(speech.duration_seconds)}
+                          </span>
                         )}
                         {speech.speaker_faction && (
                           <span className="faction-badge">
@@ -1885,6 +1991,16 @@ function App() {
                           {speech.speaker_role && (
                             <span className="speaker-role-tag">{speech.speaker_role}</span>
                           )}
+                          {SPEECH_TYPE_LABELS[speech.speech_type] && (
+                            <span className="speaker-role-tag speech-type-badge">
+                              {SPEECH_TYPE_LABELS[speech.speech_type]}
+                            </span>
+                          )}
+                          {formatDuration(speech.duration_seconds) && (
+                            <span className="speaker-role-tag speech-duration-badge">
+                              {formatDuration(speech.duration_seconds)}
+                            </span>
+                          )}
                           {speech.speaker_faction && (
                             <span className="faction-badge">
                               {formatFactionName(speech.speaker_faction)}
@@ -1999,8 +2115,15 @@ function App() {
                 <p>
                   Kõned ja sõnavõtud pärinevad Riigikogu ametlikest stenogrammidest. Istungi
                   juhataja ametikoht (Esimees, Aseesimees) on stenogrammis eraldi rollitunnusena
-                  talletatud. Täpne rollipõhine filtreerimine ja ametliku kõnetüpoloogia eristamine
-                  lisandub järgmistes arendusetappides.
+                  talletatud.
+                </p>
+                <p>
+                  {systemStatus?.methodology?.speech_types ||
+                    "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigist; juhatajasõnavõtud tuvastatakse ametinimetuse (Esimees, Aseesimees) järgi, mitte liigi järgi, sest Riigikogu liigitus on selles osas ebajärjekindel."}
+                </p>
+                <p>
+                  {systemStatus?.methodology?.duration ||
+                    "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 2021. aastast; 2019–2020 kõnedel puudub algallikas algusaeg."}
                 </p>
               </div>
 

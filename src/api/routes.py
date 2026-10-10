@@ -239,6 +239,12 @@ def search(
         description="Sorteerimine: date_desc (uuemad enne), date_asc (vanemad enne), match_count_desc (sagedus)",
         pattern="^(date_desc|date_asc|match_count_desc)$",
     ),
+    exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
+    speech_category: str | None = Query(
+        None,
+        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
+        pattern=r"^(speeches|questions|procedural)$",
+    ),
 ):
     try:
         results, total_count = search_by_keyword(
@@ -251,6 +257,8 @@ def search(
             start_date=start_date,
             end_date=end_date,
             sort_by=sort_by,
+            exclude_chair=exclude_chair,
+            speech_category=speech_category,
         )
         return {
             "query": q,
@@ -287,6 +295,12 @@ def search_activity(
     speaker: str | None = Query(None),
     start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
+    speech_category: str | None = Query(
+        None,
+        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
+        pattern=r"^(speeches|questions|procedural)$",
+    ),
 ):
     if interval not in ("daily", "weekly", "monthly"):
         raise HTTPException(
@@ -305,6 +319,8 @@ def search_activity(
                 speaker=speaker,
                 start_date=start_date,
                 end_date=end_date,
+                exclude_chair=exclude_chair,
+                speech_category=speech_category,
             ),
         }
     except ValueError as e:
@@ -334,6 +350,12 @@ def search_speakers(
     speaker: str | None = Query(None),
     start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
+    speech_category: str | None = Query(
+        None,
+        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
+        pattern=r"^(speeches|questions|procedural)$",
+    ),
 ):
     try:
         return {
@@ -346,6 +368,8 @@ def search_speakers(
                 speaker=speaker,
                 start_date=start_date,
                 end_date=end_date,
+                exclude_chair=exclude_chair,
+                speech_category=speech_category,
             ),
         }
     except ValueError as e:
@@ -402,6 +426,12 @@ def search_export(
     end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     sort_by: str = Query("date_desc", pattern="^(date_desc|date_asc|match_count_desc)$"),
     limit: int = Query(2000, ge=1, le=5000),
+    exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
+    speech_category: str | None = Query(
+        None,
+        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
+        pattern=r"^(speeches|questions|procedural)$",
+    ),
 ):
     if format not in ("csv", "json"):
         raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
@@ -418,6 +448,8 @@ def search_export(
             end_date=end_date,
             sort_by=sort_by,
             include_matched_words=False,
+            exclude_chair=exclude_chair,
+            speech_category=speech_category,
         )
 
         safe_q = "".join(c for c in q if c.isalnum() or c in ("-", "_")).strip() or "otsing"
@@ -757,6 +789,8 @@ def system_status():
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
+                "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigist; juhatajasõnavõtud tuvastatakse ametinimetuse (Esimees, Aseesimees) järgi, mitte liigi järgi, sest Riigikogu liigitus on selles osas ebajärjekindel.",
+                "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 2021. aastast; 2019–2020 kõnedel puudub algallikas algusaeg.",
                 "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
                 "sources": [

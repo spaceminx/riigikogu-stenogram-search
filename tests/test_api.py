@@ -820,6 +820,8 @@ def test_system_status():
     assert "methodology" in data
     assert "attendance" in data["methodology"]
     assert "impartiality" in data["methodology"]
+    assert "speech_types" in data["methodology"]
+    assert "duration" in data["methodology"]
 
 
 def test_overnight_session_speech_ordering():
@@ -859,3 +861,232 @@ def test_overnight_session_speech_ordering():
     sp1_idx = next(i for i, s in enumerate(items) if s["id"] == 990001)
     sp2_idx = next(i for i, s in enumerate(items) if s["id"] == 990002)
     assert sp1_idx < sp2_idx
+
+
+@pytest.fixture(scope="module")
+def filter_test_speeches():
+    session = SessionLocal()
+    lemma = session.query(Lemma).filter(Lemma.lemma == "filtrikatse").first()
+    if not lemma:
+        lemma = Lemma(id=888999, lemma="filtrikatse")
+        session.merge(lemma)
+        session.commit()
+
+    test_speeches = [
+        Speech(
+            id=888001,
+            date="2024-03-01",
+            time="1000",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Juhataja Esimees",
+            speaker_role="Esimees",
+            speech_type="SPEECH",
+            duration_seconds=120,
+            text="filtrikatse avasõnad",
+            text_lemmas="filtrikatse avasõna",
+        ),
+        Speech(
+            id=888002,
+            date="2024-03-01",
+            time="1005",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Juhataja Aseesimees",
+            speaker_role="Aseesimees",
+            speech_type="SPEECH",
+            duration_seconds=90,
+            text="filtrikatse asejuhataja sõnad",
+            text_lemmas="filtrikatse asejuhataja sõna",
+        ),
+        Speech(
+            id=888003,
+            date="2024-03-01",
+            time="1010",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Mart Minister",
+            speaker_role="Rahandusminister",
+            speech_type="SPEECH",
+            duration_seconds=300,
+            text="filtrikatse rahandusministri kõne",
+            text_lemmas="filtrikatse rahandusminister kõne",
+        ),
+        Speech(
+            id=888004,
+            date="2024-03-01",
+            time="1015",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Liht Saadik",
+            speaker_role=None,
+            speech_type="SPEECH",
+            duration_seconds=180,
+            text="filtrikatse saadiku kõne",
+            text_lemmas="filtrikatse saadik kõne",
+        ),
+        Speech(
+            id=888005,
+            date="2024-03-01",
+            time="1020",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Küsija Saadik",
+            speaker_role=None,
+            speech_type="SMALL_SPEECH",
+            duration_seconds=60,
+            text="filtrikatse küsimus saalist",
+            text_lemmas="filtrikatse küsimus saal",
+        ),
+        Speech(
+            id=888006,
+            date="2024-03-01",
+            time="1025",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Märkuse Saadik",
+            speaker_role=None,
+            speech_type="DIRECTOR",
+            duration_seconds=10,
+            text="filtrikatse direktori repliik",
+            text_lemmas="filtrikatse direktor repliik",
+        ),
+        Speech(
+            id=888007,
+            date="2024-03-01",
+            time="1030",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Protseduuri Saadik",
+            speaker_role=None,
+            speech_type="PROCEDURAL",
+            duration_seconds=45,
+            text="filtrikatse protseduuriline küsimus",
+            text_lemmas="filtrikatse protseduuriline küsimus",
+        ),
+        Speech(
+            id=888008,
+            date="2024-03-01",
+            time="1035",
+            source_file="2024-03-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Jätkaja Saadik",
+            speaker_role=None,
+            speech_type="SPEECH_CONTINUE",
+            duration_seconds=150,
+            text="filtrikatse kõne jätkamine",
+            text_lemmas="filtrikatse kõne jätkamine",
+        ),
+    ]
+    for s in test_speeches:
+        session.merge(s)
+        session.merge(SpeechTerm(speech_id=s.id, lemma_id=888999, count=1))
+    session.commit()
+    session.close()
+
+
+def test_exclude_chair_filter(filter_test_speeches):
+    # Exclude chair should filter out Esimees and Aseesimees, but keep Rahandusminister and None
+    res = client.get("/search?q=filtrikatse&exclude_chair=true")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_count"] == 6
+    roles = [r["speaker_role"] for r in data["results"]]
+    assert "Esimees" not in roles
+    assert "Aseesimees" not in roles
+    assert "Rahandusminister" in roles
+    assert None in roles
+
+
+def test_exclude_chair_preserves_director_without_role(filter_test_speeches):
+    # exclude_chair=true must not exclude speeches where speech_type="DIRECTOR" and speaker_role is None
+    res = client.get("/search?q=filtrikatse&exclude_chair=true")
+    assert res.status_code == 200
+    director_speeches = [
+        r
+        for r in res.json()["results"]
+        if r["speech_type"] == "DIRECTOR" and r["speaker_role"] is None
+    ]
+    assert len(director_speeches) == 1
+    assert director_speeches[0]["speaker"] == "Märkuse Saadik"
+
+
+def test_speech_category_questions(filter_test_speeches):
+    # speech_category=questions returns only SMALL_SPEECH
+    res = client.get("/search?q=filtrikatse&speech_category=questions")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_count"] == 1
+    assert len(data["results"]) == 1
+    assert data["results"][0]["speech_type"] == "SMALL_SPEECH"
+
+
+def test_speech_category_speeches_and_procedural(filter_test_speeches):
+    # speech_category=speeches returns SPEECH and SPEECH_CONTINUE
+    res_sp = client.get("/search?q=filtrikatse&speech_category=speeches")
+    assert res_sp.status_code == 200
+    types = {r["speech_type"] for r in res_sp.json()["results"]}
+    assert types <= {"SPEECH", "SPEECH_CONTINUE"}
+
+    # speech_category=procedural returns PROCEDURAL
+    res_pr = client.get("/search?q=filtrikatse&speech_category=procedural")
+    assert res_pr.status_code == 200
+    assert res_pr.json()["total_count"] == 1
+    assert res_pr.json()["results"][0]["speech_type"] == "PROCEDURAL"
+
+
+def test_speech_category_invalid_yields_422():
+    # Invalid category must return 422
+    for endpoint in ("/search", "/search/activity", "/search/speakers", "/search/export"):
+        res = client.get(f"{endpoint}?q=filtrikatse&speech_category=invalid_category")
+        assert res.status_code == 422
+
+
+def test_total_count_accuracy_with_single_word_query(filter_test_speeches):
+    # Single-word query without filters uses fast-path
+    res_all = client.get("/search?q=filtrikatse")
+    assert res_all.status_code == 200
+    assert res_all.json()["total_count"] == 8
+
+    # When filters are applied, fast-path must NOT trigger; total_count reflects filtered count
+    res_chair = client.get("/search?q=filtrikatse&exclude_chair=true")
+    assert res_chair.status_code == 200
+    assert res_chair.json()["total_count"] == 6
+
+    res_q = client.get("/search?q=filtrikatse&speech_category=questions")
+    assert res_q.status_code == 200
+    assert res_q.json()["total_count"] == 1
+
+
+def test_speakers_and_activity_apply_both_filters(filter_test_speeches):
+    # /search/speakers with exclude_chair=true
+    res_sp_chair = client.get("/search/speakers?q=filtrikatse&exclude_chair=true")
+    assert res_sp_chair.status_code == 200
+    sp_names = [s["speaker"] for s in res_sp_chair.json()["speakers"]]
+    assert "Juhataja Esimees" not in sp_names
+    assert "Juhataja Aseesimees" not in sp_names
+    assert "Mart Minister" in sp_names
+
+    # /search/speakers with speech_category=questions
+    res_sp_cat = client.get("/search/speakers?q=filtrikatse&speech_category=questions")
+    assert res_sp_cat.status_code == 200
+    assert len(res_sp_cat.json()["speakers"]) == 1
+    assert res_sp_cat.json()["speakers"][0]["speaker"] == "Küsija Saadik"
+
+    # /search/activity with filters
+    res_act_all = client.get("/search/activity?q=filtrikatse&interval=monthly")
+    assert res_act_all.status_code == 200
+    total_all = sum(item["count"] for item in res_act_all.json()["activity"])
+    assert total_all == 8
+
+    res_act_chair = client.get("/search/activity?q=filtrikatse&interval=monthly&exclude_chair=true")
+    assert res_act_chair.status_code == 200
+    total_chair = sum(item["count"] for item in res_act_chair.json()["activity"])
+    assert total_chair == 6
+
+    res_act_q = client.get(
+        "/search/activity?q=filtrikatse&interval=monthly&speech_category=questions"
+    )
+    assert res_act_q.status_code == 200
+    total_q = sum(item["count"] for item in res_act_q.json()["activity"])
+    assert total_q == 1

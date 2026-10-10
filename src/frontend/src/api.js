@@ -37,6 +37,8 @@ function buildSearchQueryString({
   startDate = null,
   endDate = null,
   sortBy = "date_desc",
+  excludeChair = false,
+  speechCategory = null,
 } = {}) {
   const params = new URLSearchParams();
   if (query) params.append("q", query);
@@ -49,6 +51,8 @@ function buildSearchQueryString({
   if (startDate) params.append("start_date", startDate);
   if (endDate) params.append("end_date", endDate);
   if (sortBy && sortBy !== "date_desc") params.append("sort_by", sortBy);
+  if (excludeChair) params.append("exclude_chair", "true");
+  if (speechCategory) params.append("speech_category", speechCategory);
   return params.toString();
 }
 
