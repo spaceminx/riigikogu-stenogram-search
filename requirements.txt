@@ -5,7 +5,7 @@ estnltk~=1.7.4
 boto3
 uvicorn
 python-dotenv
-tqdm>=4.66.0
+tqdm>=4.70.1
 ruff
 pytest
 httpx
