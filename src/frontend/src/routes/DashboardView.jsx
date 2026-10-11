@@ -96,26 +96,26 @@ export function DashboardView({
         setInputValue={setInputValue}
         onSearch={handleSearchSubmit}
         loading={false}
-      />
-
-      <SearchFilters
-        searchMembership={searchMembership}
-        setSearchMembership={setSearchMembership}
-        memberships={memberships}
-        searchFaction={searchFaction}
-        setSearchFaction={setSearchFaction}
-        searchFactionsList={searchFactionsList}
-        plenaryDates={plenaryDates}
-        searchDateRange={searchDateRange}
-        setSearchDateRange={setSearchDateRange}
-        searchSpeaker={searchSpeaker}
-        setSearchSpeaker={setSearchSpeaker}
-        searchSpeechCategory={searchSpeechCategory}
-        setSearchSpeechCategory={setSearchSpeechCategory}
-        searchExcludeChair={searchExcludeChair}
-        setSearchExcludeChair={setSearchExcludeChair}
-        onResetFilters={handleResetFilters}
-      />
+      >
+        <SearchFilters
+          searchMembership={searchMembership}
+          setSearchMembership={setSearchMembership}
+          memberships={memberships}
+          searchFaction={searchFaction}
+          setSearchFaction={setSearchFaction}
+          searchFactionsList={searchFactionsList}
+          plenaryDates={plenaryDates}
+          searchDateRange={searchDateRange}
+          setSearchDateRange={setSearchDateRange}
+          searchSpeaker={searchSpeaker}
+          setSearchSpeaker={setSearchSpeaker}
+          searchSpeechCategory={searchSpeechCategory}
+          setSearchSpeechCategory={setSearchSpeechCategory}
+          searchExcludeChair={searchExcludeChair}
+          setSearchExcludeChair={setSearchExcludeChair}
+          onResetFilters={handleResetFilters}
+        />
+      </SearchQueryInput>
 
       <section className="topic-suggestions" aria-label="Populaarsed otsinguteemad">
         <span className="topic-suggestions-label">Populaarsed teemad</span>
@@ -135,7 +135,7 @@ export function DashboardView({
 
       <div className="dashboard-grid">
         <ActivityChart
-          activity={dashboardOverview?.activity || []}
+          activity={[]}
           interval={interval}
           onIntervalChange={setInterval}
           loading={false}

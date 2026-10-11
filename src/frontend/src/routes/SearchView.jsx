@@ -77,6 +77,8 @@ export function SearchView({
 
   const searchAbortRef = useRef(null);
   const searchRequestIdRef = useRef(0);
+  const activityAbortRef = useRef(null);
+  const activityRequestIdRef = useRef(0);
 
   const [prevQuery, setPrevQuery] = useState(queryParam);
   if (prevQuery !== queryParam) {
@@ -99,6 +101,11 @@ export function SearchView({
     searchAbortRef.current = abortController;
     const currentRequestId = ++searchRequestIdRef.current;
 
+    const currentActivityRequestId = ++activityRequestIdRef.current;
+    if (activityAbortRef.current) {
+      activityAbortRef.current.abort();
+    }
+
     Promise.resolve().then(() => {
       if (currentRequestId === searchRequestIdRef.current) {
         setLoading(true);
@@ -107,6 +114,7 @@ export function SearchView({
     });
 
     const offset = (pageParam - 1) * PAGE_SIZE;
+    const currentInterval = searchParams.get("interval") || "monthly";
 
     Promise.all([
       fetchSearch(
@@ -128,7 +136,7 @@ export function SearchView({
       fetchActivity(
         {
           query: queryParam,
-          interval: intervalParam,
+          interval: currentInterval,
           membership: membershipParam,
           faction: factionParam || null,
           speaker: speakerParam || null,
@@ -160,7 +168,9 @@ export function SearchView({
         if (currentRequestId !== searchRequestIdRef.current) return;
         setSpeeches(searchData.results || []);
         setTotalCount(searchData.total_count || 0);
-        setActivity(activityData.activity || []);
+        if (currentActivityRequestId === activityRequestIdRef.current) {
+          setActivity(activityData.activity || []);
+        }
         setSpeakers(speakersData.speakers || []);
         setLoading(false);
       })
@@ -244,24 +254,41 @@ export function SearchView({
     setSearchParams(next, { replace: true });
 
     if (hasSearchQuery) {
+      if (activityAbortRef.current) {
+        activityAbortRef.current.abort();
+      }
+      const abortController = new AbortController();
+      activityAbortRef.current = abortController;
+      const currentRequestId = ++activityRequestIdRef.current;
+
       setActivityLoading(true);
-      fetchActivity({
-        query: queryParam,
-        interval: newInterval,
-        membership: membershipParam,
-        faction: factionParam || null,
-        speaker: speakerParam || null,
-        startDate: startDateParam || null,
-        endDate: endDateParam || null,
-        excludeChair: excludeChairParam,
-        speechCategory: speechCategoryParam || null,
-      })
+      fetchActivity(
+        {
+          query: queryParam,
+          interval: newInterval,
+          membership: membershipParam,
+          faction: factionParam || null,
+          speaker: speakerParam || null,
+          startDate: startDateParam || null,
+          endDate: endDateParam || null,
+          excludeChair: excludeChairParam,
+          speechCategory: speechCategoryParam || null,
+        },
+        "monthly",
+        abortController.signal
+      )
         .then((data) => {
+          if (currentRequestId !== activityRequestIdRef.current) return;
           setActivity(data.activity || []);
         })
-        .catch(() => {})
+        .catch((err) => {
+          if (err.name === "AbortError") return;
+          if (currentRequestId !== activityRequestIdRef.current) return;
+        })
         .finally(() => {
-          setActivityLoading(false);
+          if (currentRequestId === activityRequestIdRef.current) {
+            setActivityLoading(false);
+          }
         });
     }
   };
@@ -323,26 +350,26 @@ export function SearchView({
         setInputValue={setInputValue}
         onSearch={handleSearchSubmit}
         loading={loading}
-      />
-
-      <SearchFilters
-        searchMembership={filterMembership}
-        setSearchMembership={setFilterMembership}
-        memberships={memberships}
-        searchFaction={filterFaction}
-        setSearchFaction={setFilterFaction}
-        searchFactionsList={searchFactionsList}
-        plenaryDates={plenaryDates}
-        searchDateRange={filterDateRange}
-        setSearchDateRange={setFilterDateRange}
-        searchSpeaker={filterSpeaker}
-        setSearchSpeaker={setFilterSpeaker}
-        searchSpeechCategory={filterSpeechCategory}
-        setSearchSpeechCategory={setFilterSpeechCategory}
-        searchExcludeChair={filterExcludeChair}
-        setSearchExcludeChair={setFilterExcludeChair}
-        onResetFilters={handleResetFilters}
-      />
+      >
+        <SearchFilters
+          searchMembership={filterMembership}
+          setSearchMembership={setFilterMembership}
+          memberships={memberships}
+          searchFaction={filterFaction}
+          setSearchFaction={setFilterFaction}
+          searchFactionsList={searchFactionsList}
+          plenaryDates={plenaryDates}
+          searchDateRange={filterDateRange}
+          setSearchDateRange={setFilterDateRange}
+          searchSpeaker={filterSpeaker}
+          setSearchSpeaker={setFilterSpeaker}
+          searchSpeechCategory={filterSpeechCategory}
+          setSearchSpeechCategory={setFilterSpeechCategory}
+          searchExcludeChair={filterExcludeChair}
+          setSearchExcludeChair={setFilterExcludeChair}
+          onResetFilters={handleResetFilters}
+        />
+      </SearchQueryInput>
 
       {error && (
         <div className="error-banner">

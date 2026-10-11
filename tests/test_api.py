@@ -74,6 +74,7 @@ def setup_test_database():
     if session.query(Speech).count() == 0:
         s1 = Speech(
             id=1,
+            speech_key="2024-01-15_1500_01",
             date="2024-01-15",
             time="1500",
             source_file="2024-01-15_1500.api",
@@ -86,6 +87,7 @@ def setup_test_database():
         )
         s2 = Speech(
             id=2,
+            speech_key="2021-02-10_1500_01",
             date="2021-02-10",
             time="1500",
             source_file="2021-02-10_1500.api",
@@ -1090,3 +1092,34 @@ def test_speakers_and_activity_apply_both_filters(filter_test_speeches):
     assert res_act_q.status_code == 200
     total_q = sum(item["count"] for item in res_act_q.json()["activity"])
     assert total_q == 1
+
+
+def test_speech_key_returned_in_endpoints():
+    # 1. /search
+    res_search = client.get("/search?q=kliimamuutus&limit=1")
+    assert res_search.status_code == 200
+    search_data = res_search.json()
+    assert len(search_data["results"]) >= 1
+    first_speech = search_data["results"][0]
+    assert "speech_key" in first_speech
+    assert first_speech["speech_key"] is not None
+    speech_id = first_speech["id"]
+    speech_date = first_speech["date"]
+
+    # 2. /sessions/{date}
+    res_session = client.get(f"/sessions/{speech_date}")
+    assert res_session.status_code == 200
+    session_data = res_session.json()
+    assert len(session_data["results"]) >= 1
+    assert "speech_key" in session_data["results"][0]
+    assert session_data["results"][0]["speech_key"] is not None
+
+    # 3. /speeches/{id}/context
+    res_ctx = client.get(f"/speeches/{speech_id}/context")
+    assert res_ctx.status_code == 200
+    ctx_data = res_ctx.json()
+    assert "speech_key" in ctx_data
+    assert ctx_data["speech_key"] is not None
+    assert len(ctx_data["speeches"]) >= 1
+    assert "speech_key" in ctx_data["speeches"][0]
+    assert ctx_data["speeches"][0]["speech_key"] is not None

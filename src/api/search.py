@@ -331,6 +331,7 @@ def search_by_keyword(
             output.append(
                 {
                     "id": speech.id,
+                    "speech_key": speech.speech_key,
                     "speaker": speech.speaker,
                     "speaker_role": speech.speaker_role,
                     "speaker_faction": speech.speaker_faction,
@@ -443,6 +444,7 @@ def get_session_speeches(session_date: str) -> list[dict]:
         return [
             {
                 "id": speech.id,
+                "speech_key": speech.speech_key,
                 "speaker": speech.speaker,
                 "speaker_role": speech.speaker_role,
                 "speaker_faction": speech.speaker_faction,
@@ -673,6 +675,8 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
 
         return {
             "target_speech_id": target_speech.id,
+            "target_speech_key": target_speech.speech_key,
+            "speech_key": target_speech.speech_key,
             "speaker_uuid": target_speech.speaker_uuid,
             "speech_type": target_speech.speech_type,
             "external_id": target_speech.external_id,
@@ -689,6 +693,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
             "speeches": [
                 {
                     "id": s.id,
+                    "speech_key": s.speech_key,
                     "date": s.date,
                     "time": s.time,
                     "speaker": s.speaker,

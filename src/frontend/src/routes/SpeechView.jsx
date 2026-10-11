@@ -16,14 +16,6 @@ export function SpeechView() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleBack = () => {
-    if (window.history.length <= 1 || location.key === "default") {
-      navigate("/otsing");
-    } else {
-      navigate(-1);
-    }
-  };
-
   const {
     data: speech,
     error,
@@ -32,6 +24,22 @@ export function SpeechView() {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
+
+  const publicSpeechId = speech ? (speech.external_id ?? speech.speech_key) : null;
+
+  const handleBack = () => {
+    if (location.key === "default" || window.history.length <= 1) {
+      if (speech?.date && publicSpeechId) {
+        navigate(`/istung/${speech.date}#speech-${publicSpeechId}`);
+      } else if (speech?.date) {
+        navigate(`/istung/${speech.date}`);
+      } else {
+        navigate("/");
+      }
+    } else {
+      navigate(-1);
+    }
+  };
 
   if (loading) {
     return (
@@ -73,7 +81,6 @@ export function SpeechView() {
 
   const speechTypeLabel = SPEECH_TYPE_LABELS[speech.speech_type];
   const durationText = formatDuration(speech.duration_seconds);
-  const publicSpeechId = speech.external_id ?? speech.speech_key;
 
   return (
     <div style={{ marginTop: "1rem" }}>
