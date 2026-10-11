@@ -438,6 +438,7 @@ def test_verify_statistics_with_mock(tmp_path, monkeypatch):
 
     from scripts.verify_statistics import verify_statistics
 
+    create_tables()
     monkeypatch.setattr("scripts.verify_statistics.OUTPUT_DIR_PROCESSED", str(tmp_path))
 
     mock_persons = [
@@ -495,6 +496,70 @@ def test_verify_statistics_with_mock(tmp_path, monkeypatch):
     report_data = json.loads(report_path.read_text(encoding="utf-8"))
     assert report_data["summary"]["passed"] == 1
     assert report_data["summary"]["alerts"] == 0
+
+
+def test_get_local_speech_counts_filters():
+    from scripts.verify_statistics import get_local_speech_counts
+
+    create_tables()
+    session = SessionLocal()
+
+    test_uuid = "test-uuid-counts-mp"
+    try:
+        session.query(Speech).filter(Speech.speaker_uuid == test_uuid).delete()
+
+        speeches_data = [
+            # speaker_role IS NULL -> categorized
+            {"id": 990001, "speech_type": "SPEECH", "speaker_role": None},
+            {"id": 990002, "speech_type": "SPEECH_CONTINUE", "speaker_role": None},
+            {"id": 990003, "speech_type": "SMALL_SPEECH", "speaker_role": None},
+            {"id": 990004, "speech_type": "SMALL_SPEECH", "speaker_role": None},
+            {"id": 990005, "speech_type": "PROCEDURAL", "speaker_role": None},
+            {"id": 990006, "speech_type": "DIRECTOR", "speaker_role": None},
+            # non-null roles -> excluded from categories, tracked in info counters
+            {"id": 990007, "speech_type": "SPEECH", "speaker_role": "Esimees"},
+            {"id": 990008, "speech_type": "SMALL_SPEECH", "speaker_role": "Aseesimees"},
+            {"id": 990009, "speech_type": "SPEECH", "speaker_role": "Kaitseminister"},
+            {"id": 990010, "speech_type": "SPEECH", "speaker_role": "Peaminister"},
+            {"id": 990011, "speech_type": "SPEECH", "speaker_role": "Erikomisjoni esimees"},
+        ]
+
+        for data in speeches_data:
+            sp = Speech(
+                id=data["id"],
+                date="2026-01-15",
+                time="1200",
+                source_file="2026-01-15_1200.api",
+                source_url="https://example.com/test",
+                speaker="Test MP",
+                speaker_uuid=test_uuid,
+                speech_type=data["speech_type"],
+                speaker_role=data["speaker_role"],
+                text="Test speech text",
+            )
+            session.merge(sp)
+        session.commit()
+
+        counts = get_local_speech_counts(
+            session=session,
+            uuid=test_uuid,
+            full_name="Test MP",
+            start_date="2026-01-01",
+            end_date="2026-01-31",
+        )
+
+        assert counts["speeches"] == 2  # 1 SPEECH + 1 SPEECH_CONTINUE
+        assert counts["questions"] == 2  # 2 SMALL_SPEECH
+        assert counts["procedural"] == 1  # 1 PROCEDURAL
+        assert counts["director"] == 1  # 1 DIRECTOR
+        assert counts["total"] == 5  # speeches + questions + procedural
+        assert counts["chair"] == 2  # Esimees + Aseesimees
+        assert counts["minister"] == 2  # Kaitseminister + Peaminister
+        assert counts["other_roles"] == 1  # Erikomisjoni esimees
+    finally:
+        session.query(Speech).filter(Speech.speaker_uuid == test_uuid).delete()
+        session.commit()
+        session.close()
 
 
 def test_dynamic_membership_dates_reload(tmp_path, monkeypatch):
