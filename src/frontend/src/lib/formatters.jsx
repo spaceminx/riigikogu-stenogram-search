@@ -1,0 +1,179 @@
+import React from "react";
+
+export function normalizeSourceUrl(url) {
+  if (!url) return url;
+  return url.replace(
+    /^https?:\/\/stenogrammid\.riigikogu\.ee\/(?!et\/|en\/|ru\/)(\d{12})(.*)$/,
+    "https://stenogrammid.riigikogu.ee/et/$1$2"
+  );
+}
+
+export function formatDateTime(dateStr, timeStr) {
+  if (!dateStr && !timeStr) return "";
+  const months = [
+    "jaanuar",
+    "veebruar",
+    "märts",
+    "aprill",
+    "mai",
+    "juuni",
+    "juuli",
+    "august",
+    "september",
+    "oktoober",
+    "november",
+    "detsember",
+  ];
+  let formattedDate = dateStr || "";
+  try {
+    if (dateStr) {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const year = parts[0];
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        formattedDate = `${day}. ${months[month]} ${year}`;
+      }
+    }
+  } catch {
+    // fallback to original dateStr if parsing fails
+  }
+
+  let formattedTime = "";
+  if (timeStr) {
+    if (timeStr.length === 4 && !timeStr.includes(":")) {
+      formattedTime = ` kell ${timeStr.slice(0, 2)}:${timeStr.slice(2, 4)}`;
+    } else {
+      const tParts = timeStr.split(":");
+      if (tParts.length >= 2) {
+        formattedTime = ` kell ${tParts[0]}:${tParts[1]}`;
+      } else {
+        formattedTime = ` kell ${timeStr}`;
+      }
+    }
+  }
+  return `${formattedDate}${formattedTime}`.trim();
+}
+
+export function formatFactionName(name) {
+  if (!name) return "";
+  const nameMap = {
+    "Eesti Reformierakonna fraktsioon": "Reformierakond",
+    "Eesti Keskerakonna fraktsioon": "Keskerakond",
+    "Eesti Konservatiivse Rahvaerakonna fraktsioon": "EKRE",
+    "Eesti 200 fraktsioon": "Eesti 200",
+    "Isamaa fraktsioon": "Isamaa",
+    "Sotsiaaldemokraatliku Erakonna fraktsioon": "Sotsiaaldemokraadid",
+    "Fraktsiooni mittekuuluvad Riigikogu liikmed": "Fraktsiooni mittekuuluvad",
+  };
+  if (nameMap[name]) return nameMap[name];
+
+  const clean = name.replace(/ fraktsioon$/i, "").replace(/ fraktsiooni$/i, "");
+  const fallbackMap = {
+    "Eesti Reformierakonna": "Reformierakond",
+    "Eesti Reformierakond": "Reformierakond",
+    "Eesti Keskerakonna": "Keskerakond",
+    "Eesti Keskerakond": "Keskerakond",
+    "Eesti Konservatiivse Rahvaerakonna": "EKRE",
+    "Eesti Konservatiivne Rahvaerakond": "EKRE",
+    "Sotsiaaldemokraatliku Erakonna": "Sotsiaaldemokraadid",
+    "Sotsiaaldemokraatlik Erakond": "Sotsiaaldemokraadid",
+  };
+  return fallbackMap[clean] || clean;
+}
+
+export function getPercentageColor(percentage) {
+  if (percentage >= 75) return "#10b981"; // green
+  if (percentage >= 50) return "#f59e0b"; // yellow
+  return "#ef4444"; // red
+}
+
+export const SPEECH_TYPE_LABELS = {
+  SMALL_SPEECH: "Küsimus/repliik",
+  PROCEDURAL: "Protseduuriline",
+  SPEECH_CONTINUE: "Kõne jätk",
+};
+
+export function formatDuration(seconds) {
+  if (typeof seconds !== "number" || seconds <= 0) return null;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+export function highlightKeywords(text, groups, extraTerm = "", matchedWords = []) {
+  if (!text) return "";
+  const allTerms = groups ? groups.flat().map((w) => w.trim().toLowerCase()) : [];
+  if (extraTerm && extraTerm.trim().length >= 2) {
+    allTerms.push(extraTerm.trim().toLowerCase());
+  }
+  if (matchedWords && Array.isArray(matchedWords)) {
+    matchedWords.forEach((w) => {
+      if (w && w.trim().length >= 2) {
+        allTerms.push(w.trim().toLowerCase());
+      }
+    });
+  }
+  const keywords = Array.from(new Set(allTerms.filter((w) => w.length >= 2)));
+  if (keywords.length === 0) return text;
+  keywords.sort((a, b) => b.length - a.length);
+
+  const escaped = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const regex = new RegExp(
+    `(?<=[^\\p{L}\\p{N}]|^)(${escaped.join("|")})(?=[^\\p{L}\\p{N}]|$)`,
+    "gui"
+  );
+
+  const parts = text.split(regex);
+  return parts.map((part, index) => {
+    const isMatch = keywords.some((k) => part.toLowerCase() === k.toLowerCase());
+    return isMatch ? (
+      <mark key={index} className="keyword-highlight">
+        {part}
+      </mark>
+    ) : (
+      part
+    );
+  });
+}
+
+export function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 380) {
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+
+  const terms = [
+    ...(Array.isArray(matchedWords) ? matchedWords : []),
+    ...(Array.isArray(groups) ? groups.flat() : []),
+  ]
+    .map((w) => (typeof w === "string" ? w.trim().toLowerCase() : ""))
+    .filter((w) => w.length >= 2);
+
+  let firstIndex = -1;
+  const lowerText = text.toLowerCase();
+  for (const term of terms) {
+    const idx = lowerText.indexOf(term);
+    if (idx !== -1 && (firstIndex === -1 || idx < firstIndex)) {
+      firstIndex = idx;
+    }
+  }
+
+  if (firstIndex === -1 || firstIndex < 120) {
+    return text.slice(0, maxLength).trim() + "...";
+  }
+
+  const start = Math.max(0, firstIndex - 100);
+  const end = Math.min(text.length, start + maxLength);
+  const prefix = start > 0 ? "..." : "";
+  const suffix = end < text.length ? "..." : "";
+  return prefix + text.slice(start, end).trim() + suffix;
+}
+
+export function parseQueryToGroups(queryString) {
+  if (!queryString || !queryString.trim()) return [[]];
+  const parts = queryString
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return [[]];
+  return parts.map((part) => part.split(/\s+/).filter(Boolean));
+}
