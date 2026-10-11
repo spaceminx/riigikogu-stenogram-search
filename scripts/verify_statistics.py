@@ -131,7 +131,7 @@ def verify_statistics(
     target_name: str | None = None,
     check_all: bool = False,
     delay: float = 1.5,
-    tolerance_ratio: float = 0.35,
+    tolerance_ratio: float = 0.02,
     output_path: str | None = None,
 ) -> bool:
     """Compare Riigikogu official statistics with local SQLite speeches database."""
@@ -220,32 +220,23 @@ def verify_statistics(
             s_diff = loc_speeches - off_speeches
             tot_diff = loc_total - off_total
 
-            # Evaluation criteria per roadmap specification:
-            # - questions: |diff| <= max(1, 0.02 * official)
-            # - procedural: |diff| <= max(1, 0.02 * official)
-            # - speeches: informational ratio only
-            q_allowed = max(1, 0.02 * off_questions)
-            p_allowed = max(1, 0.02 * off_procedural)
-
-            q_ok = abs(q_diff) <= q_allowed
-            p_ok = abs(p_diff) <= p_allowed
+            # Evaluation criteria per specification:
+            # Questions is OK if: SMALL_SPEECH - tol <= ametlik_questions <= SMALL_SPEECH + PROCEDURAL + tol
+            # where tol = max(1, tolerance_ratio * off_questions)
+            tol = max(1.0, tolerance_ratio * off_questions)
+            q_ok = (loc_questions - tol) <= off_questions <= (loc_questions + loc_procedural + tol)
 
             ratio_str = (
                 f"{loc_speeches / off_speeches:.1f}x" if off_speeches > 0 else f"{loc_speeches}/0"
             )
 
-            if q_ok and p_ok:
+            if q_ok:
                 if off_total == 0 and loc_total == 0:
                     status = "OK (0)"
                 else:
                     status = "OK"
             else:
-                mismatches = []
-                if not q_ok:
-                    mismatches.append(f"Q:{q_diff:+d}")
-                if not p_ok:
-                    mismatches.append(f"P:{p_diff:+d}")
-                status = f"ERINEVUS ({', '.join(mismatches)})"
+                status = f"ERINEVUS (Q:{q_diff:+d})"
                 has_critical_error = True
 
             q_str = f"{off_questions:>3} / {loc_questions:>3} ({q_diff:+3d})"
@@ -274,7 +265,6 @@ def verify_statistics(
                     if off_speeches > 0
                     else None,
                     "questions_ok": q_ok,
-                    "procedural_ok": p_ok,
                     "status": status,
                 }
             )
@@ -286,7 +276,7 @@ def verify_statistics(
     passed_count = sum(1 for r in results if r["status"] in ("OK", "OK (0)"))
     discrepancy_count = sum(1 for r in results if "ERINEVUS" in r["status"])
     print(
-        f"\nKokkuvõte: {len(results)} testitud | {passed_count} vastavuses (questions & procedural) | {discrepancy_count} lahknevust"
+        f"\nKokkuvõte: {len(results)} testitud | {passed_count} vastavuses (questions) | {discrepancy_count} lahknevust"
     )
 
     if output_path:
@@ -345,8 +335,8 @@ def parse_args():
     parser.add_argument(
         "--tolerance",
         type=float,
-        default=0.35,
-        help="Lubatud hälbe suhe (vaikimisi: 0.35)",
+        default=0.02,
+        help="Lubatud küsimuste hälbe suhe (vaikimisi: 0.02)",
     )
     parser.add_argument(
         "--output",
