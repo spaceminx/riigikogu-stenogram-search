@@ -48,6 +48,9 @@ def fetch_official_stats(
     return None
 
 
+CHAIR_ROLES = ("Esimees", "Aseesimees", "Riigikogu esimees")
+
+
 def get_local_speech_counts(
     session,
     uuid: str,
@@ -55,42 +58,68 @@ def get_local_speech_counts(
     start_date: str,
     end_date: str,
 ) -> dict:
-    """Query local database for speeches by MP UUID or full name within date range."""
-    query = session.query(Speech.speech_type, text("count(*)")).filter(
+    """Query local database for speeches by MP UUID or full name within date range.
+
+    Counts only speeches where speaker_role IS NULL towards categories.
+    Tracks chair and minister speeches separately for information.
+    """
+    query = session.query(Speech.speech_type, Speech.speaker_role, text("count(*)")).filter(
         Speech.date >= start_date,
         Speech.date <= end_date,
     )
 
     if uuid:
-        query = query.filter((Speech.speaker_uuid == uuid) | (Speech.speaker == full_name))
+        query = query.filter(
+            (Speech.speaker_uuid == uuid)
+            | (Speech.speaker_uuid.is_(None) & (Speech.speaker == full_name))
+        )
     else:
         query = query.filter(Speech.speaker == full_name)
 
-    rows = query.group_by(Speech.speech_type).all()
+    rows = query.group_by(Speech.speech_type, Speech.speaker_role).all()
 
     speeches = 0
     questions = 0
     procedural = 0
+    director = 0
     unknown = 0
-    total = 0
+    chair = 0
+    minister = 0
+    other_roles = 0
 
-    for st_type, count in rows:
-        total += count
-        if st_type == "SPEECH":
+    for st_type, role, count in rows:
+        if role is not None:
+            if role in CHAIR_ROLES:
+                chair += count
+            elif role.lower().endswith("minister"):
+                minister += count
+            else:
+                other_roles += count
+            continue
+
+        if st_type in ("SPEECH", "SPEECH_CONTINUE"):
             speeches += count
-        elif st_type == "QUESTION":
+        elif st_type == "SMALL_SPEECH":
             questions += count
         elif st_type == "PROCEDURAL":
             procedural += count
+        elif st_type == "DIRECTOR":
+            director += count
         else:
             unknown += count
+
+    total = speeches + questions + procedural
 
     return {
         "speeches": speeches,
         "questions": questions,
         "procedural": procedural,
+        "director": director,
         "unknown": unknown,
         "total": total,
+        "chair": chair,
+        "minister": minister,
+        "other_roles": other_roles,
     }
 
 
@@ -106,10 +135,10 @@ def verify_statistics(
     output_path: str | None = None,
 ) -> bool:
     """Compare Riigikogu official statistics with local SQLite speeches database."""
-    print("=" * 70)
+    print("=" * 110)
     print("RIIGIKOGU SPEECH STATISTICS VERIFICATION")
     print(f"Period: {start_date} to {end_date}")
-    print("=" * 70)
+    print("=" * 110)
 
     # Load person profiles
     persons_file = os.path.join(OUTPUT_DIR_PROCESSED, "persons.json")
@@ -148,7 +177,7 @@ def verify_statistics(
     results = []
     has_critical_error = False
 
-    header = f"{'Saadiku nimi':<28} | {'Ametlik':<8} | {'Kohalik':<8} | {'Vahe':<6} | {'Olek':<14}"
+    header = f"{'Saadiku nimi':<26} | {'Questions (Off/Loc/Diff)':<24} | {'Procedural (Off/Loc)':<20} | {'Speeches (Off/Loc, Suh)':<23} | {'Olek':<16}"
     print(header)
     print("-" * len(header))
 
@@ -166,7 +195,7 @@ def verify_statistics(
             time.sleep(delay)
 
             if official_data is None:
-                print(f"{full_name:<28} | {'API viga':<8} | {'-':<8} | {'-':<6} | {'VIGA':<14}")
+                print(f"{full_name:<26} | {'API viga':<24} | {'-':<20} | {'-':<23} | {'VIGA':<16}")
                 continue
 
             off_total = official_data.get("total", 0)
@@ -181,25 +210,48 @@ def verify_statistics(
                 start_date=start_date,
                 end_date=end_date,
             )
+            loc_speeches = local_counts["speeches"]
+            loc_questions = local_counts["questions"]
+            loc_procedural = local_counts["procedural"]
             loc_total = local_counts["total"]
-            diff = loc_total - off_total
 
-            # Status evaluation
-            if off_total > 0 and loc_total == 0:
-                status = "PUUDU (0)"
-                has_critical_error = True
-            elif off_total == 0 and loc_total == 0:
-                status = "OK (0)"
-            elif off_total == 0 and loc_total > 0:
-                status = "AINULT KOHALIK"
-            else:
-                ratio = abs(diff) / max(off_total, 1)
-                if ratio <= tolerance_ratio:
-                    status = "OK"
+            q_diff = loc_questions - off_questions
+            p_diff = loc_procedural - off_procedural
+            s_diff = loc_speeches - off_speeches
+            tot_diff = loc_total - off_total
+
+            # Evaluation criteria per roadmap specification:
+            # - questions: |diff| <= max(1, 0.02 * official)
+            # - procedural: |diff| <= max(1, 0.02 * official)
+            # - speeches: informational ratio only
+            q_allowed = max(1, 0.02 * off_questions)
+            p_allowed = max(1, 0.02 * off_procedural)
+
+            q_ok = abs(q_diff) <= q_allowed
+            p_ok = abs(p_diff) <= p_allowed
+
+            ratio_str = (
+                f"{loc_speeches / off_speeches:.1f}x" if off_speeches > 0 else f"{loc_speeches}/0"
+            )
+
+            if q_ok and p_ok:
+                if off_total == 0 and loc_total == 0:
+                    status = "OK (0)"
                 else:
-                    status = "ERINEVUS"
+                    status = "OK"
+            else:
+                mismatches = []
+                if not q_ok:
+                    mismatches.append(f"Q:{q_diff:+d}")
+                if not p_ok:
+                    mismatches.append(f"P:{p_diff:+d}")
+                status = f"ERINEVUS ({', '.join(mismatches)})"
+                has_critical_error = True
 
-            print(f"{full_name:<28} | {off_total:<8} | {loc_total:<8} | {diff:+6} | {status:<14}")
+            q_str = f"{off_questions:>3} / {loc_questions:>3} ({q_diff:+3d})"
+            p_str = f"{off_procedural:>2} / {loc_procedural:>2} ({p_diff:+2d})"
+            s_str = f"{off_speeches:>3} / {loc_speeches:>3} ({ratio_str:>5})"
+            print(f"{full_name:<26} | {q_str:<24} | {p_str:<20} | {s_str:<23} | {status:<16}")
 
             results.append(
                 {
@@ -212,7 +264,17 @@ def verify_statistics(
                         "procedural": off_procedural,
                     },
                     "local": local_counts,
-                    "diff": diff,
+                    "diff": {
+                        "questions": q_diff,
+                        "procedural": p_diff,
+                        "speeches": s_diff,
+                        "total": tot_diff,
+                    },
+                    "speeches_ratio": round(loc_speeches / off_speeches, 2)
+                    if off_speeches > 0
+                    else None,
+                    "questions_ok": q_ok,
+                    "procedural_ok": p_ok,
                     "status": status,
                 }
             )
@@ -222,9 +284,9 @@ def verify_statistics(
 
     print("-" * len(header))
     passed_count = sum(1 for r in results if r["status"] in ("OK", "OK (0)"))
-    alert_count = sum(1 for r in results if "PUUDU" in r["status"])
+    discrepancy_count = sum(1 for r in results if "ERINEVUS" in r["status"])
     print(
-        f"\nKokkuvõte: {len(results)} testitud | {passed_count} vastavuses | {alert_count} puudumisteatist"
+        f"\nKokkuvõte: {len(results)} testitud | {passed_count} vastavuses (questions & procedural) | {discrepancy_count} lahknevust"
     )
 
     if output_path:
@@ -235,7 +297,8 @@ def verify_statistics(
             "summary": {
                 "total_tested": len(results),
                 "passed": passed_count,
-                "alerts": alert_count,
+                "alerts": discrepancy_count,
+                "discrepancies": discrepancy_count,
             },
             "results": results,
         }
