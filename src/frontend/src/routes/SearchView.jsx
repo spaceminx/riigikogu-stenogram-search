@@ -35,6 +35,30 @@ export function SearchView({
     searchParams.get("exclude_chair") === "true" || searchParams.get("exclude_chair") === "1";
   const speechCategoryParam = searchParams.get("speech_category") || "";
 
+  // Local state for filter form - only written to URL upon search submit
+  const [filterMembership, setFilterMembership] = useState(membershipParam);
+  const [filterFaction, setFilterFaction] = useState(factionParam);
+  const [filterSpeaker, setFilterSpeaker] = useState(speakerParam);
+  const [filterDateRange, setFilterDateRange] = useState({
+    startDate: startDateParam,
+    endDate: endDateParam,
+  });
+  const [filterExcludeChair, setFilterExcludeChair] = useState(excludeChairParam);
+  const [filterSpeechCategory, setFilterSpeechCategory] = useState(speechCategoryParam);
+
+  // Sync draft filters during render if URL changes externally (e.g. Back/Forward)
+  const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}`;
+  const [prevUrlFiltersKey, setPrevUrlFiltersKey] = useState(urlFiltersKey);
+  if (prevUrlFiltersKey !== urlFiltersKey) {
+    setPrevUrlFiltersKey(urlFiltersKey);
+    setFilterMembership(membershipParam);
+    setFilterFaction(factionParam);
+    setFilterSpeaker(speakerParam);
+    setFilterDateRange({ startDate: startDateParam, endDate: endDateParam });
+    setFilterExcludeChair(excludeChairParam);
+    setFilterSpeechCategory(speechCategoryParam);
+  }
+
   // Local state for interactive editing of input query tokens
   const [groups, setGroups] = useState(() => parseQueryToGroups(queryParam));
   const [inputValue, setInputValue] = useState("");
@@ -45,6 +69,7 @@ export function SearchView({
   const [activity, setActivity] = useState([]);
   const [speakers, setSpeakers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activityLoading, setActivityLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Context modal state
@@ -59,12 +84,11 @@ export function SearchView({
     setGroups(parseQueryToGroups(queryParam));
   }
 
-  const hasSearchCriteria = Boolean(
-    queryParam.trim() || factionParam || speakerParam || startDateParam || endDateParam
-  );
+  const hasSearchQuery = Boolean(queryParam.trim());
 
+  // Main search effect: triggered only when search parameters change (excluding interval)
   useEffect(() => {
-    if (!hasSearchCriteria) {
+    if (!hasSearchQuery) {
       return;
     }
 
@@ -154,6 +178,8 @@ export function SearchView({
     return () => {
       abortController.abort();
     };
+    // intervalParam is intentionally omitted: interval changes only re-fetch activity in handleIntervalChange
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     queryParam,
     membershipParam,
@@ -162,29 +188,14 @@ export function SearchView({
     startDateParam,
     endDateParam,
     sortParam,
-    intervalParam,
     pageParam,
     excludeChairParam,
     speechCategoryParam,
-    hasSearchCriteria,
+    hasSearchQuery,
   ]);
 
-  const updateUrlParams = (changes) => {
-    const next = new URLSearchParams(searchParams);
-    Object.entries(changes).forEach(([key, val]) => {
-      if (val === null || val === undefined || val === "" || val === false) {
-        next.delete(key);
-      } else if (val === true) {
-        next.set(key, "true");
-      } else {
-        next.set(key, String(val));
-      }
-    });
-    setSearchParams(next);
-  };
-
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     let finalGroups = [...groups];
     if (inputValue.trim()) {
       finalGroups[finalGroups.length - 1] = [
@@ -197,33 +208,82 @@ export function SearchView({
     finalGroups = finalGroups.filter((g) => g.length > 0);
     const queryString = finalGroups.map((g) => g.join(" ")).join(", ");
 
-    updateUrlParams({ q: queryString || null, page: null });
+    const next = new URLSearchParams();
+    if (queryString) next.set("q", queryString);
+    if (filterMembership && filterMembership !== "all") next.set("membership", filterMembership);
+    if (filterFaction) next.set("faction", filterFaction);
+    if (filterSpeaker.trim()) next.set("speaker", filterSpeaker.trim());
+    if (filterDateRange.startDate) next.set("start_date", filterDateRange.startDate);
+    if (filterDateRange.endDate) next.set("end_date", filterDateRange.endDate);
+    if (filterExcludeChair) next.set("exclude_chair", "true");
+    if (filterSpeechCategory) next.set("speech_category", filterSpeechCategory);
+    if (sortParam && sortParam !== "date_desc") next.set("sort", sortParam);
+    if (intervalParam && intervalParam !== "monthly") next.set("interval", intervalParam);
+
+    setSearchParams(next);
   };
 
   const handleSortChange = (newSort) => {
-    updateUrlParams({ sort: newSort === "date_desc" ? null : newSort, page: null });
+    const next = new URLSearchParams(searchParams);
+    if (newSort === "date_desc") {
+      next.delete("sort");
+    } else {
+      next.set("sort", newSort);
+    }
+    next.delete("page");
+    setSearchParams(next, { replace: true });
   };
 
   const handleIntervalChange = (newInterval) => {
-    updateUrlParams({ interval: newInterval === "monthly" ? null : newInterval });
+    const next = new URLSearchParams(searchParams);
+    if (newInterval === "monthly") {
+      next.delete("interval");
+    } else {
+      next.set("interval", newInterval);
+    }
+    setSearchParams(next, { replace: true });
+
+    if (hasSearchQuery) {
+      setActivityLoading(true);
+      fetchActivity({
+        query: queryParam,
+        interval: newInterval,
+        membership: membershipParam,
+        faction: factionParam || null,
+        speaker: speakerParam || null,
+        startDate: startDateParam || null,
+        endDate: endDateParam || null,
+        excludeChair: excludeChairParam,
+        speechCategory: speechCategoryParam || null,
+      })
+        .then((data) => {
+          setActivity(data.activity || []);
+        })
+        .catch(() => {})
+        .finally(() => {
+          setActivityLoading(false);
+        });
+    }
   };
 
   const handlePageChange = (newPage) => {
-    updateUrlParams({ page: newPage <= 1 ? null : newPage });
+    const next = new URLSearchParams(searchParams);
+    if (newPage <= 1) {
+      next.delete("page");
+    } else {
+      next.set("page", String(newPage));
+    }
+    setSearchParams(next, { replace: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleResetFilters = () => {
-    updateUrlParams({
-      membership: null,
-      faction: null,
-      speaker: null,
-      start_date: null,
-      end_date: null,
-      exclude_chair: null,
-      speech_category: null,
-      page: null,
-    });
+    setFilterMembership("all");
+    setFilterFaction("");
+    setFilterSpeaker("");
+    setFilterDateRange({ startDate: "", endDate: "" });
+    setFilterExcludeChair(false);
+    setFilterSpeechCategory("");
   };
 
   const handleOpenContext = async (speechId) => {
@@ -235,10 +295,10 @@ export function SearchView({
     }
   };
 
-  const currentTotalCount = hasSearchCriteria ? totalCount : 0;
-  const currentSpeeches = hasSearchCriteria ? speeches : [];
-  const currentActivity = hasSearchCriteria ? activity : [];
-  const currentSpeakers = hasSearchCriteria ? speakers : [];
+  const currentTotalCount = hasSearchQuery ? totalCount : 0;
+  const currentSpeeches = hasSearchQuery ? speeches : [];
+  const currentActivity = hasSearchQuery ? activity : [];
+  const currentSpeakers = hasSearchQuery ? speakers : [];
 
   const totalPages = Math.max(1, Math.ceil(currentTotalCount / PAGE_SIZE));
 
@@ -266,29 +326,21 @@ export function SearchView({
       />
 
       <SearchFilters
-        searchMembership={membershipParam}
-        setSearchMembership={(m) =>
-          updateUrlParams({ membership: m === "all" ? null : m, page: null })
-        }
+        searchMembership={filterMembership}
+        setSearchMembership={setFilterMembership}
         memberships={memberships}
-        searchFaction={factionParam}
-        setSearchFaction={(f) => updateUrlParams({ faction: f || null, page: null })}
+        searchFaction={filterFaction}
+        setSearchFaction={setFilterFaction}
         searchFactionsList={searchFactionsList}
         plenaryDates={plenaryDates}
-        searchDateRange={{ startDate: startDateParam, endDate: endDateParam }}
-        setSearchDateRange={(range) =>
-          updateUrlParams({
-            start_date: range.startDate || null,
-            end_date: range.endDate || null,
-            page: null,
-          })
-        }
-        searchSpeaker={speakerParam}
-        setSearchSpeaker={(s) => updateUrlParams({ speaker: s || null, page: null })}
-        searchSpeechCategory={speechCategoryParam}
-        setSearchSpeechCategory={(c) => updateUrlParams({ speech_category: c || null, page: null })}
-        searchExcludeChair={excludeChairParam}
-        setSearchExcludeChair={(c) => updateUrlParams({ exclude_chair: c || null, page: null })}
+        searchDateRange={filterDateRange}
+        setSearchDateRange={setFilterDateRange}
+        searchSpeaker={filterSpeaker}
+        setSearchSpeaker={setFilterSpeaker}
+        searchSpeechCategory={filterSpeechCategory}
+        setSearchSpeechCategory={setFilterSpeechCategory}
+        searchExcludeChair={filterExcludeChair}
+        setSearchExcludeChair={setFilterExcludeChair}
         onResetFilters={handleResetFilters}
       />
 
@@ -304,13 +356,13 @@ export function SearchView({
         </div>
       )}
 
-      {currentActivity.length > 0 && (
+      {hasSearchQuery && currentActivity.length > 0 && (
         <div className="dashboard-grid" style={{ marginBottom: "1.5rem" }}>
           <ActivityChart
             activity={currentActivity}
             interval={intervalParam}
             onIntervalChange={handleIntervalChange}
-            loading={loading}
+            loading={activityLoading}
             theme={theme}
           />
           <aside className="dashboard-rail">
@@ -327,13 +379,17 @@ export function SearchView({
           exportParams={exportParams}
         />
 
-        {loading ? (
+        {!hasSearchQuery ? (
+          <div className="empty-state" style={{ padding: "3rem 1rem" }}>
+            <p>Sisesta otsisõna või vali huvipakkuv teema stenogrammidest otsimiseks.</p>
+          </div>
+        ) : loading ? (
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Otsin stenogramme...</p>
           </div>
         ) : currentSpeeches.length === 0 ? (
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
-            <p>Valitud filtritega kõnesid ei leitud.</p>
+            <p>Otsingutingimustele vastavaid kõnesid ei leitud.</p>
           </div>
         ) : (
           <>

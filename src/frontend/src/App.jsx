@@ -121,8 +121,8 @@ function AppContent() {
 
     fetchMemberships()
       .then((data) => {
-        if (data && data.memberships && data.memberships.length > 0) {
-          setMemberships(data.memberships);
+        if (Array.isArray(data) && data.length > 0) {
+          setMemberships(data.filter((m) => m.number >= 14));
         }
       })
       .catch(() => {});
@@ -160,6 +160,8 @@ function AppContent() {
                 overviewLoading={overviewLoading}
                 plenaryDates={plenaryDates}
                 theme={theme}
+                memberships={memberships}
+                searchFactionsList={searchFactionsList}
               />
             }
           />

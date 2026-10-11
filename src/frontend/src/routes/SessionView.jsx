@@ -32,8 +32,16 @@ export function SessionView() {
     }
   }, [loading, sessionData, location.hash]);
 
-  const targetSpeechId = location.hash.startsWith("#speech-")
-    ? parseInt(location.hash.replace("#speech-", ""), 10)
+  const handleBack = () => {
+    if (window.history.length <= 1 || location.key === "default") {
+      navigate("/otsing");
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const targetSpeechAnchor = location.hash.startsWith("#speech-")
+    ? location.hash.replace("#speech-", "")
     : null;
 
   const speeches = sessionData?.results || [];
@@ -43,7 +51,7 @@ export function SessionView() {
       <div className="glass-panel" style={{ marginBottom: "1rem" }}>
         <div className="chart-header speeches-header-bar">
           <div className="speeches-header-heading">
-            <button className="back-nav-btn" onClick={() => navigate(-1)}>
+            <button className="back-nav-btn" onClick={handleBack}>
               &larr; Tagasi
             </button>
             <h2 className="speeches-view-title">
@@ -102,7 +110,15 @@ export function SessionView() {
       {!loading && !error && speeches.length > 0 && (
         <div className="speeches-list">
           {speeches.map((speech) => {
-            const isTarget = speech.id === targetSpeechId;
+            const publicSpeechId =
+              speech.external_id != null
+                ? String(speech.external_id)
+                : speech.speech_key
+                  ? String(speech.speech_key)
+                  : null;
+            const isTarget = Boolean(
+              targetSpeechAnchor && publicSpeechId && publicSpeechId === targetSpeechAnchor
+            );
             return (
               <SpeechCard
                 key={speech.id}

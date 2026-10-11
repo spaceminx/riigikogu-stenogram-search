@@ -4,6 +4,8 @@ import { CalendarDays, ExternalLink } from "lucide-react";
 import DateRangeCalendar from "../DateRangeCalendar";
 import ActivityChart from "../components/ActivityChart";
 import SpeakersPanel from "../components/SpeakersPanel";
+import SearchQueryInput from "../components/SearchQueryInput";
+import SearchFilters from "../components/SearchFilters";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 
 export function DashboardView({
@@ -11,21 +13,58 @@ export function DashboardView({
   overviewError,
   plenaryDates = [],
   theme = "light",
+  memberships = [],
+  searchFactionsList = [],
 }) {
   const navigate = useNavigate();
+  const [groups, setGroups] = useState([[]]);
   const [inputValue, setInputValue] = useState("");
+  const [searchMembership, setSearchMembership] = useState("all");
+  const [searchFaction, setSearchFaction] = useState("");
+  const [searchDateRange, setSearchDateRange] = useState({ startDate: "", endDate: "" });
+  const [searchSpeaker, setSearchSpeaker] = useState("");
+  const [searchSpeechCategory, setSearchSpeechCategory] = useState("");
+  const [searchExcludeChair, setSearchExcludeChair] = useState(false);
   const [interval, setInterval] = useState("monthly");
 
   const recentSessions = dashboardOverview?.sessions || [];
   const overviewSpeakers = dashboardOverview?.speakers || [];
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    let finalGroups = [...groups];
     if (inputValue.trim()) {
-      navigate(`/otsing?q=${encodeURIComponent(inputValue.trim())}`);
-    } else {
-      navigate("/otsing");
+      finalGroups[finalGroups.length - 1] = [
+        ...finalGroups[finalGroups.length - 1],
+        inputValue.trim(),
+      ];
+      setGroups(finalGroups);
+      setInputValue("");
     }
+    finalGroups = finalGroups.filter((g) => g.length > 0);
+    const queryString = finalGroups.map((g) => g.join(" ")).join(", ");
+
+    const params = new URLSearchParams();
+    if (queryString) params.set("q", queryString);
+    if (searchMembership && searchMembership !== "all") params.set("membership", searchMembership);
+    if (searchFaction) params.set("faction", searchFaction);
+    if (searchSpeaker.trim()) params.set("speaker", searchSpeaker.trim());
+    if (searchDateRange.startDate) params.set("start_date", searchDateRange.startDate);
+    if (searchDateRange.endDate) params.set("end_date", searchDateRange.endDate);
+    if (searchExcludeChair) params.set("exclude_chair", "true");
+    if (searchSpeechCategory) params.set("speech_category", searchSpeechCategory);
+
+    const qs = params.toString();
+    navigate(`/otsing${qs ? `?${qs}` : ""}`);
+  };
+
+  const handleResetFilters = () => {
+    setSearchMembership("all");
+    setSearchFaction("");
+    setSearchDateRange({ startDate: "", endDate: "" });
+    setSearchSpeaker("");
+    setSearchSpeechCategory("");
+    setSearchExcludeChair(false);
   };
 
   const handleTopicClick = (topic) => {
@@ -50,26 +89,33 @@ export function DashboardView({
         <span className="archive-stat">XIV ja XV koosseis</span>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="search-section">
-        <div className="search-query-row">
-          <div className="search-groups-container">
-            <div className="and-group-box">
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Sisesta otsisõna (nt kliima, mets, eelarve)..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="search-controls">
-          <button type="submit" className="search-button">
-            Otsi
-          </button>
-        </div>
-      </form>
+      <SearchQueryInput
+        groups={groups}
+        setGroups={setGroups}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        onSearch={handleSearchSubmit}
+        loading={false}
+      />
+
+      <SearchFilters
+        searchMembership={searchMembership}
+        setSearchMembership={setSearchMembership}
+        memberships={memberships}
+        searchFaction={searchFaction}
+        setSearchFaction={setSearchFaction}
+        searchFactionsList={searchFactionsList}
+        plenaryDates={plenaryDates}
+        searchDateRange={searchDateRange}
+        setSearchDateRange={setSearchDateRange}
+        searchSpeaker={searchSpeaker}
+        setSearchSpeaker={setSearchSpeaker}
+        searchSpeechCategory={searchSpeechCategory}
+        setSearchSpeechCategory={setSearchSpeechCategory}
+        searchExcludeChair={searchExcludeChair}
+        setSearchExcludeChair={setSearchExcludeChair}
+        onResetFilters={handleResetFilters}
+      />
 
       <section className="topic-suggestions" aria-label="Populaarsed otsinguteemad">
         <span className="topic-suggestions-label">Populaarsed teemad</span>
@@ -89,7 +135,7 @@ export function DashboardView({
 
       <div className="dashboard-grid">
         <ActivityChart
-          activity={[]}
+          activity={dashboardOverview?.activity || []}
           interval={interval}
           onIntervalChange={setInterval}
           loading={false}

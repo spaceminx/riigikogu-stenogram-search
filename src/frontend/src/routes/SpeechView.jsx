@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ArrowLeft, Calendar, ExternalLink, ListOrdered, Video } from "lucide-react";
 import { fetchSpeech } from "../lib/api";
@@ -13,7 +13,16 @@ import {
 
 export function SpeechView() {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (window.history.length <= 1 || location.key === "default") {
+      navigate("/otsing");
+    } else {
+      navigate(-1);
+    }
+  };
 
   const {
     data: speech,
@@ -64,6 +73,7 @@ export function SpeechView() {
 
   const speechTypeLabel = SPEECH_TYPE_LABELS[speech.speech_type];
   const durationText = formatDuration(speech.duration_seconds);
+  const publicSpeechId = speech.external_id ?? speech.speech_key;
 
   return (
     <div style={{ marginTop: "1rem" }}>
@@ -71,7 +81,7 @@ export function SpeechView() {
         <button
           type="button"
           className="back-nav-btn"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           title="Mine tagasi eelmisele lehele"
         >
           &larr; Tagasi
@@ -88,7 +98,7 @@ export function SpeechView() {
             Istung {speech.date}
           </Link>
           <span style={{ margin: "0 0.5rem" }}>/</span>
-          <span>Kõne #{speech.id}</span>
+          <span>Kõne #{publicSpeechId}</span>
         </nav>
       </div>
 
@@ -149,7 +159,7 @@ export function SpeechView() {
           style={{ borderTop: "1px solid var(--color-border-subtle, #e2e8f0)", paddingTop: "1rem" }}
         >
           <Link
-            to={`/istung/${speech.date}#speech-${speech.id}`}
+            to={`/istung/${speech.date}${publicSpeechId ? `#speech-${publicSpeechId}` : ""}`}
             className="context-btn"
             title="Vaata kõnet terve istungi kontekstis"
           >

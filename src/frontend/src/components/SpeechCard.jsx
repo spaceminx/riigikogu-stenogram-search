@@ -22,11 +22,11 @@ export function SpeechCard({
 }) {
   const speechTypeLabel = SPEECH_TYPE_LABELS[speech.speech_type];
   const durationText = formatDuration(speech.duration_seconds);
-  const speechId = speech.id;
+  const publicSpeechId = speech.external_id ?? speech.speech_key;
 
   return (
     <div
-      id={`speech-${speechId}`}
+      id={publicSpeechId ? `speech-${publicSpeechId}` : undefined}
       ref={cardRef}
       className={`glass-panel speech-card ${isTarget ? "target-speech-highlight" : ""}`}
     >
@@ -46,9 +46,9 @@ export function SpeechCard({
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <span className="speech-datetime">{formatDateTime(speech.date, speech.time)}</span>
-          {mode === "session" && (
+          {mode === "session" && publicSpeechId && (
             <a
-              href={`#speech-${speechId}`}
+              href={`#speech-${publicSpeechId}`}
               className="speech-anchor-link"
               title="Kopeeri kõne otselink"
               style={{ color: "var(--color-text-muted, #94a3b8)", fontSize: "0.85rem" }}
@@ -91,7 +91,7 @@ export function SpeechCard({
           </button>
         ) : (
           <Link
-            to={`/istung/${speech.date}#speech-${speechId}`}
+            to={`/istung/${speech.date}${publicSpeechId ? `#speech-${publicSpeechId}` : ""}`}
             className="context-btn"
             title="Vaata selle istungi täisprotokolli"
           >
@@ -100,10 +100,16 @@ export function SpeechCard({
         )}
 
         <div className="speech-card-links">
-          <Link to={`/kone/${speechId}`} className="speech-link" title="Ava kõne eraldi lehel">
-            <FileText size={14} aria-hidden="true" />
-            <span>Kõne leht</span>
-          </Link>
+          {publicSpeechId && (
+            <Link
+              to={`/kone/${publicSpeechId}`}
+              className="speech-link"
+              title="Ava kõne eraldi lehel"
+            >
+              <FileText size={14} aria-hidden="true" />
+              <span>Kõne leht</span>
+            </Link>
+          )}
 
           {speech.video_url && (
             <a

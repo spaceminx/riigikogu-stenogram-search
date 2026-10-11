@@ -144,15 +144,17 @@ export function ContextModal({ activeSpeechContext, onClose, groups = [[]] }) {
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <Link
-                      to={`/kone/${speech.id}`}
-                      className="transcript-video-btn"
-                      title="Ava eraldi kõne lehel"
-                      onClick={onClose}
-                    >
-                      <FileText size={13} aria-hidden="true" />
-                      <span>Leht</span>
-                    </Link>
+                    {(speech.external_id ?? speech.speech_key) && (
+                      <Link
+                        to={`/kone/${speech.external_id ?? speech.speech_key}`}
+                        className="transcript-video-btn"
+                        title="Ava eraldi kõne lehel"
+                        onClick={onClose}
+                      >
+                        <FileText size={13} aria-hidden="true" />
+                        <span>Leht</span>
+                      </Link>
+                    )}
                     {speech.video_url && (
                       <a
                         href={speech.video_url}
