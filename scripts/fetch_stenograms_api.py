@@ -120,6 +120,7 @@ KNOWN_ROLE_KEYWORDS = {
     "kaasettekandja",
     "nõunik",
     "ekspert",
+    "kandidaat",
 }
 
 
@@ -128,6 +129,20 @@ def split_speaker_role(full_name: str) -> tuple[str, str | None]:
     parts = full_name.strip().split(" ")
     if len(parts) <= 1:
         return full_name, None
+
+    # Check for suffix role: trailing words that are lowercase and contain a role keyword
+    suffix_parts = []
+    j = len(parts) - 1
+    while j >= 0 and parts[j] and parts[j][0].islower():
+        suffix_parts.insert(0, parts[j])
+        j -= 1
+
+    suffix_role = None
+    if suffix_parts and j >= 0:
+        if any(any(kw in w.lower() for kw in KNOWN_ROLE_KEYWORDS) for w in suffix_parts):
+            role_str = " ".join(suffix_parts)
+            suffix_role = role_str[0].upper() + role_str[1:]
+            parts = parts[: j + 1]
 
     name_parts = []
     i = len(parts) - 1
@@ -141,11 +156,23 @@ def split_speaker_role(full_name: str) -> tuple[str, str | None]:
             break
 
     if not name_parts:
+        if suffix_role:
+            return " ".join(parts), suffix_role
         return full_name, None
 
     name = " ".join(name_parts)
-    role = " ".join(parts[: i + 1]).strip()
-    return name, role if role else None
+    prefix_role = " ".join(parts[: i + 1]).strip()
+
+    if prefix_role and suffix_role:
+        role = f"{prefix_role} {suffix_role}"
+    elif prefix_role:
+        role = prefix_role
+    elif suffix_role:
+        role = suffix_role
+    else:
+        role = None
+
+    return name, role
 
 
 def get_faction_for_date(faction_map: dict, name: str, date_str: str) -> str | None:
