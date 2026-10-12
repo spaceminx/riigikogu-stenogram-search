@@ -144,9 +144,9 @@ Ava brauseris `http://localhost:5173`.
 Tootmiskeskkonna paigaldus käivitub automaatselt pärast `master` haru CI õnnestumist või käsitsi käivitades töövootagant `.github/workflows/deploy.yml`.
 
 ### Paigalduse seadistamine
-Serveri `self-hosted` runner vajab repositooriumi muutujat `DEPLOY_DIR`:
-- Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Variables**.
-- Lisa muutuja `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search`).
+Serveri `self-hosted` runner vajab repositooriumi saladust (secret) `DEPLOY_DIR`:
+- Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
+- Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search`).
 
 ---
 
