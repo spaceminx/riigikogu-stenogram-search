@@ -157,6 +157,79 @@ def get_faction_for_date(faction_map: dict, name: str, date_str: str) -> str | N
     return None
 
 
+_logged_name_changes: set[tuple[str, str]] = set()
+
+
+def resolve_speaker_uuid(
+    speaker_name: str,
+    ems_id: str | None,
+    date: str,
+    known_uuids: set[str] | None,
+    uuid_to_name_map: dict[str, str] | None,
+    person_name_map: dict[str, str] | None,
+) -> tuple[str | None, str]:
+    """Resolve canonical MP UUID for a speaker.
+
+    Priority order:
+    1. ems_id in known_uuids and name matches canonical name -> (ems_id, "ems")
+    2. ems_id in known_uuids, name does not match, but first name matches (case-insensitive)
+       and speaker_name is not any other person's canonical name -> (ems_id, "ems_name_change")
+    3. Tarmo Tamm disambiguation by date (< 2023-04-10) -> (uuid, "tarmo_tamm_date")
+    4. person_name_map match -> (uuid, "name")
+    5. otherwise -> (None, "unresolved")
+    """
+    raw_ems = str(ems_id).strip() if ems_id else None
+    if raw_ems:
+        if known_uuids is None:
+            if not uuid_to_name_map or uuid_to_name_map.get(raw_ems) == speaker_name:
+                return (raw_ems, "ems")
+        elif raw_ems in known_uuids:
+            canonical_name = uuid_to_name_map.get(raw_ems) if uuid_to_name_map else None
+            if not uuid_to_name_map or canonical_name == speaker_name:
+                return (raw_ems, "ems")
+
+            # 2. Name change check: first name matches, and speaker_name is not another person's canonical name
+            all_canonical_names = (
+                set(uuid_to_name_map.values())
+                if uuid_to_name_map
+                else (set(person_name_map.keys()) if person_name_map else set())
+            )
+            speaker_first = speaker_name.strip().split()[0] if speaker_name.strip() else ""
+            canonical_first = (
+                canonical_name.strip().split()[0]
+                if canonical_name and canonical_name.strip()
+                else ""
+            )
+
+            if (
+                speaker_first
+                and canonical_first
+                and speaker_first.lower() == canonical_first.lower()
+                and speaker_name not in all_canonical_names
+            ):
+                pair = (speaker_name, canonical_name)
+                if pair not in _logged_name_changes:
+                    _logged_name_changes.add(pair)
+                    print(
+                        f"Notice: Name change resolved for '{speaker_name}' -> '{canonical_name}' ({raw_ems})"
+                    )
+                return (raw_ems, "ems_name_change")
+
+    # 3. Tarmo Tamm disambiguation by date
+    if speaker_name == "Tarmo Tamm":
+        if date < "2023-04-10":
+            return ("76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5", "tarmo_tamm_date")
+        else:
+            return ("236e49d6-eecb-4562-8ad4-bedd586bb149", "tarmo_tamm_date")
+
+    # 4. person_name_map
+    if person_name_map and speaker_name in person_name_map:
+        return (person_name_map[speaker_name], "name")
+
+    # 5. Unresolved
+    return (None, "unresolved")
+
+
 def get_month_ranges(start_date: str, end_date: str) -> list[tuple[str, str]]:
     """Generate (start, end) date ranges chunked by calendar months."""
     start = datetime.strptime(start_date, "%Y-%m-%d")
@@ -439,32 +512,22 @@ def parse_meeting_speeches(
                     continue
 
                 speaker_name, speaker_role = split_speaker_role(speaker_raw)
-                speaker_faction = get_faction_for_date(faction_map, speaker_name, date_formatted)
                 raw_ems_id = sp.get("emsId")
-                raw_ems_str = str(raw_ems_id) if raw_ems_id else None
-                speaker_uuid = None
-
-                # 1. Direct match with canonical MP UUID only if it also matches the speaker name
-                if raw_ems_str and (
-                    known_person_uuids is None
-                    or (
-                        raw_ems_str in known_person_uuids
-                        and (
-                            not uuid_to_name_map
-                            or uuid_to_name_map.get(raw_ems_str) == speaker_name
-                        )
-                    )
-                ):
-                    speaker_uuid = raw_ems_str
-                # 2. Specific disambiguation for Tarmo Tamm by date
-                elif speaker_name == "Tarmo Tamm":
-                    if date_formatted < "2023-04-10":
-                        speaker_uuid = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
-                    else:
-                        speaker_uuid = "236e49d6-eecb-4562-8ad4-bedd586bb149"
-                # 3. Canonical mapping for unique names (including ministers who are MPs)
-                elif person_name_map and speaker_name in person_name_map:
-                    speaker_uuid = person_name_map[speaker_name]
+                raw_ems_str = str(raw_ems_id).strip() if raw_ems_id else None
+                speaker_uuid, _ = resolve_speaker_uuid(
+                    speaker_name=speaker_name,
+                    ems_id=raw_ems_str,
+                    date=date_formatted,
+                    known_uuids=known_person_uuids,
+                    uuid_to_name_map=uuid_to_name_map,
+                    person_name_map=person_name_map,
+                )
+                canonical_name = (
+                    uuid_to_name_map.get(speaker_uuid)
+                    if (speaker_uuid and uuid_to_name_map)
+                    else speaker_name
+                )
+                speaker_faction = get_faction_for_date(faction_map, canonical_name, date_formatted)
 
                 if lemma_cache is not None and raw_text in lemma_cache:
                     lemmas = lemma_cache[raw_text]
@@ -544,17 +607,24 @@ def parse_meeting_speeches(
                         continue
 
                     speaker_name, speaker_role = split_speaker_role(speaker_raw)
-                    speaker_faction = get_faction_for_date(
-                        faction_map, speaker_name, date_formatted
+                    raw_ems_id = event.get("emsId")
+                    raw_ems_str = str(raw_ems_id).strip() if raw_ems_id else None
+                    speaker_uuid, _ = resolve_speaker_uuid(
+                        speaker_name=speaker_name,
+                        ems_id=raw_ems_str,
+                        date=date_formatted,
+                        known_uuids=known_person_uuids,
+                        uuid_to_name_map=uuid_to_name_map,
+                        person_name_map=person_name_map,
                     )
-                    speaker_uuid = None
-                    if speaker_name == "Tarmo Tamm":
-                        if date_formatted < "2023-04-10":
-                            speaker_uuid = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
-                        else:
-                            speaker_uuid = "236e49d6-eecb-4562-8ad4-bedd586bb149"
-                    elif person_name_map and speaker_name in person_name_map:
-                        speaker_uuid = person_name_map[speaker_name]
+                    canonical_name = (
+                        uuid_to_name_map.get(speaker_uuid)
+                        if (speaker_uuid and uuid_to_name_map)
+                        else speaker_name
+                    )
+                    speaker_faction = get_faction_for_date(
+                        faction_map, canonical_name, date_formatted
+                    )
 
                     if lemma_cache is not None and raw_text in lemma_cache:
                         lemmas = lemma_cache[raw_text]
@@ -582,7 +652,7 @@ def parse_meeting_speeches(
                             "speaker_role": speaker_role,
                             "speaker_faction": speaker_faction,
                             "speaker_uuid": str(speaker_uuid) if speaker_uuid else None,
-                            "ems_id": None,
+                            "ems_id": raw_ems_str,
                             "speech_type": "SPEECH",
                             "external_id": None,
                             "start_time": None,

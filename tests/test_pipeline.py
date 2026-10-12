@@ -6,6 +6,7 @@ from scripts.fetch_stenograms_api import (
     compute_duration_seconds,
     get_faction_for_date,
     parse_meeting_speeches,
+    resolve_speaker_uuid,
     save_session_to_jsonl,
 )
 from src.load.database import SessionLocal
@@ -975,3 +976,183 @@ def test_download_from_b2_default_active_window(tmp_path, monkeypatch):
     ok = download_from_b2()
     assert ok is True
     assert set(downloaded) == {"2026.jsonl", "2027.jsonl"}
+
+
+def test_resolve_speaker_uuid_name_change():
+    known_uuids = {"17d27ea5-b5e6-43e0-86db-ebc15bdd5788"}
+    uuid_to_name = {"17d27ea5-b5e6-43e0-86db-ebc15bdd5788": "Luisa Värk"}
+    name_map = {"Luisa Värk": "17d27ea5-b5e6-43e0-86db-ebc15bdd5788"}
+    faction_map = {
+        "Luisa Värk": [
+            {
+                "start": "2023-04-10",
+                "end": "2027-03-01",
+                "faction": "Eesti Reformierakonna fraktsioon",
+            }
+        ]
+    }
+
+    resolved_uuid, method = resolve_speaker_uuid(
+        speaker_name="Luisa Rõivas",
+        ems_id="17d27ea5-b5e6-43e0-86db-ebc15bdd5788",
+        date="2023-05-18",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name,
+        person_name_map=name_map,
+    )
+    assert resolved_uuid == "17d27ea5-b5e6-43e0-86db-ebc15bdd5788"
+    assert method == "ems_name_change"
+
+    canonical_name = uuid_to_name.get(resolved_uuid)
+    faction = get_faction_for_date(faction_map, canonical_name, "2023-05-18")
+    assert faction == "Eesti Reformierakonna fraktsioon"
+
+
+def test_resolve_speaker_uuid_same_first_name_canonical_mismatch():
+    uuid1 = "11111111-1111-1111-1111-111111111111"
+    uuid2 = "22222222-2222-2222-2222-222222222222"
+    known_uuids = {uuid1, uuid2}
+    uuid_to_name = {uuid1: "Tarmo Tamm", uuid2: "Tarmo Kallas"}
+    name_map = {"Tarmo Tamm": uuid1, "Tarmo Kallas": uuid2}
+
+    resolved_uuid, method = resolve_speaker_uuid(
+        speaker_name="Tarmo Kallas",
+        ems_id=uuid1,
+        date="2024-01-01",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name,
+        person_name_map=name_map,
+    )
+    assert method != "ems_name_change"
+    assert resolved_uuid != uuid1
+    assert resolved_uuid == uuid2
+    assert method == "name"
+
+
+def test_resolve_speaker_uuid_tarmo_tamm():
+    uuid_old = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+    uuid_new = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+
+    uuid1, method1 = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=None,
+        date="2023-04-09",
+        known_uuids=None,
+        uuid_to_name_map=None,
+        person_name_map=None,
+    )
+    assert uuid1 == uuid_old
+    assert method1 == "tarmo_tamm_date"
+
+    uuid2, method2 = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=None,
+        date="2023-04-10",
+        known_uuids=None,
+        uuid_to_name_map=None,
+        person_name_map=None,
+    )
+    assert uuid2 == uuid_new
+    assert method2 == "tarmo_tamm_date"
+
+
+def test_repair_speaker_uuids_dry_run_and_apply(tmp_path):
+    import sqlite3
+
+    from scripts.repair_speaker_uuids import repair_speaker_uuids
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    luisa_uuid = "17d27ea5-b5e6-43e0-86db-ebc15bdd5788"
+    persons_data = [{"uuid": luisa_uuid, "full_name": "Luisa Värk"}]
+    (data_dir / "persons.json").write_text(json.dumps(persons_data), encoding="utf-8")
+
+    factions_data = {
+        "Luisa Värk": [
+            {
+                "start": "2023-04-10",
+                "end": "2027-03-01",
+                "faction": "Eesti Reformierakonna fraktsioon",
+            }
+        ]
+    }
+    (data_dir / "factions_map.json").write_text(json.dumps(factions_data), encoding="utf-8")
+
+    speech_raw = {
+        "date": "2023-05-18",
+        "time": "1000",
+        "source_file": "2023-05-18_1000.api",
+        "source_url": "https://example.com",
+        "speaker": "Luisa Rõivas",
+        "speaker_role": None,
+        "speaker_faction": None,
+        "speaker_uuid": None,
+        "ems_id": luisa_uuid,
+        "speech_type": "SPEECH",
+        "external_id": 99901,
+        "speech_key": "202305181000_luisa",
+        "text": "Tere",
+        "text_lemmas": "tere",
+        "status": "EDITED",
+    }
+    jsonl_file = data_dir / "2023.jsonl"
+    jsonl_file.write_text(json.dumps(speech_raw) + "\n", encoding="utf-8")
+
+    # Set up test sqlite database
+    db_file = tmp_path / "test.sqlite"
+    conn = sqlite3.connect(db_file)
+    conn.execute(
+        "CREATE TABLE speeches (id INTEGER PRIMARY KEY, external_id INTEGER, speech_key TEXT, speaker TEXT, speaker_role TEXT, speaker_faction TEXT, speaker_uuid TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO speeches (id, external_id, speech_key, speaker, speaker_role, speaker_faction, speaker_uuid) VALUES (1, 99901, '202305181000_luisa', 'Luisa Rõivas', NULL, NULL, NULL)"
+    )
+    conn.commit()
+    conn.close()
+
+    # 1. Run dry-run
+    res_dry = repair_speaker_uuids(
+        data_dir=str(data_dir),
+        dry_run=True,
+        db_path=str(db_file),
+    )
+    assert res_dry["needed_repair"] == 1
+    # Verify file was not modified, no .bak file created
+    assert not (data_dir / "2023.jsonl.bak").exists()
+    content_after_dry = json.loads(jsonl_file.read_text(encoding="utf-8"))
+    assert content_after_dry["speaker_uuid"] is None
+    assert content_after_dry["speaker_faction"] is None
+
+    # Verify db was not modified
+    conn = sqlite3.connect(db_file)
+    row = conn.execute("SELECT speaker_uuid, speaker_faction FROM speeches WHERE id = 1").fetchone()
+    conn.close()
+    assert row[0] is None
+    assert row[1] is None
+
+    # 2. Run apply
+    res_apply = repair_speaker_uuids(
+        data_dir=str(data_dir),
+        dry_run=False,
+        db_path=str(db_file),
+    )
+    assert res_apply["needed_repair"] == 1
+    # Verify file was modified
+    content_after_apply = json.loads(jsonl_file.read_text(encoding="utf-8"))
+    assert content_after_apply["speaker_uuid"] == luisa_uuid
+    assert content_after_apply["speaker_faction"] == "Eesti Reformierakonna fraktsioon"
+    assert content_after_apply["text"] == "Tere"
+
+    # Verify .bak backup exists with original null content
+    assert (data_dir / "2023.jsonl.bak").exists()
+    bak_content = json.loads((data_dir / "2023.jsonl.bak").read_text(encoding="utf-8"))
+    assert bak_content["speaker_uuid"] is None
+    assert bak_content["speaker_faction"] is None
+
+    # Verify SQLite was updated
+    conn = sqlite3.connect(db_file)
+    row = conn.execute("SELECT speaker_uuid, speaker_faction FROM speeches WHERE id = 1").fetchone()
+    conn.close()
+    assert row[0] == luisa_uuid
+    assert row[1] == "Eesti Reformierakonna fraktsioon"
