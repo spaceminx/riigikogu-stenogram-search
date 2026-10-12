@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Auto-Deploy to Server
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - name: Verify DEPLOY_DIR is configured
+        run: |
+          DEPLOY_DIR="${{ vars.DEPLOY_DIR }}"
+          if [ -z "$DEPLOY_DIR" ]; then
+            echo "Error: vars.DEPLOY_DIR is not set. Please configure DEPLOY_DIR in repository variables (Settings -> Secrets and variables -> Actions -> Variables)."
+            exit 1
+          fi
+
+      - name: Pull latest code and rebuild Docker
+        run: |
+          DEPLOY_DIR="${{ vars.DEPLOY_DIR }}"
+          git config --global --add safe.directory "$DEPLOY_DIR"
+          cd "$DEPLOY_DIR" || exit 1
+          git fetch origin master && git reset --hard origin/master
+          docker compose up -d --build
+
+      - name: Verify service health
+        run: |
+          curl --retry 10 --retry-delay 3 --retry-all-errors -fsS http://127.0.0.1:8000/

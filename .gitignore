@@ -12,3 +12,6 @@ HOSTING.md
 backfill_state.json
 .b2_etags.json
 backfill_report*.json
+
+logs/
+*.bak

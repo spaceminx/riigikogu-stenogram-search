@@ -2,7 +2,7 @@ name: Riigikogu Daily Data Pipeline
 
 on:
   schedule:
-    # Pipeline runs at 01:12 AM UTC
+    # Pipeline cron is scheduled for 01:12 AM UTC, but actually runs around ~07:00 UTC due to GitHub Actions queue delay. Do not change schedule.
     - cron: '12 1 * * *'
 
   workflow_dispatch:

@@ -1533,3 +1533,175 @@ def test_repair_speaker_uuids_bak_with_permission_error_fallback(tmp_path, monke
     bak_file = data_dir / "2021.jsonl.bak"
     assert bak_file.exists()
     assert "Peaministrikandidaat Kaja Kallas" in bak_file.read_text(encoding="utf-8")
+
+
+def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
+    import hashlib
+
+    from scripts.download_from_b2 import download_from_b2
+
+    monkeypatch.setattr("scripts.download_from_b2.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setenv("B2_KEY_ID", "dummy_key")
+    monkeypatch.setenv("B2_APP_KEY", "dummy_secret")
+
+    # 1. Test active-only download: skipped inactive file does not get ETag, downloaded file gets ETag
+    class MockPaginatorActive:
+        def paginate(self, Bucket):
+            return [
+                {
+                    "Contents": [
+                        {"Key": "2021.jsonl", "Size": 100, "ETag": '"etag-2021-skipped"'},
+                        {"Key": "2026.jsonl", "Size": 200, "ETag": '"etag-2026-downloaded"'},
+                    ]
+                }
+            ]
+
+    class MockS3ClientActive:
+        def get_paginator(self, operation_name):
+            return MockPaginatorActive()
+
+        def download_file(self, bucket, key, local_path):
+            Path(local_path).write_text("active-data", encoding="utf-8")
+
+    class MockBoto3Active:
+        @staticmethod
+        def client(service, **kwargs):
+            return MockS3ClientActive()
+
+    monkeypatch.setitem(sys.modules, "boto3", MockBoto3Active)
+
+    ok = download_from_b2(active_year="2026", include_all_history=False)
+    assert ok is True
+
+    etags_file = tmp_path / ".b2_etags.json"
+    assert etags_file.exists()
+    etags = json.loads(etags_file.read_text(encoding="utf-8"))
+
+    # Downloaded file gets ETag
+    assert etags.get("2026.jsonl") == "etag-2026-downloaded"
+    # Skipped inactive file does NOT get ETag
+    assert "2021.jsonl" not in etags
+
+    # 2. Test include_all_history with same-size files and MD5 checks
+    hello_bytes = b"hello"
+    hello_md5 = hashlib.md5(hello_bytes).hexdigest()
+
+    world_bytes = b"world"  # same size 5 bytes, different md5
+
+    file_match = tmp_path / "match.jsonl"
+    file_match.write_bytes(hello_bytes)
+
+    file_diff = tmp_path / "diff.jsonl"
+    file_diff.write_bytes(world_bytes)
+
+    file_multipart = tmp_path / "multipart.jsonl"
+    file_multipart.write_bytes(hello_bytes)
+
+    class MockPaginatorHistory:
+        def paginate(self, Bucket):
+            return [
+                {
+                    "Contents": [
+                        # Same size 5, matching MD5 -> should get ETag
+                        {"Key": "match.jsonl", "Size": 5, "ETag": f'"{hello_md5}"'},
+                        # Same size 5, different MD5 -> must NOT get ETag
+                        {"Key": "diff.jsonl", "Size": 5, "ETag": f'"{hello_md5}"'},
+                        # Same size 5, multipart ETag (contains -) -> must NOT get ETag
+                        {"Key": "multipart.jsonl", "Size": 5, "ETag": f'"{hello_md5}-2"'},
+                    ]
+                }
+            ]
+
+    class MockS3ClientHistory:
+        def get_paginator(self, operation_name):
+            return MockPaginatorHistory()
+
+        def download_file(self, bucket, key, local_path):
+            pass
+
+    class MockBoto3History:
+        @staticmethod
+        def client(service, **kwargs):
+            return MockS3ClientHistory()
+
+    monkeypatch.setitem(sys.modules, "boto3", MockBoto3History)
+
+    # Re-run with include_all_history=True
+    ok = download_from_b2(active_year="2026", include_all_history=True)
+    assert ok is True
+
+    etags_after = json.loads(etags_file.read_text(encoding="utf-8"))
+    # Matching MD5 saved
+    assert etags_after.get("match.jsonl") == hello_md5
+    # Different MD5 not saved
+    assert "diff.jsonl" not in etags_after
+    # Multipart not saved
+    assert "multipart.jsonl" not in etags_after
+
+
+def test_fetch_stenograms_rich_none_unedited_fallback(tmp_path, monkeypatch):
+    import scripts.fetch_stenograms_api as fsa
+
+    monkeypatch.setattr(fsa, "OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    # Mock fetch_rich_meeting_data to return None
+    monkeypatch.setattr(fsa, "fetch_rich_meeting_data", lambda code: None)
+
+    # Provide factions_map.json and persons.json
+    (tmp_path / "factions_map.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "persons.json").write_text("[]", encoding="utf-8")
+
+    meeting_code = "202601011000"
+    verbatim_item = {
+        "link": f"https://stenogrammid.riigikogu.ee/et/{meeting_code}",
+        "date": "2026-01-01T10:00:00",
+        "title": "Täiskogu erakorraline istung",
+        "edited": True,  # Verbatim claims EDITED, but rich is None!
+        "agendaItems": [
+            {
+                "title": "Päevakord 1",
+                "events": [
+                    {
+                        "speaker": "Jaan Tamm",
+                        "text": "Austatud esimees, head kolleegid!",
+                        "type": "SPEECH",
+                    }
+                ],
+            }
+        ],
+    }
+
+    class MockResponse:
+        status_code = 200
+
+        def json(self):
+            return [verbatim_item]
+
+    def mock_requests_get(url, *args, **kwargs):
+        return MockResponse()
+
+    monkeypatch.setattr("requests.get", mock_requests_get)
+    monkeypatch.setattr("time.sleep", lambda s: None)
+
+    processed_codes = set()
+    ok = fsa.fetch_and_process_stenograms(
+        start_date="2026-01-01",
+        end_date="2026-01-01",
+        processed_meeting_codes=processed_codes,
+    )
+
+    # Rich data was None -> has_errors must be True, so ok must be False
+    assert ok is False
+
+    # Meeting must NOT be added to processed_meeting_codes
+    assert meeting_code not in processed_codes
+
+    # Check saved JSONL record: status must be UNEDITED
+    jsonl_file = tmp_path / "2026.jsonl"
+    assert jsonl_file.exists()
+    lines = [
+        json.loads(line) for line in jsonl_file.read_text(encoding="utf-8").splitlines() if line
+    ]
+    assert len(lines) == 1
+    assert lines[0]["status"] == "UNEDITED"
+    assert lines[0]["speaker"] == "Jaan Tamm"
