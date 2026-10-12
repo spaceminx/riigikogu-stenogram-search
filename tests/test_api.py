@@ -1123,3 +1123,99 @@ def test_speech_key_returned_in_endpoints():
     assert len(ctx_data["speeches"]) >= 1
     assert "speech_key" in ctx_data["speeches"][0]
     assert ctx_data["speeches"][0]["speech_key"] is not None
+
+
+def test_speech_overflow_returns_404():
+    overflow_id = 2**63
+    huge_str = "99999999999999999999999999999999999999999999"
+
+    # /speeches/{id} with overflow
+    res1 = client.get(f"/speeches/{overflow_id}")
+    assert res1.status_code == 404
+    assert res1.json()["detail"] == "Kõnet ei leitud."
+
+    res2 = client.get(f"/speeches/{huge_str}")
+    assert res2.status_code == 404
+    assert res2.json()["detail"] == "Kõnet ei leitud."
+
+    # /speeches/by-external-id/{external_id} with overflow
+    res3 = client.get(f"/speeches/by-external-id/{overflow_id}")
+    assert res3.status_code == 404
+    assert res3.json()["detail"] == "Kõnet ei leitud."
+
+    res4 = client.get(f"/speeches/by-external-id/{huge_str}")
+    assert res4.status_code == 404
+    assert res4.json()["detail"] == "Kõnet ei leitud."
+
+    # /speeches/{id}/context with overflow
+    res5 = client.get(f"/speeches/{overflow_id}/context")
+    assert res5.status_code == 404
+    assert res5.json()["detail"] == "Kõnet ei leitud."
+
+
+def test_get_speech_by_external_id_success():
+    session = SessionLocal()
+    sp = Speech(
+        id=888999,
+        date="2026-06-02",
+        time="1200",
+        source_file="2026-06-02_1200.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202606021200",
+        agenda_title="Riigikaitse teema",
+        speaker="Hanno Pevkur",
+        speaker_uuid="uuid-person-2",
+        speech_type="SPEECH",
+        external_id=77665544,
+        start_time="2026-06-02T12:00:10.000",
+        end_time="2026-06-02T12:02:10.000",
+        duration_seconds=120,
+        text="Kaitsekõne riigikogus.",
+        text_lemmas="kaitsekõne riigikogu",
+        status="EDITED",
+    )
+    session.merge(sp)
+    session.commit()
+    session.close()
+
+    res = client.get("/speeches/by-external-id/77665544")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["external_id"] == 77665544
+    assert data["speaker"] == "Hanno Pevkur"
+
+
+def test_unknown_membership_returns_422_in_all_search_endpoints():
+    # /search
+    res_search = client.get("/search?q=riigikogu&membership=99")
+    assert res_search.status_code == 422
+    assert res_search.json()["detail"] == "Tundmatu koosseis"
+
+    # /search/activity
+    res_act = client.get("/search/activity?q=riigikogu&membership=99")
+    assert res_act.status_code == 422
+    assert res_act.json()["detail"] == "Tundmatu koosseis"
+
+    # /search/speakers
+    res_spk = client.get("/search/speakers?q=riigikogu&membership=99")
+    assert res_spk.status_code == 422
+    assert res_spk.json()["detail"] == "Tundmatu koosseis"
+
+    # /search/export
+    res_exp = client.get("/search/export?q=riigikogu&membership=99")
+    assert res_exp.status_code == 422
+    assert res_exp.json()["detail"] == "Tundmatu koosseis"
+
+    # /attendance/stats
+    res_att = client.get("/attendance/stats?membership=99")
+    assert res_att.status_code == 422
+    assert res_att.json()["detail"] == "Tundmatu koosseis"
+
+    # /attendance/factions
+    res_fac = client.get("/attendance/factions?membership=99")
+    assert res_fac.status_code == 422
+    assert res_fac.json()["detail"] == "Tundmatu koosseis"
+
+    # /attendance/factions/list
+    res_list = client.get("/attendance/factions/list?membership=99")
+    assert res_list.status_code == 422
+    assert res_list.json()["detail"] == "Tundmatu koosseis"

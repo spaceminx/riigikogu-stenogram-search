@@ -36,6 +36,17 @@ def is_active_daily_file(filename: str, active_years: set[str]) -> bool:
     return False
 
 
+def get_file_md5(file_path: str) -> str:
+    """Compute hex MD5 digest of a local file."""
+    import hashlib
+
+    hasher = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 def download_from_b2(
     active_year: str | None = None,
     include_all_history: bool = False,
@@ -94,8 +105,6 @@ def download_from_b2(
                     continue
 
                 etag = obj.get("ETag")
-                if etag:
-                    saved_etags[filename] = etag.strip('"')
 
                 # Filter active vs historical files
                 if not include_all_history and not is_active_daily_file(filename, active_years):
@@ -113,6 +122,14 @@ def download_from_b2(
                     and remote_size is not None
                     and os.path.getsize(local_path) == remote_size
                 ):
+                    cleaned_etag = etag.strip('"') if etag else None
+                    if cleaned_etag and "-" not in cleaned_etag:
+                        try:
+                            local_md5 = get_file_md5(local_path)
+                            if local_md5.lower() == cleaned_etag.lower():
+                                saved_etags[filename] = cleaned_etag
+                        except Exception:
+                            pass
                     skipped_count += 1
                     continue
 
@@ -120,6 +137,8 @@ def download_from_b2(
                 s3.download_file(bucket_name, key, local_path)
                 print(f"Downloaded: {local_path}")
                 downloaded_count += 1
+                if etag:
+                    saved_etags[filename] = etag.strip('"')
 
         if saved_etags:
             etags_file = os.path.join(OUTPUT_DIR_PROCESSED, ".b2_etags.json")
@@ -132,8 +151,10 @@ def download_from_b2(
                     pass
             existing_etags.update(saved_etags)
             try:
-                with open(etags_file, "w", encoding="utf-8") as f:
+                tmp_etags_file = etags_file + ".tmp"
+                with open(tmp_etags_file, "w", encoding="utf-8") as f:
                     json.dump(existing_etags, f, indent=2)
+                os.replace(tmp_etags_file, etags_file)
             except Exception:
                 pass
     except Exception as e:

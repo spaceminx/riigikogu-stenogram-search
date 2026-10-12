@@ -10,3 +10,9 @@ __pycache__
 src/frontend
 node_modules
 .env
+data/
+database/
+logs/
+tests/
+*.bak
+src/frontend/node_modules/

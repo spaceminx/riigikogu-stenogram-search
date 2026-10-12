@@ -32,6 +32,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+MAX_SQLITE_INT = 2**63 - 1
+MIN_SQLITE_INT = -(2**63)
+
+
+def validate_membership(membership: str | None) -> None:
+    """Validate membership against dynamic configuration. Raise 422 if unknown."""
+    if membership and membership != "all" and membership not in MEMBERSHIP_DATES:
+        raise HTTPException(status_code=422, detail="Tundmatu koosseis")
+
 
 @router.get("/")
 def root():
@@ -160,6 +169,7 @@ def attendance_stats(
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
 ):
+    validate_membership(membership)
     try:
         return get_attendance_stats(membership=membership, faction=faction, active_only=active_only)
     except OperationalError as e:
@@ -182,6 +192,7 @@ def attendance_factions(
     ),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
 ):
+    validate_membership(membership)
     try:
         return get_faction_attendance_stats(membership=membership, active_only=active_only)
     except OperationalError as e:
@@ -203,6 +214,7 @@ def factions_list(
         "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
     ),
 ):
+    validate_membership(membership)
     try:
         return get_factions_list(membership=membership)
     except OperationalError as e:
@@ -246,6 +258,7 @@ def search(
         pattern=r"^(speeches|questions|procedural)$",
     ),
 ):
+    validate_membership(membership)
     try:
         results, total_count = search_by_keyword(
             query=q,
@@ -269,8 +282,9 @@ def search(
             "results": results,
         }
     except ValueError as e:
+        status_code = 422 if str(e) == "Tundmatu koosseis" else 400
         raise HTTPException(
-            status_code=400,
+            status_code=status_code,
             detail=str(e),
         ) from e
     except OperationalError as e:
@@ -307,6 +321,7 @@ def search_activity(
             status_code=400,
             detail="Intervall peab olema üks järgmistest: 'daily', 'weekly', 'monthly'.",
         )
+    validate_membership(membership)
     try:
         return {
             "query": q,
@@ -324,8 +339,9 @@ def search_activity(
             ),
         }
     except ValueError as e:
+        status_code = 422 if str(e) == "Tundmatu koosseis" else 400
         raise HTTPException(
-            status_code=400,
+            status_code=status_code,
             detail=str(e),
         ) from e
     except OperationalError as e:
@@ -357,6 +373,7 @@ def search_speakers(
         pattern=r"^(speeches|questions|procedural)$",
     ),
 ):
+    validate_membership(membership)
     try:
         return {
             "query": q,
@@ -373,8 +390,9 @@ def search_speakers(
             ),
         }
     except ValueError as e:
+        status_code = 422 if str(e) == "Tundmatu koosseis" else 400
         raise HTTPException(
-            status_code=400,
+            status_code=status_code,
             detail=str(e),
         ) from e
     except OperationalError as e:
@@ -395,6 +413,8 @@ def speech_context(
     speech_id: int,
     q: str | None = Query(None, description="Otsingupäring lemmade esiletõstmiseks"),
 ):
+    if speech_id > MAX_SQLITE_INT or speech_id < MIN_SQLITE_INT:
+        raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
     try:
         context = get_speech_context(speech_id=speech_id, query=q)
         if not context:
@@ -405,7 +425,7 @@ def speech_context(
             status_code=503,
             detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
         ) from e
-    except SQLAlchemyError as e:
+    except (SQLAlchemyError, OverflowError) as e:
         logger.error(
             "Speech context query failed for speech_id %d: %s", speech_id, e, exc_info=True
         )
@@ -435,6 +455,7 @@ def search_export(
 ):
     if format not in ("csv", "json"):
         raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
+    validate_membership(membership)
 
     try:
         results, total_count = search_by_keyword(
@@ -521,7 +542,8 @@ def search_export(
             },
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        status_code = 422 if str(e) == "Tundmatu koosseis" else 400
+        raise HTTPException(status_code=status_code, detail=str(e)) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
@@ -669,6 +691,68 @@ def get_person(person_uuid: str):
         session.close()
 
 
+@router.get("/speeches/by-external-id/{external_id}")
+def get_speech_by_external_id(external_id: str):
+    """Get single speech specifically by Riigikogu permalink external_id."""
+    session = SessionLocal()
+    try:
+        if not external_id.isdigit():
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
+        num_id = int(external_id)
+        if num_id > MAX_SQLITE_INT or num_id < MIN_SQLITE_INT:
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
+
+        speech = session.query(Speech).filter(Speech.external_id == num_id).first()
+        if not speech:
+            speech = (
+                session.query(Speech)
+                .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
+                .filter(SpeechAlias.alias_external_id == num_id)
+                .first()
+            )
+
+        if not speech:
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
+
+        return {
+            "id": speech.id,
+            "external_id": speech.external_id,
+            "speech_key": speech.speech_key,
+            "speaker_uuid": speech.speaker_uuid,
+            "ems_id": speech.ems_id,
+            "speaker": speech.speaker,
+            "speaker_role": speech.speaker_role,
+            "speaker_faction": speech.speaker_faction,
+            "speech_type": speech.speech_type,
+            "start_time": speech.start_time,
+            "end_time": speech.end_time,
+            "duration_seconds": speech.duration_seconds,
+            "date": speech.date,
+            "time": speech.time,
+            "source_file": speech.source_file,
+            "source_url": speech.source_url,
+            "agenda_title": speech.agenda_title,
+            "video_url": speech.video_url,
+            "status": speech.status,
+            "text": speech.text,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
+        ) from e
+    except (SQLAlchemyError, OverflowError) as e:
+        logger.error("Speech query by external_id failed for %s: %s", external_id, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Kõne päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
 @router.get("/speeches/{speech_identifier}")
 def get_speech_by_id(speech_identifier: str):
     """Get single speech by internal database ID, Riigikogu permalink external_id, historical alias, or stable speech_key."""
@@ -677,17 +761,20 @@ def get_speech_by_id(speech_identifier: str):
         speech = None
         if speech_identifier.isdigit():
             num_id = int(speech_identifier)
-            # Prioritize official Riigikogu permalink external_id and editorial aliases
-            speech = session.query(Speech).filter(Speech.external_id == num_id).first()
-            if not speech:
-                speech = (
-                    session.query(Speech)
-                    .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
-                    .filter(SpeechAlias.alias_external_id == num_id)
-                    .first()
-                )
-            if not speech:
-                speech = session.query(Speech).filter(Speech.id == num_id).first()
+            if num_id > MAX_SQLITE_INT or num_id < MIN_SQLITE_INT:
+                pass
+            else:
+                # Prioritize official Riigikogu permalink external_id and editorial aliases
+                speech = session.query(Speech).filter(Speech.external_id == num_id).first()
+                if not speech:
+                    speech = (
+                        session.query(Speech)
+                        .join(SpeechAlias, Speech.id == SpeechAlias.speech_id)
+                        .filter(SpeechAlias.alias_external_id == num_id)
+                        .first()
+                    )
+                if not speech:
+                    speech = session.query(Speech).filter(Speech.id == num_id).first()
 
         if not speech:
             speech = session.query(Speech).filter(Speech.speech_key == speech_identifier).first()
@@ -731,7 +818,7 @@ def get_speech_by_id(speech_identifier: str):
             status_code=503,
             detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
         ) from e
-    except SQLAlchemyError as e:
+    except (SQLAlchemyError, OverflowError) as e:
         logger.error("Speech query failed for %s: %s", speech_identifier, e, exc_info=True)
         raise HTTPException(
             status_code=500,

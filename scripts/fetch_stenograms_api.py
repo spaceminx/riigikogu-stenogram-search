@@ -74,7 +74,11 @@ def fetch_rich_meeting_data(meeting_code: str, max_retries: int = 3) -> dict | N
             if resp.status_code == 200:
                 return resp.json()
             if resp.status_code == 429:
-                time.sleep(2 * attempt)
+                backoff = 10 * (2 ** (attempt - 1))
+                print(
+                    f"Notice: Rate limited (429) for meeting {meeting_code}. Waiting {backoff}s (attempt {attempt}/{max_retries})..."
+                )
+                time.sleep(backoff)
             elif resp.status_code >= 500:
                 time.sleep(1 * attempt)
         except Exception as e:
@@ -500,11 +504,13 @@ def parse_meeting_speeches(
     uuid_to_name_map: dict[str, str] | None = None,
     lemma_cache: dict[str, str] | None = None,
 ) -> tuple[list[dict], str]:
-    """Extract and lemmatize speech records from a meeting dataset."""
-    is_edited = (rich_meeting and rich_meeting.get("meetingStatus") == "EDITED") or bool(
-        verbatim and verbatim.get("edited")
-    )
-    meeting_status = "EDITED" if is_edited else "UNEDITED"
+    if rich_meeting is None:
+        meeting_status = "UNEDITED"
+    else:
+        is_edited = (rich_meeting.get("meetingStatus") == "EDITED") or bool(
+            verbatim and verbatim.get("edited")
+        )
+        meeting_status = "EDITED" if is_edited else "UNEDITED"
 
     speeches_to_save = []
 
@@ -698,12 +704,14 @@ def parse_meeting_speeches(
 def fetch_and_process_stenograms(
     start_date: str | None = None,
     end_date: str | None = None,
+    processed_meeting_codes: set[str] | None = None,
 ) -> bool:
     """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
     # Load existing meeting codes and source files from processed jsonl files
-    processed_meeting_codes = set()
+    if processed_meeting_codes is None:
+        processed_meeting_codes = set()
     processed_source_files = set()
     unedited_meeting_codes = set()
     unedited_source_files = set()
@@ -868,6 +876,12 @@ def fetch_and_process_stenograms(
                 print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
 
                 rich_meeting = fetch_rich_meeting_data(meeting_code)
+                if rich_meeting is None:
+                    print(
+                        f"Warning: Could not fetch rich meeting details for {meeting_code}. "
+                        "Saving in UNEDITED status to retry on subsequent run."
+                    )
+                    has_errors = True
 
                 speeches_to_save, meeting_status = parse_meeting_speeches(
                     rich_meeting=rich_meeting,
@@ -882,6 +896,11 @@ def fetch_and_process_stenograms(
                     known_person_uuids=known_person_uuids,
                     uuid_to_name_map=uuid_to_name_map,
                 )
+
+                if rich_meeting is None:
+                    meeting_status = "UNEDITED"
+                    for s in speeches_to_save:
+                        s["status"] = "UNEDITED"
 
                 if speeches_to_save:
                     save_session_to_jsonl(year_str, source_file_key, speeches_to_save)
@@ -905,6 +924,8 @@ def fetch_and_process_stenograms(
                             "status": "UNEDITED",
                         }
                     unedited_source_files.add(source_file_key)
+
+                time.sleep(1.5)
 
             except Exception as e:
                 print(f"Warning: Error processing verbatim {verbatim.get('title')}: {e}")
@@ -934,7 +955,7 @@ def fetch_and_process_stenograms(
                 except ValueError:
                     pass
 
-            time.sleep(2)
+            time.sleep(1.5)
             rich_meeting = fetch_rich_meeting_data(meeting_code)
             if not rich_meeting:
                 has_errors = True

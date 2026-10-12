@@ -139,6 +139,17 @@ Ava brauseris `http://localhost:5173`.
 
 ---
 
+## Paigaldus ja pidev integratsioon (CI/CD)
+
+Tootmiskeskkonna paigaldus käivitub automaatselt pärast `master` haru CI õnnestumist või käsitsi käivitades töövootagant `.github/workflows/deploy.yml`.
+
+### Paigalduse seadistamine
+Serveri `self-hosted` runner vajab repositooriumi saladust (secret) `DEPLOY_DIR`:
+- Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
+- Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/home/<kasutaja>/riigikogu-stenogram-search`).
+
+---
+
 ## Testimine ja koodikvaliteet
 
 Projekt kasutab koodikontrolliks Ruffi, ESLint + Prettierit ning automaattestideks Pytesti.
@@ -181,6 +192,7 @@ riigikogu-stenogram-search/
 │   ├── dependabot.yml             # Dependaboti iganädalane automaatne turvaseire
 │   └── workflows/
 │       ├── ci.yml                 # Automaatne CI (Ruff, ESLint, Prettier, Pytest, Vite build)
+│       ├── deploy.yml             # Automaatne serverisse paigaldus pärast masteri CI õnnestumist
 │       └── daily_pipeline.yml     # Igaöine andmetoru (B2 sünkroonimine, API kraapija, terviklikkuse kontroll)
 ├── config.py                      # Globaalsed seadistused ja dünaamilised koosseisude kuupäevad
 ├── docker-compose.yml             # Multi-container Docker paigaldus

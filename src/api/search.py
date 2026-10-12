@@ -176,7 +176,9 @@ def build_speech_filters(
     """Build list of SQLAlchemy filter clauses for Speech table."""
     filters = []
 
-    if membership in MEMBERSHIP_DATES:
+    if membership and membership != "all":
+        if membership not in MEMBERSHIP_DATES:
+            raise ValueError("Tundmatu koosseis")
         start_bound, end_bound = MEMBERSHIP_DATES[membership]
         filters.append(Speech.date >= start_bound)
         filters.append(Speech.date <= end_bound)

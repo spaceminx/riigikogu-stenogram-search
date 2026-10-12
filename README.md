@@ -139,6 +139,17 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
+## Deployment & Continuous Integration
+
+Production deployments run automatically on push to `master` (after CI succeeds) or via manual trigger (`workflow_dispatch`) through `.github/workflows/deploy.yml`.
+
+### Deployment Configuration
+The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to be configured in GitHub:
+- Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
+- Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host (e.g., `/home/<user>/riigikogu-stenogram-search`).
+
+---
+
 ## Testing & Code Quality
 
 The codebase uses Ruff for Python, ESLint + Prettier for frontend, and Pytest for automated testing.
@@ -181,6 +192,7 @@ riigikogu-stenogram-search/
 │   ├── dependabot.yml             # Dependabot automated weekly dependency monitoring
 │   └── workflows/
 │       ├── ci.yml                 # Automated CI (Ruff, ESLint, Prettier, Pytest, Vite build)
+│       ├── deploy.yml             # Auto-deploy to self-hosted server on master CI success
 │       └── daily_pipeline.yml     # Nightly data pipeline (B2 sync, API fetch, integrity verification)
 ├── config.py                      # Global configuration & dynamic membership dates
 ├── docker-compose.yml             # Multi-container Docker deployment
