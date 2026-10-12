@@ -453,10 +453,12 @@ def test_verify_statistics_with_mock(tmp_path, monkeypatch):
         json.dump(mock_persons, f)
 
     class MockResp:
-        status_code = 200
+        def __init__(self, is_steno: bool):
+            self.status_code = 200
+            self.is_steno = is_steno
 
         def json(self):
-            return {
+            data = {
                 "uuid": "test-uuid-stats",
                 "fullName": "Ants Kask",
                 "speeches": 1,
@@ -464,8 +466,12 @@ def test_verify_statistics_with_mock(tmp_path, monkeypatch):
                 "procedural": 0,
                 "total": 1,
             }
+            return [data] if self.is_steno else data
 
-    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+    def mock_get(url, *args, **kwargs):
+        return MockResp(is_steno="steno" in url)
+
+    monkeypatch.setattr(requests, "get", mock_get)
 
     session = SessionLocal()
     sp = Speech(
@@ -483,19 +489,39 @@ def test_verify_statistics_with_mock(tmp_path, monkeypatch):
     session.commit()
     session.close()
 
-    report_path = tmp_path / "stats_report.json"
-    ok = verify_statistics(
+    # 1. Test steno source (default)
+    report_path_steno = tmp_path / "steno_report.json"
+    ok_steno = verify_statistics(
         start_date="2026-07-01",
         end_date="2026-07-02",
         sample_size=1,
         delay=0.0,
-        output_path=str(report_path),
+        output_path=str(report_path_steno),
+        source="steno",
     )
-    assert ok is True
-    assert report_path.exists()
-    report_data = json.loads(report_path.read_text(encoding="utf-8"))
-    assert report_data["summary"]["passed"] == 1
-    assert report_data["summary"]["alerts"] == 0
+    assert ok_steno is True
+    assert report_path_steno.exists()
+    steno_data = json.loads(report_path_steno.read_text(encoding="utf-8"))
+    assert steno_data["source"] == "steno"
+    assert steno_data["summary"]["passed"] == 1
+    assert steno_data["summary"]["discrepancies"] == 0
+
+    # 2. Test statistics source
+    report_path_stats = tmp_path / "stats_report.json"
+    ok_stats = verify_statistics(
+        start_date="2026-07-01",
+        end_date="2026-07-02",
+        sample_size=1,
+        delay=0.0,
+        output_path=str(report_path_stats),
+        source="statistics",
+    )
+    assert ok_stats is True
+    assert report_path_stats.exists()
+    stats_data = json.loads(report_path_stats.read_text(encoding="utf-8"))
+    assert stats_data["source"] == "statistics"
+    assert stats_data["summary"]["passed"] == 1
+    assert stats_data["summary"]["discrepancies"] == 0
 
 
 def test_get_local_speech_counts_filters():
@@ -516,7 +542,7 @@ def test_get_local_speech_counts_filters():
             {"id": 990004, "speech_type": "SMALL_SPEECH", "speaker_role": None},
             {"id": 990005, "speech_type": "PROCEDURAL", "speaker_role": None},
             {"id": 990006, "speech_type": "DIRECTOR", "speaker_role": None},
-            # non-null roles -> excluded from categories, tracked in info counters
+            # non-null roles
             {"id": 990007, "speech_type": "SPEECH", "speaker_role": "Esimees"},
             {"id": 990008, "speech_type": "SMALL_SPEECH", "speaker_role": "Aseesimees"},
             {"id": 990009, "speech_type": "SPEECH", "speaker_role": "Kaitseminister"},
@@ -540,22 +566,41 @@ def test_get_local_speech_counts_filters():
             session.merge(sp)
         session.commit()
 
-        counts = get_local_speech_counts(
+        # Test source="statistics"
+        counts_stats = get_local_speech_counts(
             session=session,
             uuid=test_uuid,
             full_name="Test MP",
             start_date="2026-01-01",
             end_date="2026-01-31",
+            source="statistics",
         )
+        assert counts_stats["speeches"] == 2  # 1 SPEECH + 1 SPEECH_CONTINUE
+        assert counts_stats["questions"] == 2  # 2 SMALL_SPEECH
+        assert counts_stats["procedural"] == 1  # 1 PROCEDURAL
+        assert counts_stats["director"] == 1  # 1 DIRECTOR
+        assert counts_stats["total"] == 5  # speeches + questions + procedural
+        assert counts_stats["chair"] == 2  # Esimees + Aseesimees
+        assert counts_stats["minister"] == 2  # Kaitseminister + Peaminister
+        assert counts_stats["other_roles"] == 1  # Erikomisjoni esimees
 
-        assert counts["speeches"] == 2  # 1 SPEECH + 1 SPEECH_CONTINUE
-        assert counts["questions"] == 2  # 2 SMALL_SPEECH
-        assert counts["procedural"] == 1  # 1 PROCEDURAL
-        assert counts["director"] == 1  # 1 DIRECTOR
-        assert counts["total"] == 5  # speeches + questions + procedural
-        assert counts["chair"] == 2  # Esimees + Aseesimees
-        assert counts["minister"] == 2  # Kaitseminister + Peaminister
-        assert counts["other_roles"] == 1  # Erikomisjoni esimees
+        # Test source="steno" (default)
+        counts_steno = get_local_speech_counts(
+            session=session,
+            uuid=test_uuid,
+            full_name="Test MP",
+            start_date="2026-01-01",
+            end_date="2026-01-31",
+            source="steno",
+        )
+        assert counts_steno["speeches"] == 3  # (1 SPEECH + 1 CONTINUE) + 1 Esimees SPEECH
+        assert counts_steno["questions"] == 3  # 2 SMALL_SPEECH + 1 Aseesimees SMALL_SPEECH
+        assert counts_steno["procedural"] == 1  # 1 PROCEDURAL
+        assert counts_steno["director"] == 1  # 1 DIRECTOR (non-chair)
+        assert counts_steno["total"] == 7  # 3 speeches + 3 questions + 1 procedural
+        assert counts_steno["chair"] == 2
+        assert counts_steno["minister"] == 2
+        assert counts_steno["other_roles"] == 1
     finally:
         session.query(Speech).filter(Speech.speaker_uuid == test_uuid).delete()
         session.commit()

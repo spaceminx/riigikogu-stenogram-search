@@ -22,7 +22,7 @@ def fetch_official_stats(
     end_date: str,
     max_retries: int = 3,
 ) -> dict | None:
-    """Fetch official speech statistics from Riigikogu API with rate limit backoff."""
+    """Fetch official speech statistics from Riigikogu API (/api/statistics) with rate limit backoff."""
     url = f"https://api.riigikogu.ee/api/statistics/speeches/member/{uuid}"
     params = {"startDate": start_date, "endDate": end_date}
 
@@ -48,6 +48,50 @@ def fetch_official_stats(
     return None
 
 
+def fetch_steno_stats(
+    uuids: list[str],
+    start_date: str,
+    end_date: str,
+    max_retries: int = 3,
+) -> dict[str, dict]:
+    """Fetch official speech statistics in batch from Riigikogu API (/api/steno/speeches)."""
+    if not uuids:
+        return {}
+
+    url = "https://api.riigikogu.ee/api/steno/speeches"
+    params = {
+        "uuids": ",".join(uuids),
+        "startDate": start_date,
+        "endDate": end_date,
+    }
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.get(url, params=params, timeout=(5, 30))
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, list):
+                    return {
+                        item["uuid"]: item
+                        for item in data
+                        if isinstance(item, dict) and "uuid" in item
+                    }
+                return {}
+            elif resp.status_code == 429:
+                wait_time = 3 * attempt
+                print(f"Notice: Rate limited (429) on steno API, sleeping {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                print(f"Warning: HTTP {resp.status_code} fetching steno stats")
+        except requests.exceptions.RequestException as e:
+            print(f"Warning: Network error fetching steno stats ({e})")
+
+        if attempt < max_retries:
+            time.sleep(2 * attempt)
+
+    return {}
+
+
 CHAIR_ROLES = ("Esimees", "Aseesimees", "Riigikogu esimees")
 
 
@@ -57,11 +101,28 @@ def get_local_speech_counts(
     full_name: str,
     start_date: str,
     end_date: str,
+    source: str = "steno",
 ) -> dict:
     """Query local database for speeches by MP UUID or full name within date range.
 
-    Counts only speeches where speaker_role IS NULL towards categories.
-    Tracks chair and minister speeches separately for information.
+    Category mapping semantics:
+    1. source == "steno" (Riigikogu /api/steno/speeches endpoint):
+       - Counts MP speeches (speaker_role IS NULL) and chair speeches (speaker_role IN CHAIR_ROLES).
+       - Ministers (speaker_role LIKE '%minister%') and external guest roles are excluded from
+         category counts because the Riigikogu steno endpoint attributes speeches to parliamentary
+         members and plenary activities, not ministerial duties.
+       - SMALL_SPEECH -> questions
+       - PROCEDURAL -> procedural
+       - SPEECH + SPEECH_CONTINUE -> speeches (plus DIRECTOR when speaker_role IN CHAIR_ROLES,
+         where the stenogram system records chair interventions as DIRECTOR)
+       - DIRECTOR for non-chairs is tracked in the director counter.
+    2. source == "statistics" (Riigikogu /api/statistics/speeches/member endpoint):
+       - Counts only speeches where speaker_role IS NULL towards categories.
+       - SPEECH + SPEECH_CONTINUE -> speeches
+       - SMALL_SPEECH -> questions
+       - PROCEDURAL -> procedural
+       - DIRECTOR -> director
+       - Chair and minister speeches tracked in info counters.
     """
     query = session.query(Speech.speech_type, Speech.speaker_role, text("count(*)")).filter(
         Speech.date >= start_date,
@@ -88,25 +149,48 @@ def get_local_speech_counts(
     other_roles = 0
 
     for st_type, role, count in rows:
-        if role is not None:
-            if role in CHAIR_ROLES:
-                chair += count
-            elif role.lower().endswith("minister"):
-                minister += count
-            else:
-                other_roles += count
-            continue
+        is_chair = role in CHAIR_ROLES
+        is_minister = bool(role and ("minister" in role.lower()))
+        is_other = bool(role and not is_chair and not is_minister)
 
-        if st_type in ("SPEECH", "SPEECH_CONTINUE"):
-            speeches += count
-        elif st_type == "SMALL_SPEECH":
-            questions += count
-        elif st_type == "PROCEDURAL":
-            procedural += count
-        elif st_type == "DIRECTOR":
-            director += count
+        if is_chair:
+            chair += count
+        elif is_minister:
+            minister += count
+        elif is_other:
+            other_roles += count
+
+        if source == "steno":
+            if role is not None and not is_chair:
+                continue
+
+            if st_type in ("SPEECH", "SPEECH_CONTINUE"):
+                speeches += count
+            elif st_type == "DIRECTOR":
+                if is_chair:
+                    speeches += count
+                else:
+                    director += count
+            elif st_type == "SMALL_SPEECH":
+                questions += count
+            elif st_type == "PROCEDURAL":
+                procedural += count
+            else:
+                unknown += count
         else:
-            unknown += count
+            if role is not None:
+                continue
+
+            if st_type in ("SPEECH", "SPEECH_CONTINUE"):
+                speeches += count
+            elif st_type == "SMALL_SPEECH":
+                questions += count
+            elif st_type == "PROCEDURAL":
+                procedural += count
+            elif st_type == "DIRECTOR":
+                director += count
+            else:
+                unknown += count
 
     total = speeches + questions + procedural
 
@@ -133,12 +217,13 @@ def verify_statistics(
     delay: float = 1.5,
     tolerance_ratio: float = 0.02,
     output_path: str | None = None,
+    source: str = "steno",
 ) -> bool:
     """Compare Riigikogu official statistics with local SQLite speeches database."""
-    print("=" * 110)
-    print("RIIGIKOGU SPEECH STATISTICS VERIFICATION")
+    print("=" * 115)
+    print(f"RIIGIKOGU SPEECH STATISTICS VERIFICATION (source: {source})")
     print(f"Period: {start_date} to {end_date}")
-    print("=" * 110)
+    print("=" * 115)
 
     # Load person profiles
     persons_file = os.path.join(OUTPUT_DIR_PROCESSED, "persons.json")
@@ -171,13 +256,32 @@ def verify_statistics(
         pool = active_mps if len(active_mps) >= sample_size else persons
         candidates = random.sample(pool, min(sample_size, len(pool)))
 
-    print(f"Testing {len(candidates)} MPs (delay between queries: {delay}s)...\n")
+    print(f"Testing {len(candidates)} MPs (source: {source}, delay: {delay}s)...\n")
+
+    steno_cache = {}
+    if source == "steno":
+        chunk_size = 25
+        valid_candidates = [c for c in candidates if c.get("uuid")]
+        chunks = [
+            valid_candidates[i : i + chunk_size]
+            for i in range(0, len(valid_candidates), chunk_size)
+        ]
+        for i, chunk in enumerate(chunks):
+            chunk_uuids = [c["uuid"] for c in chunk]
+            batch_result = fetch_steno_stats(chunk_uuids, start_date=start_date, end_date=end_date)
+            steno_cache.update(batch_result)
+            if i < len(chunks) - 1 and delay > 0:
+                time.sleep(delay)
 
     session = SessionLocal()
     results = []
     has_critical_error = False
 
-    header = f"{'Saadiku nimi':<26} | {'Questions (Off/Loc/Diff)':<24} | {'Procedural (Off/Loc)':<20} | {'Speeches (Off/Loc, Suh)':<23} | {'Olek':<16}"
+    if source == "steno":
+        header = f"{'Saadiku nimi':<26} | {'Questions (Off/Loc/Diff)':<24} | {'Procedural (Off/Loc/Diff)':<25} | {'Speeches (Off/Loc/Diff)':<24} | {'Olek':<22}"
+    else:
+        header = f"{'Saadiku nimi':<26} | {'Questions (Off/Loc/Diff)':<24} | {'Procedural (Off/Loc)':<20} | {'Speeches (Off/Loc, Suh)':<23} | {'Olek':<16}"
+
     print(header)
     print("-" * len(header))
 
@@ -189,10 +293,14 @@ def verify_statistics(
             if not mp_uuid:
                 continue
 
-            official_data = fetch_official_stats(
-                uuid=mp_uuid, start_date=start_date, end_date=end_date
-            )
-            time.sleep(delay)
+            if source == "steno":
+                official_data = steno_cache.get(mp_uuid)
+            else:
+                official_data = fetch_official_stats(
+                    uuid=mp_uuid, start_date=start_date, end_date=end_date
+                )
+                if delay > 0:
+                    time.sleep(delay)
 
             if official_data is None:
                 print(f"{full_name:<26} | {'API viga':<24} | {'-':<20} | {'-':<23} | {'VIGA':<16}")
@@ -209,6 +317,7 @@ def verify_statistics(
                 full_name=full_name,
                 start_date=start_date,
                 end_date=end_date,
+                source=source,
             )
             loc_speeches = local_counts["speeches"]
             loc_questions = local_counts["questions"]
@@ -220,29 +329,55 @@ def verify_statistics(
             s_diff = loc_speeches - off_speeches
             tot_diff = loc_total - off_total
 
-            # Evaluation criteria per specification:
-            # Questions is OK if: SMALL_SPEECH - tol <= ametlik_questions <= SMALL_SPEECH + PROCEDURAL + tol
-            # where tol = max(1, tolerance_ratio * off_questions)
-            tol = max(1.0, tolerance_ratio * off_questions)
-            q_ok = (loc_questions - tol) <= off_questions <= (loc_questions + loc_procedural + tol)
+            if source == "steno":
+                tol_q = max(1.0, tolerance_ratio * off_questions)
+                tol_p = max(1.0, tolerance_ratio * off_procedural)
+                tol_s = max(1.0, tolerance_ratio * off_speeches)
 
-            ratio_str = (
-                f"{loc_speeches / off_speeches:.1f}x" if off_speeches > 0 else f"{loc_speeches}/0"
-            )
+                q_ok = abs(q_diff) <= tol_q
+                p_ok = abs(p_diff) <= tol_p
+                s_ok = abs(s_diff) <= tol_s
+                all_ok = q_ok and p_ok and s_ok
 
-            if q_ok:
-                if off_total == 0 and loc_total == 0:
-                    status = "OK (0)"
+                if all_ok:
+                    status = "OK (0)" if off_total == 0 and loc_total == 0 else "OK"
                 else:
-                    status = "OK"
-            else:
-                status = f"ERINEVUS (Q:{q_diff:+d})"
-                has_critical_error = True
+                    diff_parts = []
+                    if not s_ok:
+                        diff_parts.append(f"S:{s_diff:+d}")
+                    if not q_ok:
+                        diff_parts.append(f"Q:{q_diff:+d}")
+                    if not p_ok:
+                        diff_parts.append(f"P:{p_diff:+d}")
+                    status = f"ERINEVUS ({', '.join(diff_parts)})"
+                    has_critical_error = True
 
-            q_str = f"{off_questions:>3} / {loc_questions:>3} ({q_diff:+3d})"
-            p_str = f"{off_procedural:>2} / {loc_procedural:>2} ({p_diff:+2d})"
-            s_str = f"{off_speeches:>3} / {loc_speeches:>3} ({ratio_str:>5})"
-            print(f"{full_name:<26} | {q_str:<24} | {p_str:<20} | {s_str:<23} | {status:<16}")
+                q_str = f"{off_questions:>3} / {loc_questions:>3} ({q_diff:+3d})"
+                p_str = f"{off_procedural:>3} / {loc_procedural:>3} ({p_diff:+3d})"
+                s_str = f"{off_speeches:>3} / {loc_speeches:>3} ({s_diff:+3d})"
+                print(f"{full_name:<26} | {q_str:<24} | {p_str:<25} | {s_str:<24} | {status:<22}")
+            else:
+                tol = max(1.0, tolerance_ratio * off_questions)
+                q_ok = (
+                    (loc_questions - tol) <= off_questions <= (loc_questions + loc_procedural + tol)
+                )
+
+                ratio_str = (
+                    f"{loc_speeches / off_speeches:.1f}x"
+                    if off_speeches > 0
+                    else f"{loc_speeches}/0"
+                )
+
+                if q_ok:
+                    status = "OK (0)" if off_total == 0 and loc_total == 0 else "OK"
+                else:
+                    status = f"ERINEVUS (Q:{q_diff:+d})"
+                    has_critical_error = True
+
+                q_str = f"{off_questions:>3} / {loc_questions:>3} ({q_diff:+3d})"
+                p_str = f"{off_procedural:>2} / {loc_procedural:>2} ({p_diff:+2d})"
+                s_str = f"{off_speeches:>3} / {loc_speeches:>3} ({ratio_str:>5})"
+                print(f"{full_name:<26} | {q_str:<24} | {p_str:<20} | {s_str:<23} | {status:<16}")
 
             results.append(
                 {
@@ -261,9 +396,9 @@ def verify_statistics(
                         "speeches": s_diff,
                         "total": tot_diff,
                     },
-                    "speeches_ratio": round(loc_speeches / off_speeches, 2)
-                    if off_speeches > 0
-                    else None,
+                    "speeches_ratio": (
+                        round(loc_speeches / off_speeches, 2) if off_speeches > 0 else None
+                    ),
                     "questions_ok": q_ok,
                     "status": status,
                 }
@@ -276,12 +411,13 @@ def verify_statistics(
     passed_count = sum(1 for r in results if r["status"] in ("OK", "OK (0)"))
     discrepancy_count = sum(1 for r in results if "ERINEVUS" in r["status"])
     print(
-        f"\nKokkuvõte: {len(results)} testitud | {passed_count} vastavuses (questions) | {discrepancy_count} lahknevust"
+        f"\nKokkuvõte: {len(results)} testitud | {passed_count} vastavuses | {discrepancy_count} lahknevust"
     )
 
     if output_path:
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
         report = {
+            "source": source,
             "period": {"start_date": start_date, "end_date": end_date},
             "timestamp": datetime.now().isoformat(),
             "summary": {
@@ -289,6 +425,20 @@ def verify_statistics(
                 "passed": passed_count,
                 "alerts": discrepancy_count,
                 "discrepancies": discrepancy_count,
+                "category_sums": {
+                    "official": {
+                        "speeches": sum(r["official"]["speeches"] for r in results),
+                        "questions": sum(r["official"]["questions"] for r in results),
+                        "procedural": sum(r["official"]["procedural"] for r in results),
+                        "total": sum(r["official"]["total"] for r in results),
+                    },
+                    "local": {
+                        "speeches": sum(r["local"]["speeches"] for r in results),
+                        "questions": sum(r["local"]["questions"] for r in results),
+                        "procedural": sum(r["local"]["procedural"] for r in results),
+                        "total": sum(r["local"]["total"] for r in results),
+                    },
+                },
             },
             "results": results,
         }
@@ -307,6 +457,12 @@ def parse_args():
     default_start = (today - timedelta(days=60)).strftime("%Y-%m-%d")
     default_end = today.strftime("%Y-%m-%d")
 
+    parser.add_argument(
+        "--source",
+        choices=["steno", "statistics"],
+        default="steno",
+        help="Statistika allikas: steno (/api/steno/speeches) või statistics (/api/statistics) (vaikimisi: steno)",
+    )
     parser.add_argument(
         "--start-date",
         default=default_start,
@@ -336,7 +492,7 @@ def parse_args():
         "--tolerance",
         type=float,
         default=0.02,
-        help="Lubatud küsimuste hälbe suhe (vaikimisi: 0.02)",
+        help="Lubatud hälbe suhe kategooriate kohta (vaikimisi: 0.02)",
     )
     parser.add_argument(
         "--output",
@@ -357,5 +513,6 @@ if __name__ == "__main__":
         delay=args.delay,
         tolerance_ratio=args.tolerance,
         output_path=args.output,
+        source=args.source,
     )
     sys.exit(0 if success else 1)
