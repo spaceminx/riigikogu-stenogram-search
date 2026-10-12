@@ -221,7 +221,10 @@ def repair_speaker_uuids(
             modified_files.append(file_path)
             if not dry_run:
                 bak_path = file_path + ".bak"
-                shutil.copy(file_path, bak_path)
+                try:
+                    shutil.copy(file_path, bak_path)
+                except (PermissionError, OSError):
+                    shutil.copyfile(file_path, bak_path)
                 tmp_path = file_path + ".tmp"
                 with open(tmp_path, "w", encoding="utf-8") as out_f:
                     out_f.writelines(new_lines)

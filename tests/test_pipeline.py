@@ -1487,3 +1487,49 @@ def test_repair_speaker_uuids_bak_with_shutil_copy(tmp_path, monkeypatch):
     assert len(copy_calls) == 1
     assert copy_calls[0][1].endswith(".bak")
     assert (data_dir / "2021.jsonl.bak").exists()
+
+
+def test_repair_speaker_uuids_bak_with_permission_error_fallback(tmp_path, monkeypatch):
+    import shutil
+
+    from scripts.repair_speaker_uuids import repair_speaker_uuids
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    kaja_uuid = "c7d52089-6129-468f-8789-9c4cf742b908"
+    (data_dir / "persons.json").write_text(
+        json.dumps([{"uuid": kaja_uuid, "full_name": "Kaja Kallas"}]), encoding="utf-8"
+    )
+    (data_dir / "factions_map.json").write_text("{}", encoding="utf-8")
+
+    speech_raw = {
+        "date": "2021-01-25",
+        "time": "1500",
+        "source_file": "2021-01-25_1500.api",
+        "source_url": "https://example.com",
+        "speaker": "Peaministrikandidaat Kaja Kallas",
+        "speaker_role": None,
+        "speaker_faction": None,
+        "speaker_uuid": None,
+        "ems_id": None,
+        "speech_type": "SPEECH",
+        "external_id": 88801,
+        "speech_key": "202101251500_kaja",
+        "text": "Austatud Riigikogu",
+        "text_lemmas": "austatud riigikogu",
+        "status": "EDITED",
+    }
+    jsonl_file = data_dir / "2021.jsonl"
+    jsonl_file.write_text(json.dumps(speech_raw) + "\n", encoding="utf-8")
+
+    def failing_copy(src, dst, *args, **kwargs):
+        raise PermissionError("[Errno 1] Operation not permitted (chmod on DrvFS)")
+
+    monkeypatch.setattr(shutil, "copy", failing_copy)
+
+    repair_speaker_uuids(data_dir=str(data_dir), dry_run=False)
+
+    bak_file = data_dir / "2021.jsonl.bak"
+    assert bak_file.exists()
+    assert "Peaministrikandidaat Kaja Kallas" in bak_file.read_text(encoding="utf-8")
