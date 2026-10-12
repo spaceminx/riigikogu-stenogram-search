@@ -146,7 +146,7 @@ Production deployments run automatically on push to `master` (after CI succeeds)
 ### Deployment Configuration
 The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to be configured in GitHub:
 - Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
-- Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host (e.g., `/mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search`).
+- Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host (e.g., `/home/<user>/riigikogu-stenogram-search`).
 
 ---
 

@@ -146,7 +146,7 @@ Tootmiskeskkonna paigaldus käivitub automaatselt pärast `master` haru CI õnne
 ### Paigalduse seadistamine
 Serveri `self-hosted` runner vajab repositooriumi saladust (secret) `DEPLOY_DIR`:
 - Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
-- Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/mnt/c/Users/jaakp/Projects/riigikogu-stenogram-search`).
+- Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/home/<kasutaja>/riigikogu-stenogram-search`).
 
 ---
 
