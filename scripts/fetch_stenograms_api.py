@@ -189,6 +189,57 @@ def get_faction_for_date(faction_map: dict, name: str, date_str: str) -> str | N
 
 
 _logged_name_changes: set[tuple[str, str]] = set()
+_person_factions_cache: dict[str, list[dict]] | None = None
+
+
+def _get_person_factions(processed_dir: str = OUTPUT_DIR_PROCESSED) -> dict[str, list[dict]]:
+    """Load and cache person_factions.json for MP membership period lookups."""
+    global _person_factions_cache
+    if _person_factions_cache is not None:
+        return _person_factions_cache
+    pf_file = os.path.join(processed_dir, "person_factions.json")
+    if os.path.exists(pf_file):
+        try:
+            with open(pf_file, encoding="utf-8") as f:
+                _person_factions_cache = json.load(f)
+                return _person_factions_cache
+        except Exception:
+            pass
+    return {}
+
+
+def is_member_on_date(
+    person_uuid: str, speech_date: str, factions_dict: dict[str, list[dict]]
+) -> bool:
+    """Check if person was a member of Riigikogu on given speech date based on faction intervals."""
+    intervals = factions_dict.get(person_uuid, [])
+    if not intervals:
+        return False
+    dt = speech_date[:10]
+    for interval in intervals:
+        start = interval.get("start", "")
+        end = interval.get("end", "")
+        if start and end and start <= dt <= end:
+            return True
+    return False
+
+
+def is_ambiguous_person_name(
+    speaker_name: str,
+    uuid_to_name_map: dict[str, str] | None,
+    person_name_map: dict[str, str] | None,
+) -> bool:
+    """Check if a name belongs to multiple individuals in persons.json."""
+    if speaker_name == "Tarmo Tamm":
+        return True
+    if uuid_to_name_map:
+        matches = [u for u, name in uuid_to_name_map.items() if name == speaker_name]
+        if len(matches) > 1:
+            return True
+    if person_name_map is not None and uuid_to_name_map is not None:
+        if speaker_name in uuid_to_name_map.values() and speaker_name not in person_name_map:
+            return True
+    return False
 
 
 def resolve_speaker_uuid(
@@ -198,18 +249,50 @@ def resolve_speaker_uuid(
     known_uuids: set[str] | None,
     uuid_to_name_map: dict[str, str] | None,
     person_name_map: dict[str, str] | None,
+    person_factions: dict[str, list[dict]] | None = None,
 ) -> tuple[str | None, str]:
     """Resolve canonical MP UUID for a speaker.
 
     Priority order:
-    1. ems_id in known_uuids and name matches canonical name -> (ems_id, "ems")
-    2. ems_id in known_uuids, name does not match, but first name matches (case-insensitive)
+    1. For ambiguous names (multiple individuals with identical full name, e.g. Tarmo Tamm):
+       Date rule and membership period win over raw ems_id. Raw ems_id is only accepted
+       if the individual was an active Riigikogu member on the speech date.
+    2. ems_id in known_uuids and name matches canonical name -> (ems_id, "ems")
+    3. ems_id in known_uuids, name does not match, but first name matches (case-insensitive)
        and speaker_name is not any other person's canonical name -> (ems_id, "ems_name_change")
-    3. Tarmo Tamm disambiguation by date (< 2023-04-10) -> (uuid, "tarmo_tamm_date")
-    4. person_name_map match -> (uuid, "name")
-    5. otherwise -> (None, "unresolved")
+    4. Tarmo Tamm disambiguation by date (< 2023-04-10) -> (uuid, "tarmo_tamm_date")
+    5. person_name_map match -> (uuid, "name")
+    6. otherwise -> (None, "unresolved")
     """
     raw_ems = str(ems_id).strip() if ems_id else None
+    dt = date[:10] if date else ""
+
+    # 1. Ambiguous name handling (multiple persons with the same name in persons.json)
+    if is_ambiguous_person_name(speaker_name, uuid_to_name_map, person_name_map):
+        factions = person_factions if person_factions is not None else _get_person_factions()
+        if speaker_name == "Tarmo Tamm":
+            target_uuid = (
+                "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+                if dt < "2023-04-10"
+                else "236e49d6-eecb-4562-8ad4-bedd586bb149"
+            )
+            if raw_ems == target_uuid:
+                return (raw_ems, "ems")
+            return (target_uuid, "tarmo_tamm_date")
+
+        # General ambiguous name: candidate UUIDs matching this name
+        candidate_uuids = [
+            u for u, name in (uuid_to_name_map or {}).items() if name == speaker_name
+        ]
+        if raw_ems and raw_ems in candidate_uuids:
+            if is_member_on_date(raw_ems, dt, factions):
+                return (raw_ems, "ems")
+        for cand_uuid in candidate_uuids:
+            if is_member_on_date(cand_uuid, dt, factions):
+                return (cand_uuid, "member_period")
+        return (None, "unresolved")
+
+    # 2. Standard unambiguous resolution via ems_id
     if raw_ems:
         if known_uuids is None:
             if not uuid_to_name_map or uuid_to_name_map.get(raw_ems) == speaker_name:
@@ -219,7 +302,7 @@ def resolve_speaker_uuid(
             if not uuid_to_name_map or canonical_name == speaker_name:
                 return (raw_ems, "ems")
 
-            # 2. Name change check: first name matches, and speaker_name is not another person's canonical name
+            # Name change check: first name matches, and speaker_name is not another person's canonical name
             all_canonical_names = (
                 set(uuid_to_name_map.values())
                 if uuid_to_name_map
@@ -246,9 +329,9 @@ def resolve_speaker_uuid(
                     )
                 return (raw_ems, "ems_name_change")
 
-    # 3. Tarmo Tamm disambiguation by date
+    # 3. Tarmo Tamm disambiguation by date fallback
     if speaker_name == "Tarmo Tamm":
-        if date < "2023-04-10":
+        if dt < "2023-04-10":
             return ("76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5", "tarmo_tamm_date")
         else:
             return ("236e49d6-eecb-4562-8ad4-bedd586bb149", "tarmo_tamm_date")

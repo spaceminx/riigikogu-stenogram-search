@@ -1059,6 +1059,38 @@ def test_resolve_speaker_uuid_tarmo_tamm():
     assert method2 == "tarmo_tamm_date"
 
 
+def test_resolve_speaker_uuid_tarmo_tamm_wrong_ems_id():
+    uuid_old = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+    uuid_new = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+    known_uuids = {uuid_old, uuid_new}
+    uuid_to_name_map = {uuid_old: "Tarmo Tamm", uuid_new: "Tarmo Tamm"}
+    person_name_map = {}  # Ambiguous names are excluded from person_name_map
+
+    # Tarmo Tamm speech in 2025 with wrong emsId (uuid_old) must resolve to uuid_new
+    resolved_uuid, method = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=uuid_old,
+        date="2025-09-10",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+    )
+    assert resolved_uuid == uuid_new
+    assert method == "tarmo_tamm_date"
+
+    # Tarmo Tamm speech in 2021 with valid emsId (uuid_old) resolves to uuid_old
+    resolved_uuid2, method2 = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=uuid_old,
+        date="2021-05-10",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+    )
+    assert resolved_uuid2 == uuid_old
+    assert method2 == "ems"
+
+
 def test_repair_speaker_uuids_dry_run_and_apply(tmp_path):
     import sqlite3
 

@@ -636,10 +636,10 @@ def classify_role(speaker_role: str | None) -> str:
     role_lower = speaker_role.lower()
     if speaker_role in ("Esimees", "Aseesimees"):
         return "chair"
-    if "minister" in role_lower:
-        return "minister"
     if "kandidaat" in role_lower:
         return "candidate"
+    if "minister" in role_lower:
+        return "minister"
     return "other"
 
 
@@ -852,10 +852,7 @@ def get_person_stats(person_uuid: str):
             "by_membership": by_membership,
             "duration": {
                 "mp_seconds": mp_duration_seconds,
-                "total_seconds": mp_duration_seconds,
-                "seconds": mp_duration_seconds,
-                "available_from": "2021-01-01",
-                "period": "alates 2021",
+                "available_from": "2020-09-14",
             },
             "first_speech_date": first_speech_date,
             "last_speech_date": last_speech_date,
@@ -904,10 +901,12 @@ def get_person_speeches(
             filters.append(Speech.speaker_role.is_(None))
         elif role_class == "chair":
             filters.append(Speech.speaker_role.in_(("Esimees", "Aseesimees")))
-        elif role_class == "minister":
-            filters.append(Speech.speaker_role.ilike("%minister%"))
         elif role_class == "candidate":
             filters.append(Speech.speaker_role.ilike("%kandidaat%"))
+        elif role_class == "minister":
+            filters.append(
+                Speech.speaker_role.ilike("%minister%") & ~Speech.speaker_role.ilike("%kandidaat%")
+            )
         elif role_class == "other":
             filters.append(
                 Speech.speaker_role.isnot(None)
@@ -1191,7 +1190,7 @@ def system_status():
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigist; juhatajasõnavõtud tuvastatakse ametinimetuse (Esimees, Aseesimees) järgi, mitte liigi järgi, sest Riigikogu liigitus on selles osas ebajärjekindel.",
-                "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 2021. aastast; 2019–2020 kõnedel puudub algallikas algusaeg.",
+                "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg.",
                 "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
                 "sources": [

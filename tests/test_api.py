@@ -1338,6 +1338,19 @@ def test_person_stats_role_classes_and_categories():
             duration_seconds=90,
             text="Külalise kõne",
         ),
+        Speech(
+            id=2009,
+            date="2024-03-01",
+            time="1000",
+            source_file="2024.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202403011000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role="Peaministrikandidaat",
+            speech_type="SPEECH",
+            duration_seconds=150,
+            text="Peaministrikandidaadi kõne",
+        ),
     ]
     for s in speeches:
         session.merge(s)
@@ -1356,13 +1369,21 @@ def test_person_stats_role_classes_and_categories():
 
     assert data["totals"]["chair"]["speeches"] == 1
     assert data["totals"]["minister"]["speeches"] == 1
-    assert data["totals"]["candidate"]["speeches"] == 1
+    assert (
+        data["totals"]["candidate"]["speeches"] == 2
+    )  # Riigikohtu kandidaat + Peaministrikandidaat
     assert data["totals"]["other"]["speeches"] == 1
 
-    # Duration only for mp
-    assert data["duration"]["mp_seconds"] == 210  # 120 + 60 + 30
+    # Duration only for mp, exactly two keys
+    assert data["duration"] == {
+        "mp_seconds": 210,  # 120 + 60 + 30
+        "available_from": "2020-09-14",
+    }
+    assert "total_seconds" not in data["duration"]
+    assert "seconds" not in data["duration"]
+    assert "period" not in data["duration"]
     assert data["first_speech_date"] == "2021-02-01"
-    assert data["last_speech_date"] == "2024-02-15"
+    assert data["last_speech_date"] == "2024-03-01"
 
     # by_year
     years = {row["year"]: row for row in data["by_year"]}

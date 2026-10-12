@@ -5,6 +5,7 @@ import os
 import shutil
 import sqlite3
 import sys
+from collections import Counter
 
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -39,6 +40,10 @@ def repair_speaker_uuids(
             print(f"Hoiatus: Ei saanud metaandmeid B2-st alla laadida: {e}")
 
     known_uuids, person_name_map, uuid_to_name_map = load_persons_metadata(data_dir)
+    ambiguous_names = {
+        name for name, cnt in Counter(uuid_to_name_map.values()).items() if cnt > 1
+    } | {"Tarmo Tamm"}
+
     if os.path.exists(factions_file):
         with open(factions_file, encoding="utf-8") as f:
             faction_map = json.load(f)
@@ -76,6 +81,7 @@ def repair_speaker_uuids(
     name_change_counts: dict[str, int] = {}
     role_split_counts: dict[str, int] = {}
     unresolved_counts: dict[str, int] = {}
+    changed_rows: list[dict] = []
     modified_files: list[str] = []
 
     db_diff_fields: dict[str, int] = {
@@ -115,9 +121,14 @@ def repair_speaker_uuids(
                     effective_speaker = speaker
                     effective_role = role
 
-                # Step 2: Check if role splitting changed or UUID/faction needs resolution
-                needs_resolution = (effective_speaker != speaker or effective_role != role) or (
-                    effective_role is None and (uuid_val is None or faction_val is None)
+                # Step 2: Check if role splitting changed, UUID/faction needs resolution, or speaker is ambiguous
+                is_ambiguous = (effective_speaker in ambiguous_names) or (
+                    speaker in ambiguous_names
+                )
+                needs_resolution = (
+                    (effective_speaker != speaker or effective_role != role)
+                    or (effective_role is None and (uuid_val is None or faction_val is None))
+                    or is_ambiguous
                 )
 
                 if needs_resolution:
@@ -153,6 +164,23 @@ def repair_speaker_uuids(
                     row["speaker_role"] = effective_role
                     row["speaker_uuid"] = effective_uuid
                     row["speaker_faction"] = new_faction
+
+                    changed_rows.append(
+                        {
+                            "file": os.path.basename(file_path),
+                            "external_id": row.get("external_id"),
+                            "speech_key": row.get("speech_key"),
+                            "date": date_str,
+                            "speaker": effective_speaker,
+                            "old_uuid": uuid_val,
+                            "new_uuid": effective_uuid,
+                            "old_role": role,
+                            "new_role": effective_role,
+                            "old_faction": faction_val,
+                            "new_faction": new_faction,
+                            "method": method if needs_resolution else "none",
+                        }
+                    )
 
                     if effective_speaker != speaker:
                         pair = f"{speaker} -> {effective_speaker} ({effective_role})"
@@ -307,6 +335,23 @@ def repair_speaker_uuids(
     else:
         print("  (kõik lahendatud)")
 
+    if changed_rows:
+        print(f"\nMuutuvad read ({len(changed_rows)} rida):")
+        for r in changed_rows:
+            uuid_change = (
+                f"{r['old_uuid']} -> {r['new_uuid']}"
+                if r["old_uuid"] != r["new_uuid"]
+                else f"{r['new_uuid']} (muutmata)"
+            )
+            role_change = (
+                f", roll: {r['old_role']} -> {r['new_role']}"
+                if r["old_role"] != r["new_role"]
+                else ""
+            )
+            print(
+                f"  - {r['file']}: ext_id={r['external_id']}, sp_key={r['speech_key']}, kpv={r['date']}, kõneleja={r['speaker']}: UUID {uuid_change}{role_change} (meetod: {r['method']})"
+            )
+
     if db_path:
         action_label = (
             "SQLite andmebaasis uuendatud ridu"
@@ -329,6 +374,7 @@ def repair_speaker_uuids(
         "name_changes": name_change_counts,
         "role_splits": role_split_counts,
         "unresolved": unresolved_counts,
+        "changed_rows": changed_rows,
         "dry_run": dry_run,
         "db_updated_count": db_updated_count if not dry_run else total_db_diff,
         "db_diff_fields": db_diff_fields,
