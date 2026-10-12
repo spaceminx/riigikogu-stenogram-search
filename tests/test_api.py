@@ -1219,3 +1219,465 @@ def test_unknown_membership_returns_422_in_all_search_endpoints():
     res_list = client.get("/attendance/factions/list?membership=99")
     assert res_list.status_code == 422
     assert res_list.json()["detail"] == "Tundmatu koosseis"
+
+
+def test_person_stats_role_classes_and_categories():
+    session = SessionLocal()
+    puuid = "uuid-test-stats-person"
+    person = Person(
+        uuid=puuid,
+        first_name="Stats",
+        last_name="Katse",
+        full_name="Stats Katse",
+        active=1,
+    )
+    session.merge(person)
+
+    speeches = [
+        Speech(
+            id=2001,
+            date="2021-02-01",
+            time="1000",
+            source_file="2021.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202102011000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role=None,
+            speech_type="SPEECH",
+            duration_seconds=120,
+            text="MP kõne",
+        ),
+        Speech(
+            id=2002,
+            date="2021-03-01",
+            time="1000",
+            source_file="2021.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202103011000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role=None,
+            speech_type="SMALL_SPEECH",
+            duration_seconds=60,
+            text="MP küsimus",
+        ),
+        Speech(
+            id=2003,
+            date="2022-04-01",
+            time="1000",
+            source_file="2022.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202204011000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role=None,
+            speech_type="PROCEDURAL",
+            duration_seconds=30,
+            text="MP protseduuriline",
+        ),
+        Speech(
+            id=2004,
+            date="2022-05-01",
+            time="1000",
+            source_file="2022.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202205011000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role=None,
+            speech_type="DIRECTOR",
+            duration_seconds=15,
+            text="MP juhataja teadaanne",
+        ),
+        Speech(
+            id=2005,
+            date="2023-01-10",
+            time="1000",
+            source_file="2023.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202301101000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role="Esimees",
+            speech_type="SPEECH",
+            duration_seconds=200,
+            text="Esimehe kõne",
+        ),
+        Speech(
+            id=2006,
+            date="2023-05-20",
+            time="1000",
+            source_file="2023.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202305201000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role="Kaitseminister",
+            speech_type="SPEECH",
+            duration_seconds=300,
+            text="Ministri kõne",
+        ),
+        Speech(
+            id=2007,
+            date="2024-01-15",
+            time="1000",
+            source_file="2024.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202401151000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role="Riigikohtu liikme kandidaat",
+            speech_type="SPEECH",
+            duration_seconds=180,
+            text="Kandidaadi kõne",
+        ),
+        Speech(
+            id=2008,
+            date="2024-02-15",
+            time="1000",
+            source_file="2024.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202402151000",
+            speaker="Stats Katse",
+            speaker_uuid=puuid,
+            speaker_role="Külalisesineja",
+            speech_type="SPEECH",
+            duration_seconds=90,
+            text="Külalise kõne",
+        ),
+    ]
+    for s in speeches:
+        session.merge(s)
+    session.commit()
+    session.close()
+
+    res = client.get(f"/persons/{puuid}/stats")
+    assert res.status_code == 200
+    data = res.json()
+
+    assert data["totals"]["mp"]["speeches"] == 1
+    assert data["totals"]["mp"]["questions"] == 1
+    assert data["totals"]["mp"]["procedural"] == 1
+    assert data["totals"]["mp"]["total"] == 3
+    assert data["director"] == 1
+
+    assert data["totals"]["chair"]["speeches"] == 1
+    assert data["totals"]["minister"]["speeches"] == 1
+    assert data["totals"]["candidate"]["speeches"] == 1
+    assert data["totals"]["other"]["speeches"] == 1
+
+    # Duration only for mp
+    assert data["duration"]["mp_seconds"] == 210  # 120 + 60 + 30
+    assert data["first_speech_date"] == "2021-02-01"
+    assert data["last_speech_date"] == "2024-02-15"
+
+    # by_year
+    years = {row["year"]: row for row in data["by_year"]}
+    assert "2021" in years
+    assert years["2021"]["mp"]["speeches"] == 1
+    assert years["2021"]["mp"]["questions"] == 1
+    assert "2022" in years
+    assert years["2022"]["director"] == 1
+
+    # by_membership
+    mems = {row["membership"]: row for row in data["by_membership"]}
+    assert "14" in mems
+    assert "15" in mems
+
+    # 404 for unknown person
+    res_404 = client.get("/persons/non-existent-stats-uuid/stats")
+    assert res_404.status_code == 404
+
+
+def test_same_name_different_persons_uuid_filter_and_endpoints():
+    session = SessionLocal()
+    lemma_val = "katsesõna"
+    session.merge(Lemma(id=5001, lemma=lemma_val))
+
+    u1 = "uuid-disambig-person-1"
+    u2 = "uuid-disambig-person-2"
+    p1 = Person(
+        uuid=u1, first_name="Katsenimi", last_name="Sama", full_name="Katsenimi Sama", active=1
+    )
+    p2 = Person(
+        uuid=u2, first_name="Katsenimi", last_name="Sama", full_name="Katsenimi Sama", active=1
+    )
+    session.merge(p1)
+    session.merge(p2)
+
+    sp1 = Speech(
+        id=3001,
+        date="2023-05-15",
+        time="1000",
+        source_file="2023.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202305151000",
+        speaker="Katsenimi Sama",
+        speaker_uuid=u1,
+        speaker_role=None,
+        speech_type="SPEECH",
+        text=f"Siin on {lemma_val} esimesele.",
+    )
+    sp2 = Speech(
+        id=3002,
+        date="2023-05-16",
+        time="1000",
+        source_file="2023.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202305161000",
+        speaker="Katsenimi Sama",
+        speaker_uuid=u2,
+        speaker_role=None,
+        speech_type="SPEECH",
+        text=f"Siin on {lemma_val} teisele.",
+    )
+    session.merge(sp1)
+    session.merge(sp2)
+    session.merge(SpeechTerm(id=6001, speech_id=3001, lemma_id=5001, count=1))
+    session.merge(SpeechTerm(id=6002, speech_id=3002, lemma_id=5001, count=1))
+    session.commit()
+    session.close()
+
+    # /search with speaker_uuid
+    res_s1 = client.get(f"/search?q={lemma_val}&speaker_uuid={u1}")
+    assert res_s1.status_code == 200
+    assert res_s1.json()["total_count"] == 1
+    assert res_s1.json()["results"][0]["speaker_uuid"] == u1
+
+    res_s2 = client.get(f"/search?q={lemma_val}&speaker_uuid={u2}")
+    assert res_s2.status_code == 200
+    assert res_s2.json()["total_count"] == 1
+    assert res_s2.json()["results"][0]["speaker_uuid"] == u2
+
+    # /search/activity with speaker_uuid
+    res_a1 = client.get(f"/search/activity?q={lemma_val}&speaker_uuid={u1}")
+    assert res_a1.status_code == 200
+
+    # /search/speakers with speaker_uuid
+    res_spk1 = client.get(f"/search/speakers?q={lemma_val}&speaker_uuid={u1}")
+    assert res_spk1.status_code == 200
+    speakers1 = res_spk1.json()["speakers"]
+    assert len(speakers1) == 1
+    assert speakers1[0]["speaker_uuid"] == u1
+    assert speakers1[0]["speaker"] == "Katsenimi Sama"
+
+    # /search/export with speaker_uuid
+    res_exp1 = client.get(f"/search/export?q={lemma_val}&speaker_uuid={u1}&format=json")
+    assert res_exp1.status_code == 200
+    assert len(res_exp1.json()) == 1
+    assert res_exp1.json()[0]["speaker_uuid"] == u1
+
+    # /persons/{uuid}/speeches
+    res_psp1 = client.get(f"/persons/{u1}/speeches")
+    assert res_psp1.status_code == 200
+    assert res_psp1.json()["total_count"] == 1
+    assert res_psp1.json()["results"][0]["id"] == 3001
+
+    res_psp2 = client.get(f"/persons/{u2}/speeches")
+    assert res_psp2.status_code == 200
+    assert res_psp2.json()["total_count"] == 1
+    assert res_psp2.json()["results"][0]["id"] == 3002
+
+
+def test_person_speeches_pagination_and_role_class():
+    session = SessionLocal()
+    puuid = "uuid-test-pagination-person"
+    session.merge(
+        Person(uuid=puuid, first_name="Lehe", last_name="Katse", full_name="Lehe Katse", active=1)
+    )
+
+    # 3 MP speeches, 1 chair speech
+    for i in range(1, 4):
+        session.merge(
+            Speech(
+                id=4000 + i,
+                date=f"2023-01-0{i}",
+                time="1000",
+                source_file="2023.api",
+                source_url=f"https://stenogrammid.riigikogu.ee/et/2023010{i}1000",
+                speaker="Lehe Katse",
+                speaker_uuid=puuid,
+                speaker_role=None,
+                speech_type="SPEECH",
+                text="Lühike tekst " * 50,
+            )
+        )
+    session.merge(
+        Speech(
+            id=4010,
+            date="2023-01-10",
+            time="1000",
+            source_file="2023.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/202301101000",
+            speaker="Lehe Katse",
+            speaker_uuid=puuid,
+            speaker_role="Esimees",
+            speech_type="SPEECH",
+            text="Esimehe tekst",
+        )
+    )
+    session.commit()
+    session.close()
+
+    # Pagination: limit=2, offset=0
+    res_p1 = client.get(f"/persons/{puuid}/speeches?limit=2&offset=0&role_class=mp")
+    assert res_p1.status_code == 200
+    d1 = res_p1.json()
+    assert d1["total_count"] == 3
+    assert len(d1["results"]) == 2
+    assert len(d1["results"][0]["text"]) <= 400
+
+    # offset=2
+    res_p2 = client.get(f"/persons/{puuid}/speeches?limit=2&offset=2&role_class=mp")
+    assert res_p2.status_code == 200
+    d2 = res_p2.json()
+    assert d2["total_count"] == 3
+    assert len(d2["results"]) == 1
+
+    # role_class=chair
+    res_chair = client.get(f"/persons/{puuid}/speeches?role_class=chair")
+    assert res_chair.status_code == 200
+    assert res_chair.json()["total_count"] == 1
+    assert res_chair.json()["results"][0]["id"] == 4010
+
+    # role_class=all
+    res_all = client.get(f"/persons/{puuid}/speeches?role_class=all")
+    assert res_all.status_code == 200
+    assert res_all.json()["total_count"] == 4
+
+    # 404 for unknown person
+    assert client.get("/persons/unknown-uuid/speeches").status_code == 404
+
+
+def test_overview_excludes_chair_and_director():
+    from src.api.search import _OVERVIEW_CACHE
+
+    _OVERVIEW_CACHE["data"] = None
+
+    session = SessionLocal()
+    u_chair = "uuid-top-chair-person"
+    u_mp = "uuid-top-mp-person"
+
+    session.merge(
+        Person(
+            uuid=u_chair,
+            first_name="Suur",
+            last_name="Juhataja",
+            full_name="Suur Juhataja",
+            active=1,
+        )
+    )
+    session.merge(
+        Person(
+            uuid=u_mp,
+            first_name="Aktiivne",
+            last_name="Saadik",
+            full_name="Aktiivne Saadik",
+            active=1,
+        )
+    )
+
+    for i in range(10):
+        session.merge(
+            Speech(
+                id=5000 + i,
+                date="2024-05-01",
+                time=f"10{i:02d}",
+                source_file="2024.api",
+                source_url="https://stenogrammid.riigikogu.ee/et/202405011000",
+                speaker="Suur Juhataja",
+                speaker_uuid=u_chair,
+                speaker_role="Esimees",
+                speaker_faction="Fraktsioon A",
+                speech_type="SPEECH",
+                text="Juhataja kõne",
+            )
+        )
+    for i in range(2):
+        session.merge(
+            Speech(
+                id=5100 + i,
+                date="2024-05-01",
+                time=f"11{i:02d}",
+                source_file="2024.api",
+                source_url="https://stenogrammid.riigikogu.ee/et/202405011100",
+                speaker="Aktiivne Saadik",
+                speaker_uuid=u_mp,
+                speaker_role=None,
+                speaker_faction="Fraktsioon B",
+                speech_type="SPEECH",
+                text="Saadiku kõne",
+            )
+        )
+    session.commit()
+    session.close()
+
+    res = client.get("/overview")
+    assert res.status_code == 200
+    speakers = res.json()["speakers"]
+    speaker_uuids = [s.get("speaker_uuid") for s in speakers]
+    assert u_chair not in speaker_uuids
+    assert u_mp in speaker_uuids
+
+
+def test_person_attendance_endpoint():
+    session = SessionLocal()
+    puuid = "uuid-att-person-1"
+    session.merge(
+        Person(uuid=puuid, first_name="Kohal", last_name="Oleja", full_name="Kohal Oleja", active=1)
+    )
+
+    session.merge(
+        Attendance(
+            id=7001,
+            session_date="2021-05-10T11:00:00",
+            voting_uuid="voting-att-1",
+            member_uuid=puuid,
+            member_name="Kohal Oleja",
+            faction="Fraktsioon",
+            status="KOHAL",
+        )
+    )
+    session.merge(
+        Attendance(
+            id=7002,
+            session_date="2023-05-10T11:00:00",
+            voting_uuid="voting-att-2",
+            member_uuid=puuid,
+            member_name="Kohal Oleja",
+            faction="Fraktsioon",
+            status="PUUDUB",
+        )
+    )
+    session.merge(
+        Attendance(
+            id=7003,
+            session_date="2023-06-10T11:00:00",
+            voting_uuid="voting-att-3",
+            member_uuid=puuid,
+            member_name="Kohal Oleja",
+            faction="Fraktsioon",
+            status="KOHAL",
+        )
+    )
+    session.commit()
+    session.close()
+
+    res = client.get(f"/persons/{puuid}/attendance")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["uuid"] == puuid
+    assert data["total_sessions"] == 3
+    assert data["present_sessions"] == 2
+    assert data["absent_sessions"] == 1
+    assert data["attendance_percentage"] == 66.7
+
+    mems = {row["membership"]: row for row in data["by_membership"]}
+    assert "15" in mems
+    assert mems["15"]["total_sessions"] == 2
+    assert mems["15"]["present_sessions"] == 1
+    assert mems["15"]["absent_sessions"] == 1
+    assert "14" in mems
+    assert mems["14"]["total_sessions"] == 1
+    assert mems["14"]["present_sessions"] == 1
+
+    # /attendance/stats returns member_uuid
+    res_stats = client.get("/attendance/stats?membership=15")
+    assert res_stats.status_code == 200
+    item = next((s for s in res_stats.json() if s["member_name"] == "Kohal Oleja"), None)
+    assert item is not None
+    assert item["member_uuid"] == puuid
+
+    # 404 for unknown person
+    assert client.get("/persons/unknown-att-uuid/attendance").status_code == 404

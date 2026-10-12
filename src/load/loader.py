@@ -9,9 +9,30 @@ from src.load.database import SessionLocal, engine
 from src.load.models import Attendance, Base, Person, Speech, SpeechAlias, SpeechTerm
 
 
+def ensure_schema(target_engine=None) -> None:
+    """Ensure database schema is up to date (idempotent migration helper)."""
+    eng = target_engine or engine
+    with eng.connect() as conn:
+        tables = {
+            row[0]
+            for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+        }
+        if "attendance" in tables:
+            cols = {row[1] for row in conn.execute(text("PRAGMA table_info(attendance)"))}
+            if "member_uuid" not in cols:
+                conn.execute(text("ALTER TABLE attendance ADD COLUMN member_uuid TEXT;"))
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_attendance_member_uuid ON attendance(member_uuid);"
+                )
+            )
+        conn.commit()
+
+
 def create_tables() -> None:
     """Create all database tables and ensure optional columns exist."""
     Base.metadata.create_all(bind=engine)
+    ensure_schema()
     with engine.connect() as conn:
         # Migrate optional columns if speeches table already exists
         existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(speeches)"))}
@@ -77,6 +98,7 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
                 record = Attendance(
                     session_date=data["session_date"],
                     voting_uuid=v_uuid,
+                    member_uuid=data.get("member_uuid"),
                     member_name=data["member_name"],
                     faction=data.get("faction", ""),
                     status=data.get("status", ""),

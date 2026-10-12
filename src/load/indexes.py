@@ -1,6 +1,7 @@
 from sqlalchemy import text
 
 from src.load.database import engine
+from src.load.loader import ensure_schema
 
 REDUNDANT_INDEXES = [
     "DROP INDEX IF EXISTS idx_lemmas_lemma",
@@ -14,6 +15,7 @@ REDUNDANT_INDEXES = [
     "DROP INDEX IF EXISTS ix_speech_aliases_alias_external_id",
     "DROP INDEX IF EXISTS ix_speech_aliases_speech_id",
     "DROP INDEX IF EXISTS ix_persons_full_name",
+    "DROP INDEX IF EXISTS ix_attendance_member_uuid",
 ]
 
 INDEXES = [
@@ -28,11 +30,13 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_speeches_speech_key ON speeches(speech_key)",
     "CREATE INDEX IF NOT EXISTS idx_speech_aliases_alias_id ON speech_aliases(alias_external_id)",
     "CREATE INDEX IF NOT EXISTS idx_persons_full_name ON persons(full_name)",
+    "CREATE INDEX IF NOT EXISTS idx_attendance_member_uuid ON attendance(member_uuid)",
 ]
 
 
 def create_indexes() -> None:
     """Create SQLite database indexes for fast keyword search and speaker lookups."""
+    ensure_schema()
     with engine.connect() as conn:
         for drop_sql in REDUNDANT_INDEXES:
             conn.execute(text(drop_sql))

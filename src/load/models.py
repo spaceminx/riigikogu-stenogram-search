@@ -82,6 +82,7 @@ class Attendance(Base):
     id = Column(Integer, primary_key=True)
     session_date = Column(Text, nullable=False)
     voting_uuid = Column(Text, nullable=False)
+    member_uuid = Column(Text, index=True, nullable=True)
     member_name = Column(Text, nullable=False)
     faction = Column(Text, nullable=True)
     status = Column(Text, nullable=False)
