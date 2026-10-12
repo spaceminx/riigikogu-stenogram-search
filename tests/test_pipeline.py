@@ -8,6 +8,7 @@ from scripts.fetch_stenograms_api import (
     parse_meeting_speeches,
     resolve_speaker_uuid,
     save_session_to_jsonl,
+    split_speaker_role,
 )
 from src.load.database import SessionLocal
 from src.load.loader import (
@@ -1156,3 +1157,333 @@ def test_repair_speaker_uuids_dry_run_and_apply(tmp_path):
     conn.close()
     assert row[0] == luisa_uuid
     assert row[1] == "Eesti Reformierakonna fraktsioon"
+
+
+def test_split_speaker_role_candidates_and_suffix():
+    assert split_speaker_role("Peaministrikandidaat Kaja Kallas") == (
+        "Kaja Kallas",
+        "Peaministrikandidaat",
+    )
+    assert split_speaker_role("Presidendikandidaat Ülle Madise") == (
+        "Ülle Madise",
+        "Presidendikandidaat",
+    )
+    assert split_speaker_role("Jürgen Ligi rahandusminister") == (
+        "Jürgen Ligi",
+        "Rahandusminister",
+    )
+    assert split_speaker_role("Riigikohtu liikme kandidaat X Y") == (
+        "X Y",
+        "Riigikohtu liikme kandidaat",
+    )
+    assert split_speaker_role("Rahandusminister Martin Helme") == (
+        "Martin Helme",
+        "Rahandusminister",
+    )
+    assert split_speaker_role("Aseesimees Arvo Aller") == (
+        "Arvo Aller",
+        "Aseesimees",
+    )
+    assert split_speaker_role("Tarmo Tamm") == ("Tarmo Tamm", None)
+    assert split_speaker_role("Riigikogu koor") == ("Riigikogu koor", None)
+
+
+def test_repair_speaker_uuids_candidate_role(tmp_path):
+    import sqlite3
+
+    from scripts.repair_speaker_uuids import repair_speaker_uuids
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    kaja_uuid = "c7d52089-6129-468f-8789-9c4cf742b908"
+    persons_data = [{"uuid": kaja_uuid, "full_name": "Kaja Kallas"}]
+    (data_dir / "persons.json").write_text(json.dumps(persons_data), encoding="utf-8")
+
+    factions_data = {
+        "Kaja Kallas": [
+            {
+                "start": "2019-04-04",
+                "end": "2021-01-26",
+                "faction": "Eesti Reformierakonna fraktsioon",
+            }
+        ]
+    }
+    (data_dir / "factions_map.json").write_text(json.dumps(factions_data), encoding="utf-8")
+
+    speech_raw = {
+        "date": "2021-01-25",
+        "time": "1500",
+        "source_file": "2021-01-25_1500.api",
+        "source_url": "https://example.com",
+        "speaker": "Peaministrikandidaat Kaja Kallas",
+        "speaker_role": None,
+        "speaker_faction": None,
+        "speaker_uuid": None,
+        "ems_id": None,
+        "speech_type": "SPEECH",
+        "external_id": 88801,
+        "speech_key": "202101251500_kaja-kallas-permanent",
+        "text": "Austatud Riigikogu",
+        "text_lemmas": "austatud riigikogu",
+        "status": "EDITED",
+    }
+    jsonl_file = data_dir / "2021.jsonl"
+    jsonl_file.write_text(json.dumps(speech_raw) + "\n", encoding="utf-8")
+
+    db_file = tmp_path / "test.sqlite"
+    conn = sqlite3.connect(db_file)
+    conn.execute(
+        "CREATE TABLE speeches (id INTEGER PRIMARY KEY, external_id INTEGER, speech_key TEXT, speaker TEXT, speaker_role TEXT, speaker_faction TEXT, speaker_uuid TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO speeches (id, external_id, speech_key, speaker, speaker_role, speaker_faction, speaker_uuid) VALUES (1, 88801, '202101251500_kaja-kallas-permanent', 'Peaministrikandidaat Kaja Kallas', NULL, NULL, NULL)"
+    )
+    conn.commit()
+    conn.close()
+
+    res = repair_speaker_uuids(
+        data_dir=str(data_dir),
+        dry_run=False,
+        db_path=str(db_file),
+    )
+    assert res["needed_repair"] == 1
+    assert res["db_updated_count"] == 1
+
+    content = json.loads(jsonl_file.read_text(encoding="utf-8"))
+    assert content["speaker"] == "Kaja Kallas"
+    assert content["speaker_role"] == "Peaministrikandidaat"
+    assert content["speaker_uuid"] == kaja_uuid
+    assert content["speaker_faction"] == "Eesti Reformierakonna fraktsioon"
+    assert content["speech_key"] == "202101251500_kaja-kallas-permanent"
+
+    conn = sqlite3.connect(db_file)
+    row = conn.execute(
+        "SELECT speaker, speaker_role, speaker_uuid, speaker_faction, speech_key FROM speeches WHERE id = 1"
+    ).fetchone()
+    conn.close()
+    assert row[0] == "Kaja Kallas"
+    assert row[1] == "Peaministrikandidaat"
+    assert row[2] == kaja_uuid
+    assert row[3] == "Eesti Reformierakonna fraktsioon"
+    assert row[4] == "202101251500_kaja-kallas-permanent"
+
+
+def test_repair_speaker_uuids_db_when_jsonl_already_repaired(tmp_path):
+    import sqlite3
+
+    from scripts.repair_speaker_uuids import repair_speaker_uuids
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    kaja_uuid = "c7d52089-6129-468f-8789-9c4cf742b908"
+    persons_data = [{"uuid": kaja_uuid, "full_name": "Kaja Kallas"}]
+    (data_dir / "persons.json").write_text(json.dumps(persons_data), encoding="utf-8")
+
+    factions_data = {
+        "Kaja Kallas": [
+            {
+                "start": "2019-04-04",
+                "end": "2021-01-26",
+                "faction": "Eesti Reformierakonna fraktsioon",
+            }
+        ]
+    }
+    (data_dir / "factions_map.json").write_text(json.dumps(factions_data), encoding="utf-8")
+
+    # JSONL is ALREADY repaired
+    speech_repaired = {
+        "date": "2021-01-25",
+        "time": "1500",
+        "source_file": "2021-01-25_1500.api",
+        "source_url": "https://example.com",
+        "speaker": "Kaja Kallas",
+        "speaker_role": "Peaministrikandidaat",
+        "speaker_faction": "Eesti Reformierakonna fraktsioon",
+        "speaker_uuid": kaja_uuid,
+        "ems_id": None,
+        "speech_type": "SPEECH",
+        "external_id": 88801,
+        "speech_key": "202101251500_kaja",
+        "text": "Austatud Riigikogu",
+        "text_lemmas": "austatud riigikogu",
+        "status": "EDITED",
+    }
+    jsonl_file = data_dir / "2021.jsonl"
+    jsonl_file.write_text(json.dumps(speech_repaired) + "\n", encoding="utf-8")
+
+    # Database has OLD values
+    db_file = tmp_path / "test.sqlite"
+    conn = sqlite3.connect(db_file)
+    conn.execute(
+        "CREATE TABLE speeches (id INTEGER PRIMARY KEY, external_id INTEGER, speech_key TEXT, speaker TEXT, speaker_role TEXT, speaker_faction TEXT, speaker_uuid TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO speeches (id, external_id, speech_key, speaker, speaker_role, speaker_faction, speaker_uuid) VALUES (1, 88801, '202101251500_kaja', 'Peaministrikandidaat Kaja Kallas', NULL, NULL, NULL)"
+    )
+    conn.commit()
+    conn.close()
+
+    res = repair_speaker_uuids(
+        data_dir=str(data_dir),
+        dry_run=False,
+        db_path=str(db_file),
+    )
+    # JSONL had 0 needed repairs
+    assert res["needed_repair"] == 0
+    # But DB was updated
+    assert res["db_updated_count"] == 1
+    assert res["db_diff_fields"]["speaker"] == 1
+    assert res["db_diff_fields"]["speaker_role"] == 1
+    assert res["db_diff_fields"]["speaker_uuid"] == 1
+    assert res["db_diff_fields"]["speaker_faction"] == 1
+
+    conn = sqlite3.connect(db_file)
+    row = conn.execute(
+        "SELECT speaker, speaker_role, speaker_uuid, speaker_faction FROM speeches WHERE id = 1"
+    ).fetchone()
+    conn.close()
+    assert row[0] == "Kaja Kallas"
+    assert row[1] == "Peaministrikandidaat"
+    assert row[2] == kaja_uuid
+    assert row[3] == "Eesti Reformierakonna fraktsioon"
+
+
+def test_repair_speaker_uuids_upload_failure_aborts_db(tmp_path, monkeypatch):
+    import sqlite3
+
+    import pytest
+
+    from scripts.repair_speaker_uuids import repair_speaker_uuids
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    kaja_uuid = "c7d52089-6129-468f-8789-9c4cf742b908"
+    (data_dir / "persons.json").write_text(
+        json.dumps([{"uuid": kaja_uuid, "full_name": "Kaja Kallas"}]), encoding="utf-8"
+    )
+    (data_dir / "factions_map.json").write_text(
+        json.dumps(
+            {
+                "Kaja Kallas": [
+                    {
+                        "start": "2019-04-04",
+                        "end": "2021-01-26",
+                        "faction": "Eesti Reformierakonna fraktsioon",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    speech_raw = {
+        "date": "2021-01-25",
+        "time": "1500",
+        "source_file": "2021-01-25_1500.api",
+        "source_url": "https://example.com",
+        "speaker": "Peaministrikandidaat Kaja Kallas",
+        "speaker_role": None,
+        "speaker_faction": None,
+        "speaker_uuid": None,
+        "ems_id": None,
+        "speech_type": "SPEECH",
+        "external_id": 88801,
+        "speech_key": "202101251500_kaja",
+        "text": "Austatud Riigikogu",
+        "text_lemmas": "austatud riigikogu",
+        "status": "EDITED",
+    }
+    jsonl_file = data_dir / "2021.jsonl"
+    jsonl_file.write_text(json.dumps(speech_raw) + "\n", encoding="utf-8")
+
+    db_file = tmp_path / "test.sqlite"
+    conn = sqlite3.connect(db_file)
+    conn.execute(
+        "CREATE TABLE speeches (id INTEGER PRIMARY KEY, external_id INTEGER, speech_key TEXT, speaker TEXT, speaker_role TEXT, speaker_faction TEXT, speaker_uuid TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO speeches (id, external_id, speech_key, speaker, speaker_role, speaker_faction, speaker_uuid) VALUES (1, 88801, '202101251500_kaja', 'Peaministrikandidaat Kaja Kallas', NULL, NULL, NULL)"
+    )
+    conn.commit()
+    conn.close()
+
+    # Mock upload_to_b2 to fail
+    import scripts.upload_to_b2
+
+    monkeypatch.setattr(scripts.upload_to_b2, "upload_to_b2", lambda **kwargs: False)
+
+    with pytest.raises(SystemExit) as exc_info:
+        repair_speaker_uuids(
+            data_dir=str(data_dir),
+            dry_run=False,
+            upload=True,
+            db_path=str(db_file),
+        )
+    assert exc_info.value.code == 1
+
+    # Database must NOT have been updated!
+    conn = sqlite3.connect(db_file)
+    row = conn.execute(
+        "SELECT speaker, speaker_role, speaker_uuid FROM speeches WHERE id = 1"
+    ).fetchone()
+    conn.close()
+    assert row[0] == "Peaministrikandidaat Kaja Kallas"
+    assert row[1] is None
+    assert row[2] is None
+
+
+def test_repair_speaker_uuids_bak_with_shutil_copy(tmp_path, monkeypatch):
+    import shutil
+
+    from scripts.repair_speaker_uuids import repair_speaker_uuids
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    kaja_uuid = "c7d52089-6129-468f-8789-9c4cf742b908"
+    (data_dir / "persons.json").write_text(
+        json.dumps([{"uuid": kaja_uuid, "full_name": "Kaja Kallas"}]), encoding="utf-8"
+    )
+    (data_dir / "factions_map.json").write_text("{}", encoding="utf-8")
+
+    speech_raw = {
+        "date": "2021-01-25",
+        "time": "1500",
+        "source_file": "2021-01-25_1500.api",
+        "source_url": "https://example.com",
+        "speaker": "Peaministrikandidaat Kaja Kallas",
+        "speaker_role": None,
+        "speaker_faction": None,
+        "speaker_uuid": None,
+        "ems_id": None,
+        "speech_type": "SPEECH",
+        "external_id": 88801,
+        "speech_key": "202101251500_kaja",
+        "text": "Austatud Riigikogu",
+        "text_lemmas": "austatud riigikogu",
+        "status": "EDITED",
+    }
+    jsonl_file = data_dir / "2021.jsonl"
+    jsonl_file.write_text(json.dumps(speech_raw) + "\n", encoding="utf-8")
+
+    copy_calls = []
+    real_copy = shutil.copy
+
+    def tracked_copy(src, dst, *args, **kwargs):
+        copy_calls.append((src, dst))
+        return real_copy(src, dst, *args, **kwargs)
+
+    def forbid_copy2(src, dst, *args, **kwargs):
+        raise AssertionError("shutil.copy2 must not be called!")
+
+    monkeypatch.setattr(shutil, "copy", tracked_copy)
+    monkeypatch.setattr(shutil, "copy2", forbid_copy2)
+
+    repair_speaker_uuids(data_dir=str(data_dir), dry_run=False)
+
+    assert len(copy_calls) == 1
+    assert copy_calls[0][1].endswith(".bak")
+    assert (data_dir / "2021.jsonl.bak").exists()
