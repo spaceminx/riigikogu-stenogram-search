@@ -33,8 +33,8 @@ export function SessionView() {
   }, [loading, sessionData, location.hash]);
 
   const handleBack = () => {
-    if (window.history.length <= 1 || location.key === "default") {
-      navigate("/otsing");
+    if (location.key === "default" || window.history.length <= 1) {
+      navigate("/");
     } else {
       navigate(-1);
     }

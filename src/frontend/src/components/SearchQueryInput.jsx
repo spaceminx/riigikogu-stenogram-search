@@ -7,6 +7,7 @@ export function SearchQueryInput({
   setInputValue,
   onSearch,
   loading = false,
+  children,
 }) {
   const handleAddAnd = () => {
     if (inputValue.trim()) {
@@ -107,6 +108,8 @@ export function SearchQueryInput({
           {loading ? "Otsin..." : "Otsi"}
         </button>
       </div>
+
+      {children}
     </form>
   );
 }
