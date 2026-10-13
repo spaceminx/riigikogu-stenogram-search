@@ -1453,8 +1453,9 @@ def test_person_stats_role_classes_and_categories():
     assert data["totals"]["mp"]["speeches"] == 1
     assert data["totals"]["mp"]["questions"] == 1
     assert data["totals"]["mp"]["procedural"] == 1
-    assert data["totals"]["mp"]["total"] == 3
-    assert data["director"] == 1
+    assert data["totals"]["mp"]["unclassified"] == 1
+    assert data["totals"]["mp"]["total"] == 4
+    assert data["director"] == 0
 
     assert data["totals"]["chair"]["speeches"] == 1
     assert data["totals"]["minister"]["speeches"] == 1
@@ -1465,7 +1466,7 @@ def test_person_stats_role_classes_and_categories():
 
     # Duration only for mp, exactly two keys
     assert data["duration"] == {
-        "mp_seconds": 210,  # 120 + 60 + 30
+        "mp_seconds": 225,  # 120 + 60 + 30 + 15
         "available_from": "2020-09-14",
     }
     assert "total_seconds" not in data["duration"]
@@ -1480,7 +1481,9 @@ def test_person_stats_role_classes_and_categories():
     assert years["2021"]["mp"]["speeches"] == 1
     assert years["2021"]["mp"]["questions"] == 1
     assert "2022" in years
-    assert years["2022"]["director"] == 1
+    assert years["2022"]["director"] == 0
+    assert years["2022"]["mp"]["unclassified"] == 1
+    assert years["2022"]["mp"]["total"] == 2
 
     # by_membership
     mems = {row["membership"]: row for row in data["by_membership"]}
@@ -1705,7 +1708,9 @@ def test_person_stats_and_speeches_parity_with_director():
     assert res_person.status_code == 200
     person = res_person.json()
     assert person["speeches_count"] == stats["totals"]["mp"]["total"]
-    assert person["speeches_count"] == 2  # 5001, 5002 (5003 is DIRECTOR)
+    assert (
+        person["speeches_count"] == 3
+    )  # 5001, 5002, 5003 (5003 is DIRECTOR in MP role -> unclassified)
 
     # 3. Check each role_class speeches total_count equals stats totals
     for rc in ("mp", "chair", "minister", "candidate", "other"):
@@ -1716,12 +1721,12 @@ def test_person_stats_and_speeches_parity_with_director():
             f"Mismatch for role_class={rc}"
         )
 
-    # 4. Check director role_class
+    # 4. Check director role_class (only chair DIRECTOR)
     res_dir = client.get(f"/persons/{puuid}/speeches?role_class=director")
     assert res_dir.status_code == 200
     dir_data = res_dir.json()
     assert dir_data["total_count"] == stats["director"]
-    assert dir_data["total_count"] == 3  # 5003, 5005, 5010
+    assert dir_data["total_count"] == 1  # only 5005 (Aseesimees + DIRECTOR)
 
     # 5. Check role_class=all equals speeches_count_all and sum of all roles + director
     res_all = client.get(f"/persons/{puuid}/speeches?role_class=all")

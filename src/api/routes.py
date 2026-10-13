@@ -649,10 +649,16 @@ def classify_role(speaker_role: str | None) -> str:
     return "other"
 
 
-def classify_speech_category(speech_type: str | None) -> str:
-    """Classify speech type into standardized categories."""
+def classify_speech_category(speech_type: str | None, speaker_role: str | None = None) -> str:
+    """Classify speech type into standardized categories.
+
+    'director' category is only assigned if speech_type == 'DIRECTOR' AND speaker_role IN ('Esimees', 'Aseesimees').
+    Non-chair speeches with speech_type == 'DIRECTOR' are categorized as 'unclassified'.
+    """
     if speech_type == "DIRECTOR":
-        return "director"
+        if speaker_role in ("Esimees", "Aseesimees"):
+            return "director"
+        return "unclassified"
     if speech_type in ("SPEECH", "SPEECH_CONTINUE"):
         return "speeches"
     if speech_type == "SMALL_SPEECH":
@@ -676,7 +682,6 @@ def get_person(person_uuid: str):
             .filter(
                 Speech.speaker_uuid == person_uuid,
                 Speech.speaker_role.is_(None),
-                or_(Speech.speech_type != "DIRECTOR", Speech.speech_type.is_(None)),
             )
             .count()
         )
@@ -776,7 +781,14 @@ def get_person_stats(person_uuid: str):
 
         role_classes = ("mp", "chair", "minister", "candidate", "other")
         totals = {
-            rc: {"speeches": 0, "questions": 0, "procedural": 0, "total": 0} for rc in role_classes
+            rc: {
+                "speeches": 0,
+                "questions": 0,
+                "procedural": 0,
+                "unclassified": 0,
+                "total": 0,
+            }
+            for rc in role_classes
         }
         total_director = 0
         mp_duration_seconds = 0
@@ -788,7 +800,13 @@ def get_person_stats(person_uuid: str):
 
         def _init_breakdown():
             return {
-                "mp": {"speeches": 0, "questions": 0, "procedural": 0, "total": 0},
+                "mp": {
+                    "speeches": 0,
+                    "questions": 0,
+                    "procedural": 0,
+                    "unclassified": 0,
+                    "total": 0,
+                },
                 "chair": 0,
                 "minister": 0,
                 "candidate": 0,
@@ -803,7 +821,7 @@ def get_person_stats(person_uuid: str):
                 continue
 
             r_class = classify_role(sp_role)
-            s_cat = classify_speech_category(sp_type)
+            s_cat = classify_speech_category(sp_type, sp_role)
 
             if min_d and (first_speech_date is None or min_d < first_speech_date):
                 first_speech_date = min_d
@@ -837,7 +855,7 @@ def get_person_stats(person_uuid: str):
                     by_membership_map[mem_str][r_class] += cnt_val
                     by_membership_map[mem_str]["other_roles_total"] += cnt_val
 
-            if r_class == "mp" and s_cat != "director" and duration:
+            if r_class == "mp" and duration:
                 mp_duration_seconds += int(duration)
 
         by_year = [
@@ -889,8 +907,8 @@ def get_person_speeches(
     role_class: str = Query("mp", pattern=r"^(mp|chair|minister|candidate|other|director|all)$"),
     speech_category: str | None = Query(
         None,
-        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural, all)",
-        pattern=r"^(speeches|questions|procedural|all)$",
+        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural, unclassified, all)",
+        pattern=r"^(speeches|questions|procedural|unclassified|all)$",
     ),
     start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
     end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
@@ -902,40 +920,51 @@ def get_person_speeches(
         if not person:
             raise HTTPException(status_code=404, detail="Isikut ei leitud.")
 
+        limit_val = limit if isinstance(limit, int) else 20
+        offset_val = offset if isinstance(offset, int) else 0
+        role_class_val = role_class if isinstance(role_class, str) else "mp"
+
         filters = [Speech.speaker_uuid == person_uuid]
 
-        if role_class in ("mp", "chair", "candidate", "minister", "other"):
-            filters.append(or_(Speech.speech_type != "DIRECTOR", Speech.speech_type.is_(None)))
-
-        if role_class == "mp":
+        if role_class_val == "mp":
             filters.append(Speech.speaker_role.is_(None))
-        elif role_class == "chair":
+        elif role_class_val == "chair":
             filters.append(Speech.speaker_role.in_(("Esimees", "Aseesimees")))
-        elif role_class == "candidate":
+            filters.append(or_(Speech.speech_type != "DIRECTOR", Speech.speech_type.is_(None)))
+        elif role_class_val == "candidate":
             filters.append(Speech.speaker_role.ilike("%kandidaat%"))
-        elif role_class == "minister":
+        elif role_class_val == "minister":
             filters.append(
                 Speech.speaker_role.ilike("%minister%") & ~Speech.speaker_role.ilike("%kandidaat%")
             )
-        elif role_class == "other":
+        elif role_class_val == "other":
             filters.append(
                 Speech.speaker_role.isnot(None)
                 & Speech.speaker_role.notin_(("Esimees", "Aseesimees"))
                 & ~Speech.speaker_role.ilike("%minister%")
                 & ~Speech.speaker_role.ilike("%kandidaat%")
             )
-        elif role_class == "director":
+        elif role_class_val == "director":
             filters.append(Speech.speech_type == "DIRECTOR")
-        elif role_class == "all":
+            filters.append(Speech.speaker_role.in_(("Esimees", "Aseesimees")))
+        elif role_class_val == "all":
             pass
 
-        if speech_category and speech_category != "all":
-            if speech_category in SPEECH_TYPE_CATEGORIES:
+        if speech_category and isinstance(speech_category, str) and speech_category != "all":
+            if speech_category == "unclassified":
+                filters.append(Speech.speech_type == "DIRECTOR")
+                filters.append(
+                    or_(
+                        Speech.speaker_role.is_(None),
+                        Speech.speaker_role.notin_(("Esimees", "Aseesimees")),
+                    )
+                )
+            elif speech_category in SPEECH_TYPE_CATEGORIES:
                 filters.append(Speech.speech_type.in_(SPEECH_TYPE_CATEGORIES[speech_category]))
 
-        if start_date:
+        if start_date and isinstance(start_date, str):
             filters.append(Speech.date >= start_date)
-        if end_date:
+        if end_date and isinstance(end_date, str):
             filters.append(Speech.date <= end_date)
 
         query = session.query(Speech).filter(*filters)
@@ -943,8 +972,8 @@ def get_person_speeches(
 
         speeches = (
             query.order_by(Speech.date.desc(), Speech.time.desc(), Speech.id.desc())
-            .offset(offset)
-            .limit(limit)
+            .offset(offset_val)
+            .limit(limit_val)
             .all()
         )
 
@@ -1203,7 +1232,7 @@ def system_status():
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
-                "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigist; juhatajasõnavõtud tuvastatakse ametinimetuse (Esimees, Aseesimees) järgi, mitte liigi järgi, sest Riigikogu liigitus on selles osas ebajärjekindel.",
+                "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis.",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg.",
                 "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
