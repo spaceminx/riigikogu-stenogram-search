@@ -93,6 +93,13 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                   ) : (
                     stat.member_name
                   )}
+                  {stat.faction && (
+                    <div className="att-mobile-faction-badge">
+                      <span className="faction-badge" title={stat.faction}>
+                        {formatFactionName(stat.faction)}
+                      </span>
+                    </div>
+                  )}
                 </td>
                 <td className="att-col-faction">
                   <span className="faction-badge" title={stat.faction}>

@@ -61,7 +61,9 @@ export function AttendanceFactionsTable({
                 className="att-sort-btn"
                 onClick={() => requestFactionSort("present_sessions")}
               >
-                Kohal kokku {getSortIndicator("present_sessions")}
+                <span className="att-header-text-full">Kohal kokku</span>
+                <span className="att-header-text-short">Kohal</span>{" "}
+                {getSortIndicator("present_sessions")}
               </button>
             </th>
             <th
@@ -74,7 +76,9 @@ export function AttendanceFactionsTable({
                 className="att-sort-btn"
                 onClick={() => requestFactionSort("attendance_percentage")}
               >
-                Keskmine kohalolek % {getSortIndicator("attendance_percentage")}
+                <span className="att-header-text-full">Keskmine kohalolek %</span>
+                <span className="att-header-text-short">%</span>{" "}
+                {getSortIndicator("attendance_percentage")}
               </button>
             </th>
           </tr>
@@ -110,6 +114,13 @@ export function AttendanceFactionsTable({
                       Vaata saadikuid &rarr;
                     </span>
                   </button>
+                  {stat.member_count != null && (
+                    <div className="att-mobile-faction-badge">
+                      <span className="faction-badge">
+                        {stat.member_count} {stat.member_count === 1 ? "saadik" : "saadikut"}
+                      </span>
+                    </div>
+                  )}
                 </td>
                 <td className="att-col-count">{stat.member_count}</td>
                 <td className="att-col-total">{stat.total_sessions}</td>
