@@ -611,33 +611,17 @@
   width: 100%;
 }
 
-.attendance-header-row .cursor-pointer:hover {
-  color: #0f172a;
-}
-
-.attendance-row .faction-title {
-  color: #0f172a;
-}
-
-.attendance-row .drilldown-hint {
-  color: #475569;
-}
-
-.attendance-row.faction-row-interactive:hover {
-  background-color: #f1f5f9;
-}
-
 .faction-row-interactive {
   cursor: pointer;
 }
 
 .faction-row-interactive:hover {
-  background-color: rgba(139, 92, 246, 0.08);
+  background-color: rgba(49, 91, 132, 0.06);
 }
 
 .faction-title {
   font-weight: 500;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .drilldown-hint {
@@ -653,30 +637,21 @@
 }
 
 .att-col-rank {
-  width: 35px;
-  flex-shrink: 0;
+  width: 44px;
   color: #64748b;
   font-size: 0.9rem;
 }
 
 .att-col-name {
-  flex: 2.2;
+  width: 26%;
+  min-width: 170px;
   font-weight: 700;
   color: #0f172a;
-  display: flex;
-  align-items: center;
-  min-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .att-col-faction {
-  flex: 2.5;
-  display: flex;
-  align-items: center;
-  min-width: 170px;
-  overflow: hidden;
+  width: 24%;
+  min-width: 160px;
 }
 
 .faction-badge {
@@ -697,16 +672,14 @@
 .att-col-count,
 .att-col-total,
 .att-col-present {
-  flex: 1;
-  min-width: 85px;
+  width: 12%;
+  min-width: 90px;
   color: #334155;
   font-variant-numeric: tabular-nums;
 }
 
 .att-col-percent {
-  flex: 2.5;
-  display: flex;
-  align-items: center;
+  width: 26%;
   min-width: 180px;
 }
 
@@ -768,7 +741,7 @@ html[data-theme="dark"] .att-col-name a {
   color: #f1f5f9;
 }
 
-html[data-theme="dark"] .attendance-row .faction-title {
+html[data-theme="dark"] .faction-title {
   color: #f1f5f9;
 }
 
@@ -1975,6 +1948,7 @@ select:focus-visible {
   box-shadow: 0 0 8px rgba(119, 226, 194, 0.45);
 }
 
+.dashboard-main,
 .dashboard-rail {
   display: flex;
   flex-direction: column;
@@ -5664,7 +5638,7 @@ html[data-theme="light"] .methodology-warning {
 
 .person-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
@@ -5672,11 +5646,14 @@ html[data-theme="light"] .methodology-warning {
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .person-metric-label {
   color: var(--color-text-muted, #64748b);
   font-size: 0.85rem;
+  text-align: left;
 }
 
 .person-metric-value {
@@ -5684,6 +5661,7 @@ html[data-theme="light"] .methodology-warning {
   line-height: 1.2;
   display: block;
   margin: 0.25rem 0;
+  text-align: left;
 }
 
 .person-metric-value-primary {
@@ -5693,6 +5671,7 @@ html[data-theme="light"] .methodology-warning {
 .person-metric-desc {
   font-size: 0.8rem;
   color: var(--color-text-muted, #64748b);
+  text-align: left;
 }
 
 .person-other-roles {
@@ -5833,6 +5812,12 @@ html[data-theme="dark"] .person-stats-table tbody tr:hover {
   gap: 1rem;
 }
 
+@media (max-width: 900px) {
+  .person-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
 @media (max-width: 768px) {
   .person-header-content {
     flex-direction: column;
@@ -5847,13 +5832,9 @@ html[data-theme="dark"] .person-stats-table tbody tr:hover {
   .person-header-content form {
     width: 100%;
   }
-
-  .person-metrics-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 540px) {
   .person-metrics-grid {
     grid-template-columns: 1fr !important;
   }
