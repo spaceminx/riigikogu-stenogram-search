@@ -120,7 +120,19 @@ To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`,
 > ```
 > The current year dataset file in B2 is protected against concurrency conflicts by ETag validation.
 
-### 5. Start the FastAPI Backend Server
+### 5. Attendance UUID Migration (`repair_attendance_uuids.py`)
+To populate `member_uuid` across historical attendance records (`data/processed/attendance.jsonl`) and the SQLite `attendance` table:
+1. Run a dry run to inspect mapping statistics without modifying files:
+   ```bash
+   python scripts/repair_attendance_uuids.py --dry-run
+   ```
+2. Apply changes locally, upload updated `attendance.jsonl` to Backblaze B2, and migrate the database:
+   ```bash
+   python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
+   ```
+   *Note:* The schema migration (`ensure_schema()`) runs automatically and idempotently on table initialization, adding column `member_uuid TEXT` and index `idx_attendance_member_uuid` if they do not yet exist.
+
+### 6. Start the FastAPI Backend Server
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
@@ -128,7 +140,7 @@ API documentation is available at:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 
-### 6. Frontend Setup & Run
+### 7. Frontend Setup & Run
 In a separate terminal:
 ```bash
 cd src/frontend
@@ -147,6 +159,15 @@ Production deployments run automatically on push to `master` (after CI succeeds)
 The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to be configured in GitHub:
 - Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
 - Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host (e.g., `/home/<user>/riigikogu-stenogram-search`).
+
+### Production Database Migration
+When deploying updates with schema or data additions (such as the attendance `member_uuid` column):
+1. Code deployment automatically creates missing columns and indexes upon backend initialization via `ensure_schema()`.
+2. To populate historical attendance member UUIDs in production:
+   ```bash
+   docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
+   ```
+   No image rebuild or downtime is required.
 
 ---
 
@@ -208,6 +229,8 @@ riigikogu-stenogram-search/
 │   ├── fetch_factions.py          # MP faction history and person metadata scraper
 │   ├── fetch_memberships.py       # Membership terms scraper from Riigikogu API
 │   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
+│   ├── repair_attendance_uuids.py # Populates member_uuid in attendance records and database
+│   ├── repair_speaker_uuids.py    # Speaker UUID resolution and repair script
 │   ├── sync_database.py           # SQLite database update with speech aliases
 │   ├── upload_to_b2.py            # Backblaze B2 uploader for data and sync states
 │   ├── verify_pipeline_integrity.py # Direct pipeline data integrity verification

@@ -60,6 +60,7 @@ def get_attendance_stats(
 
         query = session.query(
             Attendance.member_name,
+            func.max(Attendance.member_uuid).label("member_uuid"),
             func.count(Attendance.id).label("total_sessions"),
             func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present_sessions"),
         )
@@ -97,7 +98,7 @@ def get_attendance_stats(
             faction_map = {r[0]: r[1] for r in f_rows}
 
         stats = []
-        for member_name, total, present in results:
+        for member_name, member_uuid, total, present in results:
             if not total:
                 continue
 
@@ -115,6 +116,7 @@ def get_attendance_stats(
             stats.append(
                 {
                     "member_name": member_name,
+                    "member_uuid": member_uuid,
                     "faction": member_faction,
                     "total_sessions": total_val,
                     "present_sessions": present_val,
@@ -124,6 +126,85 @@ def get_attendance_stats(
 
         stats.sort(key=lambda x: (x["present_sessions"], x["attendance_percentage"]), reverse=True)
         return stats
+    finally:
+        session.close()
+
+
+def get_person_attendance(person_uuid: str) -> dict:
+    """Calculate attendance statistics for a specific MP by UUID.
+
+    Uses the same attendance definition as get_attendance_stats:
+    - total_sessions: count of attendance checks (Attendance.id)
+    - present_sessions: count of Attendance.status == 'KOHAL'
+    - absent_sessions: total_sessions - present_sessions
+    - attendance_percentage: round((present_sessions / total_sessions) * 100, 1)
+    """
+    session = SessionLocal()
+    try:
+        from src.load.models import Person
+
+        person = session.query(Person).filter(Person.uuid == person_uuid).first()
+        if not person:
+            raise ValueError("Isikut ei leitud.")
+
+        base_filter = Attendance.member_uuid == person_uuid
+
+        overall_row = (
+            session.query(
+                func.count(Attendance.id).label("total"),
+                func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present"),
+            )
+            .filter(base_filter)
+            .first()
+        )
+
+        total_sessions = int(overall_row[0]) if overall_row and overall_row[0] else 0
+        present_sessions = int(overall_row[1]) if overall_row and overall_row[1] else 0
+        absent_sessions = total_sessions - present_sessions
+        percentage = (
+            round((present_sessions / total_sessions) * 100, 1) if total_sessions > 0 else 0.0
+        )
+
+        by_membership = []
+        for mem_id, (start_d, end_d) in sorted(
+            MEMBERSHIP_DATES.items(), key=lambda x: int(x[0]), reverse=True
+        ):
+            mem_row = (
+                session.query(
+                    func.count(Attendance.id).label("total"),
+                    func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present"),
+                )
+                .filter(
+                    base_filter,
+                    Attendance.session_date >= start_d,
+                    Attendance.session_date <= f"{end_d}T23:59:59",
+                )
+                .first()
+            )
+            m_total = int(mem_row[0]) if mem_row and mem_row[0] else 0
+            if m_total > 0:
+                m_present = int(mem_row[1]) if mem_row and mem_row[1] else 0
+                m_absent = m_total - m_present
+                m_pct = round((m_present / m_total) * 100, 1)
+                by_membership.append(
+                    {
+                        "membership": str(mem_id),
+                        "total_sessions": m_total,
+                        "present_sessions": m_present,
+                        "absent_sessions": m_absent,
+                        "attendance_percentage": m_pct,
+                    }
+                )
+
+        return {
+            "uuid": person_uuid,
+            "member_name": person.full_name,
+            "total_sessions": total_sessions,
+            "present_sessions": present_sessions,
+            "absent_sessions": absent_sessions,
+            "attendance_percentage": percentage,
+            "by_membership": by_membership,
+        }
     finally:
         session.close()
 

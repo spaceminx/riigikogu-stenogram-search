@@ -153,6 +153,7 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
 
             for voter in voters:
                 name = voter.get("fullName", "").strip()
+                member_uuid = voter.get("uuid", "").strip() or None if voter.get("uuid") else None
                 faction = (
                     voter.get("faction", {}).get("name", "").strip() if voter.get("faction") else ""
                 )
@@ -161,6 +162,7 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
                 record_dict = {
                     "session_date": date,
                     "voting_uuid": uuid,
+                    "member_uuid": member_uuid,
                     "member_name": name,
                     "faction": faction,
                     "status": status,
@@ -172,6 +174,7 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> None:
                     record = Attendance(
                         session_date=date,
                         voting_uuid=uuid,
+                        member_uuid=member_uuid,
                         member_name=name,
                         faction=faction,
                         status=status,

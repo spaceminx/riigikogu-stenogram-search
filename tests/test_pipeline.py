@@ -1,4 +1,6 @@
 import json
+import os
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -1057,6 +1059,38 @@ def test_resolve_speaker_uuid_tarmo_tamm():
     assert method2 == "tarmo_tamm_date"
 
 
+def test_resolve_speaker_uuid_tarmo_tamm_wrong_ems_id():
+    uuid_old = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+    uuid_new = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+    known_uuids = {uuid_old, uuid_new}
+    uuid_to_name_map = {uuid_old: "Tarmo Tamm", uuid_new: "Tarmo Tamm"}
+    person_name_map = {}  # Ambiguous names are excluded from person_name_map
+
+    # Tarmo Tamm speech in 2025 with wrong emsId (uuid_old) must resolve to uuid_new
+    resolved_uuid, method = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=uuid_old,
+        date="2025-09-10",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+    )
+    assert resolved_uuid == uuid_new
+    assert method == "tarmo_tamm_date"
+
+    # Tarmo Tamm speech in 2021 with valid emsId (uuid_old) resolves to uuid_old
+    resolved_uuid2, method2 = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=uuid_old,
+        date="2021-05-10",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+    )
+    assert resolved_uuid2 == uuid_old
+    assert method2 == "ems"
+
+
 def test_repair_speaker_uuids_dry_run_and_apply(tmp_path):
     import sqlite3
 
@@ -1705,3 +1739,166 @@ def test_fetch_stenograms_rich_none_unedited_fallback(tmp_path, monkeypatch):
     assert len(lines) == 1
     assert lines[0]["status"] == "UNEDITED"
     assert lines[0]["speaker"] == "Jaan Tamm"
+
+
+def test_ensure_schema_idempotency(tmp_path):
+    from sqlalchemy import create_engine
+
+    from src.load.loader import ensure_schema
+
+    db_path = str(tmp_path / "test_schema.sqlite")
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE attendance (id INTEGER PRIMARY KEY, session_date TEXT, voting_uuid TEXT, member_name TEXT, faction TEXT, status TEXT);"
+    )
+    conn.commit()
+    conn.close()
+
+    eng = create_engine(f"sqlite:///{db_path}")
+
+    # First call: should add member_uuid column and index
+    ensure_schema(eng)
+
+    conn = sqlite3.connect(db_path)
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(attendance)").fetchall()]
+    assert "member_uuid" in cols
+    indices = [r[1] for r in conn.execute("PRAGMA index_list(attendance)").fetchall()]
+    assert "idx_attendance_member_uuid" in indices
+    conn.close()
+
+    # Second call: must be idempotent and succeed without error
+    ensure_schema(eng)
+
+
+def test_repair_attendance_uuids_logic(tmp_path, monkeypatch):
+    from scripts.repair_attendance_uuids import repair_attendance_uuids
+
+    data_dir = str(tmp_path / "processed")
+    os.makedirs(data_dir, exist_ok=True)
+
+    db_path = str(tmp_path / "test_att.sqlite")
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE speeches (id INTEGER PRIMARY KEY, speaker TEXT, speaker_uuid TEXT, ems_id TEXT);"
+    )
+    # Map old name Siret Kotka-Repinski to uuid-kotka via ems_id in speeches
+    conn.execute(
+        "INSERT INTO speeches (id, speaker, ems_id) VALUES (1, 'Siret Kotka-Repinski', 'uuid-siret-kotka');"
+    )
+    conn.execute(
+        "CREATE TABLE attendance (id INTEGER PRIMARY KEY, session_date TEXT, voting_uuid TEXT, member_uuid TEXT, member_name TEXT, faction TEXT, status TEXT);"
+    )
+    conn.commit()
+    conn.close()
+
+    # persons.json
+    persons = [
+        {"uuid": "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5", "full_name": "Tarmo Tamm"},
+        {"uuid": "236e49d6-eecb-4562-8ad4-bedd586bb149", "full_name": "Tarmo Tamm"},
+        {"uuid": "uuid-kaja-kallas", "full_name": "Kaja Kallas"},
+        {"uuid": "uuid-siret-kotka", "full_name": "Siret Kotka"},
+    ]
+    with open(os.path.join(data_dir, "persons.json"), "w", encoding="utf-8") as f:
+        json.dump(persons, f)
+
+    att_file = os.path.join(data_dir, "attendance.jsonl")
+    lines = [
+        {
+            "session_date": "2023-04-09T10:00:00",
+            "voting_uuid": "v1",
+            "member_name": "Tarmo Tamm",
+            "status": "KOHAL",
+        },
+        {
+            "session_date": "2023-04-10T10:00:00",
+            "voting_uuid": "v2",
+            "member_name": "Tarmo Tamm",
+            "status": "KOHAL",
+        },
+        {
+            "session_date": "2023-05-01T10:00:00",
+            "voting_uuid": "v3",
+            "member_name": "Kaja Kallas",
+            "status": "KOHAL",
+        },
+        {
+            "session_date": "2023-05-01T10:00:00",
+            "voting_uuid": "v4",
+            "member_name": "Siret Kotka-Repinski",
+            "status": "KOHAL",
+        },
+        {
+            "session_date": "2023-05-01T10:00:00",
+            "voting_uuid": "v5",
+            "member_name": "Tundmatu Külaline",
+            "status": "KOHAL",
+        },
+    ]
+    with open(att_file, "w", encoding="utf-8") as f:
+        for record_dict in lines:
+            f.write(json.dumps(record_dict) + "\n")
+
+    # Insert corresponding rows into attendance table
+    conn = sqlite3.connect(db_path)
+    for idx, record_dict in enumerate(lines, 1):
+        conn.execute(
+            "INSERT INTO attendance (id, session_date, voting_uuid, member_name, status) VALUES (?, ?, ?, ?, ?)",
+            (
+                idx,
+                record_dict["session_date"],
+                record_dict["voting_uuid"],
+                record_dict["member_name"],
+                record_dict["status"],
+            ),
+        )
+    conn.commit()
+    conn.close()
+
+    # 1. Dry run: file must not be modified
+    res_dry = repair_attendance_uuids(data_dir=data_dir, dry_run=True, db_path=db_path)
+    assert res_dry["needed_repair"] == 5
+    assert res_dry["resolved_tarmo_tamm"] == 2
+    assert res_dry["resolved_canonical"] == 1
+    assert res_dry["resolved_old_names"] == 1
+    assert "Tundmatu Külaline" in res_dry["unresolved_names"]
+    assert not os.path.exists(att_file + ".bak")
+
+    # 2. Apply run: file must be modified and .bak created
+    res_apply = repair_attendance_uuids(data_dir=data_dir, dry_run=False, db_path=db_path)
+    assert res_apply["needed_repair"] == 5
+    assert os.path.exists(att_file + ".bak")
+
+    # Check updated lines in attendance.jsonl
+    with open(att_file, encoding="utf-8") as f:
+        updated_lines = [json.loads(line_str) for line_str in f if line_str.strip()]
+
+    assert updated_lines[0]["member_uuid"] == "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+    assert updated_lines[1]["member_uuid"] == "236e49d6-eecb-4562-8ad4-bedd586bb149"
+    assert updated_lines[2]["member_uuid"] == "uuid-kaja-kallas"
+    assert updated_lines[3]["member_uuid"] == "uuid-siret-kotka"
+    assert updated_lines[4]["member_uuid"] is None
+
+    # Check database was updated
+    conn = sqlite3.connect(db_path)
+    db_u1 = conn.execute("SELECT member_uuid FROM attendance WHERE voting_uuid = 'v1'").fetchone()[
+        0
+    ]
+    db_u2 = conn.execute("SELECT member_uuid FROM attendance WHERE voting_uuid = 'v2'").fetchone()[
+        0
+    ]
+    db_u3 = conn.execute("SELECT member_uuid FROM attendance WHERE voting_uuid = 'v3'").fetchone()[
+        0
+    ]
+    db_u4 = conn.execute("SELECT member_uuid FROM attendance WHERE voting_uuid = 'v4'").fetchone()[
+        0
+    ]
+    db_u5 = conn.execute("SELECT member_uuid FROM attendance WHERE voting_uuid = 'v5'").fetchone()[
+        0
+    ]
+    conn.close()
+
+    assert db_u1 == "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+    assert db_u2 == "236e49d6-eecb-4562-8ad4-bedd586bb149"
+    assert db_u3 == "uuid-kaja-kallas"
+    assert db_u4 == "uuid-siret-kotka"
+    assert db_u5 is None

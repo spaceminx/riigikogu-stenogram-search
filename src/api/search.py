@@ -7,7 +7,7 @@ from sqlalchemy import func, or_
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
-from src.load.models import Lemma, Speech, SpeechTerm
+from src.load.models import Lemma, Person, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
 _WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ0-9\-]+\b")
@@ -168,6 +168,7 @@ def build_speech_filters(
     membership: str = "all",
     faction: str | None = None,
     speaker: str | None = None,
+    speaker_uuid: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     exclude_chair: bool = False,
@@ -188,6 +189,9 @@ def build_speech_filters(
 
     if speaker and speaker.strip():
         filters.append(Speech.speaker.ilike(f"%{speaker.strip()}%"))
+
+    if speaker_uuid and speaker_uuid.strip():
+        filters.append(Speech.speaker_uuid == speaker_uuid.strip())
 
     if start_date:
         filters.append(Speech.date >= start_date)
@@ -211,6 +215,7 @@ def search_by_keyword(
     membership: str = "all",
     faction: str | None = None,
     speaker: str | None = None,
+    speaker_uuid: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     sort_by: str = "date_desc",
@@ -240,6 +245,7 @@ def search_by_keyword(
             membership=membership,
             faction=faction,
             speaker=speaker,
+            speaker_uuid=speaker_uuid,
             start_date=start_date,
             end_date=end_date,
             exclude_chair=exclude_chair,
@@ -366,6 +372,7 @@ def keyword_activity(
     membership: str = "all",
     faction: str | None = None,
     speaker: str | None = None,
+    speaker_uuid: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     exclude_chair: bool = False,
@@ -401,6 +408,7 @@ def keyword_activity(
             membership=membership,
             faction=faction,
             speaker=speaker,
+            speaker_uuid=speaker_uuid,
             start_date=start_date,
             end_date=end_date,
             exclude_chair=exclude_chair,
@@ -488,30 +496,43 @@ def get_dashboard_overview() -> dict:
     session = SessionLocal()
     try:
         speaker_rows = (
-            session.query(Speech.speaker, func.count(Speech.id).label("speech_count"))
-            .filter(
-                Speech.speaker.isnot(None),
-                Speech.speaker != "",
-                Speech.speaker_faction.isnot(None),
-                Speech.speaker_faction != "",
+            session.query(
+                Speech.speaker_uuid,
+                func.max(Person.full_name).label("full_name"),
+                func.max(Speech.speaker).label("speaker_fallback"),
+                func.count(Speech.id).label("speech_count"),
             )
-            .group_by(Speech.speaker)
-            .order_by(func.count(Speech.id).desc(), Speech.speaker.asc())
+            .outerjoin(Person, Speech.speaker_uuid == Person.uuid)
+            .filter(
+                Speech.speaker_uuid.isnot(None),
+                Speech.speaker_role.is_(None),
+                or_(Speech.speech_type.is_(None), Speech.speech_type != "DIRECTOR"),
+            )
+            .group_by(Speech.speaker_uuid)
+            .order_by(
+                func.count(Speech.id).desc(),
+                func.coalesce(func.max(Person.full_name), func.max(Speech.speaker)).asc(),
+            )
             .limit(4)
             .all()
         )
 
         speakers = []
-        for speaker_name, speech_count in speaker_rows:
+        for s_uuid, full_name, speaker_fallback, speech_count in speaker_rows:
             latest_speech = (
                 session.query(Speech.speaker_faction)
-                .filter(Speech.speaker == speaker_name)
-                .order_by(Speech.date.desc(), Speech.time.desc())
+                .filter(
+                    Speech.speaker_uuid == s_uuid,
+                    Speech.speaker_faction.isnot(None),
+                    Speech.speaker_faction != "",
+                )
+                .order_by(Speech.date.desc(), Speech.time.desc(), Speech.id.desc())
                 .first()
             )
             speakers.append(
                 {
-                    "speaker": speaker_name,
+                    "speaker": full_name or speaker_fallback,
+                    "speaker_uuid": s_uuid,
                     "faction": latest_speech[0] if latest_speech else None,
                     "count": int(speech_count),
                 }
@@ -584,6 +605,7 @@ def keyword_top_speakers(
     membership: str = "all",
     faction: str | None = None,
     speaker: str | None = None,
+    speaker_uuid: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     exclude_chair: bool = False,
@@ -609,6 +631,7 @@ def keyword_top_speakers(
             membership=membership,
             faction=faction,
             speaker=speaker,
+            speaker_uuid=speaker_uuid,
             start_date=start_date,
             end_date=end_date,
             exclude_chair=exclude_chair,
@@ -616,9 +639,16 @@ def keyword_top_speakers(
         )
 
         all_lemmas = [lemma for group in groups for lemma in group]
+        group_expr = func.coalesce(Speech.speaker_uuid, Speech.speaker)
 
         query_builder = (
-            session.query(Speech.speaker, func.sum(SpeechTerm.count).label("total_count"))
+            session.query(
+                func.max(Speech.speaker_uuid).label("speaker_uuid"),
+                func.max(Speech.speaker).label("speaker_name"),
+                func.max(Person.full_name).label("person_full_name"),
+                func.sum(SpeechTerm.count).label("total_count"),
+            )
+            .outerjoin(Person, Speech.speaker_uuid == Person.uuid)
             .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
             .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
             .filter(or_(*matching_conditions))
@@ -629,15 +659,19 @@ def keyword_top_speakers(
             query_builder = query_builder.filter(*speech_filters)
 
         results = (
-            query_builder.group_by(Speech.speaker)
+            query_builder.group_by(group_expr)
             .order_by(func.sum(SpeechTerm.count).desc())
             .limit(limit)
             .all()
         )
 
         output = [
-            {"speaker": speaker_name, "count": int(total_count)}
-            for speaker_name, total_count in results
+            {
+                "speaker": person_full_name or speaker_name,
+                "speaker_uuid": s_uuid,
+                "count": int(total_count),
+            }
+            for s_uuid, speaker_name, person_full_name, total_count in results
         ]
         return output
     finally:

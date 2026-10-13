@@ -120,7 +120,19 @@ Varasemate istungite (2019–2026) rikaste metaandmete (`external_id`, `ems_id`,
 > ```
 > Jooksva aasta faili kaitseb B2-s samaaegsuse ja ETag-i kontroll.
 
-### 5. FastAPI serveri käivitamine
+### 5. Kohaloleku UUID-de migratsioon (`repair_attendance_uuids.py`)
+Saadikute `member_uuid` sidumiseks olemasolevate kohaloleku andmetega (`data/processed/attendance.jsonl`) ja SQLite `attendance` tabeliga:
+1. Käivita kuivkäivitus, et vaadata vastavusse viimise statistikat ilma faile muutmata:
+   ```bash
+   python scripts/repair_attendance_uuids.py --dry-run
+   ```
+2. Rakenda muudatused kohalikult, laadi uuendatud `attendance.jsonl` Backblaze B2-sse ja uuenda andmebaas:
+   ```bash
+   python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
+   ```
+   *Märkus:* Skeemi migratsioon (`ensure_schema()`) toimub automaatselt ja idempotentselt rakenduse käivitumisel, lisades tabelisse veeru `member_uuid TEXT` ja indeksi `idx_attendance_member_uuid`, kui need veel puuduvad.
+
+### 6. FastAPI serveri käivitamine
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
@@ -128,7 +140,7 @@ API dokumentatsiooniga saab tutvuda aadressidel:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 
-### 6. Frontendi käivitamine
+### 7. Frontendi käivitamine
 Ava uus terminaliaken:
 ```bash
 cd src/frontend
@@ -147,6 +159,15 @@ Tootmiskeskkonna paigaldus käivitub automaatselt pärast `master` haru CI õnne
 Serveri `self-hosted` runner vajab repositooriumi saladust (secret) `DEPLOY_DIR`:
 - Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
 - Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/home/<kasutaja>/riigikogu-stenogram-search`).
+
+### Tootmiskeskkonna migratsioon
+Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) tootmisse viimisel:
+1. Koodi paigaldamisel teostab rakenduse käivitus vajadusel puuduvate veergude ja indeksite lisamise automaatselt (`ensure_schema()`).
+2. Ajalooliste kohaloleku kirjete UUID-de täitmiseks serveris käivita:
+   ```bash
+   docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
+   ```
+   Eraldi uut tõmmise ehitamist ega teenuse katkestust vaja ei ole.
 
 ---
 
@@ -208,6 +229,8 @@ riigikogu-stenogram-search/
 │   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo ja isikute allalaadija
 │   ├── fetch_memberships.py       # Koosseisude (XIV, XV jne) allalaadija Riigikogu API-st
 │   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
+│   ├── repair_attendance_uuids.py # Täidab kohaloleku kirjetes ja andmebaasis member_uuid
+│   ├── repair_speaker_uuids.py    # Kõnelejate UUID lahendaja ja parandaja
 │   ├── sync_database.py           # SQLite andmebaasi uuendaja ja aliashaldur
 │   ├── upload_to_b2.py            # Backblaze B2 üleslaadija andmetele ja olekutele
 │   ├── verify_pipeline_integrity.py # Andmetoru terviklikkuse ja istungite kontroll Riigikogu API vastu
