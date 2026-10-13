@@ -1,16 +1,28 @@
+# Stage 1: Build dependencies
+FROM python:3.13-slim AS builder
+
+WORKDIR /app
+
+# Install build tools in builder stage for packages compiling from source (e.g. estnltk on arm64)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Stage 2: Minimal runtime image
 FROM python:3.13-slim
 
 WORKDIR /app
 
-# Install essential build tools for C-extensions and curl for healthchecks
+# Only runtime curl needed for healthcheck (no build-essential)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependencies and install
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy installed Python packages from builder stage
+COPY --from=builder /install /usr/local
 
 # Copy application files
 COPY config.py .

@@ -120,8 +120,27 @@ To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`,
 > ```
 > The current year dataset file in B2 is protected against concurrency conflicts by ETag validation.
 
-### 5. Attendance UUID Migration (`repair_attendance_uuids.py`)
-To populate `member_uuid` across historical attendance records (`data/processed/attendance.jsonl`) and the SQLite `attendance` table:
+### 5. Maintenance & UUID Repair
+
+To resolve and maintain canonical member UUIDs across speeches and attendance records:
+
+#### Speaker UUIDs (`repair_speaker_uuids.py`)
+Resolves MP UUIDs across speeches in historical JSONL datasets and the SQLite database:
+1. Ensure all historical datasets are downloaded locally:
+   ```bash
+   python scripts/download_from_b2.py --all
+   ```
+2. Run a dry run to inspect changes without modifying files:
+   ```bash
+   python scripts/repair_speaker_uuids.py --dry-run
+   ```
+3. Apply repairs to JSONL files, upload updated datasets to B2, and sync database:
+   ```bash
+   python scripts/repair_speaker_uuids.py --apply --upload --db database/riigikogu.sqlite
+   ```
+
+#### Attendance UUIDs (`repair_attendance_uuids.py`)
+Populates `member_uuid` across historical attendance records (`data/processed/attendance.jsonl`) and the SQLite `attendance` table:
 1. Run a dry run to inspect mapping statistics without modifying files:
    ```bash
    python scripts/repair_attendance_uuids.py --dry-run
@@ -139,6 +158,23 @@ uvicorn src.api.main:app --reload --port 8000
 API documentation is available at:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
+
+#### Key API Endpoints
+- **Search & Analytics:**
+  - `GET /search?q={query}` — Full-text keyword search across speeches (filters: `speaker_uuid`, `membership`, `faction`, `start_date`, `end_date`, `exclude_chair`, `speech_category`).
+  - `GET /search/activity?q={query}` — Keyword frequency grouped by day, week, or month (supports `speaker_uuid`).
+  - `GET /search/speakers?q={query}` — Most active speakers for a topic (supports `speaker_uuid`).
+  - `GET /search/export?q={query}&format={csv|json}` — Export search results in CSV or JSON (supports `speaker_uuid`).
+- **MP Profiles & Statistics:**
+  - `GET /persons` — List parliament members with optional name search and active status filter.
+  - `GET /persons/{uuid}` — Individual MP profile, metadata, and faction history.
+  - `GET /persons/{uuid}/stats` — Activity breakdown, speech durations, and counts by term and year.
+  - `GET /persons/{uuid}/speeches` — Speeches by MP with pagination and `role_class` filter (`all`, `mp`, `chair`, `minister`, `candidate`, `director`, `other`).
+  - `GET /persons/{uuid}/attendance` — MP attendance statistics and voting breakdown.
+- **Transcripts & System Info:**
+  - `GET /speeches/{id}` and `GET /speeches/{id}/context` — Specific speech and session context.
+  - `GET /attendance/stats` and `GET /attendance/sessions` — Attendance aggregations by faction and member.
+  - `GET /system/status` and `GET /memberships` — System health, data bounds, and parliamentary memberships.
 
 ### 7. Frontend Setup & Run
 In a separate terminal:
@@ -158,7 +194,7 @@ Production deployments run automatically on push to `master` (after CI succeeds)
 ### Deployment Configuration
 The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to be configured in GitHub:
 - Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
-- Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host (e.g., `/home/<user>/riigikogu-stenogram-search`).
+- Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host.
 
 ### Production Database Migration
 When deploying updates with schema or data additions (such as the attendance `member_uuid` column):
@@ -217,18 +253,23 @@ riigikogu-stenogram-search/
 │       └── daily_pipeline.yml     # Nightly data pipeline (B2 sync, API fetch, integrity verification)
 ├── config.py                      # Global configuration & dynamic membership dates
 ├── docker-compose.yml             # Multi-container Docker deployment
-├── Dockerfile                     # Production backend Docker container
+├── Dockerfile                     # Multi-stage production backend Docker container
 ├── pyproject.toml                 # Ruff, pytest, and project configuration
-├── requirements.txt               # Python backend dependencies
+├── requirements.txt               # Pinned Python runtime dependencies
+├── requirements-dev.txt           # Development and testing dependencies
 ├── scripts/
+│   ├── add_indexes.py             # Creates database performance indexes
 │   ├── backfill_history.py        # History backfill script for rich Riigikogu stenograms
-│   ├── build_full_database.py     # End-to-end parallel DB build pipeline
+│   ├── build_full_database.py     # End-to-end parallel DB build pipeline (--allow-partial)
+│   ├── build_lemmas.py            # Standalone lemma builder script
+│   ├── build_terms.py             # Standalone term index builder script
 │   ├── download_all_from_b2.py    # Downloads all data & sync states from Backblaze B2
-│   ├── download_from_b2.py        # Incremental daily B2 downloader
+│   ├── download_from_b2.py        # Incremental daily B2 downloader (--all)
 │   ├── fetch_attendance.py        # Voting & attendance scraper
 │   ├── fetch_factions.py          # MP faction history and person metadata scraper
 │   ├── fetch_memberships.py       # Membership terms scraper from Riigikogu API
 │   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
+│   ├── load_database.py           # Standalone JSONL to SQLite loader script
 │   ├── repair_attendance_uuids.py # Populates member_uuid in attendance records and database
 │   ├── repair_speaker_uuids.py    # Speaker UUID resolution and repair script
 │   ├── sync_database.py           # SQLite database update with speech aliases
@@ -245,19 +286,48 @@ riigikogu-stenogram-search/
 │   │   ├── lemmatizer.py          # EstNLTK multiprocessing lemmatizer
 │   │   └── term_builder.py        # Term frequency & index builder
 │   ├── load/                      # Database models and table definitions
-│   │   ├── models.py              # SQLAlchemy ORM models (Speeches, SpeechAlias, Attendance)
+│   │   ├── database.py            # Database engine and session factory
+│   │   ├── indexes.py             # Database SQL index creation
+│   │   ├── models.py              # SQLAlchemy ORM models (Speech, SpeechAlias, Attendance, Person)
 │   │   └── loader.py              # Bulk JSONL to SQLite loader with alias mapping
 │   └── frontend/                  # React + Vite application
-│       ├── eslint.config.js       # ESLint flat configuration
+│       ├── eslint.config.js       # ESLint configuration
 │       ├── package.json
-│       └── src/
-│           ├── App.jsx            # Main dashboard component
-│           └── api.js             # Frontend API client
+│       ├── src/
+│       │   ├── App.jsx            # Main app router & layout component
+│       │   ├── App.css            # Application stylesheets & themes
+│       │   ├── api.js             # API client functions
+│       │   ├── components/        # UI components
+│       │   │   ├── ActivityChart.jsx
+│       │   │   ├── AttendanceFactionsTable.jsx
+│       │   │   ├── AttendanceMembersTable.jsx
+│       │   │   ├── ContextModal.jsx
+│       │   │   ├── Footer.jsx
+│       │   │   ├── Header.jsx
+│       │   │   ├── MethodologyModal.jsx
+│       │   │   ├── Pagination.jsx
+│       │   │   ├── SearchFilters.jsx
+│       │   │   ├── SearchQueryInput.jsx
+│       │   │   ├── SpeakersPanel.jsx
+│       │   │   ├── SpeechCard.jsx
+│       │   │   └── SpeechesHeader.jsx
+│       │   ├── routes/            # Page route views
+│       │   │   ├── AttendanceView.jsx
+│       │   │   ├── DashboardView.jsx
+│       │   │   ├── NotFoundView.jsx
+│       │   │   ├── PersonView.jsx
+│       │   │   ├── SearchView.jsx
+│       │   │   ├── SessionView.jsx
+│       │   │   └── SpeechView.jsx
+│       │   └── lib/               # Shared frontend utility modules
+│       │       ├── api.js
+│       │       ├── calendarUtils.js
+│       │       └── formatters.jsx
 ├── tests/
 │   ├── test_api.py                # FastAPI endpoint integration tests
+│   ├── test_backfill.py           # Historical backfill and B2 upload tests
 │   ├── test_pipeline.py           # Pipeline, dynamic dates, and integrity verification tests
 │   └── test_query_parser.py       # Query parser and search logic unit tests
-└── HOSTING.md                     # Hosting & architecture notes
 ```
 
 ---
@@ -265,3 +335,4 @@ riigikogu-stenogram-search/
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
+

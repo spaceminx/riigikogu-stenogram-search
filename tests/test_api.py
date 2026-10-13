@@ -327,16 +327,51 @@ def test_speech_context():
 
 
 def test_search_export():
+    import csv
+    import io
+
     # Test CSV export
     res_csv = client.get("/search/export?q=kliimamuutus&format=csv")
     assert res_csv.status_code == 200
     assert "text/csv" in res_csv.headers["content-type"]
     assert "attachment" in res_csv.headers["content-disposition"]
 
+    # Verify CSV header and row content
+    csv_text = res_csv.content.decode("utf-8-sig")
+    reader = list(csv.reader(io.StringIO(csv_text)))
+    assert len(reader) >= 1
+    header = reader[0]
+    expected_header = [
+        "ID",
+        "Link",
+        "Kuupäev",
+        "Kellaaeg",
+        "Kõneleja",
+        "Kõneleja UUID",
+        "Roll",
+        "Fraktsioon",
+        "Leitud märksõnu",
+        "Päevakorrapunkt",
+        "Allikas",
+        "Video",
+        "Tekst",
+    ]
+    assert header == expected_header
+
+    if len(reader) > 1:
+        row = reader[1]
+        pub_id = row[header.index("ID")]
+        link = row[header.index("Link")]
+        assert link == f"https://www.riigivaade.me/kone/{pub_id}"
+
     # Test JSON export
     res_json = client.get("/search/export?q=kliimamuutus&format=json")
     assert res_json.status_code == 200
     assert "application/json" in res_json.headers["content-type"]
+    json_data = res_json.json()
+    if json_data:
+        assert "external_id" in json_data[0]
+        assert "speaker_uuid" in json_data[0]
 
     # Test invalid format
     res_inv = client.get("/search/export?q=kliimamuutus&format=xml")
