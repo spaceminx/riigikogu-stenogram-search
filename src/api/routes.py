@@ -920,37 +920,33 @@ def get_person_speeches(
         if not person:
             raise HTTPException(status_code=404, detail="Isikut ei leitud.")
 
-        limit_val = limit if isinstance(limit, int) else 20
-        offset_val = offset if isinstance(offset, int) else 0
-        role_class_val = role_class if isinstance(role_class, str) else "mp"
-
         filters = [Speech.speaker_uuid == person_uuid]
 
-        if role_class_val == "mp":
+        if role_class == "mp":
             filters.append(Speech.speaker_role.is_(None))
-        elif role_class_val == "chair":
+        elif role_class == "chair":
             filters.append(Speech.speaker_role.in_(("Esimees", "Aseesimees")))
             filters.append(or_(Speech.speech_type != "DIRECTOR", Speech.speech_type.is_(None)))
-        elif role_class_val == "candidate":
+        elif role_class == "candidate":
             filters.append(Speech.speaker_role.ilike("%kandidaat%"))
-        elif role_class_val == "minister":
+        elif role_class == "minister":
             filters.append(
                 Speech.speaker_role.ilike("%minister%") & ~Speech.speaker_role.ilike("%kandidaat%")
             )
-        elif role_class_val == "other":
+        elif role_class == "other":
             filters.append(
                 Speech.speaker_role.isnot(None)
                 & Speech.speaker_role.notin_(("Esimees", "Aseesimees"))
                 & ~Speech.speaker_role.ilike("%minister%")
                 & ~Speech.speaker_role.ilike("%kandidaat%")
             )
-        elif role_class_val == "director":
+        elif role_class == "director":
             filters.append(Speech.speech_type == "DIRECTOR")
             filters.append(Speech.speaker_role.in_(("Esimees", "Aseesimees")))
-        elif role_class_val == "all":
+        elif role_class == "all":
             pass
 
-        if speech_category and isinstance(speech_category, str) and speech_category != "all":
+        if speech_category and speech_category != "all":
             if speech_category == "unclassified":
                 filters.append(Speech.speech_type == "DIRECTOR")
                 filters.append(
@@ -962,9 +958,9 @@ def get_person_speeches(
             elif speech_category in SPEECH_TYPE_CATEGORIES:
                 filters.append(Speech.speech_type.in_(SPEECH_TYPE_CATEGORIES[speech_category]))
 
-        if start_date and isinstance(start_date, str):
+        if start_date:
             filters.append(Speech.date >= start_date)
-        if end_date and isinstance(end_date, str):
+        if end_date:
             filters.append(Speech.date <= end_date)
 
         query = session.query(Speech).filter(*filters)
@@ -972,8 +968,8 @@ def get_person_speeches(
 
         speeches = (
             query.order_by(Speech.date.desc(), Speech.time.desc(), Speech.id.desc())
-            .offset(offset_val)
-            .limit(limit_val)
+            .offset(offset)
+            .limit(limit)
             .all()
         )
 
@@ -1232,7 +1228,7 @@ def system_status():
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
-                "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis.",
+                "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg.",
                 "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",

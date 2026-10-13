@@ -410,24 +410,24 @@ export function PersonView({ theme = "light" }) {
         )}
 
         <div className="person-metrics-grid">
-          <div className="summary-card glass-panel person-metric-card">
-            <span className="summary-caption person-metric-label">Kõned saadikuna</span>
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Kõned saadikuna</span>
             <strong className="person-metric-value">
               {getMetricValue(stats?.totals?.mp?.speeches)}
             </strong>
             <span className="person-metric-desc">Põhiettekanded ja sõnavõtud</span>
           </div>
 
-          <div className="summary-card glass-panel person-metric-card">
-            <span className="summary-caption person-metric-label">Küsimused ja repliigid</span>
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Küsimused ja repliigid</span>
             <strong className="person-metric-value">
               {getMetricValue(stats?.totals?.mp?.questions)}
             </strong>
             <span className="person-metric-desc">Lühisõnavõtud ja küsimused</span>
           </div>
 
-          <div className="summary-card glass-panel person-metric-card">
-            <span className="summary-caption person-metric-label">Protseduurilised</span>
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Protseduurilised</span>
             <strong className="person-metric-value">
               {getMetricValue(stats?.totals?.mp?.procedural)}
             </strong>
@@ -436,8 +436,8 @@ export function PersonView({ theme = "light" }) {
             </span>
           </div>
 
-          <div className="summary-card glass-panel person-metric-card">
-            <span className="summary-caption person-metric-label">Kokku saadikuna</span>
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Kokku saadikuna</span>
             <strong className="person-metric-value person-metric-value-primary">
               {getMetricValue(stats?.totals?.mp?.total)}
             </strong>
@@ -447,16 +447,14 @@ export function PersonView({ theme = "light" }) {
             </span>
           </div>
 
-          <div className="summary-card glass-panel person-metric-card">
-            <span className="summary-caption person-metric-label">Kõneaeg saadikuna</span>
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Kõneaeg saadikuna</span>
             <strong className="person-metric-value">{formattedDuration}</strong>
             <span className="person-metric-desc">alates 14.09.2020</span>
           </div>
 
-          <div className="summary-card glass-panel person-metric-card">
-            <span className="summary-caption person-metric-label">
-              Kohalolek kohalolekukontrollides
-            </span>
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Kohalolek kohalolekukontrollides</span>
             <strong className="person-metric-value">{formattedAttendance}</strong>
             <span className="person-metric-desc">
               {attendanceError
@@ -502,7 +500,9 @@ export function PersonView({ theme = "light" }) {
             {hasUnclassified && (
               <p className="person-other-roles-desc">
                 Liigitamata sõnavõtud saadikuna: <strong>{stats.totals.mp.unclassified}</strong> —
-                stenogrammis märgitud DIRECTOR-tüübina väljaspool istungi juhatamist.
+                stenogrammis märgitud DIRECTOR-tüübina väljaspool istungi juhatamist. Kui juhataja
+                juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see samuti
+                liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).
               </p>
             )}
 
