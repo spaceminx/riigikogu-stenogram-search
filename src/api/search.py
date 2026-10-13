@@ -591,7 +591,41 @@ def get_dashboard_overview() -> dict:
             }
             for row in session_map.values()
         ]
-        result = {"speakers": speakers, "sessions": sessions}
+
+        # Monthly speech counts for past 24 months, excluding DIRECTOR
+        current_dt = datetime.now()
+        months = []
+        cur_y = current_dt.year
+        cur_m = current_dt.month
+        for _ in range(24):
+            months.append(f"{cur_y:04d}-{cur_m:02d}")
+            cur_m -= 1
+            if cur_m == 0:
+                cur_m = 12
+                cur_y -= 1
+        months.reverse()
+
+        month_col = func.strftime("%Y-%m", Speech.date)
+        start_month = months[0]
+        end_month = months[-1]
+
+        activity_rows = (
+            session.query(
+                month_col.label("month"),
+                func.count(Speech.id).label("count"),
+            )
+            .filter(
+                Speech.date >= f"{start_month}-01",
+                Speech.date <= f"{end_month}-31",
+                or_(Speech.speech_type.is_(None), Speech.speech_type != "DIRECTOR"),
+            )
+            .group_by(month_col)
+            .all()
+        )
+        counts_by_month = {row.month: int(row.count) for row in activity_rows}
+        activity = [{"month": m, "count": counts_by_month.get(m, 0)} for m in months]
+
+        result = {"speakers": speakers, "sessions": sessions, "activity": activity}
         _OVERVIEW_CACHE["data"] = result
         _OVERVIEW_CACHE["timestamp"] = now
         return result

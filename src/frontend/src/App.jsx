@@ -19,6 +19,7 @@ import {
 } from "./lib/api";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ErrorBoundary from "./components/ErrorBoundary";
 import MethodologyModal from "./components/MethodologyModal";
 import DashboardView from "./routes/DashboardView";
 import SearchView from "./routes/SearchView";
@@ -105,6 +106,7 @@ function PersonRoute({ theme }) {
 }
 
 function AppContent() {
+  const location = useLocation();
   const [theme, setTheme] = useState("light");
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
@@ -169,39 +171,41 @@ function AppContent() {
       <PageTitlebar memberships={memberships} />
 
       <main>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <DashboardView
-                dashboardOverview={dashboardOverview}
-                overviewError={overviewError}
-                overviewLoading={overviewLoading}
-                plenaryDates={plenaryDates}
-                theme={theme}
-                memberships={memberships}
-                searchFactionsList={searchFactionsList}
-                systemStatus={systemStatus}
-              />
-            }
-          />
-          <Route
-            path="/otsing"
-            element={
-              <SearchView
-                memberships={memberships}
-                searchFactionsList={searchFactionsList}
-                plenaryDates={plenaryDates}
-                theme={theme}
-              />
-            }
-          />
-          <Route path="/istung/:date" element={<SessionView />} />
-          <Route path="/kohalolek" element={<AttendanceView memberships={memberships} />} />
-          <Route path="/kone/:id" element={<SpeechView />} />
-          <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
-          <Route path="*" element={<NotFoundView />} />
-        </Routes>
+        <ErrorBoundary key={location.pathname}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <DashboardView
+                  dashboardOverview={dashboardOverview}
+                  overviewError={overviewError}
+                  overviewLoading={overviewLoading}
+                  plenaryDates={plenaryDates}
+                  theme={theme}
+                  memberships={memberships}
+                  searchFactionsList={searchFactionsList}
+                  systemStatus={systemStatus}
+                />
+              }
+            />
+            <Route
+              path="/otsing"
+              element={
+                <SearchView
+                  memberships={memberships}
+                  searchFactionsList={searchFactionsList}
+                  plenaryDates={plenaryDates}
+                  theme={theme}
+                />
+              }
+            />
+            <Route path="/istung/:date" element={<SessionView />} />
+            <Route path="/kohalolek" element={<AttendanceView memberships={memberships} />} />
+            <Route path="/kone/:id" element={<SpeechView />} />
+            <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
+            <Route path="*" element={<NotFoundView />} />
+          </Routes>
+        </ErrorBoundary>
       </main>
 
       <Footer onOpenMethodology={() => setShowMethodologyModal(true)} />

@@ -91,6 +91,7 @@ export function SearchView({
   const [loading, setLoading] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activityError, setActivityError] = useState(null);
 
   // Context modal state
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
@@ -130,13 +131,15 @@ export function SearchView({
       if (currentRequestId === searchRequestIdRef.current) {
         setLoading(true);
         setError(null);
+        setActivityError(null);
+        setActivityLoading(true);
       }
     });
 
     const offset = (pageParam - 1) * PAGE_SIZE;
     const currentInterval = searchParams.get("interval") || "monthly";
 
-    Promise.all([
+    Promise.allSettled([
       fetchSearch(
         {
           query: queryParam,
@@ -187,14 +190,33 @@ export function SearchView({
         abortController.signal
       ),
     ])
-      .then(([searchData, activityData, speakersData]) => {
+      .then(([searchResult, activityResult, speakersResult]) => {
         if (currentRequestId !== searchRequestIdRef.current) return;
-        setSpeeches(searchData.results || []);
-        setTotalCount(searchData.total_count || 0);
-        if (currentActivityRequestId === activityRequestIdRef.current) {
-          setActivity(activityData.activity || []);
+        if (searchResult.status === "fulfilled") {
+          setSpeeches(searchResult.value.results || []);
+          setTotalCount(searchResult.value.total_count || 0);
+        } else if (searchResult.reason?.name !== "AbortError") {
+          setSpeeches([]);
+          setTotalCount(0);
+          setError(searchResult.reason?.message || "Otsingupäring ebaõnnestus.");
         }
-        setSpeakers(speakersData.speakers || []);
+
+        if (currentActivityRequestId === activityRequestIdRef.current) {
+          if (activityResult.status === "fulfilled") {
+            setActivity(activityResult.value.activity || []);
+            setActivityError(null);
+          } else if (activityResult.reason?.name !== "AbortError") {
+            setActivity([]);
+            setActivityError(activityResult.reason?.message || "Ajajoone laadimine ebaõnnestus.");
+          }
+          setActivityLoading(false);
+        }
+
+        if (speakersResult.status === "fulfilled") {
+          setSpeakers(speakersResult.value.speakers || []);
+        } else {
+          setSpeakers([]);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -206,6 +228,7 @@ export function SearchView({
         setSpeakers([]);
         setError(err.message || "Otsingupäring ebaõnnestus.");
         setLoading(false);
+        setActivityLoading(false);
       });
 
     return () => {
@@ -287,6 +310,7 @@ export function SearchView({
       const currentRequestId = ++activityRequestIdRef.current;
 
       setActivityLoading(true);
+      setActivityError(null);
       fetchActivity(
         {
           query: queryParam,
@@ -306,10 +330,13 @@ export function SearchView({
         .then((data) => {
           if (currentRequestId !== activityRequestIdRef.current) return;
           setActivity(data.activity || []);
+          setActivityError(null);
         })
         .catch((err) => {
           if (err.name === "AbortError") return;
           if (currentRequestId !== activityRequestIdRef.current) return;
+          setActivity([]);
+          setActivityError(err.message || "Ajajoone laadimine ebaõnnestus.");
         })
         .finally(() => {
           if (currentRequestId === activityRequestIdRef.current) {
@@ -428,13 +455,14 @@ export function SearchView({
         </div>
       )}
 
-      {hasSearchQuery && currentActivity.length > 0 && (
+      {hasSearchQuery && (currentActivity.length > 0 || activityLoading || activityError) && (
         <div className="dashboard-grid" style={{ marginBottom: "1.5rem" }}>
           <ActivityChart
             activity={currentActivity}
             interval={intervalParam}
             onIntervalChange={handleIntervalChange}
             loading={activityLoading}
+            error={activityError}
             theme={theme}
           />
           <aside className="dashboard-rail">

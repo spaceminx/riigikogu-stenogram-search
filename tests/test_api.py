@@ -122,15 +122,69 @@ def test_root_status():
 
 
 def test_dashboard_overview_shape():
+    from src.api.search import _OVERVIEW_CACHE
+
+    _OVERVIEW_CACHE["data"] = None
     response = client.get("/overview")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data["speakers"], list)
     assert isinstance(data["sessions"], list)
+    assert isinstance(data["activity"], list)
+    assert len(data["activity"]) == 24
+    assert {"month", "count"} <= data["activity"][0].keys()
     if data["speakers"]:
         assert {"speaker", "faction", "count"} <= data["speakers"][0].keys()
     if data["sessions"]:
         assert {"date", "source_url", "topics"} <= data["sessions"][0].keys()
+
+
+def test_overview_activity_excludes_director():
+    from datetime import datetime
+
+    from src.api.search import _OVERVIEW_CACHE
+
+    _OVERVIEW_CACHE["data"] = None
+    session = SessionLocal()
+    cur_month = datetime.now().strftime("%Y-%m")
+    test_date = f"{cur_month}-10"
+
+    s_regular = Speech(
+        id=8801,
+        speech_key="2026-act-01",
+        date=test_date,
+        time="1000",
+        source_file="test.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/test1",
+        speaker="Test Kõneleja",
+        speaker_role=None,
+        speech_type="SPEECH",
+        text="Tavaline sõnavõtt",
+    )
+    s_director = Speech(
+        id=8802,
+        speech_key="2026-act-02",
+        date=test_date,
+        time="1005",
+        source_file="test.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/test2",
+        speaker="Test Juhataja",
+        speaker_role="Esimees",
+        speech_type="DIRECTOR",
+        text="Istungi juhataja repliik",
+    )
+    session.merge(s_regular)
+    session.merge(s_director)
+    session.commit()
+    session.close()
+
+    res = client.get("/overview")
+    assert res.status_code == 200
+    activity = res.json()["activity"]
+    cur_month_entry = next((item for item in activity if item["month"] == cur_month), None)
+    assert cur_month_entry is not None
+    # Regular speech counted, director speech excluded
+    assert cur_month_entry["count"] >= 1
 
 
 def test_plenary_session_calendar_and_transcript():

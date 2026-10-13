@@ -119,22 +119,33 @@ export function highlightKeywords(text, groups, extraTerm = "", matchedWords = [
   keywords.sort((a, b) => b.length - a.length);
 
   const escaped = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const regex = new RegExp(
-    `(?<=[^\\p{L}\\p{N}]|^)(${escaped.join("|")})(?=[^\\p{L}\\p{N}]|$)`,
-    "gui"
-  );
+  const regex = new RegExp(`(^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=[^\\p{L}\\p{N}]|$)`, "gui");
 
-  const parts = text.split(regex);
-  return parts.map((part, index) => {
-    const isMatch = keywords.some((k) => part.toLowerCase() === k.toLowerCase());
-    return isMatch ? (
-      <mark key={index} className="keyword-highlight">
-        {part}
+  const elements = [];
+  let lastIndex = 0;
+  for (const match of text.matchAll(regex)) {
+    const prefix = match[1] || "";
+    const keyword = match[2];
+    const matchIndex = match.index;
+    const keywordStart = matchIndex + prefix.length;
+    const keywordEnd = keywordStart + keyword.length;
+
+    if (keywordStart > lastIndex) {
+      elements.push(text.slice(lastIndex, keywordStart));
+    }
+    elements.push(
+      <mark key={elements.length} className="keyword-highlight">
+        {keyword}
       </mark>
-    ) : (
-      part
     );
-  });
+    lastIndex = keywordEnd;
+  }
+
+  if (lastIndex < text.length) {
+    elements.push(text.slice(lastIndex));
+  }
+
+  return elements.length > 0 ? elements : [text];
 }
 
 export function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 380) {
