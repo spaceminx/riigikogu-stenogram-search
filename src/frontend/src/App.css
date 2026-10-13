@@ -497,9 +497,8 @@
 
 /* Attendance Table */
 .attendance-list {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  display: block;
+  width: 100%;
   overflow-x: auto;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -507,12 +506,34 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.attendance-header-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.attendance-table {
+  width: 100%;
   min-width: 840px;
-  padding: 1rem;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.attendance-table-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.attendance-table th,
+.attendance-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.attendance-table thead th {
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid #cbd5e1;
   background: #f1f5f9;
   color: #475569;
@@ -520,35 +541,74 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
-.cursor-pointer {
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s;
-}
-
-.cursor-pointer:hover {
-  color: #f8fafc;
-}
-
-.attendance-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-width: 840px;
-  padding: 0.9rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
+.attendance-table tbody tr {
   background: #fff;
   transition: background-color 0.2s;
 }
 
-.attendance-row:hover {
+.attendance-table tbody tr:hover {
   background-color: #f8fafc;
 }
 
-.attendance-row:last-child {
+.attendance-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.att-sort-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.att-sort-btn:hover,
+.att-sort-btn:focus-visible {
+  color: #0f172a;
+}
+
+.att-sort-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #315b84);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.faction-drilldown-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+}
+
+.faction-drilldown-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #315b84);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.percent-bar-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .attendance-header-row .cursor-pointer:hover {
@@ -672,6 +732,64 @@
   font-size: 0.9rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .attendance-list {
+  border-color: #334155;
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .attendance-table th,
+html[data-theme="dark"] .attendance-table td {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .attendance-table thead th {
+  background: #1e293b;
+  color: #94a3b8;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .attendance-table tbody tr {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .attendance-table tbody tr:hover {
+  background-color: #1e293b;
+}
+
+html[data-theme="dark"] .att-sort-btn:hover,
+html[data-theme="dark"] .att-sort-btn:focus-visible {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .att-col-name,
+html[data-theme="dark"] .att-col-name a {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .attendance-row .faction-title {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .att-col-count,
+html[data-theme="dark"] .att-col-total,
+html[data-theme="dark"] .att-col-present {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .percent-text {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .percent-bar-bg {
+  background: #334155;
+}
+
+html[data-theme="dark"] .faction-badge {
+  border-color: #334155;
+  background: #1e293b;
+  color: #cbd5e1;
 }
 
 @media (max-width: 1024px) {

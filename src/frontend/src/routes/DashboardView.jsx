@@ -11,6 +11,7 @@ import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 export function DashboardView({
   dashboardOverview,
   overviewError,
+  overviewLoading = false,
   plenaryDates = [],
   theme = "light",
   memberships = [],
@@ -47,7 +48,6 @@ export function DashboardView({
   const [searchSpeaker, setSearchSpeaker] = useState("");
   const [searchSpeechCategory, setSearchSpeechCategory] = useState("");
   const [searchExcludeChair, setSearchExcludeChair] = useState(false);
-  const [interval, setInterval] = useState("monthly");
 
   const recentSessions = dashboardOverview?.sessions || [];
   const overviewSpeakers = dashboardOverview?.speakers || [];
@@ -160,10 +160,9 @@ export function DashboardView({
 
       <div className="dashboard-grid">
         <ActivityChart
-          activity={[]}
-          interval={interval}
-          onIntervalChange={setInterval}
-          loading={false}
+          activity={dashboardOverview?.activity || []}
+          loading={overviewLoading}
+          error={overviewError}
           theme={theme}
         />
 

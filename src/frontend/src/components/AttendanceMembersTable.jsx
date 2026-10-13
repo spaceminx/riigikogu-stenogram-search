@@ -8,94 +8,118 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
     return sortConfig.direction === "ascending" ? "↑" : "↓";
   };
 
-  return (
-    <div className="attendance-list">
-      <div className="attendance-header-row">
-        <div className="att-col-rank">#</div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="att-col-name cursor-pointer"
-          onClick={() => requestSort("member_name")}
-        >
-          Saadik {getSortIndicator("member_name")}
-        </div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="att-col-faction cursor-pointer"
-          onClick={() => requestSort("faction")}
-        >
-          Fraktsioon {getSortIndicator("faction")}
-        </div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="att-col-total cursor-pointer"
-          onClick={() => requestSort("total_sessions")}
-        >
-          Kontrolle {getSortIndicator("total_sessions")}
-        </div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="att-col-present cursor-pointer"
-          onClick={() => requestSort("present_sessions")}
-        >
-          Kohal {getSortIndicator("present_sessions")}
-        </div>
-        <div
-          role="button"
-          tabIndex={0}
-          className="att-col-percent cursor-pointer"
-          onClick={() => requestSort("attendance_percentage")}
-        >
-          % {getSortIndicator("attendance_percentage")}
-        </div>
-      </div>
+  const getAriaSort = (key) => {
+    if (sortConfig.key !== key) return "none";
+    return sortConfig.direction === "ascending" ? "ascending" : "descending";
+  };
 
-      {sortedStats.length === 0 ? (
-        <p style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
-          Valitud filtritele vastavaid saadikuid ei leitud.
-        </p>
-      ) : (
-        sortedStats.map((stat, idx) => (
-          <div key={idx} className="attendance-row">
-            <div className="att-col-rank">{idx + 1}</div>
-            <div className="att-col-name">
-              {stat.member_uuid ? (
-                <Link
-                  to={`/saadik/${encodeURIComponent(stat.member_uuid)}`}
-                  className="speaker-name-link"
-                >
-                  {stat.member_name}
-                </Link>
-              ) : (
-                stat.member_name
-              )}
-            </div>
-            <div className="att-col-faction">
-              <span className="faction-badge" title={stat.faction}>
-                {formatFactionName(stat.faction)}
-              </span>
-            </div>
-            <div className="att-col-total">{stat.total_sessions}</div>
-            <div className="att-col-present">{stat.present_sessions}</div>
-            <div className="att-col-percent">
-              <div className="percent-bar-bg">
-                <div
-                  className="percent-bar-fill"
-                  style={{
-                    width: `${stat.attendance_percentage}%`,
-                    backgroundColor: getPercentageColor(stat.attendance_percentage),
-                  }}
-                />
-              </div>
-              <span className="percent-text">{stat.attendance_percentage}%</span>
-            </div>
-          </div>
-        ))
-      )}
+  return (
+    <div className="attendance-list" role="region" aria-label="Saadikute kohaloleku tabel">
+      <table className="attendance-table">
+        <caption className="attendance-table-caption">
+          Saadikute kohaloleku kontrollide statistika
+        </caption>
+        <thead>
+          <tr className="attendance-header-row">
+            <th scope="col" className="att-col-rank">
+              #
+            </th>
+            <th scope="col" className="att-col-name" aria-sort={getAriaSort("member_name")}>
+              <button
+                type="button"
+                className="att-sort-btn"
+                onClick={() => requestSort("member_name")}
+              >
+                Saadik {getSortIndicator("member_name")}
+              </button>
+            </th>
+            <th scope="col" className="att-col-faction" aria-sort={getAriaSort("faction")}>
+              <button type="button" className="att-sort-btn" onClick={() => requestSort("faction")}>
+                Fraktsioon {getSortIndicator("faction")}
+              </button>
+            </th>
+            <th scope="col" className="att-col-total" aria-sort={getAriaSort("total_sessions")}>
+              <button
+                type="button"
+                className="att-sort-btn"
+                onClick={() => requestSort("total_sessions")}
+              >
+                Kontrolle {getSortIndicator("total_sessions")}
+              </button>
+            </th>
+            <th scope="col" className="att-col-present" aria-sort={getAriaSort("present_sessions")}>
+              <button
+                type="button"
+                className="att-sort-btn"
+                onClick={() => requestSort("present_sessions")}
+              >
+                Kohal {getSortIndicator("present_sessions")}
+              </button>
+            </th>
+            <th
+              scope="col"
+              className="att-col-percent"
+              aria-sort={getAriaSort("attendance_percentage")}
+            >
+              <button
+                type="button"
+                className="att-sort-btn"
+                onClick={() => requestSort("attendance_percentage")}
+              >
+                % {getSortIndicator("attendance_percentage")}
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedStats.length === 0 ? (
+            <tr>
+              <td colSpan={6} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                Valitud filtritele vastavaid saadikuid ei leitud.
+              </td>
+            </tr>
+          ) : (
+            sortedStats.map((stat, idx) => (
+              <tr key={stat.member_uuid || idx} className="attendance-row">
+                <td className="att-col-rank">{idx + 1}</td>
+                <td className="att-col-name">
+                  {stat.member_uuid ? (
+                    <Link
+                      to={`/saadik/${encodeURIComponent(stat.member_uuid)}`}
+                      className="speaker-name-link"
+                    >
+                      {stat.member_name}
+                    </Link>
+                  ) : (
+                    stat.member_name
+                  )}
+                </td>
+                <td className="att-col-faction">
+                  <span className="faction-badge" title={stat.faction}>
+                    {formatFactionName(stat.faction)}
+                  </span>
+                </td>
+                <td className="att-col-total">{stat.total_sessions}</td>
+                <td className="att-col-present">{stat.present_sessions}</td>
+                <td className="att-col-percent">
+                  <div className="percent-bar-container">
+                    <div className="percent-bar-bg">
+                      <div
+                        className="percent-bar-fill"
+                        style={{
+                          width: `${stat.attendance_percentage}%`,
+                          backgroundColor: getPercentageColor(stat.attendance_percentage),
+                        }}
+                      />
+                    </div>
+                    <span className="percent-text">{stat.attendance_percentage}%</span>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

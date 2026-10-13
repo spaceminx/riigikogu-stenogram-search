@@ -6,7 +6,11 @@ export function ActivityChart({
   interval = "monthly",
   onIntervalChange,
   loading = false,
+  error = null,
   theme = "light",
+  title = "Kõnede ajajoon",
+  kicker = "TEEMA LÄBI AJA",
+  emptyMessage = "Sellele otsingule kõnesid ei leitud.",
 }) {
   const tooltipStyle = {
     contentStyle: {
@@ -20,35 +24,50 @@ export function ActivityChart({
     labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
   };
 
+  const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
+  const axisTickColor = theme === "dark" ? "#94a3b8" : "#64748b";
+
   return (
     <section className="glass-panel timeline-panel" aria-labelledby="timeline-title">
       <div className="chart-header">
         <div>
-          <span className="section-kicker">TEEMA LÄBI AJA</span>
-          <h2 id="timeline-title">Kõnede ajajoon</h2>
+          <span className="section-kicker">{kicker}</span>
+          <h2 id="timeline-title">{title}</h2>
         </div>
         <div className="timeline-header-controls">
           {activity.length > 0 && <span className="chart-period">{activity.length} perioodi</span>}
-          <div className="interval-segmented" role="group" aria-label="Ajajoone ajavahemik">
-            {[
-              ["daily", "Päev"],
-              ["weekly", "Nädal"],
-              ["monthly", "Kuu"],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                className={`interval-segment${interval === value ? " is-active" : ""}`}
-                aria-pressed={interval === value}
-                onClick={() => onIntervalChange(value)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {onIntervalChange && (
+            <div className="interval-segmented" role="group" aria-label="Ajajoone ajavahemik">
+              {[
+                ["daily", "Päev"],
+                ["weekly", "Nädal"],
+                ["monthly", "Kuu"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`interval-segment${interval === value ? " is-active" : ""}`}
+                  aria-pressed={interval === value}
+                  onClick={() => onIntervalChange(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      {activity.length > 0 ? (
+      {error ? (
+        <div className="chart-empty-state chart-error-state" role="alert">
+          <span>
+            {typeof error === "string" ? error : error?.message || "Viga andmete laadimisel."}
+          </span>
+        </div>
+      ) : loading ? (
+        <div className="chart-empty-state" role="status">
+          <span>Laen arutelude andmeid…</span>
+        </div>
+      ) : activity.length > 0 ? (
         <div className="timeline-chart">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
@@ -60,15 +79,15 @@ export function ActivityChart({
               </defs>
               <XAxis
                 dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
-                stroke="#cbd3dc"
-                tick={{ fill: "#64748b", fontSize: 11 }}
+                stroke={axisStroke}
+                tick={{ fill: axisTickColor, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
                 minTickGap={24}
               />
               <YAxis
-                stroke="#cbd3dc"
-                tick={{ fill: "#64748b", fontSize: 11 }}
+                stroke={axisStroke}
+                tick={{ fill: axisTickColor, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -86,72 +105,16 @@ export function ActivityChart({
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      ) : loading ? (
-        <div className="chart-empty-state" role="status">
-          Laen arutelude andmeid…
-        </div>
       ) : (
-        <div className="sample-preview">
-          <div className="sample-preview-header">
-            <div>
-              <span className="sample-preview-kicker">ARHIIVI NÄIDIS</span>
-              <strong>Teemade aktiivsus ajas</strong>
-            </div>
-            <span className="sample-badge">Illustratiivne</span>
-          </div>
-          <div className="timeline-chart sample-chart" aria-label="Illustratiivne kõnede ajajoon">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={[
-                  { month: "jaan", count: 14 },
-                  { month: "veebr", count: 22 },
-                  { month: "märts", count: 18 },
-                  { month: "apr", count: 34 },
-                  { month: "mai", count: 27 },
-                  { month: "juuni", count: 42 },
-                  { month: "juuli", count: 31 },
-                  { month: "aug", count: 48 },
-                  { month: "sept", count: 39 },
-                  { month: "okt", count: 58 },
-                  { month: "nov", count: 46 },
-                  { month: "dets", count: 63 },
-                ]}
-                margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="sampleArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#315b84" stopOpacity={0.14} />
-                    <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="month"
-                  stroke="#d4dce5"
-                  tick={{ fill: "#738195", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis hide />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#315b84"
-                  strokeWidth={2}
-                  fill="url(#sampleArea)"
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <p>
-            Graafik kuvab näidisandmeid. Sisesta märksõna, et vaadata arhiivi tegelikke tulemusi.
-          </p>
+        <div className="chart-empty-state">
+          <span>{emptyMessage}</span>
         </div>
       )}
-      <div className="chart-footer">
-        <span className="legend-dot" /> Kõnede arv valitud perioodis
-      </div>
+      {activity.length > 0 && (
+        <div className="chart-footer">
+          <span className="legend-dot" /> Kõnede arv valitud perioodis
+        </div>
+      )}
     </section>
   );
 }
