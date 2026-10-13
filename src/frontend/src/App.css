@@ -811,6 +811,7 @@ html[data-theme="dark"] .faction-badge {
   .attendance-table {
     table-layout: auto;
     width: 100%;
+    min-width: 0;
   }
 
   .attendance-table th,
