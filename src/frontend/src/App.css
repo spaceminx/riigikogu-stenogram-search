@@ -779,7 +779,8 @@ html[data-theme="dark"] .faction-badge {
 
 @media (max-width: 639px) {
   .att-col-faction,
-  .att-col-count {
+  .att-col-count,
+  .att-col-total {
     display: none;
   }
 
@@ -833,7 +834,6 @@ html[data-theme="dark"] .faction-badge {
     font-size: 0.85rem;
   }
 
-  .att-col-total,
   .att-col-present {
     width: auto;
     min-width: 44px;
@@ -843,7 +843,7 @@ html[data-theme="dark"] .faction-badge {
 
   .att-col-percent {
     width: auto;
-    min-width: 68px;
+    min-width: 48px;
     padding-right: 0.35rem;
   }
 
@@ -857,13 +857,12 @@ html[data-theme="dark"] .faction-badge {
   }
 
   .percent-bar-bg {
-    min-width: 24px;
-    height: 6px;
+    display: none;
   }
 
   .percent-text {
-    margin-left: 4px;
-    min-width: 32px;
+    margin-left: 0;
+    min-width: 0;
     font-size: 0.78rem;
   }
 }
