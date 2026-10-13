@@ -164,6 +164,9 @@ export function DashboardView({
           loading={overviewLoading}
           error={overviewError}
           theme={theme}
+          kicker="VIIMASED 24 KUUD"
+          title="Sõnavõtud kuude kaupa"
+          emptyMessage="Andmed puuduvad."
         />
 
         <aside className="dashboard-rail">

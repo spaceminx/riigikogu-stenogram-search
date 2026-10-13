@@ -26,6 +26,8 @@ export function ActivityChart({
 
   const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
   const axisTickColor = theme === "dark" ? "#94a3b8" : "#64748b";
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   return (
     <section className="glass-panel timeline-panel" aria-labelledby="timeline-title">
@@ -91,7 +93,13 @@ export function ActivityChart({
                 tickLine={false}
                 axisLine={false}
               />
-              <Tooltip {...tooltipStyle} cursor={{ stroke: "#9eabb9", strokeWidth: 1 }} />
+              <Tooltip
+                {...tooltipStyle}
+                cursor={{ stroke: "#9eabb9", strokeWidth: 1 }}
+                labelFormatter={(label) =>
+                  interval === "monthly" && label === currentMonth ? `${label} (pooleli)` : label
+                }
+              />
               <Area
                 type="monotone"
                 dataKey="count"
