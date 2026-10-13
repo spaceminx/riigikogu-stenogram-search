@@ -951,6 +951,9 @@ def test_download_from_b2_include_all(tmp_path, monkeypatch):
         def get_paginator(self, operation_name):
             return MockPaginator()
 
+        def head_object(self, Bucket, Key):
+            return {"Metadata": {}, "ContentLength": 100}
+
         def download_file(self, bucket, key, local_path):
             downloaded.append(key)
             Path(local_path).write_text("dummy", encoding="utf-8")
@@ -1737,9 +1740,9 @@ def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
                     "Contents": [
                         # Same size 5, matching MD5 -> should get ETag
                         {"Key": "match.jsonl", "Size": 5, "ETag": f'"{hello_md5}"'},
-                        # Same size 5, different MD5 -> must NOT get ETag
+                        # Same size 5, different MD5 -> downloads and gets ETag
                         {"Key": "diff.jsonl", "Size": 5, "ETag": f'"{hello_md5}"'},
-                        # Same size 5, multipart ETag (contains -) -> must NOT get ETag
+                        # Same size 5, multipart ETag without metadata -> skipped by size, no ETag
                         {"Key": "multipart.jsonl", "Size": 5, "ETag": f'"{hello_md5}-2"'},
                     ]
                 }
@@ -1749,8 +1752,11 @@ def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
         def get_paginator(self, operation_name):
             return MockPaginatorHistory()
 
+        def head_object(self, Bucket, Key):
+            return {"Metadata": {}, "ContentLength": 5}
+
         def download_file(self, bucket, key, local_path):
-            pass
+            Path(local_path).write_bytes(hello_bytes)
 
     class MockBoto3History:
         @staticmethod
@@ -1766,9 +1772,10 @@ def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
     etags_after = json.loads(etags_file.read_text(encoding="utf-8"))
     # Matching MD5 saved
     assert etags_after.get("match.jsonl") == hello_md5
-    # Different MD5 not saved
-    assert "diff.jsonl" not in etags_after
-    # Multipart not saved
+    # Different MD5 downloaded and saved
+    assert etags_after.get("diff.jsonl") == hello_md5
+    assert file_diff.read_bytes() == hello_bytes
+    # Multipart without metadata not saved
     assert "multipart.jsonl" not in etags_after
 
 

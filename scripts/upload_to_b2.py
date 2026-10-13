@@ -9,6 +9,7 @@ import boto3
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
+from scripts.b2_utils import get_file_md5
 
 try:
     from dotenv import load_dotenv
@@ -87,6 +88,7 @@ def upload_to_b2(
         return True
 
     uploaded_count = 0
+    skipped_count = 0
     failed_count = 0
 
     for local_path, remote_key in files_to_upload:
@@ -96,6 +98,8 @@ def upload_to_b2(
                 print(f"Error: Refusing to upload 0-byte file {local_path} to B2.")
                 failed_count += 1
                 continue
+
+            local_md5 = get_file_md5(local_path)
 
             head = None
             try:
@@ -130,6 +134,14 @@ def upload_to_b2(
                             failed_count += 1
                             continue
 
+                # Check if remote object already has matching MD5 in metadata
+                meta = head.get("Metadata") or {}
+                remote_md5 = meta.get("md5") or meta.get("MD5")
+                if remote_md5 and remote_md5.lower() == local_md5.lower():
+                    print(f"Skipping {remote_key}: muutmata, jätan vahele.")
+                    skipped_count += 1
+                    continue
+
                 # Safety check: compare against existing remote object size to prevent accidental truncation
                 if remote_key.endswith(".jsonl"):
                     remote_size = head.get("ContentLength", 0)
@@ -140,8 +152,9 @@ def upload_to_b2(
                         failed_count += 1
                         continue
 
+            extra_args = {"Metadata": {"md5": local_md5}}
             print(f"Uploading file to cloud: {local_path} -> {bucket_name}/{remote_key} ...")
-            s3.upload_file(local_path, bucket_name, remote_key)
+            s3.upload_file(local_path, bucket_name, remote_key, ExtraArgs=extra_args)
             uploaded_count += 1
 
             # Fetch fresh ETag after upload and atomically update .b2_etags.json
@@ -174,10 +187,16 @@ def upload_to_b2(
             failed_count += 1
 
     if failed_count == 0:
-        print(f"All {uploaded_count} files successfully uploaded to {bucket_name}.")
+        print(
+            f"All {uploaded_count} files successfully uploaded to {bucket_name} "
+            f"({skipped_count} unchanged/skipped)."
+        )
         return True
 
-    print(f"Upload finished with errors: {uploaded_count} uploaded, {failed_count} failed.")
+    print(
+        f"Upload finished with errors: {uploaded_count} uploaded, "
+        f"{skipped_count} skipped, {failed_count} failed."
+    )
     return False
 
 
