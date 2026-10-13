@@ -88,3 +88,10 @@ class Attendance(Base):
     status = Column(Text, nullable=False)
 
     __table_args__ = (UniqueConstraint("voting_uuid", "member_name", name="uq_attendance"),)
+
+
+class SystemMeta(Base):
+    __tablename__ = "system_meta"
+
+    key = Column(Text, primary_key=True)
+    value = Column(Text, nullable=True)

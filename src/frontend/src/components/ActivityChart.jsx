@@ -1,5 +1,13 @@
 import React from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  formatDayAxis,
+  formatDayTooltip,
+  formatMonthAxis,
+  formatMonthTooltip,
+  formatWeekAxis,
+  formatWeekTooltip,
+} from "../lib/formatters";
 
 export function ActivityChart({
   activity = [],
@@ -26,8 +34,44 @@ export function ActivityChart({
 
   const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
   const axisTickColor = theme === "dark" ? "#94a3b8" : "#64748b";
-  const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const formatAxisTick = (tick) => {
+    if (!tick) return "";
+    if (interval === "monthly") {
+      return formatMonthAxis(tick);
+    }
+    if (interval === "daily") {
+      return formatDayAxis(tick);
+    }
+    if (interval === "weekly") {
+      if (typeof tick === "string" && tick.length === 10) {
+        return formatWeekAxis(tick);
+      }
+      const item = activity.find((row) => row.week === tick);
+      return item?.week_start ? formatWeekAxis(item.week_start) : tick;
+    }
+    return tick;
+  };
+
+  const formatTooltipLabel = (label, payload) => {
+    if (!label && (!payload || payload.length === 0)) return "";
+    if (interval === "monthly") {
+      return formatMonthTooltip(label);
+    }
+    if (interval === "daily") {
+      return formatDayTooltip(label);
+    }
+    if (interval === "weekly") {
+      const row = payload?.[0]?.payload;
+      const weekStart =
+        row?.week_start || (typeof label === "string" && label.length === 10 ? label : null);
+      if (weekStart) {
+        return formatWeekTooltip(weekStart);
+      }
+      return label;
+    }
+    return label;
+  };
 
   return (
     <section className="glass-panel timeline-panel" aria-labelledby="timeline-title">
@@ -74,9 +118,18 @@ export function ActivityChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
               <XAxis
-                dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
+                dataKey={
+                  interval === "daily"
+                    ? "date"
+                    : interval === "weekly"
+                      ? activity[0]?.week_start
+                        ? "week_start"
+                        : "week"
+                      : "month"
+                }
                 stroke={axisStroke}
                 tick={{ fill: axisTickColor, fontSize: 11 }}
+                tickFormatter={formatAxisTick}
                 tickLine={false}
                 axisLine={false}
                 minTickGap={24}
@@ -93,9 +146,7 @@ export function ActivityChart({
                 cursor={{
                   fill: theme === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
                 }}
-                labelFormatter={(label) =>
-                  interval === "monthly" && label === currentMonth ? `${label} (pooleli)` : label
-                }
+                labelFormatter={formatTooltipLabel}
               />
               <Bar
                 dataKey="count"
