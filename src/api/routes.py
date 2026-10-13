@@ -3,7 +3,7 @@ import io
 import json
 import logging
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
@@ -29,7 +29,7 @@ from src.api.search import (
     search_by_keyword,
 )
 from src.load.database import SessionLocal
-from src.load.models import Attendance, Person, Speech, SpeechAlias
+from src.load.models import Attendance, Person, Speech, SpeechAlias, SystemMeta
 
 logger = logging.getLogger(__name__)
 
@@ -1192,9 +1192,20 @@ def system_status():
         total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
 
         latest_session = (
-            session.query(Speech.source_file).order_by(Speech.date.desc(), Speech.id.desc()).first()
+            session.query(Speech.source_file, Speech.status)
+            .order_by(Speech.date.desc(), Speech.id.desc())
+            .first()
         )
         latest_session_file = latest_session[0] if latest_session else None
+        latest_session_status = latest_session[1] if latest_session else None
+
+        last_sync_at = None
+        try:
+            meta_row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+            if meta_row:
+                last_sync_at = meta_row.value
+        except Exception:
+            pass
 
         days_since_latest = None
         warning = None
@@ -1210,9 +1221,25 @@ def system_status():
             except ValueError:
                 pass
 
+        sync_warning = None
+        if last_sync_at:
+            try:
+                sync_dt = datetime.fromisoformat(last_sync_at)
+                if sync_dt.tzinfo is None:
+                    sync_dt = sync_dt.replace(tzinfo=timezone.utc)
+                if (datetime.now(timezone.utc) - sync_dt).total_seconds() > 36 * 3600:
+                    sync_warning = "Automaatne sünkroonimine võib olla peatunud."
+            except Exception:
+                pass
+
+        if sync_warning:
+            warning = f"{warning} {sync_warning}".strip() if warning else sync_warning
+
         return {
             "status": "ok",
             "data_as_of": latest_date,
+            "latest_session_status": latest_session_status,
+            "last_sync_at": last_sync_at,
             "days_since_latest_session": days_since_latest,
             "latest_session": latest_session_file,
             "total_sessions": total_sessions,

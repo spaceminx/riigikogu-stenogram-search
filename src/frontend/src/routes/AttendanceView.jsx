@@ -28,9 +28,20 @@ export function AttendanceView({ memberships = [] }) {
   };
 
   const setAttendanceTab = (tab) => updateParam("att_tab", tab === "members" ? null : tab);
-  const setAttendanceMembership = (m) => updateParam("att_membership", m === "15" ? null : m);
   const setSelectedFaction = (f) => updateParam("att_faction", f || null);
   const setActiveOnly = (a) => updateParam("att_active", a || null);
+
+  const handlePeriodChange = (newPeriod) => {
+    const next = new URLSearchParams(searchParams);
+    if (newPeriod === "15") {
+      next.delete("att_membership");
+    } else {
+      next.set("att_membership", String(newPeriod));
+      next.delete("att_active");
+    }
+    next.delete("att_faction");
+    setSearchParams(next, { replace: true });
+  };
 
   const {
     data: attendanceData,
@@ -165,13 +176,7 @@ export function AttendanceView({ memberships = [] }) {
               id="period-select"
               className="attendance-select"
               value={attendanceMembership}
-              onChange={(e) => {
-                const newPeriod = e.target.value;
-                setAttendanceMembership(newPeriod);
-                if (newPeriod !== "15") {
-                  setActiveOnly(false);
-                }
-              }}
+              onChange={(e) => handlePeriodChange(e.target.value)}
             >
               {memberships.map((m) => (
                 <option key={m.id} value={m.id}>

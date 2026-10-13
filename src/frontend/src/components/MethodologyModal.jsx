@@ -1,4 +1,6 @@
 import React, { useEffect } from "react";
+import { formatDate } from "../lib/calendarUtils";
+import { formatSyncTime, isSyncStale } from "../lib/formatters";
 
 export function MethodologyModal({ isOpen, onClose, systemStatus }) {
   useEffect(() => {
@@ -27,7 +29,20 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
               Andmed ja metoodika
             </h2>
             <div className="modal-meta-row">
-              {systemStatus?.data_as_of && <span>Andmed seisuga: {systemStatus.data_as_of}</span>}
+              {systemStatus?.data_as_of && (
+                <span>
+                  Viimane istung: {formatDate(systemStatus.data_as_of)}
+                  {systemStatus.latest_session_status === "UNEDITED"
+                    ? " (esialgne stenogramm)"
+                    : ""}
+                </span>
+              )}
+              {systemStatus?.last_sync_at && (
+                <>
+                  <span>•</span>
+                  <span>Uuendatud: {formatSyncTime(systemStatus.last_sync_at)}</span>
+                </>
+              )}
               {typeof systemStatus?.total_sessions === "number" && (
                 <>
                   <span>•</span>
@@ -58,9 +73,10 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
           </button>
         </div>
 
-        {systemStatus?.warning && (
+        {(systemStatus?.warning || isSyncStale(systemStatus?.last_sync_at)) && (
           <div className="methodology-warning">
-            <strong>Hoiatus:</strong> {systemStatus.warning}
+            <strong>Hoiatus:</strong>{" "}
+            {systemStatus?.warning || "Automaatne sünkroonimine võib olla peatunud."}
           </div>
         )}
 

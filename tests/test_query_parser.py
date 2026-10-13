@@ -5,7 +5,12 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from scripts.fetch_stenograms_api import split_speaker_role
-from src.api.search import fill_missing_periods, is_only_stopwords, parse_query_groups
+from src.api.search import (
+    fill_missing_periods,
+    is_only_stopwords,
+    parse_query_groups,
+    week_key_to_monday,
+)
 
 
 def test_parse_single_keyword():
@@ -63,6 +68,33 @@ def test_fill_missing_periods_monthly():
     assert filled[0] == {"month": "2024-01", "count": 5}
     assert filled[1] == {"month": "2024-02", "count": 0}
     assert filled[2] == {"month": "2024-03", "count": 10}
+
+
+def test_fill_missing_periods_weekly():
+    data = [("2024-10", 5), ("2024-12", 10)]
+    filled = fill_missing_periods(data, "weekly", "week")
+    assert len(filled) == 3
+    assert filled[0] == {"week": "2024-10", "week_start": "2024-03-04", "count": 5}
+    assert filled[1] == {"week": "2024-11", "week_start": "2024-03-11", "count": 0}
+    assert filled[2] == {"week": "2024-12", "week_start": "2024-03-18", "count": 10}
+
+
+def test_week_key_to_monday_edge_cases():
+    # Standard week
+    m1 = week_key_to_monday("2025-18")
+    assert m1.isoformat() == "2025-05-05"
+
+    # Week 00 in 2025 (Jan 1, 2025 is Wednesday; Monday of that week is 2024-12-30)
+    m2 = week_key_to_monday("2025-00")
+    assert m2.isoformat() == "2024-12-30"
+
+    # Week 01 in 2025 (First Monday of 2025 is 2025-01-06)
+    m3 = week_key_to_monday("2025-01")
+    assert m3.isoformat() == "2025-01-06"
+
+    # Year where Jan 1 is Monday (2024)
+    m4 = week_key_to_monday("2024-01")
+    assert m4.isoformat() == "2024-01-01"
 
 
 def test_duplicate_lemmas_deduplicated_in_group():

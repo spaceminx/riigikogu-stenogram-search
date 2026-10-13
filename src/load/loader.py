@@ -13,6 +13,9 @@ def ensure_schema(target_engine=None) -> None:
     """Ensure database schema is up to date (idempotent migration helper)."""
     eng = target_engine or engine
     with eng.connect() as conn:
+        conn.execute(
+            text("CREATE TABLE IF NOT EXISTS system_meta (key TEXT PRIMARY KEY, value TEXT);")
+        )
         tables = {
             row[0]
             for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))

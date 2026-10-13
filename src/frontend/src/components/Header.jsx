@@ -9,8 +9,11 @@ import {
   Landmark,
   Menu,
   Moon,
+  RefreshCw,
   Sun,
 } from "lucide-react";
+import { formatDate } from "../lib/calendarUtils";
+import { formatSyncTime, isSyncStale } from "../lib/formatters";
 
 export function Header({
   theme,
@@ -83,12 +86,52 @@ export function Header({
             </span>
           </div>
           {systemStatus?.data_as_of && (
-            <div className="menu-status-row" title={`Viimane istung: ${systemStatus.data_as_of}`}>
+            <div
+              className="menu-status-row"
+              title={
+                systemStatus.latest_session_status === "UNEDITED"
+                  ? `Viimane istung: ${formatDate(systemStatus.data_as_of)} (esialgne stenogramm)`
+                  : `Viimane istung: ${formatDate(systemStatus.data_as_of)}`
+              }
+            >
               <CalendarDays aria-hidden="true" />
-              <span>Andmed seisuga</span>
+              <span>Viimane istung</span>
               <span className="menu-status" style={{ fontSize: "0.75rem", textTransform: "none" }}>
-                {systemStatus.data_as_of}
+                {formatDate(systemStatus.data_as_of)}
+                {systemStatus.latest_session_status === "UNEDITED" ? " (esialgne)" : ""}
               </span>
+            </div>
+          )}
+          {systemStatus?.last_sync_at && (
+            <div
+              className="menu-status-row"
+              title={
+                isSyncStale(systemStatus.last_sync_at)
+                  ? "Automaatne sünkroonimine võib olla peatunud."
+                  : undefined
+              }
+            >
+              <RefreshCw aria-hidden="true" />
+              <span>Uuendatud</span>
+              <span
+                className={`menu-status ${isSyncStale(systemStatus.last_sync_at) ? "is-offline" : ""}`}
+                style={{ fontSize: "0.75rem", textTransform: "none" }}
+              >
+                {formatSyncTime(systemStatus.last_sync_at)}
+              </span>
+            </div>
+          )}
+          {systemStatus?.last_sync_at && isSyncStale(systemStatus.last_sync_at) && (
+            <div
+              className="menu-warning-notice"
+              style={{
+                fontSize: "0.72rem",
+                color: "#eab308",
+                padding: "0.25rem 0.75rem",
+                lineHeight: 1.3,
+              }}
+            >
+              Automaatne sünkroonimine võib olla peatunud.
             </div>
           )}
           <div className="menu-status-row">

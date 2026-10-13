@@ -1,4 +1,123 @@
 import React from "react";
+import { MONTHS, formatDate } from "./calendarUtils";
+
+export const SHORT_MONTHS = [
+  "jaan",
+  "veebr",
+  "märts",
+  "apr",
+  "mai",
+  "juuni",
+  "juuli",
+  "aug",
+  "sept",
+  "okt",
+  "nov",
+  "dets",
+];
+
+export function formatSyncTime(isoStr) {
+  if (!isoStr) return "";
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return "";
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  } catch {
+    return "";
+  }
+}
+
+export function isSyncStale(isoStr, maxHours = 36) {
+  if (!isoStr) return false;
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return false;
+    const diffHours = (Date.now() - d.getTime()) / (1000 * 60 * 60);
+    return diffHours > maxHours;
+  } catch {
+    return false;
+  }
+}
+
+export function formatLatestSessionLabel(dateStr, status) {
+  if (!dateStr) return "";
+  const formatted = formatDate(dateStr);
+  if (status === "UNEDITED") {
+    return `Viimane istung: ${formatted} (esialgne stenogramm)`;
+  }
+  return `Viimane istung: ${formatted}`;
+}
+
+export function formatMonthTooltip(monthKey) {
+  if (!monthKey) return "";
+  const [yearStr, monthStr] = monthKey.split("-");
+  const monthIdx = parseInt(monthStr, 10) - 1;
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const label = `${MONTHS[monthIdx] || monthStr} ${yearStr}`;
+  return monthKey === currentMonthKey ? `${label} (pooleli)` : label;
+}
+
+export function formatMonthAxis(monthKey) {
+  if (!monthKey) return "";
+  const [yearStr, monthStr] = monthKey.split("-");
+  const monthIdx = parseInt(monthStr, 10) - 1;
+  const monthName = MONTHS[monthIdx] || monthStr;
+  return `${monthName} ’${yearStr.slice(-2)}`;
+}
+
+export function formatDayTooltip(dateKey) {
+  if (!dateKey) return "";
+  const [yearStr, monthStr, dayStr] = dateKey.split("-");
+  const monthIdx = parseInt(monthStr, 10) - 1;
+  const day = parseInt(dayStr, 10);
+  return `${day}. ${MONTHS[monthIdx] || monthStr} ${yearStr}`;
+}
+
+export function formatDayAxis(dateKey) {
+  if (!dateKey) return "";
+  const [, monthStr, dayStr] = dateKey.split("-");
+  const monthIdx = parseInt(monthStr, 10) - 1;
+  const day = parseInt(dayStr, 10);
+  const monthName = SHORT_MONTHS[monthIdx] || monthStr;
+  return `${day}. ${monthName}`;
+}
+
+export function formatWeekTooltip(weekStartStr) {
+  if (!weekStartStr) return "";
+  const [y, m, d] = weekStartStr.split("-").map(Number);
+  const dMon = new Date(y, m - 1, d);
+  const dSun = new Date(y, m - 1, d + 6);
+  const d1 = dMon.getDate();
+  const m1 = dMon.getMonth();
+  const y1 = dMon.getFullYear();
+  const d2 = dSun.getDate();
+  const m2 = dSun.getMonth();
+  const y2 = dSun.getFullYear();
+
+  if (y1 === y2 && m1 === m2) {
+    return `nädal ${d1}.–${d2}. ${MONTHS[m1]} ${y1}`;
+  }
+  if (y1 === y2) {
+    return `nädal ${d1}. ${MONTHS[m1]} – ${d2}. ${MONTHS[m2]} ${y1}`;
+  }
+  return `nädal ${d1}. ${MONTHS[m1]} ${y1} – ${d2}. ${MONTHS[m2]} ${y2}`;
+}
+
+export function formatWeekAxis(weekStartStr) {
+  if (!weekStartStr) return "";
+  const [y, m, d] = weekStartStr.split("-").map(Number);
+  const dMon = new Date(y, m - 1, d);
+  const d1 = dMon.getDate();
+  const m1 = dMon.getMonth();
+  const monthName = SHORT_MONTHS[m1] || String(m1 + 1);
+  return `${d1}. ${monthName}`;
+}
 
 export function normalizeSourceUrl(url) {
   if (!url) return url;
@@ -10,20 +129,6 @@ export function normalizeSourceUrl(url) {
 
 export function formatDateTime(dateStr, timeStr) {
   if (!dateStr && !timeStr) return "";
-  const months = [
-    "jaanuar",
-    "veebruar",
-    "märts",
-    "aprill",
-    "mai",
-    "juuni",
-    "juuli",
-    "august",
-    "september",
-    "oktoober",
-    "november",
-    "detsember",
-  ];
   let formattedDate = dateStr || "";
   try {
     if (dateStr) {
@@ -32,7 +137,7 @@ export function formatDateTime(dateStr, timeStr) {
         const year = parts[0];
         const month = parseInt(parts[1], 10) - 1;
         const day = parseInt(parts[2], 10);
-        formattedDate = `${day}. ${months[month]} ${year}`;
+        formattedDate = `${day}. ${MONTHS[month]} ${year}`;
       }
     }
   } catch {

@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Add project root to sys.path
@@ -18,7 +19,7 @@ from src.load.loader import (
     load_attendance_to_database,
     load_persons_to_database,
 )
-from src.load.models import Speech, SpeechAlias, SpeechTerm
+from src.load.models import Speech, SpeechAlias, SpeechTerm, SystemMeta
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
@@ -204,6 +205,22 @@ def sync_database() -> bool:
         # 5. Build term index for new speeches
         print("\n[5/5] Indexing new terms...")
         build_missing_terms()
+
+        # Record successful sync timestamp in system_meta
+        meta_session = SessionLocal()
+        try:
+            now_utc = datetime.now(timezone.utc).isoformat()
+            row = meta_session.query(SystemMeta).filter_by(key="last_sync_at").first()
+            if row:
+                row.value = now_utc
+            else:
+                meta_session.add(SystemMeta(key="last_sync_at", value=now_utc))
+            meta_session.commit()
+        except Exception as meta_err:
+            meta_session.rollback()
+            print(f"Notice: Failed to record last_sync_at in system_meta: {meta_err}")
+        finally:
+            meta_session.close()
 
         duration = time.time() - t0
         print("\n" + "=" * 60)

@@ -489,7 +489,7 @@
 }
 
 .attendance-checkbox-label input[type="checkbox"] {
-  accent-color: #8b5cf6;
+  accent-color: var(--color-primary, #315b84);
   width: 17px;
   height: 17px;
   cursor: pointer;
@@ -705,6 +705,55 @@
   font-size: 0.9rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] .attendance-filter-bar {
+  background: #111c2d;
+  border-color: #35445b;
+}
+
+html[data-theme="dark"] .segmented-control {
+  background: #111c2d;
+  border-color: #35445b;
+}
+
+html[data-theme="dark"] .segmented-btn {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .segmented-btn:hover {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .segmented-btn.active,
+html[data-theme="dark"] .segmented-btn[aria-pressed="true"] {
+  background: #202d41;
+  color: #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .attendance-label {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .attendance-select {
+  border-color: #35445b;
+  background-color: #111c2d;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .attendance-select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .attendance-checkbox-label {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .attendance-checkbox-label input[type="checkbox"] {
+  accent-color: #60a5fa;
 }
 
 html[data-theme="dark"] .attendance-list {

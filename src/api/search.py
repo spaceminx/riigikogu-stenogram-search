@@ -46,6 +46,19 @@ def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
         return []
 
 
+def week_key_to_monday(key: str):
+    """Convert a %Y-%W week string to the Monday date of that week. Handles week 00 edge case."""
+    try:
+        return datetime.strptime(f"{key}-1", "%Y-%W-%w").date()
+    except ValueError:
+        parts = key.split("-")
+        year = int(parts[0])
+        week = int(parts[1]) if len(parts) > 1 else 0
+        if week == 0:
+            return datetime(year, 1, 1).date()
+        return (datetime(year, 1, 1) + timedelta(weeks=week)).date()
+
+
 def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]:
     """Fill gaps in timeline results with zero-count intervals."""
     if not results:
@@ -70,6 +83,32 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
                 current = current.replace(month=current.month + 1)
         return filled
 
+    if interval in ("weekly", "week"):
+        monday_counts: dict[str, int] = {}
+        original_keys: dict[str, str] = {}
+        for period, count in results:
+            m = week_key_to_monday(period).isoformat()
+            monday_counts[m] = monday_counts.get(m, 0) + int(count)
+            if m not in original_keys or period != f"{int(period[:4])}-00":
+                original_keys[m] = period
+
+        first_monday = week_key_to_monday(periods[0])
+        last_monday = week_key_to_monday(periods[-1])
+        filled = []
+        current = first_monday
+        while current <= last_monday:
+            m_str = current.isoformat()
+            week_key = original_keys.get(m_str, current.strftime("%Y-%W"))
+            filled.append(
+                {
+                    label: week_key,
+                    "week_start": m_str,
+                    "count": monday_counts.get(m_str, 0),
+                }
+            )
+            current += timedelta(days=7)
+        return filled
+
     if interval == "daily":
         start = datetime.strptime(periods[0], "%Y-%m-%d")
         end = datetime.strptime(periods[-1], "%Y-%m-%d")
@@ -82,6 +121,11 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
             current += timedelta(days=1)
         return filled
 
+    if label == "week":
+        return [
+            {label: period, "week_start": week_key_to_monday(period).isoformat(), "count": count}
+            for period, count in results
+        ]
     return [{label: period, "count": count} for period, count in results]
 
 
@@ -422,7 +466,7 @@ def keyword_activity(
             query_builder = query_builder.filter(*speech_filters)
 
         results = query_builder.group_by(date_group).order_by(date_group).all()
-        if interval in ("monthly", "daily"):
+        if interval in ("monthly", "daily", "weekly", "week"):
             return fill_missing_periods(results, interval, label)
         return [{label: period, "count": int(total_count)} for period, total_count in results]
     finally:

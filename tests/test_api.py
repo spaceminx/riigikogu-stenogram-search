@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from datetime import datetime, timedelta, timezone
 
 # Ensure project root is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -11,8 +12,8 @@ from fastapi.testclient import TestClient
 from config import OUTPUT_DIR_PROCESSED
 from src.api.main import app
 from src.load.database import SessionLocal
-from src.load.loader import create_tables
-from src.load.models import Attendance, Lemma, Person, Speech, SpeechAlias, SpeechTerm
+from src.load.loader import create_tables, ensure_schema
+from src.load.models import Attendance, Lemma, Person, Speech, SpeechAlias, SpeechTerm, SystemMeta
 
 client = TestClient(app)
 
@@ -907,12 +908,113 @@ def test_system_status():
     data = res.json()
     assert data["status"] == "ok"
     assert "data_as_of" in data
+    assert "latest_session_status" in data
+    assert "last_sync_at" in data
     assert "totals" in data
     assert "methodology" in data
     assert "attendance" in data["methodology"]
     assert "impartiality" in data["methodology"]
     assert "speech_types" in data["methodology"]
     assert "duration" in data["methodology"]
+
+
+def test_system_status_metadata_and_stale_warning():
+    session = SessionLocal()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+    if meta:
+        meta.value = now_iso
+    else:
+        session.add(SystemMeta(key="last_sync_at", value=now_iso))
+
+    unedited_sp = Speech(
+        id=999991,
+        date="2099-01-01",
+        time="1000",
+        source_file="2099-01-01_1000.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/209901011000",
+        speaker="Test Speaker",
+        text="Esialgne tekst",
+        status="UNEDITED",
+    )
+    session.merge(unedited_sp)
+    session.commit()
+    session.close()
+
+    try:
+        res = client.get("/system/status")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["last_sync_at"] == now_iso
+        assert data["latest_session_status"] == "UNEDITED"
+        assert data["data_as_of"] == "2099-01-01"
+
+        # Stale warning test (>36h ago)
+        stale_iso = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+        session = SessionLocal()
+        meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+        meta.value = stale_iso
+        session.commit()
+        session.close()
+
+        res_stale = client.get("/system/status")
+        assert res_stale.status_code == 200
+        assert "Automaatne sünkroonimine võib olla peatunud." in res_stale.json().get("warning", "")
+    finally:
+        session = SessionLocal()
+        session.query(Speech).filter(Speech.id == 999991).delete()
+        session.query(SystemMeta).filter(SystemMeta.key == "last_sync_at").delete()
+        session.commit()
+        session.close()
+
+
+def test_system_meta_idempotent_schema():
+    ensure_schema()
+    ensure_schema()
+    session = SessionLocal()
+    session.query(SystemMeta).all()
+    session.close()
+
+
+def test_search_activity_weekly_format():
+    session = SessionLocal()
+    lemma = Lemma(id=777888, lemma="testaktiivsus")
+    sp = Speech(
+        id=999995,
+        date="2025-04-09",
+        time="1000",
+        source_file="2025-04-09_1000.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/202504091000",
+        speaker="Test Speaker",
+        text="Eriline märksõna testaktiivsuseks.",
+        text_lemmas="eriline märksõna testaktiivsus",
+    )
+    st = SpeechTerm(speech_id=999995, lemma_id=777888, count=1)
+    session.merge(lemma)
+    session.merge(sp)
+    session.merge(st)
+    session.commit()
+    session.close()
+
+    try:
+        res = client.get("/search/activity?q=testaktiivsus&interval=weekly")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["interval"] == "weekly"
+        activity = data["activity"]
+        assert len(activity) >= 1
+        item = activity[0]
+        assert "week" in item
+        assert "week_start" in item
+        assert "count" in item
+        datetime.strptime(item["week_start"], "%Y-%m-%d")
+    finally:
+        session = SessionLocal()
+        session.query(SpeechTerm).filter(SpeechTerm.speech_id == 999995).delete()
+        session.query(Speech).filter(Speech.id == 999995).delete()
+        session.query(Lemma).filter(Lemma.id == 777888).delete()
+        session.commit()
+        session.close()
 
 
 def test_overnight_session_speech_ordering():
