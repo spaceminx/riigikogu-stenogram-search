@@ -4,6 +4,7 @@ import useSWR from "swr";
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -17,7 +18,7 @@ import {
   fetchPersonStats,
   fetchSpeechContext,
 } from "../lib/api";
-import { formatFactionName } from "../lib/formatters";
+import { formatDate } from "../lib/calendarUtils";
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
@@ -50,6 +51,7 @@ export function PersonView({ theme = "light" }) {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
 
+  // imgError and other states are reset on uuid change via key={uuid} on route element
   // Read role and page from URL parameters
   const currentRole = searchParams.get("roll") || "mp";
   const currentPage = parseInt(searchParams.get("leht") || "1", 10) || 1;
@@ -104,11 +106,15 @@ export function PersonView({ theme = "light" }) {
     }
   );
 
-  // Set document.title to person name
+  // Set document.title format: "{nimi} — Riigivaade" with cleanup
   useEffect(() => {
+    const prevTitle = document.title;
     if (person?.full_name) {
-      document.title = person.full_name;
+      document.title = `${person.full_name} — Riigivaade`;
     }
+    return () => {
+      document.title = prevTitle;
+    };
   }, [person?.full_name]);
 
   // Context modal handler
@@ -174,15 +180,13 @@ export function PersonView({ theme = "light" }) {
   // Prepare stacked bar chart data (by_year sorted ascending)
   const chartData = useMemo(() => {
     if (!stats?.by_year) return [];
-    return [...stats.by_year]
-      .reverse()
-      .map((item) => ({
-        year: item.year,
-        speeches: item.mp?.speeches || 0,
-        questions: item.mp?.questions || 0,
-        procedural: item.mp?.procedural || 0,
-        total: item.mp?.total || 0,
-      }));
+    return [...stats.by_year].reverse().map((item) => ({
+      year: item.year,
+      speeches: item.mp?.speeches || 0,
+      questions: item.mp?.questions || 0,
+      procedural: item.mp?.procedural || 0,
+      total: item.mp?.total || 0,
+    }));
   }, [stats]);
 
   // Combine by_membership stats and attendance by membership
@@ -226,16 +230,15 @@ export function PersonView({ theme = "light" }) {
 
   if (personError) {
     const isNotFound =
-      personError.message?.includes("404") ||
-      personError.message?.includes("Isikut ei leitud");
+      personError.message?.includes("404") || personError.message?.includes("Isikut ei leitud");
 
     return (
       <div className="person-view-container" style={{ padding: "3rem 1rem" }}>
-        <div className="glass-panel" style={{ maxWidth: "600px", margin: "2rem auto", textAlign: "center", padding: "2.5rem" }}>
-          <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+        <div className="glass-panel person-not-found-card">
+          <h2 className="person-not-found-title">
             {isNotFound ? "Saadikut ei leitud" : "Päringu viga"}
           </h2>
-          <p style={{ color: "var(--color-text-muted, #64748b)", marginBottom: "1.5rem" }}>
+          <p className="person-not-found-desc">
             {isNotFound
               ? "Otsitud identifikaatoriga saadikut Riigikogu arhiivis ei eksisteeri."
               : personError.message}
@@ -261,15 +264,14 @@ export function PersonView({ theme = "light" }) {
     .join("")
     .toUpperCase();
 
-  const mpDurationSec = stats?.duration?.mp_seconds || 0;
-  const mpHours = Math.floor(mpDurationSec / 3600);
-  const mpMinutes = Math.floor((mpDurationSec % 3600) / 60);
-
   const totalSpeechesInCurrentTab =
-    availableRoleTabs.find((t) => t.id === currentRole)?.count ||
-    speechesData?.total_count ||
-    0;
+    availableRoleTabs.find((t) => t.id === currentRole)?.count || speechesData?.total_count || 0;
   const totalPages = Math.max(1, Math.ceil(totalSpeechesInCurrentTab / SPEECHES_PER_PAGE));
+
+  // Theming for chart tooltip, axes and grid lines
+  const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
+  const tickColor = theme === "dark" ? "#94a3b8" : "#64748b";
+  const gridStroke = theme === "dark" ? "#334155" : "#e2e8f0";
 
   const chartTooltipStyle = {
     contentStyle: {
@@ -283,99 +285,79 @@ export function PersonView({ theme = "light" }) {
     labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
   };
 
+  // Helper for metrics when stats load or fail
+  const getMetricValue = (val) => {
+    if (statsLoading) return "…";
+    if (!stats || statsError || val == null) return "—";
+    return val;
+  };
+
+  let formattedDuration = "—";
+  if (statsLoading) {
+    formattedDuration = "…";
+  } else if (stats && !statsError && stats.duration?.mp_seconds != null) {
+    const mpDurationSec = stats.duration.mp_seconds;
+    const mpHours = Math.floor(mpDurationSec / 3600);
+    const mpMinutes = Math.floor((mpDurationSec % 3600) / 60);
+    formattedDuration = `${mpHours} h ${mpMinutes} min`;
+  }
+
+  let formattedAttendance = "—";
+  if (attendanceLoading) {
+    formattedAttendance = "…";
+  } else if (attendance && !attendanceError && attendance.total_sessions > 0) {
+    formattedAttendance = `${attendance.attendance_percentage}%`;
+  }
+
+  const formatFactionPeriod = (start, end) => {
+    const startStr = start ? formatDate(start) : "—";
+    const endStr = !end || end === "2099-12-31" ? "praegu" : formatDate(end);
+    return `${startStr} – ${endStr}`;
+  };
+
   return (
-    <div className="person-view-container" style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className="person-view-container">
       {/* 1. Profile Header */}
       <section className="glass-panel person-header-card" aria-label="Saadiku profiili päis">
-        <div className="person-header-content" style={{ display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "flex-start" }}>
-          <div className="person-avatar-wrapper" style={{ flexShrink: 0 }}>
+        <div className="person-header-content">
+          <div className="person-avatar-wrapper">
             {person.photo_url && !imgError ? (
               <img
                 src={person.photo_url}
                 alt={person.full_name}
                 className="person-photo"
                 onError={() => setImgError(true)}
-                style={{
-                  width: "120px",
-                  height: "150px",
-                  objectFit: "cover",
-                  borderRadius: "12px",
-                  border: "1px solid var(--panel-border)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                }}
               />
             ) : (
-              <div
-                className="person-photo-placeholder"
-                style={{
-                  width: "120px",
-                  height: "150px",
-                  display: "grid",
-                  placeItems: "center",
-                  borderRadius: "12px",
-                  background: "var(--panel-bg, #f1f5f9)",
-                  border: "1px solid var(--panel-border)",
-                  fontSize: "2rem",
-                  fontWeight: 700,
-                  color: "var(--color-primary, #315b84)",
-                }}
-                aria-hidden="true"
-              >
+              <div className="person-photo-placeholder" aria-hidden="true">
                 {initials}
               </div>
             )}
           </div>
 
-          <div className="person-details" style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.75rem" }}>
-              <h1 style={{ margin: 0, fontSize: "1.85rem", fontWeight: 700 }}>{person.full_name}</h1>
-              <span
-                className="status-badge"
-                style={{
-                  fontSize: "0.8rem",
-                  padding: "0.25rem 0.65rem",
-                  borderRadius: "9999px",
-                  background: person.active ? "rgba(34, 197, 94, 0.15)" : "rgba(148, 163, 184, 0.15)",
-                  color: person.active ? "#15803d" : "#64748b",
-                  border: `1px solid ${person.active ? "rgba(34, 197, 94, 0.3)" : "rgba(148, 163, 184, 0.3)"}`,
-                  fontWeight: 600,
-                }}
-              >
+          <div className="person-details">
+            <div className="person-title-row">
+              <h1>{person.full_name}</h1>
+              <span className={`person-status-badge ${person.active ? "is-active" : "is-former"}`}>
                 {person.active ? "Aktiivne liige" : "Endine liige"}
               </span>
             </div>
 
             {person.electoral_district && (
-              <div style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.95rem" }}>
+              <div className="person-district">
                 Valimisringkond: <strong>{person.electoral_district}</strong>
               </div>
             )}
 
             {person.factions && person.factions.length > 0 && (
-              <div style={{ marginTop: "0.25rem" }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--color-text-muted, #64748b)", display: "block", marginBottom: "0.35rem" }}>
-                  Fraktsioonide ajalugu:
-                </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              <div className="person-factions-section">
+                <span className="person-factions-label">Fraktsioonide ajalugu:</span>
+                <div className="person-factions-list">
                   {person.factions.map((f, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.4rem",
-                        padding: "0.2rem 0.6rem",
-                        background: "rgba(255, 255, 255, 0.05)",
-                        border: "1px solid var(--panel-border)",
-                        borderRadius: "6px",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      <span className="faction-badge" style={{ margin: 0 }}>
-                        {formatFactionName(f.faction)}
-                      </span>
-                      <span style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.8rem" }}>
-                        ({f.start_date || "—"} kuni {f.end_date || "praegu"})
+                    <div key={idx} className="person-faction-chip">
+                      <span>{f.faction}</span>
+                      <span className="person-faction-period">
+                        ({formatFactionPeriod(f.start, f.end)})
                       </span>
                     </div>
                   ))}
@@ -384,14 +366,13 @@ export function PersonView({ theme = "light" }) {
             )}
 
             {/* Quick search input for this speaker */}
-            <form onSubmit={handleSearchSubmit} style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", maxWidth: "500px" }}>
+            <form onSubmit={handleSearchSubmit} className="person-search-form">
               <input
                 type="text"
                 className="filter-text-input"
                 placeholder="Otsi selle saadiku kõnesid…"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                style={{ flex: 1 }}
               />
               <button
                 type="submit"
@@ -424,123 +405,97 @@ export function PersonView({ theme = "light" }) {
           </div>
         )}
 
-        <div className="person-metrics-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
-          <div className="summary-card glass-panel" style={{ padding: "1.25rem" }}>
-            <span className="summary-caption" style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.85rem" }}>
-              Kõned saadikuna
-            </span>
-            <strong style={{ fontSize: "1.75rem", display: "block", margin: "0.25rem 0" }}>
-              {stats?.totals?.mp?.speeches ?? (statsLoading ? "…" : "0")}
+        <div className="person-metrics-grid">
+          <div className="summary-card glass-panel person-metric-card">
+            <span className="summary-caption person-metric-label">Kõned saadikuna</span>
+            <strong className="person-metric-value">
+              {getMetricValue(stats?.totals?.mp?.speeches)}
             </strong>
-            <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
-              Põhiettekanded ja sõnavõtud
+            <span className="person-metric-desc">Põhiettekanded ja sõnavõtud</span>
+          </div>
+
+          <div className="summary-card glass-panel person-metric-card">
+            <span className="summary-caption person-metric-label">Küsimused ja repliigid</span>
+            <strong className="person-metric-value">
+              {getMetricValue(stats?.totals?.mp?.questions)}
+            </strong>
+            <span className="person-metric-desc">Lühisõnavõtud ja küsimused</span>
+          </div>
+
+          <div className="summary-card glass-panel person-metric-card">
+            <span className="summary-caption person-metric-label">Protseduurilised</span>
+            <strong className="person-metric-value">
+              {getMetricValue(stats?.totals?.mp?.procedural)}
+            </strong>
+            <span className="person-metric-desc">
+              Protseduurilised küsimused ja ettepanekud istungi läbiviimise kohta
             </span>
           </div>
 
-          <div className="summary-card glass-panel" style={{ padding: "1.25rem" }}>
-            <span className="summary-caption" style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.85rem" }}>
-              Küsimused ja repliigid
-            </span>
-            <strong style={{ fontSize: "1.75rem", display: "block", margin: "0.25rem 0" }}>
-              {stats?.totals?.mp?.questions ?? (statsLoading ? "…" : "0")}
+          <div className="summary-card glass-panel person-metric-card">
+            <span className="summary-caption person-metric-label">Kokku saadikuna</span>
+            <strong className="person-metric-value person-metric-value-primary">
+              {getMetricValue(stats?.totals?.mp?.total)}
             </strong>
-            <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
-              Lühisõnavõtud ja küsimused
-            </span>
+            <span className="person-metric-desc">Kõik sõnavõtud saadikuna</span>
           </div>
 
-          <div className="summary-card glass-panel" style={{ padding: "1.25rem" }}>
-            <span className="summary-caption" style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.85rem" }}>
-              Protseduurilised
-            </span>
-            <strong style={{ fontSize: "1.75rem", display: "block", margin: "0.25rem 0" }}>
-              {stats?.totals?.mp?.procedural ?? (statsLoading ? "…" : "0")}
-            </strong>
-            <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
-              Päevakorraküsimused jm
-            </span>
+          <div className="summary-card glass-panel person-metric-card">
+            <span className="summary-caption person-metric-label">Kõneaeg saadikuna</span>
+            <strong className="person-metric-value">{formattedDuration}</strong>
+            <span className="person-metric-desc">alates 14.09.2020</span>
           </div>
 
-          <div className="summary-card glass-panel" style={{ padding: "1.25rem" }}>
-            <span className="summary-caption" style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.85rem" }}>
-              Kokku saadikuna
+          <div className="summary-card glass-panel person-metric-card">
+            <span className="summary-caption person-metric-label">
+              Kohalolek kohalolekukontrollides
             </span>
-            <strong style={{ fontSize: "1.75rem", display: "block", margin: "0.25rem 0", color: "var(--color-primary, #315b84)" }}>
-              {stats?.totals?.mp?.total ?? (statsLoading ? "…" : "0")}
-            </strong>
-            <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
-              Kõik sõnavõtud saadikuna
-            </span>
-          </div>
-
-          <div className="summary-card glass-panel" style={{ padding: "1.25rem" }}>
-            <span className="summary-caption" style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.85rem" }}>
-              Kõneaeg saadikuna
-            </span>
-            <strong style={{ fontSize: "1.75rem", display: "block", margin: "0.25rem 0" }}>
-              {statsLoading ? "…" : `${mpHours} h ${mpMinutes} min`}
-            </strong>
-            <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
-              alates 14.09.2020
-            </span>
-          </div>
-
-          <div className="summary-card glass-panel" style={{ padding: "1.25rem" }}>
-            <span className="summary-caption" style={{ color: "var(--color-text-muted, #64748b)", fontSize: "0.85rem" }}>
-              Kohalolek istungitel
-            </span>
-            <strong style={{ fontSize: "1.75rem", display: "block", margin: "0.25rem 0" }}>
-              {attendanceLoading
-                ? "…"
-                : attendance?.total_sessions > 0
-                ? `${attendance.attendance_percentage}%`
-                : "—"}
-            </strong>
-            <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
+            <strong className="person-metric-value">{formattedAttendance}</strong>
+            <span className="person-metric-desc">
               {attendanceError
                 ? "Kohaloleku andmed puuduvad"
                 : attendance?.total_sessions > 0
-                ? `${attendance.present_sessions} / ${attendance.total_sessions} korda kohal`
-                : "Kohalolekukontrollid puuduvad"}
+                  ? `${attendance.present_sessions} / ${attendance.total_sessions} korda kohal`
+                  : "Kohalolekukontrollid puuduvad"}
             </span>
           </div>
         </div>
 
         {/* Other Roles breakdown if present */}
         {stats && (
-          <div style={{ marginTop: "1.5rem", borderTop: "1px solid var(--panel-border)", paddingTop: "1.25rem" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted, #64748b)", display: "block", marginBottom: "0.5rem" }}>
-              Muud rollid arhiivis:
-            </span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
+          <div className="person-other-roles">
+            <span className="person-other-roles-title">Muud rollid arhiivis:</span>
+            <div className="person-other-roles-list">
               {stats.totals?.chair?.total > 0 && (
-                <div style={{ fontSize: "0.9rem" }}>
+                <div className="person-other-role-item">
                   Esimehena / aseesimehena: <strong>{stats.totals.chair.total}</strong>
                 </div>
               )}
               {stats.totals?.minister?.total > 0 && (
-                <div style={{ fontSize: "0.9rem" }}>
+                <div className="person-other-role-item">
                   Ministrina: <strong>{stats.totals.minister.total}</strong>
                 </div>
               )}
               {stats.totals?.candidate?.total > 0 && (
-                <div style={{ fontSize: "0.9rem" }}>
+                <div className="person-other-role-item">
                   Kandidaadina: <strong>{stats.totals.candidate.total}</strong>
                 </div>
               )}
               {stats.totals?.other?.total > 0 && (
-                <div style={{ fontSize: "0.9rem" }}>
+                <div className="person-other-role-item">
                   Muu roll: <strong>{stats.totals.other.total}</strong>
                 </div>
               )}
             </div>
-            <p style={{ margin: "0.5rem 0 0", fontSize: "0.8rem", color: "var(--color-text-muted, #64748b)" }}>
-              Muudes rollides (ministrina, esimehena, kandidaadina) peetud kõned ei kuulu saadikuna peetud kõnede hulka.
+            <p className="person-other-roles-desc">
+              Muudes rollides (ministrina, esimehena, kandidaadina) peetud kõned ei kuulu saadikuna
+              peetud kõnede hulka.
             </p>
 
             {(stats.director || 0) > 0 && (
-              <div style={{ marginTop: "0.75rem", fontSize: "0.85rem", color: "var(--color-text-muted, #64748b)" }}>
-                Istungi juhatamisi (DIRECTOR): <strong>{stats.director}</strong> — stenogrammides loetakse need juhatamise sõnavõttudeks; neid ei loeta sisuliste kõnede hulka.
+              <div className="person-director-note">
+                Istungi juhatamisi (DIRECTOR): <strong>{stats.director}</strong> — stenogrammides
+                loetakse need juhatamise sõnavõttudeks; neid ei loeta sisuliste kõnede hulka.
               </div>
             )}
           </div>
@@ -557,50 +512,72 @@ export function PersonView({ theme = "light" }) {
             </div>
           </div>
 
-          <div style={{ width: "100%", height: "280px", marginBottom: "1.5rem" }}>
+          <div className="person-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="year" stroke="#cbd3dc" tick={{ fill: "#64748b", fontSize: 12 }} />
-                <YAxis stroke="#cbd3dc" tick={{ fill: "#64748b", fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+                <XAxis
+                  dataKey="year"
+                  stroke={axisStroke}
+                  tick={{ fill: tickColor, fontSize: 12 }}
+                />
+                <YAxis stroke={axisStroke} tick={{ fill: tickColor, fontSize: 12 }} />
                 <Tooltip {...chartTooltipStyle} />
                 <Legend wrapperStyle={{ paddingTop: "10px" }} />
                 <Bar dataKey="speeches" name="Kõned" stackId="mp" fill="#315b84" />
-                <Bar dataKey="questions" name="Küsimused ja repliigid" stackId="mp" fill="#0ea5e9" />
+                <Bar
+                  dataKey="questions"
+                  name="Küsimused ja repliigid"
+                  stackId="mp"
+                  fill="#0ea5e9"
+                />
                 <Bar dataKey="procedural" name="Protseduurilised" stackId="mp" fill="#94a3b8" />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="table-responsive-container" style={{ overflowX: "auto" }}>
-            <table className="person-stats-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-              <caption style={{ textAlign: "left", paddingBottom: "0.5rem", color: "var(--color-text-muted, #64748b)", fontWeight: 600 }}>
-                Saadikuna peetud sõnavõttude jaotus aastate kaupa
-              </caption>
+          <div className="table-responsive-container">
+            <table className="person-stats-table">
+              <caption>Saadikuna peetud sõnavõttude jaotus aastate kaupa</caption>
               <thead>
-                <tr style={{ borderBottom: "2px solid var(--panel-border)" }}>
-                  <th scope="col" style={{ textAlign: "left", padding: "0.5rem" }}>Aasta</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Kõned</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Küsimused</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Protseduurilised</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Kokku saadikuna</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Muud rollid</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Juhatamisi</th>
+                <tr>
+                  <th scope="col" className="person-stats-col-text">
+                    Aasta
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Kõned
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Küsimused
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Protseduurilised
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Kokku saadikuna
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Muud rollid
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Juhatamisi
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {stats.by_year.map((row) => (
-                  <tr key={row.year} style={{ borderBottom: "1px solid var(--panel-border)" }}>
-                    <th scope="row" style={{ textAlign: "left", padding: "0.5rem", fontWeight: 600 }}>
+                  <tr key={row.year}>
+                    <th scope="row" className="person-stats-col-text">
                       {row.year}
                     </th>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{row.mp?.speeches ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{row.mp?.questions ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{row.mp?.procedural ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem", fontWeight: 700 }}>
+                    <td className="person-stats-col-num">{row.mp?.speeches ?? 0}</td>
+                    <td className="person-stats-col-num">{row.mp?.questions ?? 0}</td>
+                    <td className="person-stats-col-num">{row.mp?.procedural ?? 0}</td>
+                    <td className="person-stats-col-num" style={{ fontWeight: 700 }}>
                       {row.mp?.total ?? 0}
                     </td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{row.other_roles_total ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{row.director ?? 0}</td>
+                    <td className="person-stats-col-num">{row.other_roles_total ?? 0}</td>
+                    <td className="person-stats-col-num">{row.director ?? 0}</td>
                   </tr>
                 ))}
               </tbody>
@@ -619,40 +596,52 @@ export function PersonView({ theme = "light" }) {
             </div>
           </div>
 
-          <div className="table-responsive-container" style={{ overflowX: "auto" }}>
-            <table className="person-stats-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-              <caption style={{ textAlign: "left", paddingBottom: "0.5rem", color: "var(--color-text-muted, #64748b)", fontWeight: 600 }}>
-                Kõned ja kohalolek Riigikogu koosseisude kaupa
-              </caption>
+          <div className="table-responsive-container">
+            <table className="person-stats-table">
+              <caption>Kõned ja kohalolek Riigikogu koosseisude kaupa</caption>
               <thead>
-                <tr style={{ borderBottom: "2px solid var(--panel-border)" }}>
-                  <th scope="col" style={{ textAlign: "left", padding: "0.5rem" }}>Koosseis</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Kõned</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Küsimused</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Protseduurilised</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Kokku saadikuna</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Muud rollid</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Juhatamisi</th>
-                  <th scope="col" style={{ textAlign: "right", padding: "0.5rem" }}>Kohalolek</th>
+                <tr>
+                  <th scope="col" className="person-stats-col-text">
+                    Koosseis
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Kõned
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Küsimused
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Protseduurilised
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Kokku saadikuna
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Muud rollid
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Juhatamisi
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Kohalolek
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {combinedMemberships.map(({ membership, stats: memStats, attendance: memAtt }) => (
-                  <tr key={membership} style={{ borderBottom: "1px solid var(--panel-border)" }}>
-                    <th scope="row" style={{ textAlign: "left", padding: "0.5rem", fontWeight: 600 }}>
+                  <tr key={membership}>
+                    <th scope="row" className="person-stats-col-text">
                       {MEMBERSHIP_ROMAN[membership] || `${membership}. koosseis`}
                     </th>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{memStats?.mp?.speeches ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{memStats?.mp?.questions ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{memStats?.mp?.procedural ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem", fontWeight: 700 }}>
+                    <td className="person-stats-col-num">{memStats?.mp?.speeches ?? 0}</td>
+                    <td className="person-stats-col-num">{memStats?.mp?.questions ?? 0}</td>
+                    <td className="person-stats-col-num">{memStats?.mp?.procedural ?? 0}</td>
+                    <td className="person-stats-col-num" style={{ fontWeight: 700 }}>
                       {memStats?.mp?.total ?? 0}
                     </td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>
-                      {memStats?.other_roles_total ?? 0}
-                    </td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>{memStats?.director ?? 0}</td>
-                    <td style={{ textAlign: "right", padding: "0.5rem" }}>
+                    <td className="person-stats-col-num">{memStats?.other_roles_total ?? 0}</td>
+                    <td className="person-stats-col-num">{memStats?.director ?? 0}</td>
+                    <td className="person-stats-col-num">
                       {memAtt && memAtt.total_sessions > 0
                         ? `${memAtt.attendance_percentage}% (${memAtt.present_sessions}/${memAtt.total_sessions})`
                         : "—"}
@@ -674,11 +663,11 @@ export function PersonView({ theme = "light" }) {
           </div>
         </div>
 
-        {/* Role Tabs: only roles with count > 0 */}
+        {/* Role Tabs: Simple buttons with aria-pressed */}
         {availableRoleTabs.length > 0 && (
           <div
             className="segmented-control"
-            role="tablist"
+            role="group"
             aria-label="Kõnede rollid"
             style={{ marginBottom: "1.5rem", flexWrap: "wrap" }}
           >
@@ -688,25 +677,12 @@ export function PersonView({ theme = "light" }) {
                 <button
                   key={tab.id}
                   type="button"
-                  role="tab"
-                  aria-selected={isActive}
+                  aria-pressed={isActive}
                   className={`segmented-btn ${isActive ? "active" : ""}`}
                   onClick={() => handleRoleChange(tab.id)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
                 >
                   <span>{tab.label}</span>
-                  <span
-                    style={{
-                      background: isActive ? "var(--color-primary, #315b84)" : "rgba(148, 163, 184, 0.2)",
-                      color: isActive ? "#ffffff" : "inherit",
-                      padding: "0.1rem 0.45rem",
-                      borderRadius: "9999px",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {tab.count}
-                  </span>
+                  <span className="person-tab-count">{tab.count}</span>
                 </button>
               );
             })}
@@ -720,7 +696,9 @@ export function PersonView({ theme = "light" }) {
           </div>
         ) : speechesError ? (
           <div style={{ padding: "2rem 1rem", textAlign: "center" }}>
-            <p style={{ color: "#ef4444" }}>Kõnede laadimine ebaõnnestus: {speechesError.message}</p>
+            <p style={{ color: "#ef4444" }}>
+              Kõnede laadimine ebaõnnestus: {speechesError.message}
+            </p>
           </div>
         ) : !speechesData?.results || speechesData.results.length === 0 ? (
           <div style={{ padding: "3rem 1rem", textAlign: "center" }}>
@@ -728,7 +706,7 @@ export function PersonView({ theme = "light" }) {
           </div>
         ) : (
           <>
-            <div className="speeches-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div className="person-speeches-list">
               {speechesData.results.map((speech) => (
                 <SpeechCard
                   key={speech.id}

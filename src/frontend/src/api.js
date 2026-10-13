@@ -193,4 +193,3 @@ export async function fetchPersonAttendance(uuid) {
   const res = await fetch(`${BASE_URL}/persons/${encodeURIComponent(uuid)}/attendance`);
   return handleResponse(res);
 }
-

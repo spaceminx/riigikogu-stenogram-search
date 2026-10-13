@@ -371,15 +371,8 @@ export function SearchView({
   return (
     <div style={{ marginTop: "0.5rem" }}>
       {speakerUuidParam && (
-        <div style={{ marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <div
-            className="token-pill"
-            style={{
-              background: "rgba(59, 130, 246, 0.15)",
-              border: "1px solid rgba(59, 130, 246, 0.4)",
-              color: "var(--text-primary, #0f172a)",
-            }}
-          >
+        <div className="speaker-filter-chip-wrapper">
+          <div className="token-pill speaker-token-pill">
             <span>
               Saadiku filter: <strong>{speakerPerson?.full_name || "Laen..."}</strong>
             </span>

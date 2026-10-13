@@ -6,6 +6,7 @@ import {
   Routes,
   useLocation,
   useNavigate,
+  useParams,
   useSearchParams,
 } from "react-router-dom";
 import useSWR from "swr";
@@ -98,20 +99,20 @@ function PageTitlebar({ memberships = [] }) {
   );
 }
 
+function PersonRoute({ theme }) {
+  const { uuid } = useParams();
+  return <PersonView key={uuid} theme={theme} />;
+}
+
 function AppContent() {
-  const [theme, setTheme] = useState(() => {
-    try {
-      const fromUrl = new URLSearchParams(window.location.search).get("theme");
-      if (fromUrl === "dark" || fromUrl === "light") return fromUrl;
-      return localStorage.getItem("theme") || "light";
-    } catch {
-      return "light";
-    }
-  });
+  const [theme, setTheme] = useState("light");
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
   const [searchFactionsList, setSearchFactionsList] = useState([]);
-  const [memberships, setMemberships] = useState([]);
+  const [memberships, setMemberships] = useState([
+    { id: "15", number: 15, name: "XV Riigikogu (2023–praegu)" },
+    { id: "14", number: 14, name: "XIV Riigikogu (2019–2023)" },
+  ]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -198,7 +199,7 @@ function AppContent() {
           <Route path="/istung/:date" element={<SessionView />} />
           <Route path="/kohalolek" element={<AttendanceView memberships={memberships} />} />
           <Route path="/kone/:id" element={<SpeechView />} />
-          <Route path="/saadik/:uuid" element={<PersonView theme={theme} />} />
+          <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
           <Route path="*" element={<NotFoundView />} />
         </Routes>
       </main>
