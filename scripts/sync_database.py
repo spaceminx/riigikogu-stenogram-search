@@ -207,20 +207,23 @@ def sync_database() -> bool:
         build_missing_terms()
 
         # Record successful sync timestamp in system_meta
-        meta_session = SessionLocal()
-        try:
-            now_utc = datetime.now(timezone.utc).isoformat()
-            row = meta_session.query(SystemMeta).filter_by(key="last_sync_at").first()
-            if row:
-                row.value = now_utc
-            else:
-                meta_session.add(SystemMeta(key="last_sync_at", value=now_utc))
-            meta_session.commit()
-        except Exception as meta_err:
-            meta_session.rollback()
-            print(f"Notice: Failed to record last_sync_at in system_meta: {meta_err}")
-        finally:
-            meta_session.close()
+        if b2_ok:
+            meta_session = SessionLocal()
+            try:
+                now_utc = datetime.now(timezone.utc).isoformat()
+                row = meta_session.query(SystemMeta).filter_by(key="last_sync_at").first()
+                if row:
+                    row.value = now_utc
+                else:
+                    meta_session.add(SystemMeta(key="last_sync_at", value=now_utc))
+                meta_session.commit()
+            except Exception as meta_err:
+                meta_session.rollback()
+                print(f"Notice: Failed to record last_sync_at in system_meta: {meta_err}")
+            finally:
+                meta_session.close()
+        else:
+            print("Notice: last_sync_at not updated because B2 download failed.")
 
         duration = time.time() - t0
         print("\n" + "=" * 60)
