@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import config
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
+from scripts.b2_utils import get_file_md5, matches_multipart_etag
 
 try:
     from dotenv import load_dotenv
@@ -34,17 +35,6 @@ def is_active_daily_file(filename: str, active_years: set[str]) -> bool:
         if filename == f"{y}.jsonl":
             return True
     return False
-
-
-def get_file_md5(file_path: str) -> str:
-    """Compute hex MD5 digest of a local file."""
-    import hashlib
-
-    hasher = hashlib.md5()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
 
 
 def download_from_b2(
@@ -135,13 +125,12 @@ def download_from_b2(
                         if cleaned_etag and "-" not in cleaned_etag:
                             b2_md5 = cleaned_etag
                         else:
-                            if hasattr(s3, "head_object"):
-                                try:
-                                    head_resp = s3.head_object(Bucket=bucket_name, Key=key)
-                                    meta = head_resp.get("Metadata") or {}
-                                    b2_md5 = meta.get("md5") or meta.get("MD5")
-                                except Exception:
-                                    b2_md5 = None
+                            try:
+                                head_resp = s3.head_object(Bucket=bucket_name, Key=key)
+                                meta = head_resp.get("Metadata") or {}
+                                b2_md5 = meta.get("md5") or meta.get("MD5")
+                            except Exception:
+                                b2_md5 = None
 
                         if b2_md5 is not None:
                             if b2_md5.lower() == local_md5.lower():
@@ -152,6 +141,14 @@ def download_from_b2(
                             else:
                                 should_download = True
                                 download_reason = f"MD5 mismatch (local={local_md5}, B2={b2_md5})"
+                        elif (
+                            cleaned_etag
+                            and "-" in cleaned_etag
+                            and matches_multipart_etag(local_path, cleaned_etag)
+                        ):
+                            should_download = False
+                            skip_reason = f"multipart ETag matches ({cleaned_etag})"
+                            saved_etags[filename] = cleaned_etag
                         else:
                             print(f"Hoiatus: md5 metaandmed puuduvad: {filename}")
                             if not is_active and remote_size == os.path.getsize(local_path):

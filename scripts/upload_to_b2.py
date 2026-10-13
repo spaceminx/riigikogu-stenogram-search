@@ -9,6 +9,7 @@ import boto3
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
+from scripts.b2_utils import get_file_md5
 
 try:
     from dotenv import load_dotenv
@@ -16,17 +17,6 @@ try:
     load_dotenv()
 except ImportError:
     pass
-
-
-def get_file_md5(file_path: str) -> str:
-    """Compute hex MD5 digest of a local file."""
-    import hashlib
-
-    hasher = hashlib.md5()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
 
 
 def upload_to_b2(
@@ -164,11 +154,7 @@ def upload_to_b2(
 
             extra_args = {"Metadata": {"md5": local_md5}}
             print(f"Uploading file to cloud: {local_path} -> {bucket_name}/{remote_key} ...")
-            try:
-                s3.upload_file(local_path, bucket_name, remote_key, ExtraArgs=extra_args)
-            except TypeError:
-                # Fallback for simple mocks that don't accept ExtraArgs
-                s3.upload_file(local_path, bucket_name, remote_key)
+            s3.upload_file(local_path, bucket_name, remote_key, ExtraArgs=extra_args)
             uploaded_count += 1
 
             # Fetch fresh ETag after upload and atomically update .b2_etags.json

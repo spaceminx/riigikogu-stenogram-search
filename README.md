@@ -171,18 +171,19 @@ Dataset synchronization between local storage and Backblaze B2 uses content MD5 
 - **Metadata Backfill for Existing B2 Objects (`backfill_b2_md5_metadata.py`):**
   One-time server-side metadata tagging for objects uploaded before MD5 metadata was introduced:
   - Uses S3 server-side `copy_object` with `MetadataDirective="REPLACE"`, consuming zero download bandwidth.
-  - Validates local MD5 against single-part ETags, or requires `--trust-local` for multipart objects if verified locally.
+  - Recognizes two equal forms of cryptographic evidence: matching single-part ETag (`single-part`) or matching local S3-style multipart ETag (`multipart-etag`).
+  - If evidence is missing (`puudub`), `--trust-local` is strictly restricted: it is permitted only together with `--only-file` (specific files) and requires explicit confirmation (`--i-know-local-is-fresh` or interactive confirmation).
   - Automatically updates `.b2_etags.json` with new post-copy ETags so future uploads avoid false concurrency conflicts.
   - Dry run by default:
     ```bash
-    # Inspect what would be updated:
+    # Inspect decisions and evidence (single-part, multipart-etag, puudub):
     python scripts/backfill_b2_md5_metadata.py
 
     # Apply server-side copy (caution: changes remote ETags):
     python scripts/backfill_b2_md5_metadata.py --apply
 
-    # Trust local files for multipart objects:
-    python scripts/backfill_b2_md5_metadata.py --apply --trust-local
+    # Trust local file without remote evidence (requires --only-file and confirmation):
+    python scripts/backfill_b2_md5_metadata.py --apply --only-file 2024.jsonl --trust-local --i-know-local-is-fresh
     ```
 
 ### 6. Start the FastAPI Backend Server
@@ -293,6 +294,7 @@ riigikogu-stenogram-search/
 ├── requirements-dev.txt           # Development and testing dependencies
 ├── scripts/
 │   ├── add_indexes.py             # Creates database performance indexes
+│   ├── b2_utils.py                # Backblaze B2 cryptographic utilities (MD5, multipart ETag)
 │   ├── backfill_b2_md5_metadata.py # Server-side MD5 metadata backfill for B2 objects
 │   ├── backfill_history.py        # History backfill script for rich Riigikogu stenograms
 │   ├── build_full_database.py     # End-to-end parallel DB build pipeline (--allow-partial)

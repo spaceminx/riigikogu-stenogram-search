@@ -364,7 +364,7 @@ def test_upload_to_b2_only_files_filter(tmp_path, monkeypatch):
         def head_object(self, Bucket, Key):
             return {"ContentLength": 10, "ETag": '"etag123"'}
 
-        def upload_file(self, local_path, bucket, remote_key):
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs=None, **kwargs):
             uploaded.append(remote_key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -391,7 +391,7 @@ def test_upload_to_b2_etag_mismatch_refuses(tmp_path, monkeypatch):
             # Remote file has changed in the meantime!
             return {"ContentLength": 10, "ETag": '"remote-has-new-etag"'}
 
-        def upload_file(self, local_path, bucket, remote_key):
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs=None, **kwargs):
             uploaded.append(remote_key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -697,7 +697,7 @@ def test_upload_to_b2_updates_etag_and_subsequent_upload_succeeds(tmp_path, monk
         def head_object(self, Bucket, Key):
             return {"ContentLength": 15, "ETag": f'"{self.current_remote_etag}"'}
 
-        def upload_file(self, local_path, bucket, remote_key):
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs=None, **kwargs):
             self.upload_count += 1
             # Remote file now gets a new ETag in B2
             self.current_remote_etag = f"remote-etag-v{self.upload_count}"

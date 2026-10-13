@@ -1,5 +1,4 @@
 import argparse
-import hashlib
 import json
 import os
 import sys
@@ -9,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
+from scripts.b2_utils import get_file_md5, matches_multipart_etag
 
 try:
     from dotenv import load_dotenv
@@ -24,26 +24,46 @@ except ImportError:
                     os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 
-def get_file_md5(file_path: str) -> str:
-    """Compute hex MD5 digest of a local file."""
-    hasher = hashlib.md5()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
-
-
 def backfill_b2_md5_metadata(
     dry_run: bool = True,
     trust_local: bool = False,
     only_files: list[str] | None = None,
+    i_know_local_is_fresh: bool = False,
 ) -> bool:
     """Backfill md5 metadata on existing Backblaze B2 objects using server-side copy_object.
 
     Defaults to dry_run=True. Pass dry_run=False (via --apply) to perform server-side updates.
-    Local MD5 is only trusted if single-part ETag matches local MD5 or trust_local=True.
+    Tõendina aktsepteeritakse üheosalist ETag-i ('single-part') või mitmeosalist ETag-i ('multipart-etag').
+    Kui tõend puudub ('puudub'), on lubatud uuendada ainult siis, kui on antud --trust-local
+    koos --only-file ja kinnitusega (--i-know-local-is-fresh või interaktiivne 'jah').
     Updates .b2_etags.json after each copy_object to keep ETags in sync.
     """
+    if trust_local:
+        if not only_files:
+            raise ValueError(
+                "--trust-local on lubatud ainult koos --only-file lülitiga (konkreetsed failid)."
+            )
+        confirmed = False
+        if i_know_local_is_fresh:
+            confirmed = True
+        elif sys.stdin and sys.stdin.isatty():
+            try:
+                answer = (
+                    input(
+                        f"Kas oled kindel, et kohalikud failid {only_files} on värsked? (jah/ei): "
+                    )
+                    .strip()
+                    .lower()
+                )
+                if answer == "jah":
+                    confirmed = True
+            except (EOFError, KeyboardInterrupt):
+                confirmed = False
+        if not confirmed:
+            raise ValueError(
+                "--trust-local nõuab kinnitust (--i-know-local-is-fresh või interaktiivne 'jah')."
+            )
+
     key_id = os.environ.get("B2_KEY_ID")
     app_key = os.environ.get("B2_APP_KEY")
 
@@ -98,11 +118,18 @@ def backfill_b2_md5_metadata(
 
                 if existing_md5:
                     already_has_md5_count += 1
+                    if dry_run:
+                        print(
+                            f"[DRY-RUN] Jätaks vahele {key}: MD5 metaandmed juba olemas ({existing_md5})"
+                        )
                     continue
 
                 local_path = os.path.join(OUTPUT_DIR_PROCESSED, filename)
                 if not os.path.exists(local_path):
-                    print(f"Skipping {key}: kohalikku faili {filename} ei leitud.")
+                    if dry_run:
+                        print(f"[DRY-RUN] Jätaks vahele {key}: kohalik fail puudub (tõend: puudub)")
+                    else:
+                        print(f"Skipping {key}: kohalikku faili {filename} ei leitud.")
                     skipped_missing_local_count += 1
                     continue
 
@@ -114,31 +141,54 @@ def backfill_b2_md5_metadata(
                     continue
 
                 remote_etag = (head_resp.get("ETag") or obj.get("ETag") or "").strip('"')
+
                 is_single_part_match = bool(
                     remote_etag
                     and "-" not in remote_etag
                     and remote_etag.lower() == local_md5.lower()
                 )
+                is_multipart_match = bool(
+                    remote_etag
+                    and "-" in remote_etag
+                    and matches_multipart_etag(local_path, remote_etag)
+                )
 
-                if not is_single_part_match and not trust_local:
-                    print(
-                        f"Skipping {key}: kohalik fail pole tõestatult identne B2 objektiga "
-                        f"(ETag={remote_etag}, kohalik MD5={local_md5}). "
-                        f"Kasuta --trust-local kui fail on värskelt alla laaditud."
-                    )
+                if is_single_part_match:
+                    evidence = "single-part"
+                elif is_multipart_match:
+                    evidence = "multipart-etag"
+                else:
+                    evidence = "puudub"
+
+                if evidence in ("single-part", "multipart-etag"):
+                    trusted = True
+                elif trust_local:
+                    trusted = True
+                else:
+                    trusted = False
+
+                if not trusted:
+                    if dry_run:
+                        print(
+                            f"[DRY-RUN] Jätaks vahele {key}: tõend: puudub "
+                            f"(vajab --trust-local koos --only-file ja kinnitusega)"
+                        )
+                    else:
+                        print(
+                            f"Skipping {key}: kohalik fail pole tõestatult identne B2 objektiga "
+                            f"(ETag={remote_etag}, kohalik MD5={local_md5}, tõend: puudub). "
+                            f"Kasuta --trust-local koos --only-file ja kinnitusega."
+                        )
                     skipped_untrusted_count += 1
                     continue
 
                 if dry_run:
-                    print(
-                        f"[DRY-RUN] Uuendaks {key}: md5={local_md5} "
-                        f"(B2 ETag={remote_etag}, usaldatud={'single-part' if is_single_part_match else 'trust-local'})."
-                    )
+                    print(f"[DRY-RUN] Uuendaks {key}: md5={local_md5} (tõend: {evidence})")
                     would_update_count += 1
                     continue
 
                 # Server-side copy_object to replace metadata
-                print(f"Uuendan {key} metaandmeid: md5={local_md5} ...")
+                print(f"Uuendan {key} metaandmeid: md5={local_md5} (tõend: {evidence}) ...")
                 copy_kwargs = {
                     "Bucket": bucket_name,
                     "Key": key,
@@ -184,7 +234,7 @@ def backfill_b2_md5_metadata(
                         json.dump(current_etags, f, indent=2)
                     os.replace(tmp_file, etags_file)
 
-                print(f"Uuendatud {key}: md5={local_md5}, uus ETag={new_etag}")
+                print(f"Uuendatud {key}: md5={local_md5}, tõend: {evidence}, uus ETag={new_etag}")
                 updated_count += 1
 
     except Exception as e:
@@ -234,7 +284,7 @@ if __name__ == "__main__":
         "--trust-local",
         action="store_true",
         dest="trust_local",
-        help="Usalda kohaliku faili MD5-d ka mitmeosaliste (multipart) ETag-ide puhul.",
+        help="Usalda kohaliku faili MD5-d (lubatud ainult koos --only-file ja kinnitusega).",
     )
     parser.add_argument(
         "--only-file",
@@ -243,11 +293,23 @@ if __name__ == "__main__":
         default=None,
         help="Töötle ainult määratud faili(d) (nt 2024.jsonl).",
     )
+    parser.add_argument(
+        "--i-know-local-is-fresh",
+        action="store_true",
+        dest="i_know_local_is_fresh",
+        help="Mitte-interaktiivne kinnitus lipule --trust-local.",
+    )
     args = parser.parse_args()
 
-    success = backfill_b2_md5_metadata(
-        dry_run=not args.apply,
-        trust_local=args.trust_local,
-        only_files=args.only_files,
-    )
+    try:
+        success = backfill_b2_md5_metadata(
+            dry_run=not args.apply,
+            trust_local=args.trust_local,
+            only_files=args.only_files,
+            i_know_local_is_fresh=args.i_know_local_is_fresh,
+        )
+    except ValueError as e:
+        print(f"Viga: {e}", file=sys.stderr)
+        sys.exit(1)
+
     sys.exit(0 if success else 1)

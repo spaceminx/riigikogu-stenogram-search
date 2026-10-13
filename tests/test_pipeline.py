@@ -951,6 +951,9 @@ def test_download_from_b2_include_all(tmp_path, monkeypatch):
         def get_paginator(self, operation_name):
             return MockPaginator()
 
+        def head_object(self, Bucket, Key):
+            return {"Metadata": {}, "ContentLength": 100}
+
         def download_file(self, bucket, key, local_path):
             downloaded.append(key)
             Path(local_path).write_text("dummy", encoding="utf-8")
@@ -1748,6 +1751,9 @@ def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
     class MockS3ClientHistory:
         def get_paginator(self, operation_name):
             return MockPaginatorHistory()
+
+        def head_object(self, Bucket, Key):
+            return {"Metadata": {}, "ContentLength": 5}
 
         def download_file(self, bucket, key, local_path):
             Path(local_path).write_bytes(hello_bytes)
