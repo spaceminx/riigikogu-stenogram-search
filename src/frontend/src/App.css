@@ -765,6 +765,108 @@ html[data-theme="dark"] .faction-badge {
   color: #cbd5e1;
 }
 
+.att-mobile-faction-badge {
+  display: none;
+}
+
+.att-header-text-short {
+  display: none;
+}
+
+.att-header-text-full {
+  display: inline;
+}
+
+@media (max-width: 639px) {
+  .att-col-faction,
+  .att-col-count {
+    display: none;
+  }
+
+  .att-header-text-full {
+    display: none;
+  }
+
+  .att-header-text-short {
+    display: inline;
+  }
+
+  .att-mobile-faction-badge {
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  .att-mobile-faction-badge .faction-badge {
+    display: inline-block;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    border-radius: 4px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .attendance-table {
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .attendance-table th,
+  .attendance-table td {
+    padding: 0.5rem 0.35rem;
+  }
+
+  .att-col-rank {
+    width: 24px;
+    min-width: 20px;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .att-col-name {
+    width: auto;
+    min-width: 110px;
+    font-size: 0.85rem;
+  }
+
+  .att-col-total,
+  .att-col-present {
+    width: auto;
+    min-width: 44px;
+    font-size: 0.8rem;
+    text-align: right;
+  }
+
+  .att-col-percent {
+    width: auto;
+    min-width: 68px;
+    padding-right: 0.35rem;
+  }
+
+  .att-sort-btn {
+    font-size: 0.75rem;
+    padding: 0.15rem;
+  }
+
+  .percent-bar-container {
+    gap: 4px;
+  }
+
+  .percent-bar-bg {
+    min-width: 24px;
+    height: 6px;
+  }
+
+  .percent-text {
+    margin-left: 4px;
+    min-width: 32px;
+    font-size: 0.78rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
