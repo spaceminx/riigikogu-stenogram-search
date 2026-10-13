@@ -29,7 +29,7 @@ from src.api.search import (
     search_by_keyword,
 )
 from src.load.database import SessionLocal
-from src.load.models import Attendance, Person, Speech, SpeechAlias, SystemMeta
+from src.load.models import Attendance, Person, Speech, SpeechAlias, SystemMeta, Vote, Voting
 
 logger = logging.getLogger(__name__)
 
@@ -1043,6 +1043,140 @@ def person_attendance(person_uuid: str):
         ) from e
 
 
+@router.get("/persons/{person_uuid}/votes")
+def get_person_votes(
+    person_uuid: str,
+    membership: str | None = None,
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    """Get votes cast by a specific person, including decision summary and vote history."""
+    validate_membership(membership)
+
+    session = SessionLocal()
+    try:
+        person = session.query(Person).filter(Person.uuid == person_uuid).first()
+        if not person:
+            raise HTTPException(status_code=404, detail="Saadikut ei leitud.")
+
+        # Summary counts
+        dec_query = (
+            session.query(Vote.decision, func.count(Vote.decision))
+            .join(Voting, Vote.voting_uuid == Voting.uuid)
+            .filter(Vote.member_uuid == person_uuid)
+        )
+        if membership and membership != "all":
+            dec_query = dec_query.filter(Voting.membership == int(membership))
+
+        dec_rows = dec_query.group_by(Vote.decision).all()
+        summary = {
+            "in_favor": 0,
+            "against": 0,
+            "neutral": 0,
+            "not_voted": 0,
+            "absent": 0,
+            "total": 0,
+        }
+        for dec, cnt in dec_rows:
+            summary["total"] += cnt
+            if dec == "POOLT":
+                summary["in_favor"] += cnt
+            elif dec == "VASTU":
+                summary["against"] += cnt
+            elif dec == "ERAPOOLETU":
+                summary["neutral"] += cnt
+            elif dec == "EI_HAALETANUD":
+                summary["not_voted"] += cnt
+            elif dec == "PUUDUB":
+                summary["absent"] += cnt
+
+        # Paged results
+        q_results = (
+            session.query(Vote, Voting)
+            .join(Voting, Vote.voting_uuid == Voting.uuid)
+            .filter(Vote.member_uuid == person_uuid)
+        )
+        if membership and membership != "all":
+            q_results = q_results.filter(Voting.membership == int(membership))
+
+        items = (
+            q_results.order_by(
+                Voting.date.desc(), Voting.start_time.desc(), Voting.voting_number.desc()
+            )
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+
+        results = []
+        for vote, voting in items:
+            rel_doc = None
+            if (
+                voting.related_document_uuid
+                or voting.related_document_reference
+                or voting.related_document_title
+            ):
+                rel_doc = {
+                    "uuid": voting.related_document_uuid,
+                    "reference": voting.related_document_reference,
+                    "title": voting.related_document_title,
+                    "type": voting.related_document_type,
+                }
+
+            results.append(
+                {
+                    "voting_uuid": voting.uuid,
+                    "voting_number": voting.voting_number,
+                    "type": voting.type,
+                    "description": voting.description,
+                    "date": voting.date,
+                    "start_time": voting.start_time,
+                    "membership": voting.membership,
+                    "decision": vote.decision,
+                    "faction": vote.faction,
+                    "totals": {
+                        "present": voting.present,
+                        "absent": voting.absent,
+                        "in_favor": voting.in_favor,
+                        "against": voting.against,
+                        "neutral": voting.neutral,
+                        "abstained": voting.abstained,
+                    },
+                    "related_document": rel_doc,
+                }
+            )
+
+        return {
+            "person": {
+                "uuid": person.uuid,
+                "first_name": person.first_name,
+                "last_name": person.last_name,
+                "full_name": person.full_name,
+                "photo_url": person.photo_url,
+            },
+            "summary": summary,
+            "total": summary["total"],
+            "limit": limit,
+            "offset": offset,
+            "results": results,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või hääletuste tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Person votes query failed for %s: %s", person_uuid, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Hääletuste päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
 @router.get("/speeches/by-external-id/{external_id}")
 def get_speech_by_external_id(external_id: str):
     """Get single speech specifically by Riigikogu permalink external_id."""
@@ -1180,6 +1314,228 @@ def get_speech_by_id(speech_identifier: str):
         session.close()
 
 
+@router.get("/votings")
+def list_votings(
+    start_date: str | None = None,
+    end_date: str | None = None,
+    membership: str | None = None,
+    q: str | None = None,
+    document_uuid: str | None = None,
+    type: str | None = None,
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    """List public votings with filtering and pagination."""
+    validate_membership(membership)
+
+    session = SessionLocal()
+    try:
+        query = session.query(Voting)
+
+        if membership and membership != "all":
+            query = query.filter(Voting.membership == int(membership))
+        if start_date:
+            query = query.filter(Voting.date >= start_date)
+        if end_date:
+            query = query.filter(Voting.date <= end_date)
+        if document_uuid:
+            query = query.filter(Voting.related_document_uuid == document_uuid)
+        if type:
+            query = query.filter(Voting.type == type)
+        if q:
+            term = f"%{q.strip()}%"
+            query = query.filter(
+                or_(
+                    Voting.description.ilike(term),
+                    Voting.related_document_title.ilike(term),
+                    Voting.related_document_reference.ilike(term),
+                )
+            )
+
+        total = query.count()
+        items = (
+            query.order_by(
+                Voting.date.desc(), Voting.start_time.desc(), Voting.voting_number.desc()
+            )
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+
+        results = []
+        for v in items:
+            rel_doc = None
+            if v.related_document_uuid or v.related_document_reference or v.related_document_title:
+                rel_doc = {
+                    "uuid": v.related_document_uuid,
+                    "reference": v.related_document_reference,
+                    "title": v.related_document_title,
+                    "type": v.related_document_type,
+                }
+            results.append(
+                {
+                    "uuid": v.uuid,
+                    "voting_number": v.voting_number,
+                    "type": v.type,
+                    "description": v.description,
+                    "date": v.date,
+                    "start_time": v.start_time,
+                    "end_time": v.end_time,
+                    "membership": v.membership,
+                    "sitting_uuid": v.sitting_uuid,
+                    "sitting_title": v.sitting_title,
+                    "related_document": rel_doc,
+                    "chairman_uuid": v.chairman_uuid,
+                    "totals": {
+                        "present": v.present,
+                        "absent": v.absent,
+                        "in_favor": v.in_favor,
+                        "against": v.against,
+                        "neutral": v.neutral,
+                        "abstained": v.abstained,
+                    },
+                }
+            )
+
+        return {
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "results": results,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või hääletuste tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Votings list query failed: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Hääletuste loetelu päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/votings/{voting_uuid}")
+def get_voting_detail(voting_uuid: str):
+    """Get full details of a voting, including individual votes and faction breakdowns."""
+    session = SessionLocal()
+    try:
+        voting = session.query(Voting).filter(Voting.uuid == voting_uuid).first()
+        if not voting:
+            raise HTTPException(status_code=404, detail="Hääletust ei leitud.")
+
+        chairman_name = None
+        if voting.chairman_uuid:
+            ch_row = (
+                session.query(Person.full_name).filter(Person.uuid == voting.chairman_uuid).first()
+            )
+            if ch_row:
+                chairman_name = ch_row[0]
+
+        votes_data = (
+            session.query(Vote, Person.full_name)
+            .outerjoin(Person, Vote.member_uuid == Person.uuid)
+            .filter(Vote.voting_uuid == voting_uuid)
+            .order_by(Person.full_name.asc(), Vote.member_uuid.asc())
+            .all()
+        )
+
+        votes_list = []
+        faction_map = {}
+        for vote, full_name in votes_data:
+            votes_list.append(
+                {
+                    "member_uuid": vote.member_uuid,
+                    "member_name": full_name,
+                    "faction": vote.faction,
+                    "decision": vote.decision,
+                }
+            )
+            fac = vote.faction or "Fraktsioonita"
+            if fac not in faction_map:
+                faction_map[fac] = {
+                    "faction": fac,
+                    "in_favor": 0,
+                    "against": 0,
+                    "neutral": 0,
+                    "not_voted": 0,
+                    "absent": 0,
+                    "total": 0,
+                }
+            faction_map[fac]["total"] += 1
+            if vote.decision == "POOLT":
+                faction_map[fac]["in_favor"] += 1
+            elif vote.decision == "VASTU":
+                faction_map[fac]["against"] += 1
+            elif vote.decision == "ERAPOOLETU":
+                faction_map[fac]["neutral"] += 1
+            elif vote.decision == "EI_HAALETANUD":
+                faction_map[fac]["not_voted"] += 1
+            elif vote.decision == "PUUDUB":
+                faction_map[fac]["absent"] += 1
+
+        rel_doc = None
+        if (
+            voting.related_document_uuid
+            or voting.related_document_reference
+            or voting.related_document_title
+        ):
+            rel_doc = {
+                "uuid": voting.related_document_uuid,
+                "reference": voting.related_document_reference,
+                "title": voting.related_document_title,
+                "type": voting.related_document_type,
+            }
+
+        sorted_factions = sorted(faction_map.values(), key=lambda f: (-f["total"], f["faction"]))
+
+        return {
+            "uuid": voting.uuid,
+            "voting_number": voting.voting_number,
+            "type": voting.type,
+            "description": voting.description,
+            "date": voting.date,
+            "start_time": voting.start_time,
+            "end_time": voting.end_time,
+            "membership": voting.membership,
+            "sitting_uuid": voting.sitting_uuid,
+            "sitting_title": voting.sitting_title,
+            "related_document": rel_doc,
+            "chairman_uuid": voting.chairman_uuid,
+            "chairman_name": chairman_name,
+            "totals": {
+                "present": voting.present,
+                "absent": voting.absent,
+                "in_favor": voting.in_favor,
+                "against": voting.against,
+                "neutral": voting.neutral,
+                "abstained": voting.abstained,
+            },
+            "votes": votes_list,
+            "by_faction": sorted_factions,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või hääletuste tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Voting detail query failed for %s: %s", voting_uuid, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Hääletuse detailide päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
 @router.get("/system/status")
 def system_status():
     """Return archive sync status, latest session date, and methodology metadata."""
@@ -1190,6 +1546,7 @@ def system_status():
         total_speeches = session.query(func.count(Speech.id)).scalar() or 0
         total_persons = session.query(func.count(Person.uuid)).scalar() or 0
         total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
+        total_votings = session.query(func.count(Voting.uuid)).scalar() or 0
 
         latest_session = (
             session.query(Speech.source_file, Speech.status)
@@ -1251,9 +1608,11 @@ def system_status():
                 "speeches": total_speeches,
                 "persons": total_persons,
                 "attendance_records": total_attendance,
+                "votings": total_votings,
             },
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
+                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg.",

@@ -2,6 +2,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import shutil
 import sqlite3
 import sys
@@ -80,7 +81,7 @@ def build_old_names_map(
     jsonl_files = sorted(glob.glob(os.path.join(data_dir, "20*.jsonl")))
     for fpath in jsonl_files:
         if (
-            os.path.basename(fpath) == "attendance.jsonl"
+            not re.match(r"^\d{4}\.jsonl$", os.path.basename(fpath))
             or fpath.endswith(".bak")
             or fpath.endswith(".tmp")
         ):

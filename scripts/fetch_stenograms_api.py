@@ -806,7 +806,7 @@ def fetch_and_process_stenograms(
     )
 
     for jsonl_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.jsonl")):
-        if os.path.basename(jsonl_path) == "attendance.jsonl":
+        if not re.match(r"^\d{4}\.jsonl$", os.path.basename(jsonl_path)):
             continue
         try:
             with open(jsonl_path, encoding="utf-8") as f:

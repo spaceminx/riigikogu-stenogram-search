@@ -18,6 +18,7 @@ from src.load.loader import (
     create_tables,
     load_attendance_to_database,
     load_persons_to_database,
+    load_votes_to_database,
 )
 from src.load.models import Speech, SpeechAlias, SpeechTerm, SystemMeta
 from src.transform.lemmatizer import build_missing_lemmas
@@ -192,11 +193,12 @@ def sync_database() -> bool:
         create_tables()
         create_indexes()
 
-        # 3. Load current year speeches, attendance & persons
-        print("\n[3/5] Inserting new speeches, attendance records, and persons...")
+        # 3. Load current year speeches, attendance, persons & votes
+        print("\n[3/5] Inserting new speeches, attendance records, persons, and votes...")
         sync_current_year_speeches()
         load_attendance_to_database()
         load_persons_to_database()
+        load_votes_to_database(years=active_years())
 
         # 4. Lemmatize any new speeches
         print("\n[4/5] Checking and lemmatizing new speeches...")

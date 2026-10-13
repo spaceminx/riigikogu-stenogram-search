@@ -31,6 +31,10 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_speech_aliases_alias_id ON speech_aliases(alias_external_id)",
     "CREATE INDEX IF NOT EXISTS idx_persons_full_name ON persons(full_name)",
     "CREATE INDEX IF NOT EXISTS idx_attendance_member_uuid ON attendance(member_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_votings_date ON votings(date)",
+    "CREATE INDEX IF NOT EXISTS idx_votings_doc_uuid ON votings(related_document_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_votes_member_uuid ON votes(member_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_votes_voting_uuid ON votes(voting_uuid)",
 ]
 
 

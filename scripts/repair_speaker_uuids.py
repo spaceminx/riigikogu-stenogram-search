@@ -2,6 +2,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import shutil
 import sqlite3
 import sys
@@ -55,7 +56,7 @@ def repair_speaker_uuids(
     jsonl_files = [
         f
         for f in raw_files
-        if os.path.basename(f) != "attendance.jsonl"
+        if re.match(r"^\d{4}\.jsonl$", os.path.basename(f))
         and not f.endswith(".bak")
         and not f.endswith(".tmp")
     ]

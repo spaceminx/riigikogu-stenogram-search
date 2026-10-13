@@ -11,7 +11,7 @@ from pathlib import Path
 from config import OUTPUT_DIR_PROCESSED
 from scripts.download_all_from_b2 import download_all_from_b2
 from src.load.indexes import create_indexes
-from src.load.loader import create_tables, load_jsonl_to_database
+from src.load.loader import create_tables, load_jsonl_to_database, load_votes_to_database
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
@@ -20,9 +20,10 @@ def get_expected_dataset_files(
     now: datetime | None = None,
     current_year: int | None = None,
 ) -> list[str]:
-    """Calculate expected dataset files (2019 to current year, persons, person_factions, attendance).
+    """Calculate expected dataset files (2019 to current year, persons, person_factions, attendance, votes).
 
     - attendance.jsonl is always an expected file.
+    - votes_{YYYY}.jsonl files are expected for all years.
     - Current year file is required from January 15 onwards. Prior to Jan 15, current year
       plenary sessions may not have started yet.
     """
@@ -35,6 +36,7 @@ def get_expected_dataset_files(
     year = now.year
     end_year = year if (now.month > 1 or now.day >= 15) else (year - 1)
     files = [f"{y}.jsonl" for y in range(2019, end_year + 1)]
+    files.extend([f"votes_{y}.jsonl" for y in range(2019, end_year + 1)])
     files.extend(["persons.json", "person_factions.json", "attendance.jsonl"])
     return files
 
@@ -43,6 +45,7 @@ def build_full_database(
     workers: int | None = None,
     chunk_size: int = 50,
     allow_partial: bool = False,
+    allow_missing_votes: bool = False,
 ) -> None:
     """Run full end-to-end database initialization, loading, lemmatization, and indexing."""
     start_total = time.time()
@@ -58,6 +61,15 @@ def build_full_database(
     expected_files = get_expected_dataset_files()
     missing_files = [f for f in expected_files if not (processed_dir / f).exists()]
 
+    if allow_missing_votes:
+        missing_votes = [f for f in missing_files if f.startswith("votes_")]
+        if missing_votes:
+            print(
+                f"\n[Warning] Building database with missing votes files ignored (--allow-missing-votes enabled).\n"
+                f"Missing votes files: {', '.join(missing_votes)}"
+            )
+            missing_files = [f for f in missing_files if not f.startswith("votes_")]
+
     if missing_files:
         if allow_partial:
             print(
@@ -71,6 +83,8 @@ def build_full_database(
             )
             download_all_from_b2()
             still_missing = [f for f in expected_files if not (processed_dir / f).exists()]
+            if allow_missing_votes:
+                still_missing = [f for f in still_missing if not f.startswith("votes_")]
             if still_missing:
                 print(
                     f"\n[Error] Database build aborted. The following expected files are missing: {', '.join(still_missing)}.\n"
@@ -85,9 +99,10 @@ def build_full_database(
     print("-> Tables created.")
 
     # Step 2: Load JSONL files into SQLite
-    print("\n[Step 2/5] Loading JSONL files from data/processed into SQLite...")
+    print("\n[Step 2/5] Loading JSONL and vote files from data/processed into SQLite...")
     load_jsonl_to_database()
-    print("-> JSONL files loaded.")
+    load_votes_to_database()
+    print("-> JSONL and vote files loaded.")
 
     # Step 3: Multiprocessing Lemmatization
     print(f"\n[Step 3/5] Lemmatizing speeches across {workers} parallel processes...")
@@ -132,8 +147,17 @@ if __name__ == "__main__":
         default=False,
         help="Allow building database from partial dataset without aborting if files are missing",
     )
+    parser.add_argument(
+        "--allow-missing-votes",
+        action="store_true",
+        default=False,
+        help="Allow building database even if votes_*.jsonl files are missing (warning only)",
+    )
     args = parser.parse_args()
 
     build_full_database(
-        workers=args.workers, chunk_size=args.chunk_size, allow_partial=args.allow_partial
+        workers=args.workers,
+        chunk_size=args.chunk_size,
+        allow_partial=args.allow_partial,
+        allow_missing_votes=args.allow_missing_votes,
     )

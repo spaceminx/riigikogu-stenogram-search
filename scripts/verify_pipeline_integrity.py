@@ -203,8 +203,89 @@ def verify_pipeline_integrity(
         for code, dt, reason in truncated_sessions:
             print(f"  - [{dt}] Code: {code} | Reason: {reason}")
 
+    # Check votes integrity
+    votes_ok = verify_votes_integrity(days=days, fail_on_missing=fail_on_missing)
+    if not votes_ok:
+        is_ok = False
+
     if not is_ok and fail_on_missing:
         return False
+
+    return True
+
+
+def verify_votes_integrity(
+    days: int = 14,
+    fail_on_missing: bool = True,
+) -> bool:
+    """Compare recent official Riigikogu votings against processed votes_{YYYY}.jsonl files."""
+    end_dt = datetime.now()
+    start_dt = end_dt - timedelta(days=days)
+    start_str = start_dt.strftime("%Y-%m-%d")
+    end_str = end_dt.strftime("%Y-%m-%d")
+
+    years_to_check = sorted(list({start_dt.year, end_dt.year}))
+    local_uuids = set()
+    for yr in years_to_check:
+        fpath = Path(OUTPUT_DIR_PROCESSED) / f"votes_{yr}.jsonl"
+        if not fpath.exists():
+            continue
+        with open(fpath, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    data = json.loads(line)
+                    v_uuid = data.get("voting_uuid")
+                    if v_uuid:
+                        local_uuids.add(v_uuid)
+                except json.JSONDecodeError:
+                    continue
+
+    url = f"https://api.riigikogu.ee/api/votings?startDate={start_str}&endDate={end_str}"
+    print(f"\nChecking official votings from {start_str} to {end_str} via {url}...")
+    try:
+        resp = requests.get(url, timeout=(5, 25))
+        if resp.status_code != 200:
+            print(
+                f"Warning: Votings API returned HTTP {resp.status_code}. Skipping votes verification."
+            )
+            return True
+        sittings = resp.json()
+    except Exception as e:
+        print(f"Warning: Could not connect to Riigikogu API: {e}. Skipping votes verification.")
+        return True
+
+    if not isinstance(sittings, list):
+        print("Notice: Unexpected response from votings API (not a list).")
+        return True
+
+    official_votings = []
+    for s in sittings:
+        for v in s.get("votings", []):
+            if v.get("type", {}).get("code") != "KOHALOLEKU_KONTROLL":
+                official_votings.append(v)
+
+    matched = []
+    missing = []
+    for v in official_votings:
+        v_uuid = v.get("uuid")
+        if v_uuid in local_uuids:
+            matched.append(v)
+        else:
+            missing.append(v)
+
+    print(f"Votes Verification Results (last {days} days):")
+    print(f"  Matched votings in archive: {len(matched)}")
+    print(f"  Missing votings:            {len(missing)}")
+
+    if missing:
+        print("\nAlert: The following official votings are missing from local JSONL:")
+        for v in missing:
+            print(f"  - [{v.get('startDateTime')}] UUID: {v.get('uuid')} | {v.get('description')}")
+        if fail_on_missing:
+            return False
 
     return True
 

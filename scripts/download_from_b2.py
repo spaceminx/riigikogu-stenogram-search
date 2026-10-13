@@ -32,7 +32,7 @@ def is_active_daily_file(filename: str, active_years: set[str]) -> bool:
     if filename == "attendance.jsonl":
         return True
     for y in active_years:
-        if filename == f"{y}.jsonl":
+        if filename == f"{y}.jsonl" or filename == f"votes_{y}.jsonl":
             return True
     return False
 
