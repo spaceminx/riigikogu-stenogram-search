@@ -1,5 +1,5 @@
 import React from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export function ActivityChart({
   activity = [],
@@ -72,13 +72,7 @@ export function ActivityChart({
       ) : activity.length > 0 ? (
         <div className="timeline-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#315b84" stopOpacity={0.16} />
-                  <stop offset="95%" stopColor="#315b84" stopOpacity={0} />
-                </linearGradient>
-              </defs>
+            <BarChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
               <XAxis
                 dataKey={interval === "daily" ? "date" : interval === "weekly" ? "week" : "month"}
                 stroke={axisStroke}
@@ -92,25 +86,25 @@ export function ActivityChart({
                 tick={{ fill: axisTickColor, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
+                allowDecimals={false}
               />
               <Tooltip
                 {...tooltipStyle}
-                cursor={{ stroke: "#9eabb9", strokeWidth: 1 }}
+                cursor={{
+                  fill: theme === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                }}
                 labelFormatter={(label) =>
                   interval === "monthly" && label === currentMonth ? `${label} (pooleli)` : label
                 }
               />
-              <Area
-                type="monotone"
+              <Bar
                 dataKey="count"
                 name="Kõnesid"
-                stroke="#315b84"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorCount)"
-                activeDot={{ r: 4, fill: "#315b84", stroke: "#ffffff", strokeWidth: 2 }}
+                fill="#315b84"
+                radius={[3, 3, 0, 0]}
+                maxBarSize={40}
               />
-            </AreaChart>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       ) : (

@@ -506,7 +506,6 @@ def get_dashboard_overview() -> dict:
             .filter(
                 Speech.speaker_uuid.isnot(None),
                 Speech.speaker_role.is_(None),
-                or_(Speech.speech_type.is_(None), Speech.speech_type != "DIRECTOR"),
             )
             .group_by(Speech.speaker_uuid)
             .order_by(
@@ -592,7 +591,7 @@ def get_dashboard_overview() -> dict:
             for row in session_map.values()
         ]
 
-        # Monthly speech counts for past 24 months, excluding DIRECTOR
+        # Monthly speech counts for past 24 months, excluding chair DIRECTOR
         current_dt = datetime.now()
         months = []
         cur_y = current_dt.year
@@ -617,7 +616,12 @@ def get_dashboard_overview() -> dict:
             .filter(
                 Speech.date >= f"{start_month}-01",
                 Speech.date <= f"{end_month}-31",
-                or_(Speech.speech_type.is_(None), Speech.speech_type != "DIRECTOR"),
+                or_(
+                    Speech.speech_type.is_(None),
+                    Speech.speech_type != "DIRECTOR",
+                    Speech.speaker_role.is_(None),
+                    ~Speech.speaker_role.in_(CHAIR_ROLES),
+                ),
             )
             .group_by(month_col)
             .all()

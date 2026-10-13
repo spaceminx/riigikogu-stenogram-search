@@ -20,7 +20,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
           Saadikute kohaloleku kontrollide statistika
         </caption>
         <thead>
-          <tr className="attendance-header-row">
+          <tr>
             <th scope="col" className="att-col-rank">
               #
             </th>
@@ -80,7 +80,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
             </tr>
           ) : (
             sortedStats.map((stat, idx) => (
-              <tr key={stat.member_uuid || idx} className="attendance-row">
+              <tr key={stat.member_uuid || idx}>
                 <td className="att-col-rank">{idx + 1}</td>
                 <td className="att-col-name">
                   {stat.member_uuid ? (
