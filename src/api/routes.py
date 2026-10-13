@@ -7,7 +7,7 @@ from datetime import date, datetime
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from sqlalchemy import and_, case, func, text
+from sqlalchemy import and_, case, func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
@@ -670,6 +670,7 @@ def get_person(person_uuid: str):
             .filter(
                 Speech.speaker_uuid == person_uuid,
                 Speech.speaker_role.is_(None),
+                or_(Speech.speech_type != "DIRECTOR", Speech.speech_type.is_(None)),
             )
             .count()
         )
@@ -879,7 +880,7 @@ def get_person_speeches(
     person_uuid: str,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    role_class: str = Query("mp", pattern=r"^(mp|chair|minister|candidate|other|all)$"),
+    role_class: str = Query("mp", pattern=r"^(mp|chair|minister|candidate|other|director|all)$"),
     speech_category: str | None = Query(
         None,
         description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural, all)",
@@ -896,6 +897,9 @@ def get_person_speeches(
             raise HTTPException(status_code=404, detail="Isikut ei leitud.")
 
         filters = [Speech.speaker_uuid == person_uuid]
+
+        if role_class in ("mp", "chair", "candidate", "minister", "other"):
+            filters.append(or_(Speech.speech_type != "DIRECTOR", Speech.speech_type.is_(None)))
 
         if role_class == "mp":
             filters.append(Speech.speaker_role.is_(None))
@@ -914,6 +918,10 @@ def get_person_speeches(
                 & ~Speech.speaker_role.ilike("%minister%")
                 & ~Speech.speaker_role.ilike("%kandidaat%")
             )
+        elif role_class == "director":
+            filters.append(Speech.speech_type == "DIRECTOR")
+        elif role_class == "all":
+            pass
 
         if speech_category and speech_category != "all":
             if speech_category in SPEECH_TYPE_CATEGORIES:

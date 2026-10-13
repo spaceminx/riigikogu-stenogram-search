@@ -15,8 +15,30 @@ export function DashboardView({
   theme = "light",
   memberships = [],
   searchFactionsList = [],
+  systemStatus = null,
 }) {
   const navigate = useNavigate();
+  const toRoman = (num) => {
+    const romanMap = { 15: "XV", 14: "XIV", 13: "XIII", 12: "XII", 11: "XI" };
+    return romanMap[num] || String(num);
+  };
+  const totalSpeeches = systemStatus?.total_speeches ?? systemStatus?.totals?.speeches;
+  const totalPersons = systemStatus?.total_persons ?? systemStatus?.totals?.persons;
+  const memText =
+    memberships && memberships.length > 0
+      ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
+      : null;
+
+  const statItems = [];
+  if (totalSpeeches !== undefined && totalSpeeches !== null) {
+    statItems.push(`${Number(totalSpeeches).toLocaleString("et-EE")} kõnet`);
+  }
+  if (totalPersons !== undefined && totalPersons !== null) {
+    statItems.push(`${totalPersons} saadikut`);
+  }
+  if (memText) {
+    statItems.push(memText);
+  }
   const [groups, setGroups] = useState([[]]);
   const [inputValue, setInputValue] = useState("");
   const [searchMembership, setSearchMembership] = useState("all");
@@ -77,17 +99,20 @@ export function DashboardView({
 
   return (
     <>
-      <div className="archive-stats-row" aria-label="Riigikogu arhiivi kokkuvõte">
-        <span className="archive-stat">120 000+ kõnet</span>
-        <span className="archive-stat-separator" aria-hidden="true">
-          •
-        </span>
-        <span className="archive-stat">101 saadikut</span>
-        <span className="archive-stat-separator" aria-hidden="true">
-          •
-        </span>
-        <span className="archive-stat">XIV ja XV koosseis</span>
-      </div>
+      {statItems.length > 0 && (
+        <div className="archive-stats-row" aria-label="Riigikogu arhiivi kokkuvõte">
+          {statItems.map((item, idx) => (
+            <React.Fragment key={idx}>
+              {idx > 0 && (
+                <span className="archive-stat-separator" aria-hidden="true">
+                  •
+                </span>
+              )}
+              <span className="archive-stat">{item}</span>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
 
       <SearchQueryInput
         groups={groups}

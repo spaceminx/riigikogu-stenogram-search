@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { formatFactionName, getPercentageColor } from "../lib/formatters";
 
 export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort }) {
@@ -61,7 +62,18 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
         sortedStats.map((stat, idx) => (
           <div key={idx} className="attendance-row">
             <div className="att-col-rank">{idx + 1}</div>
-            <div className="att-col-name">{stat.member_name}</div>
+            <div className="att-col-name">
+              {stat.member_uuid ? (
+                <Link
+                  to={`/saadik/${encodeURIComponent(stat.member_uuid)}`}
+                  className="speaker-name-link"
+                >
+                  {stat.member_name}
+                </Link>
+              ) : (
+                stat.member_name
+              )}
+            </div>
             <div className="att-col-faction">
               <span className="faction-badge" title={stat.faction}>
                 {formatFactionName(stat.faction)}

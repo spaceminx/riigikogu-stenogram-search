@@ -24,6 +24,7 @@ import SearchView from "./routes/SearchView";
 import SessionView from "./routes/SessionView";
 import AttendanceView from "./routes/AttendanceView";
 import SpeechView from "./routes/SpeechView";
+import PersonView from "./routes/PersonView";
 import NotFoundView from "./routes/NotFoundView";
 import "./App.css";
 
@@ -62,7 +63,7 @@ function LegacyRedirectHandler() {
   return null;
 }
 
-function PageTitlebar() {
+function PageTitlebar({ memberships = [] }) {
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -75,25 +76,42 @@ function PageTitlebar() {
     title = "Istungi stenogramm";
   } else if (pathname.startsWith("/kone")) {
     title = "Kõne stenogramm";
+  } else if (pathname.startsWith("/saadik")) {
+    title = "Saadiku profiil";
   }
+
+  const toRoman = (num) => {
+    const romanMap = { 15: "XV", 14: "XIV", 13: "XIII", 12: "XII", 11: "XI" };
+    return romanMap[num] || String(num);
+  };
+
+  const memText =
+    memberships && memberships.length > 0
+      ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
+      : null;
 
   return (
     <div className="page-titlebar">
       <h1>{title}</h1>
-      <span>Riigikogu stenogrammid · XV ja XIV koosseis</span>
+      <span>Riigikogu stenogrammid{memText ? ` · ${memText}` : ""}</span>
     </div>
   );
 }
 
 function AppContent() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(() => {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get("theme");
+      if (fromUrl === "dark" || fromUrl === "light") return fromUrl;
+      return localStorage.getItem("theme") || "light";
+    } catch {
+      return "light";
+    }
+  });
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
   const [searchFactionsList, setSearchFactionsList] = useState([]);
-  const [memberships, setMemberships] = useState([
-    { id: "15", number: 15, name: "XV Riigikogu (2023–praegu)" },
-    { id: "14", number: 14, name: "XIV Riigikogu (2019–2023)" },
-  ]);
+  const [memberships, setMemberships] = useState([]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -147,7 +165,7 @@ function AppContent() {
         onOpenMethodology={() => setShowMethodologyModal(true)}
       />
 
-      <PageTitlebar />
+      <PageTitlebar memberships={memberships} />
 
       <main>
         <Routes>
@@ -162,6 +180,7 @@ function AppContent() {
                 theme={theme}
                 memberships={memberships}
                 searchFactionsList={searchFactionsList}
+                systemStatus={systemStatus}
               />
             }
           />
@@ -179,6 +198,7 @@ function AppContent() {
           <Route path="/istung/:date" element={<SessionView />} />
           <Route path="/kohalolek" element={<AttendanceView memberships={memberships} />} />
           <Route path="/kone/:id" element={<SpeechView />} />
+          <Route path="/saadik/:uuid" element={<PersonView theme={theme} />} />
           <Route path="*" element={<NotFoundView />} />
         </Routes>
       </main>
