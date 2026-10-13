@@ -34,6 +34,7 @@ function buildSearchQueryString({
   membership = "all",
   faction = null,
   speaker = null,
+  speakerUuid = null,
   startDate = null,
   endDate = null,
   sortBy = "date_desc",
@@ -48,6 +49,7 @@ function buildSearchQueryString({
   if (membership && membership !== "all") params.append("membership", membership);
   if (faction) params.append("faction", faction);
   if (speaker && speaker.trim()) params.append("speaker", speaker.trim());
+  if (speakerUuid) params.append("speaker_uuid", speakerUuid);
   if (startDate) params.append("start_date", startDate);
   if (endDate) params.append("end_date", endDate);
   if (sortBy && sortBy !== "date_desc") params.append("sort_by", sortBy);
@@ -164,5 +166,30 @@ export async function fetchPerson(uuid) {
 
 export async function fetchSpeech(speechId) {
   const res = await fetch(`${BASE_URL}/speeches/${encodeURIComponent(speechId)}`);
+  return handleResponse(res);
+}
+
+export async function fetchPersonStats(uuid) {
+  const res = await fetch(`${BASE_URL}/persons/${encodeURIComponent(uuid)}/stats`);
+  return handleResponse(res);
+}
+
+export async function fetchPersonSpeeches(
+  uuid,
+  { roleClass = "mp", speechCategory = null, limit = 20, offset = 0 } = {}
+) {
+  const params = new URLSearchParams();
+  if (roleClass) params.append("role_class", roleClass);
+  if (speechCategory) params.append("speech_category", speechCategory);
+  if (limit !== undefined && limit !== null) params.append("limit", limit);
+  if (offset !== undefined && offset !== null) params.append("offset", offset);
+  const res = await fetch(
+    `${BASE_URL}/persons/${encodeURIComponent(uuid)}/speeches?${params.toString()}`
+  );
+  return handleResponse(res);
+}
+
+export async function fetchPersonAttendance(uuid) {
+  const res = await fetch(`${BASE_URL}/persons/${encodeURIComponent(uuid)}/attendance`);
   return handleResponse(res);
 }

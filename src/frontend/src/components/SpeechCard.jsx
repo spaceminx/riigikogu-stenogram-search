@@ -32,7 +32,16 @@ export function SpeechCard({
     >
       <div className="speech-meta">
         <div className="speaker-header-info">
-          <span className="speaker-name-highlight">{speech.speaker}</span>
+          {speech.speaker_uuid ? (
+            <Link
+              to={`/saadik/${encodeURIComponent(speech.speaker_uuid)}`}
+              className="speaker-name-highlight speaker-name-link"
+            >
+              {speech.speaker}
+            </Link>
+          ) : (
+            <span className="speaker-name-highlight">{speech.speaker}</span>
+          )}
           {speech.speaker_role && <span className="speaker-role-tag">{speech.speaker_role}</span>}
           {speechTypeLabel && (
             <span className="speaker-role-tag speech-type-badge">{speechTypeLabel}</span>

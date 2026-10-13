@@ -116,7 +116,16 @@ export function ContextModal({ activeSpeechContext, onClose, groups = [[]] }) {
                       flexWrap: "wrap",
                     }}
                   >
-                    <span className="transcript-row-speaker">{speech.speaker}</span>
+                    {speech.speaker_uuid ? (
+                      <Link
+                        to={`/saadik/${encodeURIComponent(speech.speaker_uuid)}`}
+                        className="transcript-row-speaker speaker-name-link"
+                      >
+                        {speech.speaker}
+                      </Link>
+                    ) : (
+                      <span className="transcript-row-speaker">{speech.speaker}</span>
+                    )}
                     {speech.speaker_role && (
                       <span className="speaker-role-tag">{speech.speaker_role}</span>
                     )}

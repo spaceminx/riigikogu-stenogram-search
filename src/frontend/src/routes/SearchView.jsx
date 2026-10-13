@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchActivity, fetchSearch, fetchSpeakers, fetchSpeechContext } from "../lib/api";
+import useSWR from "swr";
+import {
+  fetchActivity,
+  fetchPerson,
+  fetchSearch,
+  fetchSpeakers,
+  fetchSpeechContext,
+} from "../lib/api";
 import { parseQueryToGroups } from "../lib/formatters";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
@@ -26,6 +33,7 @@ export function SearchView({
   const membershipParam = searchParams.get("membership") || "all";
   const factionParam = searchParams.get("faction") || "";
   const speakerParam = searchParams.get("speaker") || "";
+  const speakerUuidParam = searchParams.get("speaker_uuid") || "";
   const startDateParam = searchParams.get("start_date") || "";
   const endDateParam = searchParams.get("end_date") || "";
   const sortParam = searchParams.get("sort") || "date_desc";
@@ -47,7 +55,7 @@ export function SearchView({
   const [filterSpeechCategory, setFilterSpeechCategory] = useState(speechCategoryParam);
 
   // Sync draft filters during render if URL changes externally (e.g. Back/Forward)
-  const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}`;
+  const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${speakerUuidParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}`;
   const [prevUrlFiltersKey, setPrevUrlFiltersKey] = useState(urlFiltersKey);
   if (prevUrlFiltersKey !== urlFiltersKey) {
     setPrevUrlFiltersKey(urlFiltersKey);
@@ -58,6 +66,18 @@ export function SearchView({
     setFilterExcludeChair(excludeChairParam);
     setFilterSpeechCategory(speechCategoryParam);
   }
+
+  const { data: speakerPerson } = useSWR(
+    speakerUuidParam ? `speaker-person-${speakerUuidParam}` : null,
+    () => fetchPerson(speakerUuidParam),
+    { revalidateOnFocus: false, shouldRetryOnError: false }
+  );
+
+  const handleRemoveSpeakerUuid = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("speaker_uuid");
+    setSearchParams(next, { replace: true });
+  };
 
   // Local state for interactive editing of input query tokens
   const [groups, setGroups] = useState(() => parseQueryToGroups(queryParam));
@@ -125,6 +145,7 @@ export function SearchView({
           membership: membershipParam,
           faction: factionParam || null,
           speaker: speakerParam || null,
+          speakerUuid: speakerUuidParam || null,
           startDate: startDateParam || null,
           endDate: endDateParam || null,
           sortBy: sortParam,
@@ -140,6 +161,7 @@ export function SearchView({
           membership: membershipParam,
           faction: factionParam || null,
           speaker: speakerParam || null,
+          speakerUuid: speakerUuidParam || null,
           startDate: startDateParam || null,
           endDate: endDateParam || null,
           excludeChair: excludeChairParam,
@@ -155,6 +177,7 @@ export function SearchView({
           membership: membershipParam,
           faction: factionParam || null,
           speaker: speakerParam || null,
+          speakerUuid: speakerUuidParam || null,
           startDate: startDateParam || null,
           endDate: endDateParam || null,
           excludeChair: excludeChairParam,
@@ -195,6 +218,7 @@ export function SearchView({
     membershipParam,
     factionParam,
     speakerParam,
+    speakerUuidParam,
     startDateParam,
     endDateParam,
     sortParam,
@@ -223,6 +247,7 @@ export function SearchView({
     if (filterMembership && filterMembership !== "all") next.set("membership", filterMembership);
     if (filterFaction) next.set("faction", filterFaction);
     if (filterSpeaker.trim()) next.set("speaker", filterSpeaker.trim());
+    if (speakerUuidParam) next.set("speaker_uuid", speakerUuidParam);
     if (filterDateRange.startDate) next.set("start_date", filterDateRange.startDate);
     if (filterDateRange.endDate) next.set("end_date", filterDateRange.endDate);
     if (filterExcludeChair) next.set("exclude_chair", "true");
@@ -269,6 +294,7 @@ export function SearchView({
           membership: membershipParam,
           faction: factionParam || null,
           speaker: speakerParam || null,
+          speakerUuid: speakerUuidParam || null,
           startDate: startDateParam || null,
           endDate: endDateParam || null,
           excludeChair: excludeChairParam,
@@ -334,6 +360,7 @@ export function SearchView({
     membership: membershipParam,
     faction: factionParam || null,
     speaker: speakerParam || null,
+    speakerUuid: speakerUuidParam || null,
     startDate: startDateParam || null,
     endDate: endDateParam || null,
     sortBy: sortParam,
@@ -343,6 +370,24 @@ export function SearchView({
 
   return (
     <div style={{ marginTop: "0.5rem" }}>
+      {speakerUuidParam && (
+        <div className="speaker-filter-chip-wrapper">
+          <div className="token-pill speaker-token-pill">
+            <span>
+              Saadiku filter: <strong>{speakerPerson?.full_name || "Laen..."}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={handleRemoveSpeakerUuid}
+              title="Eemalda saadiku filter"
+              aria-label="Eemalda saadiku filter"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       <SearchQueryInput
         groups={groups}
         setGroups={setGroups}

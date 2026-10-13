@@ -1561,6 +1561,94 @@ def test_person_speeches_pagination_and_role_class():
     assert client.get("/persons/unknown-uuid/speeches").status_code == 404
 
 
+def test_person_stats_and_speeches_parity_with_director():
+    session = SessionLocal()
+    puuid = "uuid-test-parity-person"
+    session.merge(
+        Person(
+            uuid=puuid,
+            first_name="Pariteedi",
+            last_name="Test",
+            full_name="Pariteedi Test",
+            active=1,
+        )
+    )
+
+    speeches_data = [
+        # (id, role, type)
+        (5001, None, "SPEECH"),  # mp
+        (5002, None, None),  # mp with NULL speech_type
+        (5003, None, "DIRECTOR"),  # director (not mp!)
+        (5004, "Esimees", "SPEECH"),  # chair
+        (5005, "Aseesimees", "DIRECTOR"),  # director (not chair!)
+        (5006, "Peaminister", "SPEECH"),  # minister
+        (5007, "Kaitseminister", "SMALL_SPEECH"),  # minister
+        (5008, "Peaministrikandidaat", "SPEECH"),  # candidate
+        (5009, "Riigikontrolör", "SPEECH"),  # other
+        (5010, "Külaline", "DIRECTOR"),  # director (not other!)
+    ]
+
+    for sid, role, stype in speeches_data:
+        session.merge(
+            Speech(
+                id=sid,
+                date="2024-05-01",
+                time="1000",
+                source_file="2024.api",
+                source_url=f"https://stenogrammid.riigikogu.ee/et/202405011000#{sid}",
+                speaker="Pariteedi Test",
+                speaker_uuid=puuid,
+                speaker_role=role,
+                speech_type=stype,
+                text="Testikõne sisu",
+            )
+        )
+    session.commit()
+    session.close()
+
+    # 1. Check stats
+    res_stats = client.get(f"/persons/{puuid}/stats")
+    assert res_stats.status_code == 200
+    stats = res_stats.json()
+
+    # 2. Check person profile speeches_count
+    res_person = client.get(f"/persons/{puuid}")
+    assert res_person.status_code == 200
+    person = res_person.json()
+    assert person["speeches_count"] == stats["totals"]["mp"]["total"]
+    assert person["speeches_count"] == 2  # 5001, 5002 (5003 is DIRECTOR)
+
+    # 3. Check each role_class speeches total_count equals stats totals
+    for rc in ("mp", "chair", "minister", "candidate", "other"):
+        res_rc = client.get(f"/persons/{puuid}/speeches?role_class={rc}")
+        assert res_rc.status_code == 200
+        rc_data = res_rc.json()
+        assert rc_data["total_count"] == stats["totals"][rc]["total"], (
+            f"Mismatch for role_class={rc}"
+        )
+
+    # 4. Check director role_class
+    res_dir = client.get(f"/persons/{puuid}/speeches?role_class=director")
+    assert res_dir.status_code == 200
+    dir_data = res_dir.json()
+    assert dir_data["total_count"] == stats["director"]
+    assert dir_data["total_count"] == 3  # 5003, 5005, 5010
+
+    # 5. Check role_class=all equals speeches_count_all and sum of all roles + director
+    res_all = client.get(f"/persons/{puuid}/speeches?role_class=all")
+    assert res_all.status_code == 200
+    all_data = res_all.json()
+    expected_all_sum = (
+        sum(
+            stats["totals"][rc]["total"] for rc in ("mp", "chair", "minister", "candidate", "other")
+        )
+        + stats["director"]
+    )
+    assert all_data["total_count"] == expected_all_sum
+    assert all_data["total_count"] == person["speeches_count_all"]
+    assert all_data["total_count"] == 10
+
+
 def test_overview_excludes_chair_and_director():
     from src.api.search import _OVERVIEW_CACHE
 

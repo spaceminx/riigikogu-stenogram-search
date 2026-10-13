@@ -113,7 +113,16 @@ export function SpeechView() {
         <header className="speech-meta" style={{ marginBottom: "1.5rem" }}>
           <div className="speaker-header-info">
             <h1 className="speaker-name-highlight" style={{ fontSize: "1.5rem", margin: 0 }}>
-              {speech.speaker}
+              {speech.speaker_uuid ? (
+                <Link
+                  to={`/saadik/${encodeURIComponent(speech.speaker_uuid)}`}
+                  className="speaker-name-link"
+                >
+                  {speech.speaker}
+                </Link>
+              ) : (
+                speech.speaker
+              )}
             </h1>
             {speech.speaker_role && <span className="speaker-role-tag">{speech.speaker_role}</span>}
             {speechTypeLabel && (

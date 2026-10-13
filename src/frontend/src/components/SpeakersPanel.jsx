@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { formatFactionName } from "../lib/formatters";
 
 export function SpeakersPanel({
@@ -33,7 +34,18 @@ export function SpeakersPanel({
                   {initials}
                 </span>
                 <div className="profile-details">
-                  <strong className="speaker-name">{sp.speaker}</strong>
+                  <strong className="speaker-name">
+                    {sp.speaker_uuid ? (
+                      <Link
+                        to={`/saadik/${encodeURIComponent(sp.speaker_uuid)}`}
+                        className="speaker-name-link"
+                      >
+                        {sp.speaker}
+                      </Link>
+                    ) : (
+                      sp.speaker
+                    )}
+                  </strong>
                   {sp.faction && (
                     <span className="faction-badge">{formatFactionName(sp.faction)}</span>
                   )}
