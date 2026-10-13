@@ -207,49 +207,60 @@ def load_persons_to_database() -> None:
     finally:
         session.close()
 
-    # Backfill missing speaker_uuid on speeches
-    backfilled = backfill_speaker_uuids()
-    if backfilled > 0:
-        print(f"Backfilled speaker_uuid on {backfilled} speeches.")
+    # Check for missing speaker_uuid on speeches (read-only audit)
+    matchable = backfill_speaker_uuids()
+    if matchable > 0:
+        print(f"Audit notice: {matchable} speeches have missing speaker_uuid in database.")
 
 
 def backfill_speaker_uuids() -> int:
-    """Populate speaker_uuid on speeches that match unique MP names in persons table,
-    and disambiguate known same-name members across terms (e.g. Tarmo Tamm)."""
+    """Count speeches with missing speaker_uuid that match unique MP names in persons table.
+
+    Read-only audit: does NOT modify the database to preserve JSONL as the source of truth.
+    Logs a recommendation to run repair_speaker_uuids.py if matches are found.
+    """
     with engine.connect() as conn:
-        res = conn.execute(
-            text(
-                "UPDATE speeches "
-                "SET speaker_uuid = ("
-                "  SELECT p.uuid FROM persons p WHERE p.full_name = speeches.speaker"
-                ") "
-                "WHERE speaker_uuid IS NULL "
-                "  AND speaker IN ("
-                "    SELECT full_name FROM persons GROUP BY full_name HAVING count(*) = 1"
-                ");"
-            )
+        res = (
+            conn.execute(
+                text(
+                    "SELECT count(*) FROM speeches "
+                    "WHERE speaker_uuid IS NULL "
+                    "  AND speaker IN ("
+                    "    SELECT full_name FROM persons GROUP BY full_name HAVING count(*) = 1"
+                    ");"
+                )
+            ).scalar()
+            or 0
         )
-        # Disambiguate Tarmo Tamm: XIII/XIV term (< 2023-04-10) vs XV term (>= 2023-04-10)
-        res_tt1 = conn.execute(
-            text(
-                "UPDATE speeches "
-                "SET speaker_uuid = '76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5' "
-                "WHERE speaker = 'Tarmo Tamm' "
-                "  AND speaker_uuid IS NULL "
-                "  AND date < '2023-04-10';"
-            )
+        res_tt1 = (
+            conn.execute(
+                text(
+                    "SELECT count(*) FROM speeches "
+                    "WHERE speaker = 'Tarmo Tamm' "
+                    "  AND speaker_uuid IS NULL "
+                    "  AND date < '2023-04-10';"
+                )
+            ).scalar()
+            or 0
         )
-        res_tt2 = conn.execute(
-            text(
-                "UPDATE speeches "
-                "SET speaker_uuid = '236e49d6-eecb-4562-8ad4-bedd586bb149' "
-                "WHERE speaker = 'Tarmo Tamm' "
-                "  AND speaker_uuid IS NULL "
-                "  AND date >= '2023-04-10';"
-            )
+        res_tt2 = (
+            conn.execute(
+                text(
+                    "SELECT count(*) FROM speeches "
+                    "WHERE speaker = 'Tarmo Tamm' "
+                    "  AND speaker_uuid IS NULL "
+                    "  AND date >= '2023-04-10';"
+                )
+            ).scalar()
+            or 0
         )
-        conn.commit()
-        return res.rowcount + res_tt1.rowcount + res_tt2.rowcount
+        total_matchable = res + res_tt1 + res_tt2
+        if total_matchable > 0:
+            print(
+                f"Notice: Found {total_matchable} speeches in database with missing speaker_uuid matching MP names. "
+                "Database was not modified. Run 'python scripts/repair_speaker_uuids.py' to resolve them in JSONL."
+            )
+        return total_matchable
 
 
 def load_jsonl_to_database(batch_size: int = 2000) -> None:

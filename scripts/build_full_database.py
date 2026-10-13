@@ -5,6 +5,7 @@ import time
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from datetime import datetime
 from pathlib import Path
 
 from config import OUTPUT_DIR_PROCESSED
@@ -15,28 +16,56 @@ from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
 
-def build_full_database(workers: int | None = None, chunk_size: int = 50) -> None:
+def get_expected_dataset_files(current_year: int | None = None) -> list[str]:
+    """Calculate expected dataset files (2019 to current year, persons, person_factions, attendance)."""
+    year = current_year or datetime.now().year
+    files = [f"{y}.jsonl" for y in range(2019, year + 1)]
+    files.extend(["persons.json", "person_factions.json"])
+    processed_dir = Path(OUTPUT_DIR_PROCESSED)
+    if (processed_dir / "attendance.jsonl").exists():
+        files.append("attendance.jsonl")
+    return files
+
+
+def build_full_database(
+    workers: int | None = None,
+    chunk_size: int = 50,
+    allow_partial: bool = False,
+) -> None:
     """Run full end-to-end database initialization, loading, lemmatization, and indexing."""
     start_total = time.time()
     print("=" * 60)
     print("STARTING RIIGIKOGU DATABASE BUILD PIPELINE")
     print(f"Parallel worker processes: {workers if workers else 'Auto-detect (CPU threads - 2)'}")
+    if allow_partial:
+        print("Mode: PARTIAL BUILD ALLOWED (--allow-partial)")
     print("=" * 60)
 
-    # Step 0: Ensure data files exist
+    # Step 0: Ensure all expected dataset files exist
     processed_dir = Path(OUTPUT_DIR_PROCESSED)
-    jsonl_files = list(processed_dir.glob("*.jsonl"))
-    if not jsonl_files:
-        print(
-            "\n[Step 0/5] No .jsonl files found in data/processed. Downloading from Backblaze B2..."
-        )
-        success = download_all_from_b2()
-        jsonl_files = list(processed_dir.glob("*.jsonl"))
-        if not success or not jsonl_files:
+    expected_files = get_expected_dataset_files()
+    missing_files = [f for f in expected_files if not (processed_dir / f).exists()]
+
+    if missing_files:
+        if allow_partial:
             print(
-                "No .jsonl datasets found or downloaded. Please add B2 keys to .env or run scripts/fetch_stenograms_api.py."
+                f"\n[Warning] Building database with partial dataset (--allow-partial enabled).\n"
+                f"Missing expected files: {', '.join(missing_files)}"
             )
-            return
+        else:
+            print(
+                f"\n[Step 0/5] Missing expected dataset files: {', '.join(missing_files)}.\n"
+                "Attempting to download all files from Backblaze B2..."
+            )
+            download_all_from_b2()
+            still_missing = [f for f in expected_files if not (processed_dir / f).exists()]
+            if still_missing:
+                print(
+                    f"\n[Error] Database build aborted. The following expected files are missing: {', '.join(still_missing)}.\n"
+                    "Please download datasets from B2 or use '--allow-partial' to force building with a partial dataset.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
 
     # Step 1: Create Database Tables
     print("\n[Step 1/5] Creating Database Tables...")
@@ -85,6 +114,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--chunk-size", type=int, default=50, help="Chunk size for parallel workers (default: 50)"
     )
+    parser.add_argument(
+        "--allow-partial",
+        action="store_true",
+        default=False,
+        help="Allow building database from partial dataset without aborting if files are missing",
+    )
     args = parser.parse_args()
 
-    build_full_database(workers=args.workers, chunk_size=args.chunk_size)
+    build_full_database(
+        workers=args.workers, chunk_size=args.chunk_size, allow_partial=args.allow_partial
+    )

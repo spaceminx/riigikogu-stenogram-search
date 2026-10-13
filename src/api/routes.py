@@ -514,9 +514,11 @@ def search_export(
         writer.writerow(
             [
                 "ID",
+                "Link",
                 "Kuupäev",
                 "Kellaaeg",
                 "Kõneleja",
+                "Kõneleja UUID",
                 "Roll",
                 "Fraktsioon",
                 "Leitud märksõnu",
@@ -527,12 +529,16 @@ def search_export(
             ]
         )
         for r in results:
+            public_id = r.get("external_id") or r.get("speech_key") or r.get("id", "")
+            link = f"https://www.riigivaade.me/kone/{public_id}" if public_id else ""
             writer.writerow(
                 [
-                    r.get("id", ""),
+                    public_id,
+                    link,
                     r.get("date", ""),
                     r.get("time", ""),
                     r.get("speaker", ""),
+                    r.get("speaker_uuid", "") or "",
                     r.get("speaker_role", "") or "",
                     r.get("speaker_faction", "") or "",
                     r.get("count", 0),

@@ -337,6 +337,74 @@ def test_load_persons_to_database(tmp_path, monkeypatch):
         session.close()
 
 
+def test_backfill_speaker_uuids_read_only(tmp_path, monkeypatch):
+    from src.load.loader import backfill_speaker_uuids
+
+    create_tables()
+    session = SessionLocal()
+    try:
+        # Create person
+        p = Person(
+            uuid="uuid-unique-mp",
+            first_name="Ainulaadne",
+            last_name="Saadik",
+            full_name="Ainulaadne Saadik",
+            active=1,
+        )
+        session.merge(p)
+        # Create speech without speaker_uuid
+        sp = Speech(
+            date="2024-05-01",
+            time="1000",
+            source_file="test_session.jsonl:1",
+            source_url="https://example.com",
+            speaker="Ainulaadne Saadik",
+            speaker_uuid=None,
+            text="Tere päevast",
+            status="EDITED",
+        )
+        session.add(sp)
+        session.commit()
+        sp_id = sp.id
+
+        # Run backfill_speaker_uuids
+        count = backfill_speaker_uuids()
+        assert count >= 1
+
+        # Check that speech speaker_uuid is STILL None in database (read-only audit!)
+        reloaded = session.query(Speech).filter(Speech.id == sp_id).first()
+        assert reloaded.speaker_uuid is None
+    finally:
+        session.close()
+
+
+def test_build_full_database_missing_year_aborts(tmp_path, monkeypatch):
+    import pytest
+
+    from scripts.build_full_database import build_full_database
+
+    monkeypatch.setattr("scripts.build_full_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("scripts.build_full_database.download_all_from_b2", lambda: False)
+
+    with pytest.raises(SystemExit) as exc_info:
+        build_full_database(allow_partial=False)
+    assert exc_info.value.code == 1
+
+
+def test_build_full_database_allow_partial_continues(tmp_path, monkeypatch):
+    from scripts.build_full_database import build_full_database
+
+    monkeypatch.setattr("scripts.build_full_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("scripts.build_full_database.create_tables", lambda: None)
+    monkeypatch.setattr("scripts.build_full_database.load_jsonl_to_database", lambda: None)
+    monkeypatch.setattr("scripts.build_full_database.build_missing_lemmas", lambda **kwargs: None)
+    monkeypatch.setattr("scripts.build_full_database.build_missing_terms", lambda: None)
+    monkeypatch.setattr("scripts.build_full_database.create_indexes", lambda: None)
+
+    # Calling with allow_partial=True should NOT raise SystemExit
+    build_full_database(allow_partial=True)
+
+
 def test_fetch_factions_and_persons_with_mock(tmp_path, monkeypatch):
     import requests
 

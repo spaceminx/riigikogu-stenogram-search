@@ -62,13 +62,14 @@ jobs:
         run: python scripts/fetch_attendance.py
 
       - name: 6. Verify pipeline data integrity
+        id: integrity
         if: ${{ !cancelled() && steps.download.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/verify_pipeline_integrity.py
 
       - name: 7. Upload updated data and sync state back to Backblaze B2
-        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.download.outcome == 'success' && steps.integrity.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
