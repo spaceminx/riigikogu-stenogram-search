@@ -405,6 +405,37 @@ def test_build_full_database_allow_partial_continues(tmp_path, monkeypatch):
     build_full_database(allow_partial=True)
 
 
+def test_get_expected_dataset_files_attendance_always_expected(tmp_path, monkeypatch):
+    from scripts.build_full_database import get_expected_dataset_files
+
+    monkeypatch.setattr("scripts.build_full_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    files = get_expected_dataset_files()
+    assert "attendance.jsonl" in files
+    assert "persons.json" in files
+    assert "person_factions.json" in files
+
+
+def test_get_expected_dataset_files_january_cutoff():
+    from datetime import datetime
+
+    from scripts.build_full_database import get_expected_dataset_files
+
+    early_jan = datetime(2027, 1, 10)
+    files_early = get_expected_dataset_files(now=early_jan)
+    assert "2026.jsonl" in files_early
+    assert "2027.jsonl" not in files_early
+    assert "attendance.jsonl" in files_early
+
+    mid_jan = datetime(2027, 1, 15)
+    files_mid = get_expected_dataset_files(now=mid_jan)
+    assert "2027.jsonl" in files_mid
+    assert "attendance.jsonl" in files_mid
+
+    october = datetime(2026, 10, 13)
+    files_oct = get_expected_dataset_files(now=october)
+    assert "2026.jsonl" in files_oct
+
+
 def test_fetch_factions_and_persons_with_mock(tmp_path, monkeypatch):
     import requests
 

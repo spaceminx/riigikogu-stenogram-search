@@ -16,14 +16,26 @@ from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
 
-def get_expected_dataset_files(current_year: int | None = None) -> list[str]:
-    """Calculate expected dataset files (2019 to current year, persons, person_factions, attendance)."""
-    year = current_year or datetime.now().year
-    files = [f"{y}.jsonl" for y in range(2019, year + 1)]
-    files.extend(["persons.json", "person_factions.json"])
-    processed_dir = Path(OUTPUT_DIR_PROCESSED)
-    if (processed_dir / "attendance.jsonl").exists():
-        files.append("attendance.jsonl")
+def get_expected_dataset_files(
+    now: datetime | None = None,
+    current_year: int | None = None,
+) -> list[str]:
+    """Calculate expected dataset files (2019 to current year, persons, person_factions, attendance).
+
+    - attendance.jsonl is always an expected file.
+    - Current year file is required from January 15 onwards. Prior to Jan 15, current year
+      plenary sessions may not have started yet.
+    """
+    if now is None:
+        if current_year is not None:
+            now = datetime(current_year, 6, 1)
+        else:
+            now = datetime.now()
+
+    year = now.year
+    end_year = year if (now.month > 1 or now.day >= 15) else (year - 1)
+    files = [f"{y}.jsonl" for y in range(2019, end_year + 1)]
+    files.extend(["persons.json", "person_factions.json", "attendance.jsonl"])
     return files
 
 
