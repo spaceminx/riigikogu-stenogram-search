@@ -31,7 +31,7 @@ const ROLE_LABELS = {
   minister: "Ministrina",
   candidate: "Kandidaadina",
   other: "Muu roll",
-  director: "Juhatamisi (DIRECTOR)",
+  director: "Juhatamisi",
 };
 
 const MEMBERSHIP_ROMAN = {
@@ -185,6 +185,7 @@ export function PersonView({ theme = "light" }) {
       speeches: item.mp?.speeches || 0,
       questions: item.mp?.questions || 0,
       procedural: item.mp?.procedural || 0,
+      unclassified: item.mp?.unclassified || 0,
       total: item.mp?.total || 0,
     }));
   }, [stats]);
@@ -267,6 +268,9 @@ export function PersonView({ theme = "light" }) {
   const totalSpeechesInCurrentTab =
     availableRoleTabs.find((t) => t.id === currentRole)?.count || speechesData?.total_count || 0;
   const totalPages = Math.max(1, Math.ceil(totalSpeechesInCurrentTab / SPEECHES_PER_PAGE));
+
+  const hasUnclassified = (stats?.totals?.mp?.unclassified || 0) > 0;
+  const hasDirector = (stats?.director || 0) > 0;
 
   // Theming for chart tooltip, axes and grid lines
   const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
@@ -437,7 +441,10 @@ export function PersonView({ theme = "light" }) {
             <strong className="person-metric-value person-metric-value-primary">
               {getMetricValue(stats?.totals?.mp?.total)}
             </strong>
-            <span className="person-metric-desc">Kõik sõnavõtud saadikuna</span>
+            <span className="person-metric-desc">
+              Kõik sõnavõtud saadikuna
+              {hasUnclassified ? ` (sh ${stats.totals.mp.unclassified} liigitamata)` : ""}
+            </span>
           </div>
 
           <div className="summary-card glass-panel person-metric-card">
@@ -492,10 +499,17 @@ export function PersonView({ theme = "light" }) {
               peetud kõnede hulka.
             </p>
 
-            {(stats.director || 0) > 0 && (
+            {hasUnclassified && (
+              <p className="person-other-roles-desc">
+                Liigitamata sõnavõtud saadikuna: <strong>{stats.totals.mp.unclassified}</strong> —
+                stenogrammis märgitud DIRECTOR-tüübina väljaspool istungi juhatamist.
+              </p>
+            )}
+
+            {hasDirector && (
               <div className="person-director-note">
-                Istungi juhatamisi (DIRECTOR): <strong>{stats.director}</strong> — stenogrammides
-                loetakse need juhatamise sõnavõttudeks; neid ei loeta sisuliste kõnede hulka.
+                Istungi juhatamisi: <strong>{stats.director}</strong> — stenogrammides tuvastatud
+                juhatamise sõnavõtud esimehe või aseesimehe rollis.
               </div>
             )}
           </div>
@@ -521,7 +535,11 @@ export function PersonView({ theme = "light" }) {
                   stroke={axisStroke}
                   tick={{ fill: tickColor, fontSize: 12 }}
                 />
-                <YAxis stroke={axisStroke} tick={{ fill: tickColor, fontSize: 12 }} />
+                <YAxis
+                  stroke={axisStroke}
+                  tick={{ fill: tickColor, fontSize: 12 }}
+                  allowDecimals={false}
+                />
                 <Tooltip {...chartTooltipStyle} />
                 <Legend wrapperStyle={{ paddingTop: "10px" }} />
                 <Bar dataKey="speeches" name="Kõned" stackId="mp" fill="#315b84" />
@@ -532,6 +550,9 @@ export function PersonView({ theme = "light" }) {
                   fill="#0ea5e9"
                 />
                 <Bar dataKey="procedural" name="Protseduurilised" stackId="mp" fill="#94a3b8" />
+                {hasUnclassified && (
+                  <Bar dataKey="unclassified" name="Liigitamata" stackId="mp" fill="#f59e0b" />
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -553,15 +574,22 @@ export function PersonView({ theme = "light" }) {
                   <th scope="col" className="person-stats-col-num">
                     Protseduurilised
                   </th>
+                  {hasUnclassified && (
+                    <th scope="col" className="person-stats-col-num">
+                      Liigitamata
+                    </th>
+                  )}
                   <th scope="col" className="person-stats-col-num">
                     Kokku saadikuna
                   </th>
                   <th scope="col" className="person-stats-col-num">
                     Muud rollid
                   </th>
-                  <th scope="col" className="person-stats-col-num">
-                    Juhatamisi
-                  </th>
+                  {hasDirector && (
+                    <th scope="col" className="person-stats-col-num">
+                      Juhatamisi
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -573,11 +601,14 @@ export function PersonView({ theme = "light" }) {
                     <td className="person-stats-col-num">{row.mp?.speeches ?? 0}</td>
                     <td className="person-stats-col-num">{row.mp?.questions ?? 0}</td>
                     <td className="person-stats-col-num">{row.mp?.procedural ?? 0}</td>
+                    {hasUnclassified && (
+                      <td className="person-stats-col-num">{row.mp?.unclassified ?? 0}</td>
+                    )}
                     <td className="person-stats-col-num" style={{ fontWeight: 700 }}>
                       {row.mp?.total ?? 0}
                     </td>
                     <td className="person-stats-col-num">{row.other_roles_total ?? 0}</td>
-                    <td className="person-stats-col-num">{row.director ?? 0}</td>
+                    {hasDirector && <td className="person-stats-col-num">{row.director ?? 0}</td>}
                   </tr>
                 ))}
               </tbody>
@@ -613,15 +644,22 @@ export function PersonView({ theme = "light" }) {
                   <th scope="col" className="person-stats-col-num">
                     Protseduurilised
                   </th>
+                  {hasUnclassified && (
+                    <th scope="col" className="person-stats-col-num">
+                      Liigitamata
+                    </th>
+                  )}
                   <th scope="col" className="person-stats-col-num">
                     Kokku saadikuna
                   </th>
                   <th scope="col" className="person-stats-col-num">
                     Muud rollid
                   </th>
-                  <th scope="col" className="person-stats-col-num">
-                    Juhatamisi
-                  </th>
+                  {hasDirector && (
+                    <th scope="col" className="person-stats-col-num">
+                      Juhatamisi
+                    </th>
+                  )}
                   <th scope="col" className="person-stats-col-num">
                     Kohalolek
                   </th>
@@ -636,11 +674,16 @@ export function PersonView({ theme = "light" }) {
                     <td className="person-stats-col-num">{memStats?.mp?.speeches ?? 0}</td>
                     <td className="person-stats-col-num">{memStats?.mp?.questions ?? 0}</td>
                     <td className="person-stats-col-num">{memStats?.mp?.procedural ?? 0}</td>
+                    {hasUnclassified && (
+                      <td className="person-stats-col-num">{memStats?.mp?.unclassified ?? 0}</td>
+                    )}
                     <td className="person-stats-col-num" style={{ fontWeight: 700 }}>
                       {memStats?.mp?.total ?? 0}
                     </td>
                     <td className="person-stats-col-num">{memStats?.other_roles_total ?? 0}</td>
-                    <td className="person-stats-col-num">{memStats?.director ?? 0}</td>
+                    {hasDirector && (
+                      <td className="person-stats-col-num">{memStats?.director ?? 0}</td>
+                    )}
                     <td className="person-stats-col-num">
                       {memAtt && memAtt.total_sessions > 0
                         ? `${memAtt.attendance_percentage}% (${memAtt.present_sessions}/${memAtt.total_sessions})`

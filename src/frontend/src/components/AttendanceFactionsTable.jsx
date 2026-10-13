@@ -24,7 +24,7 @@ export function AttendanceFactionsTable({
           Fraktsioonide kohaloleku kontrollide statistika
         </caption>
         <thead>
-          <tr className="attendance-header-row">
+          <tr>
             <th scope="col" className="att-col-rank">
               #
             </th>
@@ -90,7 +90,7 @@ export function AttendanceFactionsTable({
             sortedFactionStats.map((stat, idx) => (
               <tr
                 key={stat.faction || idx}
-                className="attendance-row faction-row-interactive"
+                className="faction-row-interactive"
                 onClick={() => onSelectFaction(stat.faction)}
               >
                 <td className="att-col-rank">{idx + 1}</td>

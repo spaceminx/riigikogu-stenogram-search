@@ -159,21 +159,15 @@ export function DashboardView({
       </section>
 
       <div className="dashboard-grid">
-        <ActivityChart
-          activity={dashboardOverview?.activity || []}
-          loading={overviewLoading}
-          error={overviewError}
-          theme={theme}
-          kicker="VIIMASED 24 KUUD"
-          title="Sõnavõtud kuude kaupa"
-          emptyMessage="Andmed puuduvad."
-        />
-
-        <aside className="dashboard-rail">
-          <SpeakersPanel
-            speakers={overviewSpeakers}
-            showingArchiveSpeakers={true}
-            overviewError={overviewError}
+        <div className="dashboard-main">
+          <ActivityChart
+            activity={dashboardOverview?.activity || []}
+            loading={overviewLoading}
+            error={overviewError}
+            theme={theme}
+            kicker="VIIMASED 24 KUUD"
+            title="Sõnavõtud kuude kaupa"
+            emptyMessage="Andmed puuduvad."
           />
 
           <section className="glass-panel sessions-card" aria-labelledby="sessions-title">
@@ -225,6 +219,24 @@ export function DashboardView({
                   : "Värskeimad istungid laaditakse arhiivist."}
               </p>
             )}
+          </section>
+        </div>
+
+        <aside className="dashboard-rail">
+          <SpeakersPanel
+            speakers={overviewSpeakers}
+            showingArchiveSpeakers={true}
+            overviewError={overviewError}
+          />
+
+          <section className="glass-panel sessions-card" aria-labelledby="calendar-title">
+            <div className="chart-header">
+              <div>
+                <span className="section-kicker">ISTUNGITE ARHIIV</span>
+                <h2 id="calendar-title">Vali istung</h2>
+              </div>
+              <CalendarDays className="sessions-heading-icon" aria-hidden="true" />
+            </div>
             <DateRangeCalendar
               compact
               dates={plenaryDates}
