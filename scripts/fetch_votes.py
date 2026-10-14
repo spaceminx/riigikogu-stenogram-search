@@ -18,14 +18,6 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, START_DATE
 
-# Optional database support
-try:
-    from src.load.loader import ensure_schema, load_votes_to_database
-
-    HAS_DB = True
-except Exception:
-    HAS_DB = False
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -336,6 +328,7 @@ def fetch_votes(
     end_date: str | None = None,
     dry_run: bool = False,
     upload: bool = False,
+    load_db: bool = False,
 ) -> bool:
     """Fetch voting records from Riigikogu API and update votes_{YYYY}.jsonl files."""
     if not start_date:
@@ -427,6 +420,7 @@ def fetch_votes(
     # Fetch details and accumulate updates
     modified_years = set()
     fetched_count = 0
+    failed_uuids = []
 
     for idx, (v_summary, year) in enumerate(votings_to_fetch, 1):
         v_uuid = v_summary["uuid"]
@@ -442,6 +436,7 @@ def fetch_votes(
         detail = fetch_voting_detail(v_uuid)
         if not detail:
             logger.warning("Could not fetch detail for %s, skipping.", v_uuid)
+            failed_uuids.append(v_uuid)
             continue
 
         parsed = parse_and_validate_voting(detail, sitting_membership=v_summary.get("membership"))
@@ -458,25 +453,52 @@ def fetch_votes(
 
     logger.info("Successfully fetched and saved %d new votings.", fetched_count)
 
-    # Optional local database sync
-    if HAS_DB:
-        try:
-            ensure_schema()
-            loaded = load_votes_to_database(years=list(modified_years))
-            logger.info("Loaded %d new votings into local database.", loaded)
-        except Exception as e:
-            logger.warning("Local database sync notice: %s", e)
+    # Optional local database sync if --load-db is requested
+    if load_db:
+        if modified_years:
+            logger.info("Loading modified years %s into database...", sorted(modified_years))
+            try:
+                from src.load.loader import ensure_schema, load_votes_to_database
+
+                ensure_schema()
+                loaded = load_votes_to_database(years=list(modified_years))
+                logger.info("Loaded %d new votings into database.", loaded)
+            except Exception as e:
+                logger.error("Failed to load votes into database: %s", e)
+                return False
+        else:
+            logger.info("No modified years to load into database.")
 
     # Upload to B2 if requested
-    if upload and modified_years:
-        logger.info("Uploading modified files to Backblaze B2...")
-        try:
-            from scripts.upload_to_b2 import upload_to_b2
+    if upload:
+        if modified_years:
+            changed_files = [f"votes_{yr}.jsonl" for yr in sorted(modified_years)]
+            logger.info(
+                "Uploading %d modified file(s) to Backblaze B2: %s",
+                len(changed_files),
+                changed_files,
+            )
+            try:
+                from scripts.upload_to_b2 import upload_to_b2
 
-            upload_to_b2()
-        except Exception as e:
-            logger.error("Failed to upload to B2: %s", e)
-            return False
+                upload_ok = upload_to_b2(only_files=changed_files)
+                if not upload_ok:
+                    logger.error("B2 upload failed for modified vote files.")
+                    return False
+            except Exception as e:
+                logger.error("Failed to upload to B2: %s", e)
+                return False
+        else:
+            logger.info("No modified vote files to upload; skipping B2 upload.")
+
+    # If any detail fetches failed, report skipped UUIDs and return False
+    if failed_uuids:
+        logger.error(
+            "Completed with errors: failed to fetch details for %d voting(s):\n%s",
+            len(failed_uuids),
+            "\n".join(f"  - {u}" for u in failed_uuids),
+        )
+        return False
 
     return True
 
@@ -507,6 +529,12 @@ if __name__ == "__main__":
         default=False,
         help="Upload updated votes_*.jsonl files to Backblaze B2",
     )
+    parser.add_argument(
+        "--load-db",
+        action="store_true",
+        default=False,
+        help="Load modified years into SQLite database",
+    )
     args = parser.parse_args()
 
     success = fetch_votes(
@@ -514,5 +542,6 @@ if __name__ == "__main__":
         end_date=args.end_date,
         dry_run=args.dry_run,
         upload=args.upload,
+        load_db=args.load_db,
     )
     sys.exit(0 if success else 1)

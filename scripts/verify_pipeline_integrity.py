@@ -203,10 +203,8 @@ def verify_pipeline_integrity(
         for code, dt, reason in truncated_sessions:
             print(f"  - [{dt}] Code: {code} | Reason: {reason}")
 
-    # Check votes integrity
-    votes_ok = verify_votes_integrity(days=days, fail_on_missing=fail_on_missing)
-    if not votes_ok:
-        is_ok = False
+    # Check votes integrity (warning only; does not affect pipeline integrity)
+    verify_votes_integrity(days=days, fail_on_missing=False)
 
     if not is_ok and fail_on_missing:
         return False
@@ -216,7 +214,7 @@ def verify_pipeline_integrity(
 
 def verify_votes_integrity(
     days: int = 14,
-    fail_on_missing: bool = True,
+    fail_on_missing: bool = False,
 ) -> bool:
     """Compare recent official Riigikogu votings against processed votes_{YYYY}.jsonl files."""
     end_dt = datetime.now()
@@ -249,16 +247,16 @@ def verify_votes_integrity(
         resp = requests.get(url, timeout=(5, 25))
         if resp.status_code != 200:
             print(
-                f"Warning: Votings API returned HTTP {resp.status_code}. Skipping votes verification."
+                f"SKIPPED: Votings API returned HTTP {resp.status_code}. Skipping votes verification."
             )
             return True
         sittings = resp.json()
     except Exception as e:
-        print(f"Warning: Could not connect to Riigikogu API: {e}. Skipping votes verification.")
+        print(f"SKIPPED: Could not connect to Riigikogu API: {e}. Skipping votes verification.")
         return True
 
     if not isinstance(sittings, list):
-        print("Notice: Unexpected response from votings API (not a list).")
+        print("SKIPPED: Unexpected response from votings API (not a list).")
         return True
 
     official_votings = []

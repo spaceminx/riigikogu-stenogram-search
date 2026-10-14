@@ -14,6 +14,7 @@ from src.load.models import (
     Speech,
     SpeechAlias,
     SpeechTerm,
+    SystemMeta,
     Vote,
     Voting,
 )
@@ -22,39 +23,11 @@ from src.load.models import (
 def ensure_schema(target_engine=None) -> None:
     """Ensure database schema is up to date (idempotent migration helper)."""
     eng = target_engine or engine
+    SystemMeta.__table__.create(eng, checkfirst=True)
+    Voting.__table__.create(eng, checkfirst=True)
+    Vote.__table__.create(eng, checkfirst=True)
+
     with eng.connect() as conn:
-        conn.execute(
-            text("CREATE TABLE IF NOT EXISTS system_meta (key TEXT PRIMARY KEY, value TEXT);")
-        )
-        conn.execute(
-            text(
-                """
-                CREATE TABLE IF NOT EXISTS votings (
-                    uuid TEXT PRIMARY KEY,
-                    voting_number INTEGER,
-                    type TEXT,
-                    description TEXT,
-                    date TEXT NOT NULL,
-                    start_time TEXT,
-                    end_time TEXT,
-                    membership INTEGER,
-                    sitting_uuid TEXT,
-                    sitting_title TEXT,
-                    related_document_uuid TEXT,
-                    related_document_reference TEXT,
-                    related_document_title TEXT,
-                    related_document_type TEXT,
-                    chairman_uuid TEXT,
-                    present INTEGER,
-                    absent INTEGER,
-                    in_favor INTEGER,
-                    against INTEGER,
-                    neutral INTEGER,
-                    abstained INTEGER
-                );
-                """
-            )
-        )
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_votings_date ON votings(date);"))
         conn.execute(
             text(
@@ -62,25 +35,13 @@ def ensure_schema(target_engine=None) -> None:
             )
         )
         conn.execute(
-            text(
-                """
-                CREATE TABLE IF NOT EXISTS votes (
-                    voting_uuid TEXT NOT NULL,
-                    member_uuid TEXT NOT NULL,
-                    faction TEXT,
-                    decision TEXT NOT NULL,
-                    PRIMARY KEY (voting_uuid, member_uuid),
-                    FOREIGN KEY (voting_uuid) REFERENCES votings(uuid)
-                );
-                """
-            )
-        )
-        conn.execute(
             text("CREATE INDEX IF NOT EXISTS idx_votes_member_uuid ON votes(member_uuid);")
         )
-        conn.execute(
-            text("CREATE INDEX IF NOT EXISTS idx_votes_voting_uuid ON votes(voting_uuid);")
-        )
+        conn.execute(text("DROP INDEX IF EXISTS idx_votes_voting_uuid;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votes_voting_uuid;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votings_date;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votings_related_document_uuid;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votes_member_uuid;"))
         tables = {
             row[0]
             for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
@@ -493,14 +454,16 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
         for vfile in vote_files:
             print(f"Loading votes from {vfile.name}...")
             with open(vfile, encoding="utf-8") as f:
-                for line in f:
+                for line_num, line in enumerate(f, 1):
                     line = line.strip()
                     if not line:
                         continue
                     try:
                         record = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
+                    except json.JSONDecodeError as err:
+                        raise ValueError(
+                            f"Corrupted JSON on line {line_num} in {vfile.name}: {err}"
+                        ) from err
 
                     v_uuid = record.get("voting_uuid")
                     if not v_uuid or v_uuid in existing_voting_uuids:
@@ -572,9 +535,9 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
             vote_batch.clear()
 
         print(f"Done loading votes ({total_votings_loaded} votings added).")
-    except Exception as e:
+    except Exception:
         session.rollback()
-        print(f"Notice: Error loading votes: {e}")
+        raise
     finally:
         session.close()
 

@@ -7,12 +7,20 @@ import pytest
 from fastapi.testclient import TestClient
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from sqlalchemy import create_engine
+
 from scripts.build_full_database import get_expected_dataset_files
 from scripts.fetch_votes import (
+    fetch_votes,
     parse_and_validate_voting,
     write_votes_jsonl_atomic,
 )
-from scripts.verify_pipeline_integrity import verify_votes_integrity
+from scripts.load_votes import load_votes
+from scripts.sync_database import sync_database
+from scripts.verify_pipeline_integrity import (
+    verify_pipeline_integrity,
+    verify_votes_integrity,
+)
 from src.api.main import app
 from src.load.database import SessionLocal
 from src.load.loader import create_tables, ensure_schema, load_votes_to_database
@@ -300,3 +308,381 @@ def test_verify_votes_integrity():
         mock_get.return_value = mock_resp
         ok = verify_votes_integrity(days=14, fail_on_missing=False)
         assert ok is True
+
+
+def test_fetch_votes_detail_failure_partial_write(tmp_path):
+    with (
+        patch("scripts.fetch_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("scripts.fetch_votes.fetch_votings_list") as mock_list,
+        patch("scripts.fetch_votes.fetch_voting_detail") as mock_detail,
+    ):
+        mock_list.return_value = [
+            {
+                "membership": 15,
+                "votings": [
+                    {
+                        "uuid": "v-ok",
+                        "votingNumber": 1,
+                        "type": {"code": "AVALIK"},
+                        "description": "Success voting",
+                        "startDateTime": "2026-09-29T10:00:00",
+                    },
+                    {
+                        "uuid": "v-fail",
+                        "votingNumber": 2,
+                        "type": {"code": "AVALIK"},
+                        "description": "Failing voting",
+                        "startDateTime": "2026-09-29T10:05:00",
+                    },
+                ],
+            }
+        ]
+        mock_detail.side_effect = lambda u: (
+            {
+                "uuid": "v-ok",
+                "votingNumber": 1,
+                "type": {"code": "AVALIK"},
+                "description": "Success voting",
+                "startDateTime": "2026-09-29T10:00:00",
+                "inFavor": 1,
+                "against": 0,
+                "neutral": 0,
+                "abstained": 0,
+                "present": 1,
+                "absent": 0,
+                "voters": [{"uuid": "m1", "decision": {"code": "POOLT"}}],
+            }
+            if u == "v-ok"
+            else None
+        )
+
+        success = fetch_votes(start_date="2026-09-29", end_date="2026-09-29")
+        assert success is False
+
+        # Verify that successful voting was still written to file atomically
+        out_file = tmp_path / "votes_2026.jsonl"
+        assert out_file.exists()
+        with open(out_file, encoding="utf-8") as f:
+            lines = [json.loads(line) for line in f if line.strip()]
+            assert len(lines) == 1
+            assert lines[0]["voting_uuid"] == "v-ok"
+
+
+def test_fetch_votes_upload_only_modified(tmp_path):
+    with (
+        patch("scripts.fetch_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("scripts.fetch_votes.fetch_votings_list") as mock_list,
+        patch("scripts.fetch_votes.fetch_voting_detail") as mock_detail,
+        patch("scripts.upload_to_b2.upload_to_b2") as mock_upload,
+    ):
+        mock_list.return_value = [
+            {
+                "membership": 15,
+                "votings": [
+                    {
+                        "uuid": "v-up",
+                        "votingNumber": 1,
+                        "type": {"code": "AVALIK"},
+                        "description": "Upload test",
+                        "startDateTime": "2026-09-29T10:00:00",
+                    }
+                ],
+            }
+        ]
+        mock_detail.return_value = {
+            "uuid": "v-up",
+            "votingNumber": 1,
+            "type": {"code": "AVALIK"},
+            "description": "Upload test",
+            "startDateTime": "2026-09-29T10:00:00",
+            "voters": [],
+        }
+
+        # Case 1: upload succeeds with only_files restricted to modified year
+        mock_upload.return_value = True
+        res_ok = fetch_votes(start_date="2026-09-29", end_date="2026-09-29", upload=True)
+        assert res_ok is True
+        mock_upload.assert_called_once_with(only_files=["votes_2026.jsonl"])
+
+        # Case 2: upload fails -> returns False
+        mock_list.return_value = [
+            {
+                "membership": 15,
+                "votings": [
+                    {
+                        "uuid": "v-up-2",
+                        "votingNumber": 2,
+                        "type": {"code": "AVALIK"},
+                        "description": "Upload test 2",
+                        "startDateTime": "2026-09-29T10:10:00",
+                    }
+                ],
+            }
+        ]
+        mock_detail.return_value = {
+            "uuid": "v-up-2",
+            "votingNumber": 2,
+            "type": {"code": "AVALIK"},
+            "description": "Upload test 2",
+            "startDateTime": "2026-09-29T10:10:00",
+            "voters": [],
+        }
+        mock_upload.reset_mock()
+        mock_upload.return_value = False
+        res_upload_fail = fetch_votes(start_date="2026-09-29", end_date="2026-09-29", upload=True)
+        assert res_upload_fail is False
+        mock_upload.assert_called_once_with(only_files=["votes_2026.jsonl"])
+
+
+def test_fetch_votes_load_db(tmp_path):
+    with (
+        patch("scripts.fetch_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("scripts.fetch_votes.fetch_votings_list") as mock_list,
+        patch("scripts.fetch_votes.fetch_voting_detail") as mock_detail,
+        patch("src.load.loader.load_votes_to_database") as mock_load_db,
+    ):
+        mock_list.return_value = [
+            {
+                "membership": 15,
+                "votings": [
+                    {
+                        "uuid": "v-db",
+                        "votingNumber": 1,
+                        "type": {"code": "AVALIK"},
+                        "description": "DB load test",
+                        "startDateTime": "2026-09-29T10:00:00",
+                    }
+                ],
+            }
+        ]
+        mock_detail.return_value = {
+            "uuid": "v-db",
+            "votingNumber": 1,
+            "type": {"code": "AVALIK"},
+            "description": "DB load test",
+            "startDateTime": "2026-09-29T10:00:00",
+            "voters": [],
+        }
+
+        # Success case
+        mock_load_db.return_value = 1
+        res_ok = fetch_votes(start_date="2026-09-29", end_date="2026-09-29", load_db=True)
+        assert res_ok is True
+        mock_load_db.assert_called_once_with(years=[2026])
+
+        # Failure case -> returns False
+        mock_load_db.reset_mock()
+        mock_load_db.side_effect = RuntimeError("Database write error")
+        mock_list.return_value = [
+            {
+                "membership": 15,
+                "votings": [
+                    {
+                        "uuid": "v-db-fail",
+                        "votingNumber": 2,
+                        "type": {"code": "AVALIK"},
+                        "description": "DB load test fail",
+                        "startDateTime": "2026-09-29T10:15:00",
+                    }
+                ],
+            }
+        ]
+        mock_detail.return_value = {
+            "uuid": "v-db-fail",
+            "votingNumber": 2,
+            "type": {"code": "AVALIK"},
+            "description": "DB load test fail",
+            "startDateTime": "2026-09-29T10:15:00",
+            "voters": [],
+        }
+        res_fail = fetch_votes(start_date="2026-09-29", end_date="2026-09-29", load_db=True)
+        assert res_fail is False
+
+
+def test_load_votes_to_database_corrupted_json(tmp_path):
+    bad_file = tmp_path / "votes_2097.jsonl"
+    bad_file.write_text('{"voting_uuid": "ok"}\n{invalid_json}\n', encoding="utf-8")
+    with patch("src.load.loader.OUTPUT_DIR_PROCESSED", str(tmp_path)):
+        with pytest.raises(ValueError, match="Corrupted JSON"):
+            load_votes_to_database(years=[2097])
+
+
+def test_load_votes_to_database_db_error_and_sync_database(tmp_path):
+    vote_file = tmp_path / "votes_2026.jsonl"
+    vote_file.write_text('{"voting_uuid": "v-1"}\n', encoding="utf-8")
+    with (
+        patch("src.load.loader.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("src.load.loader.SessionLocal") as mock_session_cls,
+    ):
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+        mock_session.query.side_effect = RuntimeError("Simulated DB connection drop")
+
+        with pytest.raises(RuntimeError, match="Simulated DB connection drop"):
+            load_votes_to_database(years=[2026])
+        mock_session.rollback.assert_called()
+
+    # Verify that sync_database aborts and skips updating last_sync_at when load_votes_to_database fails
+    with (
+        patch("scripts.sync_database.download_from_b2", return_value=True),
+        patch("scripts.sync_database.create_tables"),
+        patch("scripts.sync_database.create_indexes"),
+        patch("scripts.sync_database.sync_current_year_speeches"),
+        patch("scripts.sync_database.load_attendance_to_database"),
+        patch("scripts.sync_database.load_persons_to_database"),
+        patch(
+            "scripts.sync_database.load_votes_to_database",
+            side_effect=RuntimeError("Vote loader failed"),
+        ),
+        patch("scripts.sync_database.SessionLocal") as mock_meta_session_cls,
+    ):
+        mock_meta_session = MagicMock()
+        mock_meta_session_cls.return_value = mock_meta_session
+        ok = sync_database()
+        assert ok is False
+        mock_meta_session.add.assert_not_called()
+        mock_meta_session.commit.assert_not_called()
+
+
+def test_verify_votes_integrity_warning_only():
+    # 1. Missing votes do not fail verify_pipeline_integrity
+    with (
+        patch("scripts.verify_pipeline_integrity.load_local_sessions_from_jsonl", return_value={}),
+        patch("requests.get") as mock_get,
+    ):
+        mock_verbatims = MagicMock(status_code=200, json=lambda: [])
+        mock_votings = MagicMock(
+            status_code=200,
+            json=lambda: [
+                {
+                    "votings": [
+                        {
+                            "uuid": "missing-vote-uuid-999",
+                            "type": {"code": "AVALIK"},
+                            "description": "Missing vote",
+                            "startDateTime": "2026-10-10T12:00:00",
+                        }
+                    ]
+                }
+            ],
+        )
+
+        def get_dispatcher(url, *args, **kwargs):
+            if "votings" in url:
+                return mock_votings
+            return mock_verbatims
+
+        mock_get.side_effect = get_dispatcher
+        ok = verify_pipeline_integrity(days=14, fail_on_missing=True)
+        assert ok is True
+
+    # 2. API error in verify_votes_integrity prints SKIPPED and returns True
+    with patch("requests.get") as mock_get, patch("builtins.print") as mock_print:
+        mock_get.return_value = MagicMock(status_code=500)
+        ok = verify_votes_integrity(days=14)
+        assert ok is True
+        mock_print.assert_any_call(
+            "SKIPPED: Votings API returned HTTP 500. Skipping votes verification."
+        )
+
+
+def test_indexes_no_duplicates():
+    import src.load.database as db
+    import src.load.indexes as idx_mod
+    import src.load.loader as loader_mod
+
+    test_eng = create_engine("sqlite:///:memory:")
+    old_eng = db.engine
+    db.engine = test_eng
+    idx_mod.engine = test_eng
+    loader_mod.engine = test_eng
+
+    try:
+        loader_mod.create_tables()
+        idx_mod.create_indexes()
+
+        with test_eng.connect() as conn:
+            rows = conn.exec_driver_sql(
+                "SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND tbl_name IN ('votings', 'votes');"
+            ).fetchall()
+
+        index_names = [r[0] for r in rows]
+        # Check expected indexes exist
+        assert "sqlite_autoindex_votings_1" in index_names
+        assert "sqlite_autoindex_votes_1" in index_names
+        assert "idx_votings_date" in index_names
+        assert "idx_votings_doc_uuid" in index_names
+        assert "idx_votes_member_uuid" in index_names
+
+        # Check redundant / duplicate indexes are NOT present
+        assert "idx_votes_voting_uuid" not in index_names
+        assert "ix_votes_voting_uuid" not in index_names
+        assert "ix_votings_date" not in index_names
+        assert "ix_votings_related_document_uuid" not in index_names
+        assert "ix_votes_member_uuid" not in index_names
+
+        # Total indexes across both tables: exactly 5 (2 PK autoindexes + 3 secondary indexes)
+        assert len(rows) == 5
+    finally:
+        db.engine = old_eng
+        idx_mod.engine = old_eng
+        loader_mod.engine = old_eng
+
+
+def test_api_votings_type_parameter_validation():
+    # Valid AVALIK
+    resp_avalik = client.get("/votings?type=AVALIK")
+    assert resp_avalik.status_code == 200
+
+    # Valid SALAJANE
+    resp_salajane = client.get("/votings?type=SALAJANE")
+    assert resp_salajane.status_code == 200
+
+    # Invalid type -> 422 Unprocessable Entity
+    resp_invalid = client.get("/votings?type=KOHALOLEKU_KONTROLL")
+    assert resp_invalid.status_code == 422
+
+    resp_invalid_random = client.get("/votings?type=RANDOM_INVALID")
+    assert resp_invalid_random.status_code == 422
+
+
+def test_api_system_status_methodology_text():
+    resp = client.get("/system/status")
+    assert resp.status_code == 200
+    methodology = resp.json().get("methodology", {})
+    votes_meta = methodology.get("votes", "")
+    assert "abstained" in votes_meta
+    assert "ei hääletanud" in votes_meta
+    assert "puudub" in votes_meta
+    assert "Salajastel hääletustel" in votes_meta
+
+
+def test_load_votes_script(tmp_path):
+    test_jsonl = tmp_path / "votes_2096.jsonl"
+    rec = {
+        "voting_uuid": "uuid-script-test",
+        "voting_number": 1,
+        "type": "AVALIK",
+        "description": "Script test",
+        "date": "2096-01-01",
+        "start_time": "2096-01-01T10:00:00",
+        "totals": {
+            "present": 101,
+            "absent": 0,
+            "in_favor": 101,
+            "against": 0,
+            "neutral": 0,
+            "abstained": 0,
+        },
+        "votes": [],
+    }
+    test_jsonl.write_text(json.dumps(rec) + "\n", encoding="utf-8")
+
+    with (
+        patch("scripts.load_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("src.load.loader.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+    ):
+        loaded = load_votes(years=[2096])
+        assert loaded == 1
+        loaded_again = load_votes(years=[2096])
+        assert loaded_again == 0

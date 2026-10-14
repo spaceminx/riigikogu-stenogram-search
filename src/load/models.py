@@ -104,13 +104,13 @@ class Voting(Base):
     voting_number = Column(Integer, nullable=True)
     type = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
-    date = Column(Text, index=True, nullable=False)
+    date = Column(Text, nullable=False)
     start_time = Column(Text, nullable=True)
     end_time = Column(Text, nullable=True)
     membership = Column(Integer, nullable=True)
     sitting_uuid = Column(Text, nullable=True)
     sitting_title = Column(Text, nullable=True)
-    related_document_uuid = Column(Text, index=True, nullable=True)
+    related_document_uuid = Column(Text, nullable=True)
     related_document_reference = Column(Text, nullable=True)
     related_document_title = Column(Text, nullable=True)
     related_document_type = Column(Text, nullable=True)
@@ -126,9 +126,7 @@ class Voting(Base):
 class Vote(Base):
     __tablename__ = "votes"
 
-    voting_uuid = Column(
-        Text, ForeignKey("votings.uuid"), primary_key=True, index=True, nullable=False
-    )
-    member_uuid = Column(Text, primary_key=True, index=True, nullable=False)
+    voting_uuid = Column(Text, ForeignKey("votings.uuid"), primary_key=True, nullable=False)
+    member_uuid = Column(Text, primary_key=True, nullable=False)
     faction = Column(Text, nullable=True)
     decision = Column(Text, nullable=False)
