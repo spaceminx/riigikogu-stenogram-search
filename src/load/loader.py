@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 from sqlalchemy import text
@@ -6,16 +7,41 @@ from sqlalchemy.exc import IntegrityError
 
 from config import OUTPUT_DIR_PROCESSED
 from src.load.database import SessionLocal, engine
-from src.load.models import Attendance, Base, Person, Speech, SpeechAlias, SpeechTerm
+from src.load.models import (
+    Attendance,
+    Base,
+    Person,
+    Speech,
+    SpeechAlias,
+    SpeechTerm,
+    SystemMeta,
+    Vote,
+    Voting,
+)
 
 
 def ensure_schema(target_engine=None) -> None:
     """Ensure database schema is up to date (idempotent migration helper)."""
     eng = target_engine or engine
+    SystemMeta.__table__.create(eng, checkfirst=True)
+    Voting.__table__.create(eng, checkfirst=True)
+    Vote.__table__.create(eng, checkfirst=True)
+
     with eng.connect() as conn:
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_votings_date ON votings(date);"))
         conn.execute(
-            text("CREATE TABLE IF NOT EXISTS system_meta (key TEXT PRIMARY KEY, value TEXT);")
+            text(
+                "CREATE INDEX IF NOT EXISTS idx_votings_doc_uuid ON votings(related_document_uuid);"
+            )
         )
+        conn.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_votes_member_uuid ON votes(member_uuid);")
+        )
+        conn.execute(text("DROP INDEX IF EXISTS idx_votes_voting_uuid;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votes_voting_uuid;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votings_date;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votings_related_document_uuid;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votes_member_uuid;"))
         tables = {
             row[0]
             for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
@@ -285,7 +311,7 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
         .all()
     )
 
-    jsonl_files = [f for f in processed_dir.glob("*.jsonl") if f.name != "attendance.jsonl"]
+    jsonl_files = [f for f in processed_dir.glob("*.jsonl") if re.match(r"^\d{4}\.jsonl$", f.name)]
     if not jsonl_files:
         print(f"No speech .jsonl files found in {OUTPUT_DIR_PROCESSED}")
     else:
@@ -393,6 +419,126 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
 
     session.close()
 
-    # Also load attendance and person records if files are present
+    # Also load attendance, persons, and votes records if files are present
     load_attendance_to_database(batch_size=batch_size)
     load_persons_to_database()
+    load_votes_to_database(batch_size=batch_size)
+
+
+def load_votes_to_database(years: list[int | str] | None = None, batch_size: int = 2000) -> int:
+    """Load voting records and individual votes from votes_{YYYY}.jsonl files into the database."""
+    ensure_schema()
+    processed_dir = Path(OUTPUT_DIR_PROCESSED)
+    if not processed_dir.exists():
+        return 0
+
+    target_years = {str(y) for y in years} if years else None
+    vote_files = []
+    for f in sorted(processed_dir.glob("votes_*.jsonl")):
+        m = re.match(r"^votes_(\d{4})\.jsonl$", f.name)
+        if m:
+            yr = m.group(1)
+            if target_years is None or yr in target_years:
+                vote_files.append(f)
+
+    if not vote_files:
+        return 0
+
+    session = SessionLocal()
+    total_votings_loaded = 0
+    try:
+        existing_voting_uuids = set(r[0] for r in session.query(Voting.uuid).all())
+        voting_batch = []
+        vote_batch = []
+
+        for vfile in vote_files:
+            print(f"Loading votes from {vfile.name}...")
+            with open(vfile, encoding="utf-8") as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        record = json.loads(line)
+                    except json.JSONDecodeError as err:
+                        raise ValueError(
+                            f"Corrupted JSON on line {line_num} in {vfile.name}: {err}"
+                        ) from err
+
+                    v_uuid = record.get("voting_uuid")
+                    if not v_uuid or v_uuid in existing_voting_uuids:
+                        continue
+
+                    rel_doc = record.get("related_document") or {}
+                    totals = record.get("totals") or {}
+
+                    voting_obj = Voting(
+                        uuid=v_uuid,
+                        voting_number=record.get("voting_number"),
+                        type=record.get("type"),
+                        description=record.get("description"),
+                        date=record.get("date"),
+                        start_time=record.get("start_time"),
+                        end_time=record.get("end_time"),
+                        membership=record.get("membership"),
+                        sitting_uuid=record.get("sitting_uuid"),
+                        sitting_title=record.get("sitting_title"),
+                        related_document_uuid=rel_doc.get("uuid"),
+                        related_document_reference=rel_doc.get("reference"),
+                        related_document_title=rel_doc.get("title"),
+                        related_document_type=rel_doc.get("type"),
+                        chairman_uuid=record.get("chairman_uuid"),
+                        present=totals.get("present"),
+                        absent=totals.get("absent"),
+                        in_favor=totals.get("in_favor"),
+                        against=totals.get("against"),
+                        neutral=totals.get("neutral"),
+                        abstained=totals.get("abstained"),
+                    )
+                    voting_batch.append(voting_obj)
+
+                    seen_members = set()
+                    for v in record.get("votes", []):
+                        if not isinstance(v, (list, tuple)) or len(v) < 2:
+                            continue
+                        m_uuid, decision = v[0], v[1]
+                        faction = v[2] if len(v) > 2 else None
+                        if not m_uuid or m_uuid in seen_members:
+                            continue
+                        seen_members.add(m_uuid)
+                        vote_batch.append(
+                            Vote(
+                                voting_uuid=v_uuid,
+                                member_uuid=m_uuid,
+                                faction=faction,
+                                decision=decision,
+                            )
+                        )
+
+                    existing_voting_uuids.add(v_uuid)
+                    total_votings_loaded += 1
+
+                    if len(voting_batch) >= 100 or len(vote_batch) >= batch_size:
+                        session.bulk_save_objects(voting_batch)
+                        session.bulk_save_objects(vote_batch)
+                        session.commit()
+                        voting_batch.clear()
+                        vote_batch.clear()
+
+        if voting_batch or vote_batch:
+            if voting_batch:
+                session.bulk_save_objects(voting_batch)
+            if vote_batch:
+                session.bulk_save_objects(vote_batch)
+            session.commit()
+            voting_batch.clear()
+            vote_batch.clear()
+
+        print(f"Done loading votes ({total_votings_loaded} votings added).")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    return total_votings_loaded

@@ -61,6 +61,12 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/fetch_attendance.py
 
+      - name: 5b. Fetch new votes from API
+        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/fetch_votes.py
+
       - name: 6. Verify pipeline data integrity
         id: integrity
         if: ${{ !cancelled() && steps.download.outcome == 'success' }}

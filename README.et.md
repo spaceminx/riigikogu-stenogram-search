@@ -120,6 +120,34 @@ Varasemate istungite (2019–2026) rikaste metaandmete (`external_id`, `ems_id`,
 > ```
 > Jooksva aasta faili kaitseb B2-s samaaegsuse ja ETag-i kontroll.
 
+### Hääletuste ajaloo laadimine (ühekordne)
+
+Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteineri sees ega tohi joosta kella 07:00 UTC paiku (mil töötab GitHub Actions igapäevane andmetoru).
+
+> [!NOTE]
+> Kuni samm 2 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
+
+Täpne järjekord:
+1. Laadi ajaloolised hääletused (2019–2025) ja saada Backblaze B2-sse (~3300 hääletust, ~4,6 h):
+   ```bash
+   python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2025-12-31 --upload
+   ```
+2. Laadi jooksva 2026. aasta hääletused ja saada B2-sse (~27 min):
+   ```bash
+   python scripts/fetch_votes.py --start-date 2026-01-01 --upload
+   ```
+3. Laadi kõik hääletused andmebaasi:
+   ```bash
+   python scripts/load_votes.py
+   ```
+4. Kontroll:
+   ```bash
+   curl http://127.0.0.1:8000/system/status
+   # votings = 3621 + pärast 13.10 lisandunud
+
+   curl "http://127.0.0.1:8000/votings?start_date=2026-09-29&end_date=2026-09-29"
+   ```
+
 ### 5. Kohaloleku UUID-de migratsioon (`repair_attendance_uuids.py`)
 Saadikute `member_uuid` sidumiseks olemasolevate kohaloleku andmetega (`data/processed/attendance.jsonl`) ja SQLite `attendance` tabeliga:
 1. Käivita kuivkäivitus, et vaadata vastavusse viimise statistikat ilma faile muutmata:
