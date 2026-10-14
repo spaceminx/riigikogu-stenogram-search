@@ -686,3 +686,130 @@ def test_load_votes_script(tmp_path):
         assert loaded == 1
         loaded_again = load_votes(years=[2096])
         assert loaded_again == 0
+
+
+def test_fetch_votes_interrupted_intermediate_save_and_resume(tmp_path):
+    sample_votings = [
+        {
+            "uuid": f"v-{i}",
+            "votingNumber": i,
+            "type": {"code": "AVALIK"},
+            "description": f"Voting {i}",
+            "startDateTime": f"2026-09-01T10:{i:02d}:00",
+        }
+        for i in range(1, 36)
+    ]
+
+    def mock_detail_side_effect(u):
+        idx = int(u.split("-")[1])
+        if idx == 30:
+            raise KeyboardInterrupt
+        return {
+            "uuid": u,
+            "votingNumber": idx,
+            "type": {"code": "AVALIK"},
+            "description": f"Voting {idx}",
+            "startDateTime": f"2026-09-01T10:{idx:02d}:00",
+            "voters": [],
+        }
+
+    # Step 1: Interrupted at 30th detail call -> saves 29 records (>= 25), exits with False (code 1), no upload
+    with (
+        patch("scripts.fetch_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch(
+            "scripts.fetch_votes.fetch_votings_list",
+            return_value=[{"membership": 15, "votings": sample_votings}],
+        ),
+        patch("scripts.fetch_votes.fetch_voting_detail", side_effect=mock_detail_side_effect),
+        patch("scripts.upload_to_b2.upload_to_b2") as mock_upload,
+    ):
+        ok = fetch_votes(start_date="2026-09-01", end_date="2026-09-30", upload=True)
+        assert ok is False
+        mock_upload.assert_not_called()
+
+        out_file = tmp_path / "votes_2026.jsonl"
+        assert out_file.exists()
+        with open(out_file, encoding="utf-8") as f:
+            lines = [json.loads(line) for line in f if line.strip()]
+        assert len(lines) == 29
+        assert len(lines) >= 25
+
+    # Step 2: Resume after interruption -> fetches only remaining 6 votings, then uploads
+    def mock_detail_resume(u):
+        idx = int(u.split("-")[1])
+        return {
+            "uuid": u,
+            "votingNumber": idx,
+            "type": {"code": "AVALIK"},
+            "description": f"Voting {idx}",
+            "startDateTime": f"2026-09-01T10:{idx:02d}:00",
+            "voters": [],
+        }
+
+    with (
+        patch("scripts.fetch_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch(
+            "scripts.fetch_votes.fetch_votings_list",
+            return_value=[{"membership": 15, "votings": sample_votings}],
+        ),
+        patch(
+            "scripts.fetch_votes.fetch_voting_detail", side_effect=mock_detail_resume
+        ) as mock_detail_resumed,
+        patch("scripts.upload_to_b2.upload_to_b2", return_value=True) as mock_upload_resumed,
+    ):
+        ok_resume = fetch_votes(start_date="2026-09-01", end_date="2026-09-30", upload=True)
+        assert ok_resume is True
+        # Only 6 missing votings fetched (35 total - 29 already in file)
+        assert mock_detail_resumed.call_count == 6
+        mock_upload_resumed.assert_called_once_with(only_files=["votes_2026.jsonl"])
+
+        with open(out_file, encoding="utf-8") as f:
+            all_lines = [json.loads(line) for line in f if line.strip()]
+        assert len(all_lines) == 35
+
+
+def test_fetch_votes_sigterm_handling(tmp_path):
+    import signal
+
+    sample_votings = [
+        {
+            "uuid": f"v-sig-{i}",
+            "votingNumber": i,
+            "type": {"code": "AVALIK"},
+            "description": f"Voting {i}",
+            "startDateTime": f"2026-09-01T10:{i:02d}:00",
+        }
+        for i in range(1, 10)
+    ]
+
+    def mock_detail_sigterm(u):
+        idx = int(u.split("-")[-1])
+        if idx == 3:
+            os.kill(os.getpid(), signal.SIGTERM)
+        return {
+            "uuid": u,
+            "votingNumber": idx,
+            "type": {"code": "AVALIK"},
+            "description": f"Voting {idx}",
+            "startDateTime": f"2026-09-01T10:{idx:02d}:00",
+            "voters": [],
+        }
+
+    with (
+        patch("scripts.fetch_votes.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch(
+            "scripts.fetch_votes.fetch_votings_list",
+            return_value=[{"membership": 15, "votings": sample_votings}],
+        ),
+        patch("scripts.fetch_votes.fetch_voting_detail", side_effect=mock_detail_sigterm),
+        patch("scripts.upload_to_b2.upload_to_b2") as mock_upload,
+    ):
+        ok = fetch_votes(start_date="2026-09-01", end_date="2026-09-30", upload=True)
+        assert ok is False
+        mock_upload.assert_not_called()
+
+        out_file = tmp_path / "votes_2026.jsonl"
+        assert out_file.exists()
+        with open(out_file, encoding="utf-8") as f:
+            lines = [json.loads(line) for line in f if line.strip()]
+        assert len(lines) == 2

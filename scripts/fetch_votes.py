@@ -8,6 +8,7 @@ import argparse
 import json
 import logging
 import os
+import signal
 import sys
 import time
 from datetime import datetime, timedelta
@@ -422,32 +423,69 @@ def fetch_votes(
     fetched_count = 0
     failed_uuids = []
 
-    for idx, (v_summary, year) in enumerate(votings_to_fetch, 1):
-        v_uuid = v_summary["uuid"]
-        desc = v_summary.get("description") or ""
-        logger.info(
-            "[%d/%d] Fetching detail for %s (%s)...",
-            idx,
-            len(votings_to_fetch),
-            v_uuid,
-            desc[:40],
+    def _sigterm_handler(signum, frame):
+        raise KeyboardInterrupt
+
+    old_sigterm = None
+    try:
+        old_sigterm = signal.signal(signal.SIGTERM, _sigterm_handler)
+    except (ValueError, AttributeError):
+        pass
+
+    try:
+        for idx, (v_summary, year) in enumerate(votings_to_fetch, 1):
+            v_uuid = v_summary["uuid"]
+            desc = v_summary.get("description") or ""
+            logger.info(
+                "[%d/%d] Fetching detail for %s (%s)...",
+                idx,
+                len(votings_to_fetch),
+                v_uuid,
+                desc[:40],
+            )
+
+            detail = fetch_voting_detail(v_uuid)
+            if not detail:
+                logger.warning("Could not fetch detail for %s, skipping.", v_uuid)
+                failed_uuids.append(v_uuid)
+                continue
+
+            parsed = parse_and_validate_voting(
+                detail, sitting_membership=v_summary.get("membership")
+            )
+            existing_by_year[year][v_uuid] = parsed
+            modified_years.add(year)
+            fetched_count += 1
+
+            # Intermediate atomic save every 25 successfully fetched votings
+            if fetched_count % 25 == 0:
+                for yr in modified_years:
+                    write_votes_jsonl_atomic(yr, existing_by_year[yr])
+                logger.info("Intermediate save: %d votings written to disk.", fetched_count)
+
+    except KeyboardInterrupt:
+        for yr in modified_years:
+            write_votes_jsonl_atomic(yr, existing_by_year[yr])
+        total_to_fetch = len(votings_to_fetch)
+        logger.warning(
+            "Interrupted after %d/%d votings, progress saved",
+            fetched_count,
+            total_to_fetch,
         )
+        return False
+    finally:
+        if old_sigterm is not None:
+            try:
+                signal.signal(signal.SIGTERM, old_sigterm)
+            except (ValueError, AttributeError):
+                pass
 
-        detail = fetch_voting_detail(v_uuid)
-        if not detail:
-            logger.warning("Could not fetch detail for %s, skipping.", v_uuid)
-            failed_uuids.append(v_uuid)
-            continue
-
-        parsed = parse_and_validate_voting(detail, sitting_membership=v_summary.get("membership"))
-        existing_by_year[year][v_uuid] = parsed
-        modified_years.add(year)
-        fetched_count += 1
-
-    # Atomically write modified year files
+    # Atomically write modified year files at end of loop
     for yr in modified_years:
         logger.info(
-            "Writing updated votes_%d.jsonl (%d total records)...", yr, len(existing_by_year[yr])
+            "Writing updated votes_%d.jsonl (%d total records)...",
+            yr,
+            len(existing_by_year[yr]),
         )
         write_votes_jsonl_atomic(yr, existing_by_year[yr])
 

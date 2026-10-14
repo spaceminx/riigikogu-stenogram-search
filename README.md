@@ -122,31 +122,49 @@ To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`,
 
 ### Hääletuste ajaloo laadimine (ühekordne)
 
-Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteineri sees ega tohi joosta kella 07:00 UTC paiku (mil töötab GitHub Actions igapäevane andmetoru).
-
-> [!NOTE]
-> Kuni samm 2 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
+Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteineri sees (`backend` teenus).
 
 Täpne järjekord:
-1. Laadi ajaloolised hääletused (2019–2025) ja saada Backblaze B2-sse (~3300 hääletust, ~4,6 h):
+1. Laadi 2019. aasta hääletused (alates 14. koosseisu algusest 01.04.2019) ja saada Backblaze B2-sse:
    ```bash
-   python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2025-12-31 --upload
+   docker compose exec backend python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
    ```
-2. Laadi jooksva 2026. aasta hääletused ja saada B2-sse (~27 min):
+2. Laadi aastad 2020–2025 aastapõhise tsüklina ja saada B2-sse:
    ```bash
-   python scripts/fetch_votes.py --start-date 2026-01-01 --upload
+   for y in {2020..2025}; do
+     docker compose exec backend python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
+   done
    ```
-3. Laadi kõik hääletused andmebaasi:
+3. Laadi jooksva 2026. aasta hääletused ja saada B2-sse:
    ```bash
-   python scripts/load_votes.py
+   docker compose exec backend python scripts/fetch_votes.py --start-date 2026-01-01 --upload
    ```
-4. Kontroll:
+4. Laadi kõik hääletused serveri SQLite andmebaasi:
+   ```bash
+   docker compose exec backend python scripts/load_votes.py
+   ```
+5. Kontroll:
    ```bash
    curl http://127.0.0.1:8000/system/status
    # votings = 3621 + pärast 13.10 lisandunud
 
    curl "http://127.0.0.1:8000/votings?start_date=2026-09-29&end_date=2026-09-29"
    ```
+
+> [!NOTE]
+> **Olulised märkused juurutamisel:**
+> - Kuni samm 3 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
+> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest GitHub Actions runner laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 UTC paiku (mil töötab igapäevane andmetoru).
+> - **Tõrketaluvus:** Skript teeb vahesalvestusi iga 25 hääletuse järel ning püüab katkestused (Ctrl-C / SIGTERM). Kui mõni aasta lõpetab koodiga 1 (nt ajutine API võrgutõrge), käivita sama aasta käsk uuesti – juba salvestatud hääletused jäetakse vahele ja laadimine jätkub poolelijäänud kohast.
+> - **Hinnangulised ajad aastate kaupa** (~5,1 s hääletuse kohta):
+>   - 2019: 172 hääletust → ~15 min
+>   - 2020: 356 hääletust → ~30 min
+>   - 2021: 533 hääletust → ~45 min
+>   - 2022: 718 hääletust → ~61 min
+>   - 2023: 436 hääletust → ~37 min
+>   - 2024: 692 hääletust → ~59 min
+>   - 2025: 402 hääletust → ~34 min
+>   - 2026: 312 hääletust → ~27 min
 
 ### 5. Maintenance & UUID Repair
 
