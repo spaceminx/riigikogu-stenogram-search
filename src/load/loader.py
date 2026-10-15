@@ -28,7 +28,21 @@ def ensure_schema(target_engine=None) -> None:
     Vote.__table__.create(eng, checkfirst=True)
 
     with eng.connect() as conn:
+        tables = {
+            row[0]
+            for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+        }
+        if "votings" in tables:
+            v_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(votings)"))}
+            if "sitting_date" not in v_cols:
+                conn.execute(text("ALTER TABLE votings ADD COLUMN sitting_date TEXT;"))
+            if "sitting_datetime" not in v_cols:
+                conn.execute(text("ALTER TABLE votings ADD COLUMN sitting_datetime TEXT;"))
+
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_votings_date ON votings(date);"))
+        conn.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_votings_sitting_date ON votings(sitting_date);")
+        )
         conn.execute(
             text(
                 "CREATE INDEX IF NOT EXISTS idx_votings_doc_uuid ON votings(related_document_uuid);"
@@ -40,12 +54,9 @@ def ensure_schema(target_engine=None) -> None:
         conn.execute(text("DROP INDEX IF EXISTS idx_votes_voting_uuid;"))
         conn.execute(text("DROP INDEX IF EXISTS ix_votes_voting_uuid;"))
         conn.execute(text("DROP INDEX IF EXISTS ix_votings_date;"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_votings_sitting_date;"))
         conn.execute(text("DROP INDEX IF EXISTS ix_votings_related_document_uuid;"))
         conn.execute(text("DROP INDEX IF EXISTS ix_votes_member_uuid;"))
-        tables = {
-            row[0]
-            for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
-        }
         if "attendance" in tables:
             cols = {row[1] for row in conn.execute(text("PRAGMA table_info(attendance)"))}
             if "member_uuid" not in cols:
@@ -446,8 +457,18 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
 
     session = SessionLocal()
     total_votings_loaded = 0
+    total_votings_updated = 0
     try:
-        existing_voting_uuids = set(r[0] for r in session.query(Voting.uuid).all())
+        existing_votings = {
+            r[0]: (r[1], r[2], r[3], r[4])
+            for r in session.query(
+                Voting.uuid,
+                Voting.sitting_date,
+                Voting.sitting_datetime,
+                Voting.sitting_uuid,
+                Voting.sitting_title,
+            ).all()
+        }
         voting_batch = []
         vote_batch = []
 
@@ -466,7 +487,37 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
                         ) from err
 
                     v_uuid = record.get("voting_uuid")
-                    if not v_uuid or v_uuid in existing_voting_uuids:
+                    if not v_uuid:
+                        continue
+
+                    if v_uuid in existing_votings:
+                        db_s_date, db_s_dt, db_s_uuid, db_s_title = existing_votings[v_uuid]
+                        rec_s_date = record.get("sitting_date")
+                        rec_s_dt = record.get("sitting_datetime")
+                        rec_s_uuid = record.get("sitting_uuid")
+                        rec_s_title = record.get("sitting_title")
+
+                        update_data = {}
+                        if rec_s_date and rec_s_date != db_s_date:
+                            update_data["sitting_date"] = rec_s_date
+                        if rec_s_dt and rec_s_dt != db_s_dt:
+                            update_data["sitting_datetime"] = rec_s_dt
+                        if rec_s_uuid and rec_s_uuid != db_s_uuid:
+                            update_data["sitting_uuid"] = rec_s_uuid
+                        if rec_s_title and rec_s_title != db_s_title:
+                            update_data["sitting_title"] = rec_s_title
+
+                        if update_data:
+                            session.query(Voting).filter(Voting.uuid == v_uuid).update(update_data)
+                            total_votings_updated += 1
+                            existing_votings[v_uuid] = (
+                                update_data.get("sitting_date", db_s_date),
+                                update_data.get("sitting_datetime", db_s_dt),
+                                update_data.get("sitting_uuid", db_s_uuid),
+                                update_data.get("sitting_title", db_s_title),
+                            )
+                            if total_votings_updated % 100 == 0:
+                                session.commit()
                         continue
 
                     rel_doc = record.get("related_document") or {}
@@ -480,6 +531,8 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
                         date=record.get("date"),
                         start_time=record.get("start_time"),
                         end_time=record.get("end_time"),
+                        sitting_date=record.get("sitting_date"),
+                        sitting_datetime=record.get("sitting_datetime"),
                         membership=record.get("membership"),
                         sitting_uuid=record.get("sitting_uuid"),
                         sitting_title=record.get("sitting_title"),
@@ -515,7 +568,12 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
                             )
                         )
 
-                    existing_voting_uuids.add(v_uuid)
+                    existing_votings[v_uuid] = (
+                        record.get("sitting_date"),
+                        record.get("sitting_datetime"),
+                        record.get("sitting_uuid"),
+                        record.get("sitting_title"),
+                    )
                     total_votings_loaded += 1
 
                     if len(voting_batch) >= 100 or len(vote_batch) >= batch_size:
@@ -525,7 +583,7 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
                         voting_batch.clear()
                         vote_batch.clear()
 
-        if voting_batch or vote_batch:
+        if voting_batch or vote_batch or total_votings_updated:
             if voting_batch:
                 session.bulk_save_objects(voting_batch)
             if vote_batch:
@@ -534,7 +592,9 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
             voting_batch.clear()
             vote_batch.clear()
 
-        print(f"Done loading votes ({total_votings_loaded} votings added).")
+        print(
+            f"Done loading votes ({total_votings_loaded} votings added, {total_votings_updated} votings updated)."
+        )
     except Exception:
         session.rollback()
         raise

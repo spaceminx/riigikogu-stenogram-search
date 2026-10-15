@@ -187,7 +187,14 @@ def fetch_voting_detail(uuid: str, max_retries: int = 3) -> dict | None:
     return None
 
 
-def parse_and_validate_voting(detail: dict, sitting_membership: int | None = None) -> dict:
+def parse_and_validate_voting(
+    detail: dict,
+    sitting_membership: int | None = None,
+    sitting_uuid: str | None = None,
+    sitting_title: str | None = None,
+    sitting_datetime: str | None = None,
+    sitting_date: str | None = None,
+) -> dict:
     """Parse raw API voting detail into canonical schema and validate voter counts."""
     v_uuid = detail.get("uuid")
     v_number = detail.get("votingNumber")
@@ -204,8 +211,10 @@ def parse_and_validate_voting(detail: dict, sitting_membership: int | None = Non
 
     # Sitting info
     sitting_data = detail.get("sitting") or {}
-    sitting_uuid = sitting_data.get("uuid")
-    sitting_title = sitting_data.get("title")
+    s_uuid = sitting_data.get("uuid") or sitting_uuid
+    s_title = sitting_data.get("title") or sitting_title
+    s_datetime = sitting_datetime
+    s_date = sitting_date or (s_datetime[:10] if s_datetime else v_date)
 
     # Membership
     membership = sitting_membership or get_membership_for_date(v_date)
@@ -314,9 +323,11 @@ def parse_and_validate_voting(detail: dict, sitting_membership: int | None = Non
         "start_time": start_time,
         "end_time": end_time,
         "date": v_date,
+        "sitting_date": s_date,
+        "sitting_datetime": s_datetime,
         "membership": membership,
-        "sitting_uuid": sitting_uuid,
-        "sitting_title": sitting_title,
+        "sitting_uuid": s_uuid,
+        "sitting_title": s_title,
         "related_document": rel_doc,
         "chairman_uuid": chairman_uuid,
         "totals": totals,
@@ -359,6 +370,11 @@ def fetch_votes(
 
     for sitting in sittings:
         sitting_membership = sitting.get("membership")
+        sitting_uuid = sitting.get("uuid")
+        sitting_title = sitting.get("title")
+        sitting_datetime = sitting.get("sittingDateTime")
+        sitting_date = sitting_datetime[:10] if sitting_datetime else None
+
         for v in sitting.get("votings", []):
             t_obj = v.get("type")
             t_code = t_obj.get("code") if isinstance(t_obj, dict) else (t_obj or "")
@@ -366,6 +382,9 @@ def fetch_votes(
 
             if t_code == "KOHALOLEKU_KONTROLL":
                 continue
+
+            v_date = (v.get("startDateTime") or "")[:10]
+            eff_sitting_date = sitting_date or v_date
 
             all_votings_to_check.append(
                 {
@@ -375,6 +394,10 @@ def fetch_votes(
                     "description": v.get("description"),
                     "startDateTime": v.get("startDateTime"),
                     "membership": sitting_membership,
+                    "sitting_uuid": sitting_uuid,
+                    "sitting_title": sitting_title,
+                    "sitting_datetime": sitting_datetime,
+                    "sitting_date": eff_sitting_date,
                 }
             )
 
@@ -384,19 +407,68 @@ def fetch_votes(
     logger.info("Voting types encountered: %s", type_counts)
     logger.info("Target public votings: %d", len(all_votings_to_check))
 
-    # Identify which votings need fetching by checking existing local files
+    # Identify target year from sitting_date and load neighbor years for cross-year dedup
     existing_by_year: dict[int, dict[str, dict]] = {}
+    modified_years = set()
     votings_to_fetch = []
 
     for v in all_votings_to_check:
-        v_uuid = v["uuid"]
-        start_time = v.get("startDateTime") or ""
-        year = int(start_time[:4]) if len(start_time) >= 4 else datetime.now().year
-        if year not in existing_by_year:
-            existing_by_year[year] = get_existing_voting_records(year)
+        s_date = v.get("sitting_date") or ""
+        v["target_year"] = int(s_date[:4]) if len(s_date) >= 4 else datetime.now().year
 
-        if v_uuid not in existing_by_year[year]:
-            votings_to_fetch.append((v, year))
+    years_to_load = set()
+    for v in all_votings_to_check:
+        yr = v["target_year"]
+        years_to_load.update([yr - 1, yr, yr + 1])
+
+    for yr in sorted(years_to_load):
+        if yr not in existing_by_year:
+            existing_by_year[yr] = get_existing_voting_records(yr)
+
+    # Dedup across loaded years and self-heal existing records missing sitting fields
+    for v in all_votings_to_check:
+        v_uuid = v["uuid"]
+        target_year = v["target_year"]
+
+        found_year = None
+        for yr in years_to_load:
+            if v_uuid in existing_by_year.get(yr, {}):
+                found_year = yr
+                break
+
+        if found_year is not None:
+            if found_year != target_year:
+                # Move record from old year file to target year file
+                rec = existing_by_year[found_year].pop(v_uuid)
+                existing_by_year[target_year][v_uuid] = rec
+                modified_years.add(found_year)
+                modified_years.add(target_year)
+                existing_rec = rec
+            else:
+                existing_rec = existing_by_year[target_year][v_uuid]
+
+            # Self-healing: update sitting fields without detail request
+            needs_update = False
+            if existing_rec.get("sitting_date") != v["sitting_date"]:
+                existing_rec["sitting_date"] = v["sitting_date"]
+                needs_update = True
+            if existing_rec.get("sitting_datetime") != v["sitting_datetime"]:
+                existing_rec["sitting_datetime"] = v["sitting_datetime"]
+                needs_update = True
+            if v.get("sitting_uuid") and existing_rec.get("sitting_uuid") != v["sitting_uuid"]:
+                existing_rec["sitting_uuid"] = v["sitting_uuid"]
+                needs_update = True
+            if v.get("sitting_title") and not existing_rec.get("sitting_title"):
+                existing_rec["sitting_title"] = v["sitting_title"]
+                needs_update = True
+
+            if needs_update:
+                modified_years.add(target_year)
+                logger.info(
+                    "Self-healed sitting fields for voting %s in year %d", v_uuid, target_year
+                )
+        else:
+            votings_to_fetch.append((v, target_year))
 
     logger.info(
         "Votings already in local files: %d", len(all_votings_to_check) - len(votings_to_fetch)
@@ -414,71 +486,77 @@ def fetch_votes(
         logger.info("[Dry-run] No detail calls made and no files modified.")
         return True
 
-    if not votings_to_fetch:
+    if not votings_to_fetch and not modified_years:
         logger.info("No new votings to fetch.")
         return True
 
     # Fetch details and accumulate updates
-    modified_years = set()
     fetched_count = 0
     failed_uuids = []
 
-    def _sigterm_handler(signum, frame):
-        raise KeyboardInterrupt
+    if votings_to_fetch:
 
-    old_sigterm = None
-    try:
-        old_sigterm = signal.signal(signal.SIGTERM, _sigterm_handler)
-    except (ValueError, AttributeError):
-        pass
+        def _sigterm_handler(signum, frame):
+            raise KeyboardInterrupt
 
-    try:
-        for idx, (v_summary, year) in enumerate(votings_to_fetch, 1):
-            v_uuid = v_summary["uuid"]
-            desc = v_summary.get("description") or ""
-            logger.info(
-                "[%d/%d] Fetching detail for %s (%s)...",
-                idx,
-                len(votings_to_fetch),
-                v_uuid,
-                desc[:40],
+        old_sigterm = None
+        try:
+            old_sigterm = signal.signal(signal.SIGTERM, _sigterm_handler)
+        except (ValueError, AttributeError):
+            pass
+
+        try:
+            for idx, (v_summary, year) in enumerate(votings_to_fetch, 1):
+                v_uuid = v_summary["uuid"]
+                desc = v_summary.get("description") or ""
+                logger.info(
+                    "[%d/%d] Fetching detail for %s (%s)...",
+                    idx,
+                    len(votings_to_fetch),
+                    v_uuid,
+                    desc[:40],
+                )
+
+                detail = fetch_voting_detail(v_uuid)
+                if not detail:
+                    logger.warning("Could not fetch detail for %s, skipping.", v_uuid)
+                    failed_uuids.append(v_uuid)
+                    continue
+
+                parsed = parse_and_validate_voting(
+                    detail,
+                    sitting_membership=v_summary.get("membership"),
+                    sitting_uuid=v_summary.get("sitting_uuid"),
+                    sitting_title=v_summary.get("sitting_title"),
+                    sitting_datetime=v_summary.get("sitting_datetime"),
+                    sitting_date=v_summary.get("sitting_date"),
+                )
+                existing_by_year[year][v_uuid] = parsed
+                modified_years.add(year)
+                fetched_count += 1
+
+                # Intermediate atomic save every 25 successfully fetched votings
+                if fetched_count % 25 == 0:
+                    for yr in modified_years:
+                        write_votes_jsonl_atomic(yr, existing_by_year[yr])
+                    logger.info("Intermediate save: %d votings written to disk.", fetched_count)
+
+        except KeyboardInterrupt:
+            for yr in modified_years:
+                write_votes_jsonl_atomic(yr, existing_by_year[yr])
+            total_to_fetch = len(votings_to_fetch)
+            logger.warning(
+                "Interrupted after %d/%d votings, progress saved",
+                fetched_count,
+                total_to_fetch,
             )
-
-            detail = fetch_voting_detail(v_uuid)
-            if not detail:
-                logger.warning("Could not fetch detail for %s, skipping.", v_uuid)
-                failed_uuids.append(v_uuid)
-                continue
-
-            parsed = parse_and_validate_voting(
-                detail, sitting_membership=v_summary.get("membership")
-            )
-            existing_by_year[year][v_uuid] = parsed
-            modified_years.add(year)
-            fetched_count += 1
-
-            # Intermediate atomic save every 25 successfully fetched votings
-            if fetched_count % 25 == 0:
-                for yr in modified_years:
-                    write_votes_jsonl_atomic(yr, existing_by_year[yr])
-                logger.info("Intermediate save: %d votings written to disk.", fetched_count)
-
-    except KeyboardInterrupt:
-        for yr in modified_years:
-            write_votes_jsonl_atomic(yr, existing_by_year[yr])
-        total_to_fetch = len(votings_to_fetch)
-        logger.warning(
-            "Interrupted after %d/%d votings, progress saved",
-            fetched_count,
-            total_to_fetch,
-        )
-        return False
-    finally:
-        if old_sigterm is not None:
-            try:
-                signal.signal(signal.SIGTERM, old_sigterm)
-            except (ValueError, AttributeError):
-                pass
+            return False
+        finally:
+            if old_sigterm is not None:
+                try:
+                    signal.signal(signal.SIGTERM, old_sigterm)
+                except (ValueError, AttributeError):
+                    pass
 
     # Atomically write modified year files at end of loop
     for yr in modified_years:
