@@ -314,11 +314,7 @@ def search(
         ) from e
     except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        detail = (
-            "Päring on liiga keeruline."
-            if isinstance(e, RecursionError) or "keeruline" in str(e).lower()
-            else str(e)
-        )
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(
             status_code=status_code,
             detail=detail,
@@ -384,11 +380,7 @@ def search_activity(
         ) from e
     except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        detail = (
-            "Päring on liiga keeruline."
-            if isinstance(e, RecursionError) or "keeruline" in str(e).lower()
-            else str(e)
-        )
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(
             status_code=status_code,
             detail=detail,
@@ -448,11 +440,7 @@ def search_speakers(
         ) from e
     except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        detail = (
-            "Päring on liiga keeruline."
-            if isinstance(e, RecursionError) or "keeruline" in str(e).lower()
-            else str(e)
-        )
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(
             status_code=status_code,
             detail=detail,
@@ -489,13 +477,8 @@ def speech_context(
             detail="Otsingu keeletöötlus pole hetkel saadaval.",
         ) from e
     except (ValueError, RecursionError) as e:
-        status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        detail = (
-            "Päring on liiga keeruline."
-            if isinstance(e, RecursionError) or "keeruline" in str(e).lower()
-            else str(e)
-        )
-        raise HTTPException(status_code=status_code, detail=detail) from e
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
+        raise HTTPException(status_code=400, detail=detail) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
@@ -633,11 +616,7 @@ def search_export(
         ) from e
     except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        detail = (
-            "Päring on liiga keeruline."
-            if isinstance(e, RecursionError) or "keeruline" in str(e).lower()
-            else str(e)
-        )
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(status_code=status_code, detail=detail) from e
     except OperationalError as e:
         raise HTTPException(

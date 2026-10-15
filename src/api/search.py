@@ -165,20 +165,21 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
 def is_only_stopwords(query: str) -> bool:
     """Check if query contains non-empty words but all of them are in STOPWORDS."""
     check_query_complexity(query)
-    raw_groups = query.split(",")
+    raw_groups = [g.strip() for g in query.split(",") if g.strip()]
     if len(raw_groups) > 10:
-        raise ValueError("Päring on liiga keeruline.")
+        raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
     has_any_words = False
     for group in raw_groups:
         lemmatized = lemmatize_text(group)
         if lemmatized is None:
             raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
         lemmas = lemmatized.split()
-        if len(lemmas) > 10:
-            raise ValueError("Päring on liiga keeruline.")
+        content_lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
+        if len(content_lemmas) > 10:
+            raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
         if lemmas:
             has_any_words = True
-            if any(lemma not in STOPWORDS for lemma in lemmas):
+            if content_lemmas:
                 return False
     return has_any_words
 
@@ -187,9 +188,9 @@ def parse_query_groups(query: str) -> list[list[str]]:
     """Parse comma-separated OR groups and space-separated AND keywords into filtered lemmas."""
     check_query_complexity(query)
     groups = []
-    raw_groups = query.split(",")
+    raw_groups = [g.strip() for g in query.split(",") if g.strip()]
     if len(raw_groups) > 10:
-        raise ValueError("Päring on liiga keeruline.")
+        raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
 
     for group in raw_groups:
         lemmatized = lemmatize_text(group)
@@ -198,7 +199,7 @@ def parse_query_groups(query: str) -> list[list[str]]:
         lemmas = lemmatized.split()
         lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
         if len(lemmas) > 10:
-            raise ValueError("Päring on liiga keeruline.")
+            raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
         if lemmas:
             groups.append(list(dict.fromkeys(lemmas)))
 

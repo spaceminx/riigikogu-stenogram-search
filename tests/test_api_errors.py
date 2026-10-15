@@ -79,4 +79,32 @@ def test_lemmatizer_failure_returns_503():
 def test_speech_context_too_many_groups_returns_400():
     response = client.get("/speeches/1/context?q=k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,k10")
     assert response.status_code == 400
-    assert response.json()["detail"] == "Päring on liiga keeruline."
+    assert response.json()["detail"] == (
+        "Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma."
+    )
+
+
+def test_search_long_sentence_with_stopwords_returns_200():
+    response = client.get("/search?q=ja see on üks väga pikk lause mis räägib riigi eelarvest täna")
+    assert response.status_code == 200
+
+
+def test_search_too_many_content_words_in_group_returns_400():
+    response = client.get(
+        "/search?q=üks kaks kolm neli viis kuus seitse kaheksa üheksa kümme üksteist"
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna."
+
+
+def test_search_too_many_groups_returns_400():
+    response = client.get("/search?q=k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,k10")
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma."
+    )
+
+
+def test_search_empty_groups_ignored():
+    response = client.get("/search?q=eelarve,,")
+    assert response.status_code == 200
