@@ -789,7 +789,7 @@ def test_fetch_votes_sigterm_handling(tmp_path):
     def mock_detail_sigterm(u):
         idx = int(u.split("-")[-1])
         if idx == 3:
-            os.kill(os.getpid(), signal.SIGTERM)
+            signal.raise_signal(signal.SIGTERM)
         return {
             "uuid": u,
             "votingNumber": idx,
