@@ -5064,6 +5064,154 @@ html[data-theme="dark"] .session-marker {
   box-shadow: 0 0 0 3px #25344a;
 }
 
+html[data-theme="dark"] .speech-text,
+html[data-theme="dark"] .transcript-row-text {
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .speaker-name-highlight {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .speaker-name-link {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .speaker-name-link:hover,
+html[data-theme="dark"] .speaker-name-link:focus-visible {
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .speech-meta,
+html[data-theme="dark"] .speaker-header-info,
+html[data-theme="dark"] .speech-datetime {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .speech-anchor-link {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .speech-anchor-link:hover {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .speaker-role-tag,
+html[data-theme="dark"] .speech-type-badge,
+html[data-theme="dark"] .speech-duration-badge,
+html[data-theme="dark"] .faction-badge,
+html[data-theme="dark"] .speech-card .faction-badge,
+html[data-theme="dark"] .modal-content .faction-badge,
+html[data-theme="dark"] .transcript-agenda-badge,
+html[data-theme="dark"] .results-badge {
+  border-color: #35445b;
+  background: #202d41;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .speech-agenda-tag {
+  border-left-color: #60a5fa;
+  background: #202d41;
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .agenda-kicker {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .agenda-title-text {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .context-btn,
+html[data-theme="dark"] .pagination-btn,
+html[data-theme="dark"] .search-sort-select,
+html[data-theme="dark"] .back-nav-btn,
+html[data-theme="dark"] .export-btn-link {
+  border-color: #35445b;
+  background: #202d41;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .context-btn:hover,
+html[data-theme="dark"] .pagination-btn:hover:not(:disabled),
+html[data-theme="dark"] .search-sort-select:hover,
+html[data-theme="dark"] .back-nav-btn:hover,
+html[data-theme="dark"] .export-btn-link:hover {
+  border-color: #4b5f7d;
+  background: #273750;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .pagination-btn:disabled {
+  border-color: #29364a;
+  background: #172235;
+  color: #64748b;
+}
+
+html[data-theme="dark"] .search-sort-select option {
+  background: #111c2d;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .speech-link {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .speech-link:hover {
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .speech-video-link {
+  color: #f87171;
+}
+
+html[data-theme="dark"] .speech-video-link:hover {
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .speech-card-actions {
+  border-top-color: #29364a;
+}
+
+html[data-theme="dark"] .speech-card:hover {
+  border-color: #40536c;
+}
+
+html[data-theme="dark"] .target-speech-highlight {
+  background: #1c2a3f;
+  border-color: #3b5070;
+}
+
+html[data-theme="dark"] .modal-content.glass-panel {
+  border-color: #29364a;
+  background: #172235;
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .modal-heading,
+html[data-theme="dark"] .transcript-row-speaker {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .modal-search-input {
+  border-color: #35445b;
+  background-color: #111c2d;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .transcript-row:hover {
+  background: #202d41;
+}
+
+html[data-theme="dark"] .transcript-row.active {
+  background: #253752;
+}
+
+html[data-theme="dark"] .person-metric-value-primary {
+  color: #93c5fd;
+}
+
 .archive-stats-row {
   display: flex;
   min-height: 34px;
@@ -5358,6 +5506,17 @@ html[data-theme="dark"] .sample-chart {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.speech-anchor-link {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.speech-anchor-link:hover {
+  color: #315b84;
 }
 
 .speech-text {

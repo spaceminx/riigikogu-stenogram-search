@@ -110,3 +110,40 @@ def test_pronoun_stopwords_filtered():
     groups = parse_query_groups("tema räägib")
     assert len(groups) == 1
     assert "tema" not in groups[0]
+
+
+def test_parse_query_groups_limit_and_messages():
+    import pytest
+
+    with pytest.raises(
+        ValueError, match="Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma."
+    ):
+        parse_query_groups("g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11")
+
+    with pytest.raises(ValueError, match="Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna."):
+        parse_query_groups("üks kaks kolm neli viis kuus seitse kaheksa üheksa kümme üksteist")
+
+    groups = parse_query_groups("ja see on üks väga pikk lause mis räägib riigi eelarvest täna")
+    assert len(groups) == 1
+    assert "eelarve" in groups[0]
+
+    groups_empty = parse_query_groups("eelarve,,")
+    assert len(groups_empty) == 1
+    assert groups_empty[0] == ["eelarve"]
+
+
+def test_is_only_stopwords_limits():
+    import pytest
+
+    with pytest.raises(
+        ValueError, match="Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma."
+    ):
+        is_only_stopwords("g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11")
+
+    with pytest.raises(ValueError, match="Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna."):
+        is_only_stopwords("üks kaks kolm neli viis kuus seitse kaheksa üheksa kümme üksteist")
+
+    assert (
+        is_only_stopwords("ja see on üks väga pikk lause mis räägib riigi eelarvest täna") is False
+    )
+    assert is_only_stopwords("eelarve,,") is False

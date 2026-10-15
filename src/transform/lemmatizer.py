@@ -3,7 +3,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from estnltk import Text
-from sqlalchemy import text
+from sqlalchemy import func, text
 from tqdm import tqdm
 
 from src.load.database import SessionLocal, engine
@@ -53,8 +53,11 @@ def _lemmatize_chunk(chunk: list[tuple[int, str]]) -> list[dict]:
 
 def build_missing_lemmas(
     max_workers: int | None = None, chunk_size: int = 50, commit_interval: int = 2000
-) -> None:
-    """Lemmatize all speeches lacking lemmas using parallel worker processes."""
+) -> int:
+    """Lemmatize all speeches lacking lemmas using parallel worker processes.
+
+    Returns the number of speeches that remain unlemmatized (0 on complete success).
+    """
     if max_workers is None or max_workers <= 0:
         max_workers = get_default_workers()
 
@@ -75,7 +78,7 @@ def build_missing_lemmas(
         total_count = len(missing_speeches)
         if total_count == 0:
             print("No speeches need lemmatization.")
-            return
+            return 0
 
         print(f"Found {total_count} speeches to lemmatize.")
         print(
@@ -105,7 +108,16 @@ def build_missing_lemmas(
             session.commit()
             pending_updates.clear()
 
-        print(f"Successfully lemmatized and committed {total_count} speeches.")
+        unlemmatized_count = (
+            session.query(func.count(Speech.id)).filter(Speech.text_lemmas.is_(None)).scalar() or 0
+        )
+        if unlemmatized_count == 0:
+            print(f"Successfully lemmatized and committed {total_count} speeches.")
+        else:
+            print(
+                f"Lemmatized speeches committed, but {unlemmatized_count} speeches remain without lemmas."
+            )
+        return unlemmatized_count
 
     except Exception as e:
         session.rollback()

@@ -2,10 +2,12 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from src.api.routes import router
+from src.api.search import LemmatizerUnavailableError
 from src.load.loader import create_tables
 
 logger = logging.getLogger(__name__)
@@ -21,6 +23,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Riigikogu Stenogram Search API", lifespan=lifespan)
+
+
+@app.exception_handler(LemmatizerUnavailableError)
+async def lemmatizer_unavailable_handler(request: Request, exc: LemmatizerUnavailableError):
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Otsingu keeletöötlus pole hetkel saadaval."},
+    )
+
 
 allowed_origins = [
     origin.strip() for origin in os.environ.get("ALLOWED_ORIGINS", "*").split(",") if origin.strip()

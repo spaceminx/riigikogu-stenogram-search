@@ -19,6 +19,7 @@ from src.api.attendance import (
 )
 from src.api.search import (
     SPEECH_TYPE_CATEGORIES,
+    LemmatizerUnavailableError,
     get_dashboard_overview,
     get_plenary_session_dates,
     get_session_speeches,
@@ -26,6 +27,7 @@ from src.api.search import (
     keyword_activity,
     keyword_top_speakers,
     normalize_source_url,
+    sanitize_query,
     search_by_keyword,
 )
 from src.load.database import SessionLocal
@@ -255,7 +257,7 @@ def factions_list(
 def search(
     q: str = Query(..., min_length=1, max_length=1000),
     limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=1_000_000),
     membership: str = Query(
         "all", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
     ),
@@ -280,6 +282,7 @@ def search(
         pattern=r"^(speeches|questions|procedural)$",
     ),
 ):
+    q = sanitize_query(q)
     validate_membership(membership)
     try:
         results, total_count = search_by_keyword(
@@ -304,11 +307,17 @@ def search(
             "limit": limit,
             "results": results,
         }
-    except ValueError as e:
+    except LemmatizerUnavailableError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Otsingu keeletöötlus pole hetkel saadaval.",
+        ) from e
+    except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(
             status_code=status_code,
-            detail=str(e),
+            detail=detail,
         ) from e
     except OperationalError as e:
         raise HTTPException(
@@ -340,6 +349,7 @@ def search_activity(
         pattern=r"^(speeches|questions|procedural)$",
     ),
 ):
+    q = sanitize_query(q)
     if interval not in ("daily", "weekly", "monthly"):
         raise HTTPException(
             status_code=400,
@@ -363,11 +373,17 @@ def search_activity(
                 speech_category=speech_category,
             ),
         }
-    except ValueError as e:
+    except LemmatizerUnavailableError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Otsingu keeletöötlus pole hetkel saadaval.",
+        ) from e
+    except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(
             status_code=status_code,
-            detail=str(e),
+            detail=detail,
         ) from e
     except OperationalError as e:
         raise HTTPException(
@@ -399,6 +415,7 @@ def search_speakers(
         pattern=r"^(speeches|questions|procedural)$",
     ),
 ):
+    q = sanitize_query(q)
     validate_membership(membership)
     try:
         return {
@@ -416,11 +433,17 @@ def search_speakers(
                 speech_category=speech_category,
             ),
         }
-    except ValueError as e:
+    except LemmatizerUnavailableError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Otsingu keeletöötlus pole hetkel saadaval.",
+        ) from e
+    except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
         raise HTTPException(
             status_code=status_code,
-            detail=str(e),
+            detail=detail,
         ) from e
     except OperationalError as e:
         raise HTTPException(
@@ -440,6 +463,7 @@ def speech_context(
     speech_id: int,
     q: str | None = Query(None, description="Otsingupäring lemmade esiletõstmiseks"),
 ):
+    q = sanitize_query(q)
     if speech_id > MAX_SQLITE_INT or speech_id < MIN_SQLITE_INT:
         raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
     try:
@@ -447,6 +471,14 @@ def speech_context(
         if not context:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
         return context
+    except LemmatizerUnavailableError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Otsingu keeletöötlus pole hetkel saadaval.",
+        ) from e
+    except (ValueError, RecursionError) as e:
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
+        raise HTTPException(status_code=400, detail=detail) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
@@ -483,6 +515,7 @@ def search_export(
 ):
     if format not in ("csv", "json"):
         raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
+    q = sanitize_query(q)
     validate_membership(membership)
 
     try:
@@ -576,9 +609,15 @@ def search_export(
                 "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.csv\"; filename*=UTF-8''{encoded_csv_filename}",
             },
         )
-    except ValueError as e:
+    except LemmatizerUnavailableError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Otsingu keeletöötlus pole hetkel saadaval.",
+        ) from e
+    except (ValueError, RecursionError) as e:
         status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        raise HTTPException(status_code=status_code, detail=str(e)) from e
+        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
+        raise HTTPException(status_code=status_code, detail=detail) from e
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
@@ -597,7 +636,7 @@ def list_persons(
     search: str | None = Query(None, description="Otsi nime järgi"),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
     limit: int = Query(100, ge=1, le=500),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=1_000_000),
 ):
     """Return parliament members with optional name search and active status filter."""
     session = SessionLocal()
@@ -921,7 +960,7 @@ def get_person_stats(person_uuid: str):
 def get_person_speeches(
     person_uuid: str,
     limit: int = Query(20, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=1_000_000),
     role_class: str = Query("mp", pattern=r"^(mp|chair|minister|candidate|other|director|all)$"),
     speech_category: str | None = Query(
         None,
@@ -1066,7 +1105,7 @@ def get_person_votes(
     person_uuid: str,
     membership: str | None = None,
     limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=1_000_000),
 ):
     """Get votes cast by a specific person, including decision summary and vote history."""
     validate_membership(membership)
@@ -1202,9 +1241,12 @@ def get_speech_by_external_id(external_id: str):
     """Get single speech specifically by Riigikogu permalink external_id."""
     session = SessionLocal()
     try:
-        if not external_id.isdigit():
+        if not (external_id.isascii() and external_id.isdigit()):
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
-        num_id = int(external_id)
+        try:
+            num_id = int(external_id)
+        except (ValueError, OverflowError):
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.") from None
         if num_id > MAX_SQLITE_INT or num_id < MIN_SQLITE_INT:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
 
@@ -1250,6 +1292,8 @@ def get_speech_by_external_id(external_id: str):
             detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
         ) from e
     except (SQLAlchemyError, OverflowError) as e:
+        if isinstance(e, OverflowError):
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.") from e
         logger.error("Speech query by external_id failed for %s: %s", external_id, e, exc_info=True)
         raise HTTPException(
             status_code=500,
@@ -1265,11 +1309,12 @@ def get_speech_by_id(speech_identifier: str):
     session = SessionLocal()
     try:
         speech = None
-        if speech_identifier.isdigit():
-            num_id = int(speech_identifier)
-            if num_id > MAX_SQLITE_INT or num_id < MIN_SQLITE_INT:
-                pass
-            else:
+        if speech_identifier.isascii() and speech_identifier.isdigit():
+            try:
+                num_id = int(speech_identifier)
+            except (ValueError, OverflowError):
+                num_id = None
+            if num_id is not None and MIN_SQLITE_INT <= num_id <= MAX_SQLITE_INT:
                 # Prioritize official Riigikogu permalink external_id and editorial aliases
                 speech = session.query(Speech).filter(Speech.external_id == num_id).first()
                 if not speech:
@@ -1325,6 +1370,8 @@ def get_speech_by_id(speech_identifier: str):
             detail="Andmebaas või kõnede tabel ei ole initsialiseeritud.",
         ) from e
     except (SQLAlchemyError, OverflowError) as e:
+        if isinstance(e, OverflowError):
+            raise HTTPException(status_code=404, detail="Kõnet ei leitud.") from e
         logger.error("Speech query failed for %s: %s", speech_identifier, e, exc_info=True)
         raise HTTPException(
             status_code=500,
@@ -1352,7 +1399,7 @@ def list_votings(
         pattern=r"^(AVALIK|SALAJANE)$",
     ),
     limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=1_000_000),
 ):
     """List public votings with filtering and pagination."""
     validate_membership(membership)
@@ -1374,6 +1421,7 @@ def list_votings(
         if type:
             query = query.filter(Voting.type == type)
         if q:
+            q = sanitize_query(q)
             term = f"%{q.strip()}%"
             query = query.filter(
                 or_(

@@ -542,7 +542,12 @@ export function PersonView({ theme = "light" }) {
                 />
                 <Tooltip {...chartTooltipStyle} />
                 <Legend wrapperStyle={{ paddingTop: "10px" }} />
-                <Bar dataKey="speeches" name="Kõned" stackId="mp" fill="#315b84" />
+                <Bar
+                  dataKey="speeches"
+                  name="Kõned"
+                  stackId="mp"
+                  fill={theme === "dark" ? "#60a5fa" : "#315b84"}
+                />
                 <Bar
                   dataKey="questions"
                   name="Küsimused ja repliigid"

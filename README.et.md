@@ -78,9 +78,10 @@ Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st a
 python scripts/download_from_b2.py --all
 
 # 1. Ehita uus andmebaas (soovitatavalt konteineris, et tagada õiged failiõigused)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+# Märkus: lipp --allow-missing-votes on vajalik seni, kuni hääletuste failid (votes_2019...votes_2025) on B2-sse laaditud.
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py --allow-missing-votes
 # Kui ehitad hostis, kontrolli ja muuda vajadusel uue faili omanikku (chown), et appuser saaks seda lugeda/kirjutada:
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py --allow-missing-votes
 
 # 2. Peata API ja puhasta vanad WAL ajutised failid
 docker compose stop backend
@@ -214,6 +215,19 @@ Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) 
    docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
    Eraldi uut tõmmise ehitamist ega teenuse katkestust vaja ei ole.
+3. Duplikaatsete või ignoreeritud istungite eemaldamiseks (nt 24.03.2021 ööistung `202103250048`):
+   1) Laadi alla sihtaasta andmestik Backblaze B2-st:
+      ```bash
+      docker compose exec backend python scripts/download_from_b2.py --year 2021
+      ```
+   2) Kontrolli eemaldatavaid kirjeid kuivkäivitusega (oodatav 79 kõnet):
+      ```bash
+      docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021
+      ```
+   3) Rakenda muudatused, laadi uuendatud fail B2-sse ja kustuta kirjed andmebaasist:
+      ```bash
+      docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
+      ```
 
 ---
 
@@ -275,6 +289,7 @@ riigikogu-stenogram-search/
 │   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo ja isikute allalaadija
 │   ├── fetch_memberships.py       # Koosseisude (XIV, XV jne) allalaadija Riigikogu API-st
 │   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
+│   ├── remove_ignored_sessions.py # Eemaldab ignoreeritud istungid JSONL-ist ja andmebaasist
 │   ├── repair_attendance_uuids.py # Täidab kohaloleku kirjetes ja andmebaasis member_uuid
 │   ├── repair_speaker_uuids.py    # Kõnelejate UUID lahendaja ja parandaja
 │   ├── sync_database.py           # SQLite andmebaasi uuendaja ja aliashaldur
