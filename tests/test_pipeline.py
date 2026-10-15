@@ -804,8 +804,10 @@ def test_verify_pipeline_integrity(tmp_path, monkeypatch):
 def test_sync_database_replaces_unedited_and_writes_alias(tmp_path, monkeypatch):
     from scripts.sync_database import sync_current_year_speeches
     from src.load.database import SessionLocal
+    from src.load.loader import create_tables
     from src.load.models import Speech, SpeechAlias
 
+    create_tables()
     monkeypatch.setattr("scripts.sync_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
 
     session = SessionLocal()
@@ -857,8 +859,8 @@ def test_sync_database_replaces_unedited_and_writes_alias(tmp_path, monkeypatch)
     year_file.write_text(json.dumps(edited_data) + "\n", encoding="utf-8")
 
     # 3. Sync database
-    new_count = sync_current_year_speeches("2026")
-    assert new_count == 1
+    failed_sources = sync_current_year_speeches("2026")
+    assert failed_sources == []
 
     # 4. Verify speech was updated and alias was created
     session = SessionLocal()
@@ -2008,3 +2010,179 @@ def test_repair_attendance_uuids_logic(tmp_path, monkeypatch):
     assert db_u3 == "uuid-kaja-kallas"
     assert db_u4 == "uuid-siret-kotka"
     assert db_u5 is None
+
+
+def test_sync_database_votes_error_does_not_block_lemmas_and_terms(monkeypatch):
+    from scripts.sync_database import sync_database
+    from src.load.database import SessionLocal
+    from src.load.loader import create_tables
+    from src.load.models import SystemMeta
+
+    create_tables()
+
+    # Clear last_sync_at
+    s = SessionLocal()
+    s.query(SystemMeta).filter_by(key="last_sync_at").delete()
+    s.commit()
+    s.close()
+
+    lemmas_called = []
+    terms_called = []
+
+    monkeypatch.setattr("scripts.sync_database.sync_current_year_speeches", lambda: [])
+    monkeypatch.setattr(
+        "scripts.sync_database.build_missing_lemmas", lambda: lemmas_called.append(True) or 0
+    )
+    monkeypatch.setattr(
+        "scripts.sync_database.build_missing_terms", lambda: terms_called.append(True)
+    )
+    monkeypatch.setattr("scripts.sync_database.load_attendance_to_database", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_persons_to_database", lambda: None)
+
+    def failing_votes(*args, **kwargs):
+        raise RuntimeError("Vote schema error")
+
+    monkeypatch.setattr("scripts.sync_database.load_votes_to_database", failing_votes)
+
+    result = sync_database(skip_download=True)
+    assert result is False
+    assert len(lemmas_called) == 1
+    assert len(terms_called) == 1
+
+    s = SessionLocal()
+    meta = s.query(SystemMeta).filter_by(key="last_sync_at").first()
+    assert meta is None
+    s.close()
+
+
+def test_sync_current_year_speeches_one_session_fails_others_loaded(tmp_path, monkeypatch):
+    from scripts.sync_database import sync_current_year_speeches, sync_database
+    from src.load.database import SessionLocal
+    from src.load.loader import create_tables
+    from src.load.models import Speech, SystemMeta
+
+    create_tables()
+    monkeypatch.setattr("scripts.sync_database.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("scripts.sync_database.active_years", lambda: ["2026"])
+
+    s = SessionLocal()
+    s.query(Speech).delete()
+    s.query(SystemMeta).filter_by(key="last_sync_at").delete()
+    s.commit()
+    s.close()
+
+    speeches_2026 = [
+        {
+            "date": "2026-06-01",
+            "time": "1000",
+            "source_file": "good_session.api",
+            "source_url": "https://stenogrammid.riigikogu.ee/test1",
+            "speaker": "Speaker One",
+            "text": "Good speech text",
+            "status": "EDITED",
+        },
+        {
+            # Missing "date" key triggers KeyError when creating Speech model
+            "time": "1100",
+            "source_file": "bad_session.api",
+            "source_url": "https://stenogrammid.riigikogu.ee/test2",
+            "speaker": "Speaker Two",
+            "text": "Bad speech text",
+            "status": "EDITED",
+        },
+    ]
+
+    year_file = tmp_path / "2026.jsonl"
+    with open(year_file, "w", encoding="utf-8") as f:
+        for sp in speeches_2026:
+            f.write(json.dumps(sp) + "\n")
+
+    failed = sync_current_year_speeches("2026")
+    assert "bad_session.api" in failed
+
+    s = SessionLocal()
+    good = s.query(Speech).filter_by(source_file="good_session.api").first()
+    bad = s.query(Speech).filter_by(source_file="bad_session.api").first()
+    assert good is not None
+    assert bad is None
+    s.close()
+
+    # Now verify sync_database returns False when speech sync has failures
+    monkeypatch.setattr(
+        "scripts.sync_database.sync_current_year_speeches", lambda: ["bad_session.api"]
+    )
+    monkeypatch.setattr("scripts.sync_database.build_missing_lemmas", lambda: 0)
+    monkeypatch.setattr("scripts.sync_database.build_missing_terms", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_attendance_to_database", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_persons_to_database", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_votes_to_database", lambda **k: None)
+
+    res = sync_database(skip_download=True)
+    assert res is False
+
+    s = SessionLocal()
+    meta = s.query(SystemMeta).filter_by(key="last_sync_at").first()
+    assert meta is None
+    s.close()
+
+
+def test_sync_database_persons_error_results_in_false(monkeypatch):
+    from scripts.sync_database import sync_database
+    from src.load.database import SessionLocal
+    from src.load.loader import create_tables
+    from src.load.models import SystemMeta
+
+    create_tables()
+
+    s = SessionLocal()
+    s.query(SystemMeta).filter_by(key="last_sync_at").delete()
+    s.commit()
+    s.close()
+
+    monkeypatch.setattr("scripts.sync_database.sync_current_year_speeches", lambda: [])
+    monkeypatch.setattr("scripts.sync_database.build_missing_lemmas", lambda: 0)
+    monkeypatch.setattr("scripts.sync_database.build_missing_terms", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_attendance_to_database", lambda: None)
+
+    def failing_persons():
+        raise RuntimeError("Persons database load error")
+
+    monkeypatch.setattr("scripts.sync_database.load_persons_to_database", failing_persons)
+    monkeypatch.setattr("scripts.sync_database.load_votes_to_database", lambda **k: None)
+
+    result = sync_database(skip_download=True)
+    assert result is False
+
+    s = SessionLocal()
+    meta = s.query(SystemMeta).filter_by(key="last_sync_at").first()
+    assert meta is None
+    s.close()
+
+
+def test_sync_database_unlemmatized_speeches_results_in_false(monkeypatch):
+    from scripts.sync_database import sync_database
+    from src.load.database import SessionLocal
+    from src.load.loader import create_tables
+    from src.load.models import SystemMeta
+
+    create_tables()
+
+    s = SessionLocal()
+    s.query(SystemMeta).filter_by(key="last_sync_at").delete()
+    s.commit()
+    s.close()
+
+    monkeypatch.setattr("scripts.sync_database.sync_current_year_speeches", lambda: [])
+    monkeypatch.setattr("scripts.sync_database.build_missing_lemmas", lambda: 5)
+    monkeypatch.setattr("scripts.sync_database.build_missing_terms", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_attendance_to_database", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_persons_to_database", lambda: None)
+    monkeypatch.setattr("scripts.sync_database.load_votes_to_database", lambda **k: None)
+
+    result = sync_database(skip_download=True)
+    assert result is False
+
+    s = SessionLocal()
+    meta = s.query(SystemMeta).filter_by(key="last_sync_at").first()
+    assert meta is None
+    s.close()

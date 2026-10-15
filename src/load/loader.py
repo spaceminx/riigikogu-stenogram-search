@@ -244,6 +244,7 @@ def load_persons_to_database() -> None:
     except Exception as e:
         session.rollback()
         print(f"Notice: Error loading persons: {e}")
+        raise
     finally:
         session.close()
 
