@@ -24,6 +24,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy installed Python packages from builder stage
 COPY --from=builder /install /usr/local
 
+# Pre-download NLTK punkt_tab data so it does not require runtime downloading
+ENV NLTK_DATA=/usr/local/share/nltk_data
+RUN python -c "import nltk; nltk.download('punkt_tab', download_dir='/usr/local/share/nltk_data', quiet=True, raise_on_error=True)"
+
 # Copy application files
 COPY config.py .
 COPY src/ ./src/

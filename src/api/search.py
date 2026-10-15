@@ -3,12 +3,45 @@ import time
 from datetime import datetime, timedelta
 
 from estnltk.vabamorf.morf import Vabamorf
+from fastapi import HTTPException
 from sqlalchemy import func, or_
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
 from src.load.models import Lemma, Person, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
+
+_C0_CONTROL_REGEX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+class LemmatizerUnavailableError(Exception):
+    """Raised when lemmatizer is unavailable or returns None during search."""
+
+
+def sanitize_query(query: str | None) -> str | None:
+    """Sanitize user query string by stripping C0 control characters."""
+    if query is None:
+        return None
+    cleaned = _C0_CONTROL_REGEX.sub("", query)
+    if query.strip() and not cleaned.strip():
+        raise HTTPException(status_code=400, detail="Vigane otsingupäring.")
+    return cleaned
+
+
+def check_query_complexity(query: str) -> None:
+    """Check query nesting depth to prevent excessive recursion or stack exhaustion."""
+    depth = 0
+    max_d = 0
+    for ch in query:
+        if ch == "(":
+            depth += 1
+            if depth > max_d:
+                max_d = depth
+        elif ch == ")":
+            depth = max(0, depth - 1)
+    if max_d > 10:
+        raise ValueError("Päring on liiga keeruline.")
+
 
 _WORD_REGEX = re.compile(r"\b[a-zA-ZäöüõÄÖÜÕšžŠŽ0-9\-]+\b")
 _VABAMORF = Vabamorf.instance()
@@ -131,10 +164,18 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
 
 def is_only_stopwords(query: str) -> bool:
     """Check if query contains non-empty words but all of them are in STOPWORDS."""
+    check_query_complexity(query)
     raw_groups = query.split(",")
+    if len(raw_groups) > 10:
+        raise ValueError("Päring on liiga keeruline.")
     has_any_words = False
     for group in raw_groups:
-        lemmas = lemmatize_text(group).split()
+        lemmatized = lemmatize_text(group)
+        if lemmatized is None:
+            raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
+        lemmas = lemmatized.split()
+        if len(lemmas) > 10:
+            raise ValueError("Päring on liiga keeruline.")
         if lemmas:
             has_any_words = True
             if any(lemma not in STOPWORDS for lemma in lemmas):
@@ -144,12 +185,20 @@ def is_only_stopwords(query: str) -> bool:
 
 def parse_query_groups(query: str) -> list[list[str]]:
     """Parse comma-separated OR groups and space-separated AND keywords into filtered lemmas."""
+    check_query_complexity(query)
     groups = []
     raw_groups = query.split(",")
+    if len(raw_groups) > 10:
+        raise ValueError("Päring on liiga keeruline.")
 
     for group in raw_groups:
-        lemmas = lemmatize_text(group).split()
+        lemmatized = lemmatize_text(group)
+        if lemmatized is None:
+            raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
+        lemmas = lemmatized.split()
         lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
+        if len(lemmas) > 10:
+            raise ValueError("Päring on liiga keeruline.")
         if lemmas:
             groups.append(list(dict.fromkeys(lemmas)))
 
