@@ -60,7 +60,6 @@ export function SpeechCard({
               href={`#speech-${publicSpeechId}`}
               className="speech-anchor-link"
               title="Kopeeri kõne otselink"
-              style={{ color: "var(--color-text-muted, #94a3b8)", fontSize: "0.85rem" }}
             >
               #
             </a>

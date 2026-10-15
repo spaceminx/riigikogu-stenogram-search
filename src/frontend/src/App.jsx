@@ -105,9 +105,21 @@ function PersonRoute({ theme }) {
   return <PersonView key={uuid} theme={theme} />;
 }
 
+function getInitialTheme() {
+  try {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") {
+      return saved;
+    }
+  } catch {
+    // localStorage may be unavailable or throw in private browsing mode
+  }
+  return "light";
+}
+
 function AppContent() {
   const location = useLocation();
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(getInitialTheme);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
   const [searchFactionsList, setSearchFactionsList] = useState([]);
@@ -118,6 +130,11 @@ function AppContent() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // Ignore write errors in private mode
+    }
   }, [theme]);
 
   const {
