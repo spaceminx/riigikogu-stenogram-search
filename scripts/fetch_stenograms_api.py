@@ -14,7 +14,7 @@ import requests
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
+from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
 from src.transform.lemmatizer import lemmatize_text
 
 IGNORED_SPEECH_TYPES = {
@@ -935,6 +935,12 @@ def fetch_and_process_stenograms(
                 verbatim_link = verbatim.get("link", "")
                 meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
 
+                if meeting_code in IGNORED_VERBATIMS:
+                    print(
+                        f"Skipping ignored verbatim {meeting_code}: {IGNORED_VERBATIMS[meeting_code]}"
+                    )
+                    continue
+
                 v_date_str = verbatim.get("date")
                 if not v_date_str:
                     continue
@@ -1023,6 +1029,12 @@ def fetch_and_process_stenograms(
             src_file_key = info.get("source_file")
             date_str = info.get("date")
             year_str = info.get("year") or (date_str.split("-")[0] if date_str else "2026")
+
+            if meeting_code in IGNORED_VERBATIMS:
+                print(
+                    f"Skipping ignored verbatim {meeting_code}: {IGNORED_VERBATIMS[meeting_code]}"
+                )
+                continue
 
             if meeting_code in processed_meeting_codes:
                 continue

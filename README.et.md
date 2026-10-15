@@ -214,6 +214,10 @@ Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) 
    docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
    Eraldi uut tõmmise ehitamist ega teenuse katkestust vaja ei ole.
+3. Duplikaatsete või ignoreeritud istungite eemaldamiseks (nt 24.03.2021 ööistung `202103250048`):
+   ```bash
+   docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
+   ```
 
 ---
 
@@ -275,6 +279,7 @@ riigikogu-stenogram-search/
 │   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo ja isikute allalaadija
 │   ├── fetch_memberships.py       # Koosseisude (XIV, XV jne) allalaadija Riigikogu API-st
 │   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
+│   ├── remove_ignored_sessions.py # Eemaldab ignoreeritud istungid JSONL-ist ja andmebaasist
 │   ├── repair_attendance_uuids.py # Täidab kohaloleku kirjetes ja andmebaasis member_uuid
 │   ├── repair_speaker_uuids.py    # Kõnelejate UUID lahendaja ja parandaja
 │   ├── sync_database.py           # SQLite andmebaasi uuendaja ja aliashaldur

@@ -26,6 +26,10 @@ B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "riigikogu-stenograms")
 
 START_DATE = "2019-04-04"
 
+IGNORED_VERBATIMS: dict[str, str] = {
+    "202103250048": "Duplicate night verbatim of 2021-03-24 14:00 session",
+}
+
 DEFAULT_MEMBERSHIP_DATES: dict[str, tuple[str, str]] = {
     "13": ("2015-03-30", "2019-04-03"),
     "14": ("2019-04-04", "2023-04-09"),

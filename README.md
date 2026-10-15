@@ -197,6 +197,21 @@ Populates `member_uuid` across historical attendance records (`data/processed/at
    ```
    *Note:* The schema migration (`ensure_schema()`) runs automatically and idempotently on table initialization, adding column `member_uuid TEXT` and index `idx_attendance_member_uuid` if they do not yet exist.
 
+#### Ignored Sessions Removal (`remove_ignored_sessions.py`)
+Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` covering the night of 2021-03-24) from yearly JSONL datasets and the SQLite database:
+1. Inspect rows to be removed (dry run):
+   ```bash
+   python scripts/remove_ignored_sessions.py --year 2021
+   ```
+2. Apply changes, upload updated dataset to Backblaze B2, and delete database records:
+   ```bash
+   python scripts/remove_ignored_sessions.py --year 2021 --apply
+   ```
+   Or inside the production container:
+   ```bash
+   docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
+   ```
+
 #### Backblaze B2 Content-Based Synchronization (`download_from_b2.py`, `upload_to_b2.py`)
 Dataset synchronization between local storage and Backblaze B2 uses content MD5 digests rather than file size:
 - **Content Matching (MD5):**
@@ -335,6 +350,7 @@ riigikogu-stenogram-search/
 │   ├── fetch_memberships.py       # Membership terms scraper from Riigikogu API
 │   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
 │   ├── load_database.py           # Standalone JSONL to SQLite loader script
+│   ├── remove_ignored_sessions.py # Purges duplicate/ignored verbatims from JSONL and database
 │   ├── repair_attendance_uuids.py # Populates member_uuid in attendance records and database
 │   ├── repair_speaker_uuids.py    # Speaker UUID resolution and repair script
 │   ├── sync_database.py           # SQLite database update with speech aliases

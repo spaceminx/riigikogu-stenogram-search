@@ -19,7 +19,7 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import config
-from config import OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
+from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
 from scripts.fetch_stenograms_api import (
     fetch_rich_meeting_data,
     get_month_ranges,
@@ -362,6 +362,12 @@ def run_backfill(
             verbatim_link = verbatim.get("link", "")
             meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
             if not meeting_code:
+                continue
+
+            if meeting_code in IGNORED_VERBATIMS:
+                print(
+                    f"Skipping ignored verbatim {meeting_code}: {IGNORED_VERBATIMS[meeting_code]}"
+                )
                 continue
 
             v_date = verbatim.get("date", "").split("T")[0]
