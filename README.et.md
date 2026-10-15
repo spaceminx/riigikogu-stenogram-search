@@ -216,9 +216,18 @@ Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) 
    ```
    Eraldi uut tõmmise ehitamist ega teenuse katkestust vaja ei ole.
 3. Duplikaatsete või ignoreeritud istungite eemaldamiseks (nt 24.03.2021 ööistung `202103250048`):
-   ```bash
-   docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
-   ```
+   1) Laadi alla sihtaasta andmestik Backblaze B2-st:
+      ```bash
+      docker compose exec backend python scripts/download_from_b2.py --year 2021
+      ```
+   2) Kontrolli eemaldatavaid kirjeid kuivkäivitusega (oodatav 79 kõnet):
+      ```bash
+      docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021
+      ```
+   3) Rakenda muudatused, laadi uuendatud fail B2-sse ja kustuta kirjed andmebaasist:
+      ```bash
+      docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
+      ```
 
 ---
 

@@ -1,7 +1,7 @@
 """Script for removing ignored sessions/verbatims from JSONL datasets and the SQLite database.
 
 Usage:
-    python scripts/remove_ignored_sessions.py --year YYYY [--apply] [--data-dir PATH] [--db-path PATH]
+    python scripts/remove_ignored_sessions.py --year YYYY [--apply] [--data-dir PATH]
 """
 
 import argparse
@@ -13,7 +13,7 @@ import sys
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import DATABASE_PATH, IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED
+from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED
 from scripts.backfill_history import write_year_file_atomic
 from scripts.upload_to_b2 import upload_to_b2
 from src.load.database import SessionLocal
@@ -24,7 +24,6 @@ def remove_ignored_sessions(
     year: str | int,
     apply: bool = False,
     data_dir: str = OUTPUT_DIR_PROCESSED,
-    db_path: str = DATABASE_PATH,
 ) -> int:
     year_str = str(year)
     jsonl_path = os.path.join(data_dir, f"{year_str}.jsonl")
@@ -189,14 +188,12 @@ def main():
     parser.add_argument(
         "--data-dir", default=OUTPUT_DIR_PROCESSED, help="Processed data directory path"
     )
-    parser.add_argument("--db-path", default=DATABASE_PATH, help="Database path")
     args = parser.parse_args()
 
     exit_code = remove_ignored_sessions(
         year=args.year,
         apply=args.apply,
         data_dir=args.data_dir,
-        db_path=args.db_path,
     )
     sys.exit(exit_code)
 

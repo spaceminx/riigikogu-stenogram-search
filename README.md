@@ -200,15 +200,15 @@ Populates `member_uuid` across historical attendance records (`data/processed/at
 
 #### Ignored Sessions Removal (`remove_ignored_sessions.py`)
 Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` covering the night of 2021-03-24) from yearly JSONL datasets and the SQLite database:
-1. Inspect rows to be removed (dry run):
+1. Download target year dataset from Backblaze B2:
    ```bash
-   python scripts/remove_ignored_sessions.py --year 2021
+   docker compose exec backend python scripts/download_from_b2.py --year 2021
    ```
-2. Apply changes, upload updated dataset to Backblaze B2, and delete database records:
+2. Inspect rows to be removed (dry run, expected 79 speeches):
    ```bash
-   python scripts/remove_ignored_sessions.py --year 2021 --apply
+   docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021
    ```
-   Or inside the production container:
+3. Apply changes, upload updated dataset to Backblaze B2, and delete database records:
    ```bash
    docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
    ```
