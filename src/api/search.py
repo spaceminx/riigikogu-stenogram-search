@@ -811,6 +811,10 @@ def keyword_top_speakers(
 
 def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
     """Retrieve full transcript context (all speeches in chronological order) for a given speech."""
+    parsed_groups = None
+    if query and not is_only_stopwords(query):
+        parsed_groups = parse_query_groups(query)
+
     session = SessionLocal()
     try:
         target_speech = session.query(Speech).filter(Speech.id == speech_id).first()
@@ -826,9 +830,8 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
 
         target_lemmas: set[str] = set()
         matching_speech_ids: set[int] = set()
-        if query and not is_only_stopwords(query):
-            groups = parse_query_groups(query)
-            target_lemmas = {lemma for group in groups for lemma in group}
+        if parsed_groups:
+            target_lemmas = {lemma for group in parsed_groups for lemma in group}
             if target_lemmas and speeches:
                 speech_ids = [s.id for s in speeches]
                 matching_speech_ids = {

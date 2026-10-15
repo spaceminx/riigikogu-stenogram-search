@@ -74,3 +74,9 @@ def test_lemmatizer_failure_returns_503():
         response = client.get("/search?q=riigikogu")
         assert response.status_code == 503
         assert response.json()["detail"] == "Otsingu keeletöötlus pole hetkel saadaval."
+
+
+def test_speech_context_too_many_groups_returns_400():
+    response = client.get("/speeches/1/context?q=k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,k10")
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Päring on liiga keeruline."
