@@ -541,6 +541,7 @@ export function PersonView({ theme = "light" }) {
                   allowDecimals={false}
                 />
                 <Tooltip {...chartTooltipStyle} />
+                <Legend wrapperStyle={{ paddingTop: "10px" }} />
                 <Bar
                   dataKey="speeches"
                   name="Kõned"
