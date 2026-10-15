@@ -45,6 +45,24 @@ def validate_membership(membership: str | None) -> None:
         raise HTTPException(status_code=422, detail="Tundmatu koosseis")
 
 
+def format_session_source_file(
+    sitting_date: str | None, sitting_datetime: str | None
+) -> str | None:
+    """Format expected speeches.source_file name from sitting date and datetime."""
+    if not sitting_date or not sitting_datetime:
+        return None
+    try:
+        if "T" in sitting_datetime:
+            time_part = sitting_datetime.split("T", 1)[1]
+            hh = time_part[:2]
+            mm = time_part[3:5]
+            if len(hh) == 2 and len(mm) == 2 and hh.isdigit() and mm.isdigit():
+                return f"{sitting_date}_{hh}{mm}.api"
+    except Exception:
+        pass
+    return None
+
+
 @router.get("/")
 def root():
     session = SessionLocal()
@@ -1131,6 +1149,8 @@ def get_person_votes(
                     "description": voting.description,
                     "date": voting.date,
                     "start_time": voting.start_time,
+                    "sitting_date": voting.sitting_date,
+                    "sitting_datetime": voting.sitting_datetime,
                     "membership": voting.membership,
                     "decision": vote.decision,
                     "faction": vote.faction,
@@ -1318,6 +1338,11 @@ def get_speech_by_id(speech_identifier: str):
 def list_votings(
     start_date: str | None = None,
     end_date: str | None = None,
+    sitting_date: str | None = Query(
+        None,
+        description="Filtreeri istungi kuupäeva järgi (YYYY-MM-DD)",
+        pattern=r"^\d{4}-\d{2}-\d{2}$",
+    ),
     membership: str | None = None,
     q: str | None = None,
     document_uuid: str | None = None,
@@ -1342,6 +1367,8 @@ def list_votings(
             query = query.filter(Voting.date >= start_date)
         if end_date:
             query = query.filter(Voting.date <= end_date)
+        if sitting_date:
+            query = query.filter(Voting.sitting_date == sitting_date)
         if document_uuid:
             query = query.filter(Voting.related_document_uuid == document_uuid)
         if type:
@@ -1357,14 +1384,31 @@ def list_votings(
             )
 
         total = query.count()
-        items = (
-            query.order_by(
-                Voting.date.desc(), Voting.start_time.desc(), Voting.voting_number.desc()
+        if sitting_date:
+            order_clauses = [Voting.start_time.asc(), Voting.voting_number.asc()]
+        else:
+            order_clauses = [
+                Voting.date.desc(),
+                Voting.start_time.desc(),
+                Voting.voting_number.desc(),
+            ]
+        items = query.order_by(*order_clauses).offset(offset).limit(limit).all()
+
+        candidate_files = set()
+        for v in items:
+            cf = format_session_source_file(v.sitting_date, v.sitting_datetime)
+            if cf:
+                candidate_files.add(cf)
+
+        existing_source_files = set()
+        if candidate_files:
+            existing_rows = (
+                session.query(Speech.source_file)
+                .filter(Speech.source_file.in_(candidate_files))
+                .distinct()
+                .all()
             )
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
+            existing_source_files = {r[0] for r in existing_rows}
 
         results = []
         for v in items:
@@ -1376,6 +1420,9 @@ def list_votings(
                     "title": v.related_document_title,
                     "type": v.related_document_type,
                 }
+            cf = format_session_source_file(v.sitting_date, v.sitting_datetime)
+            session_source_file = cf if cf in existing_source_files else None
+
             results.append(
                 {
                     "uuid": v.uuid,
@@ -1385,6 +1432,9 @@ def list_votings(
                     "date": v.date,
                     "start_time": v.start_time,
                     "end_time": v.end_time,
+                    "sitting_date": v.sitting_date,
+                    "sitting_datetime": v.sitting_datetime,
+                    "session_source_file": session_source_file,
                     "membership": v.membership,
                     "sitting_uuid": v.sitting_uuid,
                     "sitting_title": v.sitting_title,
@@ -1498,6 +1548,13 @@ def get_voting_detail(voting_uuid: str):
 
         sorted_factions = sorted(faction_map.values(), key=lambda f: (-f["total"], f["faction"]))
 
+        cf = format_session_source_file(voting.sitting_date, voting.sitting_datetime)
+        session_source_file = None
+        if cf:
+            exists = session.query(Speech.source_file).filter(Speech.source_file == cf).first()
+            if exists:
+                session_source_file = cf
+
         return {
             "uuid": voting.uuid,
             "voting_number": voting.voting_number,
@@ -1506,6 +1563,9 @@ def get_voting_detail(voting_uuid: str):
             "date": voting.date,
             "start_time": voting.start_time,
             "end_time": voting.end_time,
+            "sitting_date": voting.sitting_date,
+            "sitting_datetime": voting.sitting_datetime,
+            "session_source_file": session_source_file,
             "membership": voting.membership,
             "sitting_uuid": voting.sitting_uuid,
             "sitting_title": voting.sitting_title,
@@ -1616,7 +1676,7 @@ def system_status():
             },
             "methodology": {
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
-                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta.",
+                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg.",

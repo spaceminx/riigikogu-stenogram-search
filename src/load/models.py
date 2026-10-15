@@ -107,6 +107,8 @@ class Voting(Base):
     date = Column(Text, nullable=False)
     start_time = Column(Text, nullable=True)
     end_time = Column(Text, nullable=True)
+    sitting_date = Column(Text, nullable=True)
+    sitting_datetime = Column(Text, nullable=True)
     membership = Column(Integer, nullable=True)
     sitting_uuid = Column(Text, nullable=True)
     sitting_title = Column(Text, nullable=True)
