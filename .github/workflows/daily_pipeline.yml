@@ -2,7 +2,7 @@ name: Riigikogu Daily Data Pipeline
 
 on:
   schedule:
-    # Pipeline cron is scheduled for 01:12 AM UTC, but actually runs around ~07:00 UTC due to GitHub Actions queue delay. Do not change schedule.
+    # Pipeline cron is scheduled for 01:12 AM UTC, but actually runs around 05:40–07:40 UTC due to GitHub Actions queue delay. Do not change schedule.
     - cron: '12 1 * * *'
 
   workflow_dispatch:
@@ -17,6 +17,7 @@ permissions:
 jobs:
   update-data:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
 
     steps:
       - name: Checkout repository
