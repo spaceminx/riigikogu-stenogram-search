@@ -78,9 +78,10 @@ The daily database sync (`sync_database.py`) running on the server only download
 python scripts/download_from_b2.py --all
 
 # 1. Build the new database (preferably in a container to ensure correct file permissions)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+# Note: The --allow-missing-votes flag is needed until historical votes (votes_2019...votes_2025) are uploaded to B2.
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py --allow-missing-votes
 # If building on the host, ensure the container's appuser has rw permissions to the new file (chown if needed):
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py --allow-missing-votes
 
 # 2. Stop the API and clean up old WAL temporary files
 docker compose stop backend
@@ -250,9 +251,20 @@ API documentation is available at:
   - `GET /persons/{uuid}/stats` — Activity breakdown, speech durations, and counts by term and year.
   - `GET /persons/{uuid}/speeches` — Speeches by MP with pagination and `role_class` filter (`all`, `mp`, `chair`, `minister`, `candidate`, `director`, `other`).
   - `GET /persons/{uuid}/attendance` — MP attendance statistics and voting breakdown.
-- **Transcripts & System Info:**
+  - `GET /persons/{uuid}/votes` — Voting history for an individual MP.
+- **Attendance & Factions:**
+  - `GET /attendance/stats` — Attendance statistics aggregated by member.
+  - `GET /attendance/factions` — Attendance statistics aggregated by faction.
+  - `GET /attendance/factions/list` — Distinct faction names for a parliamentary term.
+- **Transcripts, Sessions & Voting:**
   - `GET /speeches/{id}` and `GET /speeches/{id}/context` — Specific speech and session context.
-  - `GET /attendance/stats` and `GET /attendance/sessions` — Attendance aggregations by faction and member.
+  - `GET /speeches/by-external-id/{id}` — Retrieve speech by Riigikogu verbatim external ID.
+  - `GET /sessions/dates` — Dates with recorded parliamentary sessions.
+  - `GET /sessions/{date}` — Speeches and agenda items for a specific date session.
+  - `GET /votings` — List parliamentary votings with filters.
+  - `GET /votings/{uuid}` — Specific voting details and individual member votes.
+- **System Info & Overview:**
+  - `GET /overview` — Platform summary metrics, active MPs, and recent speech count.
   - `GET /system/status` and `GET /memberships` — System health, data bounds, and parliamentary memberships.
 
 ### 7. Frontend Setup & Run

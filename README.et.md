@@ -78,9 +78,10 @@ Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st a
 python scripts/download_from_b2.py --all
 
 # 1. Ehita uus andmebaas (soovitatavalt konteineris, et tagada õiged failiõigused)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
+# Märkus: lipp --allow-missing-votes on vajalik seni, kuni hääletuste failid (votes_2019...votes_2025) on B2-sse laaditud.
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py --allow-missing-votes
 # Kui ehitad hostis, kontrolli ja muuda vajadusel uue faili omanikku (chown), et appuser saaks seda lugeda/kirjutada:
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py --allow-missing-votes
 
 # 2. Peata API ja puhasta vanad WAL ajutised failid
 docker compose stop backend

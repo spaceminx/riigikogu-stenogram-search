@@ -86,9 +86,13 @@ def build_full_database(
             if allow_missing_votes:
                 still_missing = [f for f in still_missing if not f.startswith("votes_")]
             if still_missing:
+                if all(f.startswith("votes_") for f in still_missing):
+                    hint = "use '--allow-missing-votes' to proceed without historical vote files."
+                else:
+                    hint = "use '--allow-partial' to force building with a partial dataset."
                 print(
                     f"\n[Error] Database build aborted. The following expected files are missing: {', '.join(still_missing)}.\n"
-                    "Please download datasets from B2 or use '--allow-partial' to force building with a partial dataset.",
+                    f"Please download datasets from B2 or {hint}",
                     file=sys.stderr,
                 )
                 sys.exit(1)
