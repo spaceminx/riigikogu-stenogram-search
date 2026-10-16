@@ -11,7 +11,7 @@ from sqlalchemy import func, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
-from src.load.models import Lemma, Person, Speech, SpeechTerm
+from src.load.models import Lemma, Person, Speech, SpeechTerm, SystemMeta
 from src.transform.lemmatizer import lemmatize_text
 
 logger = logging.getLogger(__name__)
@@ -688,21 +688,29 @@ def get_session_speeches(session_date: str) -> list[dict]:
         session.close()
 
 
-_OVERVIEW_CACHE: dict = {"data": None, "timestamp": 0.0}
+_OVERVIEW_CACHE: dict = {"data": None, "timestamp": 0.0, "last_sync_at": None}
 _OVERVIEW_CACHE_TTL: float = 3600.0
 
 
 def get_dashboard_overview() -> dict:
     """Return archive-wide speakers and the latest plenary sessions."""
-    now = time.time()
-    if (
-        _OVERVIEW_CACHE["data"] is not None
-        and (now - _OVERVIEW_CACHE["timestamp"]) < _OVERVIEW_CACHE_TTL
-    ):
-        return _OVERVIEW_CACHE["data"]
-
     session = SessionLocal()
     try:
+        current_sync_at = None
+        try:
+            meta_row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+            if meta_row:
+                current_sync_at = meta_row.value
+        except Exception:
+            pass
+
+        now = time.time()
+        if (
+            _OVERVIEW_CACHE["data"] is not None
+            and _OVERVIEW_CACHE.get("last_sync_at") == current_sync_at
+            and (now - _OVERVIEW_CACHE["timestamp"]) < _OVERVIEW_CACHE_TTL
+        ):
+            return _OVERVIEW_CACHE["data"]
         speaker_rows = (
             session.query(
                 Speech.speaker_uuid,
@@ -840,6 +848,7 @@ def get_dashboard_overview() -> dict:
         result = {"speakers": speakers, "sessions": sessions, "activity": activity}
         _OVERVIEW_CACHE["data"] = result
         _OVERVIEW_CACHE["timestamp"] = now
+        _OVERVIEW_CACHE["last_sync_at"] = current_sync_at
         return result
     finally:
         session.close()
