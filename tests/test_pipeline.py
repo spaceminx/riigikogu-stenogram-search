@@ -2186,3 +2186,260 @@ def test_sync_database_unlemmatized_speeches_results_in_false(monkeypatch):
     meta = s.query(SystemMeta).filter_by(key="last_sync_at").first()
     assert meta is None
     s.close()
+
+
+def test_verify_pipeline_integrity_report_and_blocked_files(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.verify_pipeline_integrity import verify_pipeline_integrity
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    two_days_ago = today - timedelta(days=2)
+
+    # In local JSONL, yesterday's session has 0 speeches (truncated/empty)
+    # two_days_ago session is completely missing from local JSONL
+    code_truncated = f"{yesterday.strftime('%Y%m%d')}1200"
+    file_truncated = f"{yesterday.strftime('%Y-%m-%d')}_1200.api"
+    year_file = tmp_path / f"{yesterday.year}.jsonl"
+    # An empty session: speech_count 0 can happen if represented with an entry having empty text or mock
+    # Wait, load_local_sessions_from_jsonl counts lines per source_file.
+    # If a source_file appears with speech_count 0... wait, how does speech_count become 0?
+    # In load_local_sessions_from_jsonl, if a line has valid source_file, speech_count += 1.
+    # But wait! If local_count is checked against rich meeting API (sample checks) or empty:
+    # Notice line 135: if sp_count == 0: truncated.
+    # Wait, if speech_count is 0 in local_sessions, or if sample check sees local_count < official_speeches * 0.8:
+    # If sample_meeting_checks > 0, rich meeting official_speeches > 5 and local_count < official_speeches * 0.8 -> truncated!
+
+    # Write 1 speech for truncated session
+    mock_speech = {
+        "source_file": file_truncated,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_truncated}#PKP-1",
+        "text": "Üks kõne",
+    }
+    year_file.write_text(json.dumps(mock_speech) + "\n", encoding="utf-8")
+
+    code_missing = f"{two_days_ago.strftime('%Y%m%d')}1000"
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                # Rich meeting for code_truncated has 10 official speeches, but local only has 1 -> truncated!
+                return {
+                    "stenograph": {
+                        "agendaItems": [
+                            {
+                                "speeches": [
+                                    {
+                                        "name": f"Kõneleja {i}",
+                                        "content": "Kõne sisu",
+                                        "speechType": "SPEECH",
+                                    }
+                                    for i in range(10)
+                                ]
+                            }
+                        ]
+                    }
+                }
+            # Verbatims list
+            return [
+                {
+                    "date": f"{yesterday.strftime('%Y-%m-%d')}T12:00:00.000+00:00",
+                    "title": "Kärbitud istung",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_truncated}",
+                },
+                {
+                    "date": f"{two_days_ago.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+                    "title": "Puuduv istung",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_missing}",
+                },
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    ok = verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=1)
+    assert ok is False
+
+    report_path = tmp_path / "integrity_report.json"
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    missing_codes = [s["code"] for s in report["missing_sessions"]]
+    assert code_missing in missing_codes
+
+    truncated_codes = [s["code"] for s in report["truncated_sessions"]]
+    assert code_truncated in truncated_codes
+
+    # blocked_files MUST contain the truncated session's year file, but NOT block missing sessions
+    assert f"{yesterday.year}.jsonl" in report["blocked_files"]
+
+
+def test_verify_pipeline_integrity_skips_ignored_verbatim(tmp_path, monkeypatch):
+    import requests
+
+    from config import IGNORED_VERBATIMS
+    from scripts.verify_pipeline_integrity import verify_pipeline_integrity
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    ignored_code = next(iter(IGNORED_VERBATIMS.keys()))
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            return [
+                {
+                    "date": "2021-03-25T00:48:00.000+00:00",
+                    "title": "Ignored night verbatim",
+                    "link": f"https://stenogrammid.riigikogu.ee/{ignored_code}",
+                }
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    ok = verify_pipeline_integrity(days=60, fail_on_missing=True, sample_meeting_checks=0)
+    assert ok is True
+
+    report_path = tmp_path / "integrity_report.json"
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert len(report["missing_sessions"]) == 0
+    assert len(report["truncated_sessions"]) == 0
+
+
+def test_fetch_stenograms_fetches_20_day_old_missing_verbatim(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.fetch_stenograms_api import fetch_and_process_stenograms
+
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    twenty_days_ago = today - timedelta(days=20)
+
+    # Write yesterday's session in local JSONL, so latest_existing_date is yesterday
+    code_yesterday = f"{yesterday.strftime('%Y%m%d')}1000"
+    file_yesterday = f"{yesterday.strftime('%Y-%m-%d')}_1000.api"
+    y_file = tmp_path / f"{yesterday.year}.jsonl"
+    mock_existing = {
+        "source_file": file_yesterday,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "time": "1000",
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_yesterday}#PKP-1",
+        "text": "Eile toimunud kõne",
+        "status": "EDITED",
+    }
+    y_file.write_text(json.dumps(mock_existing) + "\n", encoding="utf-8")
+
+    code_missing_20d = f"{twenty_days_ago.strftime('%Y%m%d')}1400"
+    file_missing_20d = f"{twenty_days_ago.strftime('%Y-%m-%d')}_1400.api"
+
+    fetched_meeting_codes = []
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                code = self.url.rstrip("/").split("/")[-1]
+                fetched_meeting_codes.append(code)
+                return {
+                    "meetingStatus": "EDITED",
+                    "stenograph": {
+                        "agendaItems": [
+                            {
+                                "title": "Päevakord",
+                                "speeches": [
+                                    {
+                                        "name": "Kõneleja",
+                                        "content": "20 päeva vana kõne sisu",
+                                        "speechType": "SPEECH",
+                                        "startTime": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:05:00.000+02:00",
+                                        "endTime": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:10:00.000+02:00",
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                }
+            # Verbatims
+            return [
+                {
+                    "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+                    "title": "Eilne istung",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+                },
+                {
+                    "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
+                    "title": "20 päeva vana puuduv istung",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+                },
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    ok = fetch_and_process_stenograms()
+    assert ok is True
+    assert code_missing_20d in fetched_meeting_codes
+
+    # Check that 20-day-old session was saved into the JSONL file
+    target_year_file = tmp_path / f"{twenty_days_ago.year}.jsonl"
+    assert target_year_file.exists()
+    content = target_year_file.read_text(encoding="utf-8")
+    assert file_missing_20d in content
+    assert "20 päeva vana kõne sisu" in content
+
+
+def test_fetch_stenograms_skips_ignored_verbatim(tmp_path, monkeypatch):
+    import requests
+
+    from config import IGNORED_VERBATIMS
+    from scripts.fetch_stenograms_api import fetch_and_process_stenograms
+
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    ignored_code = next(iter(IGNORED_VERBATIMS.keys()))
+    fetched_codes = []
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                code = self.url.rstrip("/").split("/")[-1]
+                fetched_codes.append(code)
+                return {}
+            return [
+                {
+                    "date": "2021-03-25T00:48:00.000+00:00",
+                    "title": "Ignored night verbatim",
+                    "link": f"https://stenogrammid.riigikogu.ee/{ignored_code}",
+                }
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    ok = fetch_and_process_stenograms()
+    assert ok is True
+    assert ignored_code not in fetched_codes
