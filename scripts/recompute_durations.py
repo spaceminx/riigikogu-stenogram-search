@@ -36,6 +36,9 @@ def recompute_durations(apply: bool = False) -> dict:
         total_before_seconds = 0
         total_after_seconds = 0
         all_changes = []
+        longest_after = []
+        speeches_with_none_count = 0
+        speeches_changed_to_none = 0
 
         for _idx, src_file in enumerate(distinct_sessions, 1):
             speeches = (
@@ -57,6 +60,17 @@ def recompute_durations(apply: bool = False) -> dict:
                     total_before_seconds += old_dur
                 if new_dur is not None:
                     total_after_seconds += new_dur
+                    longest_after.append(
+                        {
+                            "speaker": sp.speaker,
+                            "date": sp.date,
+                            "seconds": new_dur,
+                        }
+                    )
+                else:
+                    speeches_with_none_count += 1
+                    if old_dur is not None:
+                        speeches_changed_to_none += 1
 
                 if old_dur != new_dur:
                     session_modified = True
@@ -80,6 +94,8 @@ def recompute_durations(apply: bool = False) -> dict:
 
         # Sort changes by largest duration reduction (diff descending)
         all_changes.sort(key=lambda c: c["diff"], reverse=True)
+        # Sort speeches by longest duration after capping (seconds descending)
+        longest_after.sort(key=lambda c: c["seconds"], reverse=True)
 
         print("\n" + "=" * 60)
         mode_str = "APPLY (DATABASE UPDATED)" if apply else "DRY-RUN (DATABASE NOT MODIFIED)"
@@ -87,6 +103,9 @@ def recompute_durations(apply: bool = False) -> dict:
         print("=" * 60)
         print(f"Analyzed sessions:        {total_sessions}")
         print(f"Modified speeches:        {modified_rows}")
+        print(
+            f"Speeches ending with None:{speeches_with_none_count} ({speeches_changed_to_none} changed to None)"
+        )
         print(
             f"Total duration before:    {total_before_seconds:,} s ({total_before_seconds / 3600:.1f} h)"
         )
@@ -99,8 +118,16 @@ def recompute_durations(apply: bool = False) -> dict:
 
         print("\nTop 10 largest duration changes:")
         for rank, c in enumerate(all_changes[:10], 1):
+            old_str = f"{c['old']} s" if c["old"] is not None else "None"
+            new_str = f"{c['new']} s" if c["new"] is not None else "None"
             print(
-                f"  {rank:2d}. {c['speaker']} ({c['date']}): {c['old']} s -> {c['new']} s (-{c['diff']} s)"
+                f"  {rank:2d}. {c['speaker']} ({c['date']}): {old_str} -> {new_str} (-{c['diff']} s)"
+            )
+
+        print("\nTop 10 longest durations AFTER capping:")
+        for rank, c in enumerate(longest_after[:10], 1):
+            print(
+                f"  {rank:2d}. {c['speaker']} ({c['date']}): {c['seconds']} s ({c['seconds'] / 3600:.2f} h)"
             )
 
         if not apply:
@@ -114,6 +141,9 @@ def recompute_durations(apply: bool = False) -> dict:
             "total_before": total_before_seconds,
             "total_after": total_after_seconds,
             "top_10": all_changes[:10],
+            "top_10_longest_after": longest_after[:10],
+            "none_count": speeches_with_none_count,
+            "changed_to_none": speeches_changed_to_none,
         }
     finally:
         session.close()

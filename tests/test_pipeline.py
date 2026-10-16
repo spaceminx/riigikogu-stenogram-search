@@ -2567,6 +2567,59 @@ def test_compute_capped_duration_seconds():
     assert compute_capped_duration_seconds(None, "2026-10-15T10:15:00") is None
     assert compute_capped_duration_seconds("2026-10-15T10:10:00", None) is None
 
+    # 5. Implausible duration (> 3 hours = 10,800 s) returns None
+    dur_implausible = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T14:00:00.000+02:00",  # 4 hours
+        next_start_time_str=None,
+        speech_id=12345,
+    )
+    assert dur_implausible is None
+
+    # Exactly 3 hours (10,800 s) is accepted
+    dur_exact_3h = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T13:00:00.000+02:00",  # 3 hours
+        next_start_time_str=None,
+    )
+    assert dur_exact_3h == 10800
+
+    # 6. Identical next_start_time does not produce 0 s
+    dur_same_start = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T10:10:00.000+02:00",
+        next_start_time_str="2026-10-15T10:00:00.000+02:00",  # Same start time!
+    )
+    assert dur_same_start == 600  # Not 0!
+
+
+def test_apply_capped_durations_identical_start_time():
+    from src.load.loader import apply_capped_durations_to_session_speeches
+
+    speeches = [
+        {
+            "id": 1,
+            "start_time": "2026-10-15T10:00:00.000+02:00",
+            "end_time": "2026-10-15T10:10:00.000+02:00",
+        },
+        {
+            "id": 2,
+            "start_time": "2026-10-15T10:00:00.000+02:00",  # identical start
+            "end_time": "2026-10-15T10:15:00.000+02:00",
+        },
+        {
+            "id": 3,
+            "start_time": "2026-10-15T10:05:00.000+02:00",  # later start
+            "end_time": "2026-10-15T10:20:00.000+02:00",
+        },
+    ]
+    apply_capped_durations_to_session_speeches(speeches)
+    # Speeches 1 and 2 are capped at next later start (10:05 = 300 s), not 0 s!
+    assert speeches[0]["duration_seconds"] == 300
+    assert speeches[1]["duration_seconds"] == 300
+    # Speech 3 is last so keeps end_time - start_time (900 s)
+    assert speeches[2]["duration_seconds"] == 900
+
 
 def test_recompute_durations_dry_run_and_apply_idempotent(tmp_path, monkeypatch):
     from scripts.recompute_durations import recompute_durations
