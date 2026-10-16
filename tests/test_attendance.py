@@ -80,3 +80,187 @@ def test_attendance_stats_same_name_different_uuids():
         session.delete(p2)
         session.commit()
         session.close()
+
+
+def test_fetch_attendance_detail_error_exits_1_and_saves_successful(tmp_path, monkeypatch):
+    import json
+
+    import requests
+
+    from scripts.fetch_attendance import fetch_attendance
+
+    monkeypatch.setattr("scripts.fetch_attendance.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "votings?startDate" in self.url:
+                return [
+                    {
+                        "votings": [
+                            {
+                                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                                "uuid": "check-uuid-1",
+                                "startDateTime": "2026-10-15T10:00:00",
+                            },
+                            {
+                                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                                "uuid": "check-uuid-2-failing",
+                                "startDateTime": "2026-10-15T11:00:00",
+                            },
+                        ]
+                    }
+                ]
+            if "check-uuid-1" in self.url:
+                return {
+                    "voters": [
+                        {
+                            "fullName": "Jaan Tamm",
+                            "uuid": "m-1",
+                            "decision": {"code": "KOHAL"},
+                        }
+                    ]
+                }
+            # Failing check returns empty voters / error
+            return {"voters": []}
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    success = fetch_attendance(start_date="2026-10-15", end_date="2026-10-15")
+    # Returns False because check-uuid-2-failing failed
+    assert success is False
+
+    # But check-uuid-1 was saved successfully
+    att_file = tmp_path / "attendance.jsonl"
+    assert att_file.exists()
+    lines = att_file.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 1
+    rec = json.loads(lines[0])
+    assert rec["voting_uuid"] == "check-uuid-1"
+    assert rec["member_name"] == "Jaan Tamm"
+
+
+def test_fetch_attendance_fetches_20_day_missing_check(tmp_path, monkeypatch):
+    import json
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.fetch_attendance import fetch_attendance
+
+    monkeypatch.setattr("scripts.fetch_attendance.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    twenty_days_ago = today - timedelta(days=20)
+
+    # Local attendance has yesterday's check
+    att_file = tmp_path / "attendance.jsonl"
+    mock_local = {
+        "session_date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00",
+        "voting_uuid": "yesterday-check",
+        "member_name": "Jaan Tamm",
+        "status": "KOHAL",
+    }
+    att_file.write_text(json.dumps(mock_local) + "\n", encoding="utf-8")
+
+    called_urls = []
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            called_urls.append(self.url)
+            if "votings?startDate" in self.url:
+                return [
+                    {
+                        "votings": [
+                            {
+                                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                                "uuid": "yesterday-check",
+                                "startDateTime": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00",
+                            },
+                            {
+                                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                                "uuid": "twenty-days-ago-check",
+                                "startDateTime": f"{twenty_days_ago.strftime('%Y-%m-%d')}T10:00:00",
+                            },
+                        ]
+                    }
+                ]
+            if "twenty-days-ago-check" in self.url:
+                return {
+                    "voters": [
+                        {
+                            "fullName": "Mari Mets",
+                            "uuid": "m-2",
+                            "decision": {"code": "PUUDUB"},
+                        }
+                    ]
+                }
+            return {"voters": []}
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    # Run without explicit dates: window reaches 30 days back!
+    success = fetch_attendance()
+    assert success is True
+
+    lines = att_file.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 2
+    rec2 = json.loads(lines[1])
+    assert rec2["voting_uuid"] == "twenty-days-ago-check"
+    assert rec2["member_name"] == "Mari Mets"
+
+
+def test_fetch_attendance_no_db_file_created(tmp_path, monkeypatch):
+    import requests
+
+    from scripts.fetch_attendance import fetch_attendance
+
+    monkeypatch.setattr("scripts.fetch_attendance.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "votings?startDate" in self.url:
+                return [
+                    {
+                        "votings": [
+                            {
+                                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                                "uuid": "test-uuid-clean",
+                                "startDateTime": "2026-10-15T10:00:00",
+                            }
+                        ]
+                    }
+                ]
+            return {
+                "voters": [
+                    {
+                        "fullName": "Jaan Tamm",
+                        "uuid": "m-1",
+                        "decision": {"code": "KOHAL"},
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    success = fetch_attendance(start_date="2026-10-15", end_date="2026-10-15")
+    assert success is True
+
+    # Verify no database files were created anywhere in tmp_path or root
+    db_files = list(tmp_path.glob("*.db")) + list(tmp_path.glob("*.sqlite"))
+    assert len(db_files) == 0
