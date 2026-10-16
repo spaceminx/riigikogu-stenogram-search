@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import time
 from datetime import date, datetime, timezone
 from urllib.parse import quote
 
@@ -1648,26 +1649,19 @@ def get_voting_detail(voting_uuid: str):
         session.close()
 
 
+_STATUS_CACHE: dict = {
+    "data": None,
+    "timestamp": 0.0,
+    "last_sync_at": None,
+}
+_STATUS_CACHE_TTL: float = 300.0
+
+
 @router.get("/system/status")
 def system_status():
     """Return archive sync status, latest session date, and methodology metadata."""
     session = SessionLocal()
     try:
-        latest_date = session.query(func.max(Speech.date)).scalar()
-        total_sessions = session.query(func.count(func.distinct(Speech.source_file))).scalar() or 0
-        total_speeches = session.query(func.count(Speech.id)).scalar() or 0
-        total_persons = session.query(func.count(Person.uuid)).scalar() or 0
-        total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
-        total_votings = session.query(func.count(Voting.uuid)).scalar() or 0
-
-        latest_session = (
-            session.query(Speech.source_file, Speech.status)
-            .order_by(Speech.date.desc(), Speech.id.desc())
-            .first()
-        )
-        latest_session_file = latest_session[0] if latest_session else None
-        latest_session_status = latest_session[1] if latest_session else None
-
         last_sync_at = None
         try:
             meta_row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
@@ -1676,17 +1670,59 @@ def system_status():
         except Exception:
             pass
 
+        now = time.time()
+        cached = _STATUS_CACHE["data"]
+        cache_valid = (
+            cached is not None
+            and _STATUS_CACHE.get("last_sync_at") == last_sync_at
+            and (now - _STATUS_CACHE["timestamp"]) < _STATUS_CACHE_TTL
+        )
+
+        if cache_valid:
+            latest_date = cached["latest_date"]
+            total_sessions = cached["total_sessions"]
+            total_speeches = cached["total_speeches"]
+            total_persons = cached["total_persons"]
+            total_attendance = cached["total_attendance"]
+            total_votings = cached["total_votings"]
+            latest_session_file = cached["latest_session_file"]
+            latest_session_status = cached["latest_session_status"]
+        else:
+            latest_date = session.query(func.max(Speech.date)).scalar()
+            total_sessions = (
+                session.query(func.count(func.distinct(Speech.source_file))).scalar() or 0
+            )
+            total_speeches = session.query(func.count(Speech.id)).scalar() or 0
+            total_persons = session.query(func.count(Person.uuid)).scalar() or 0
+            total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
+            total_votings = session.query(func.count(Voting.uuid)).scalar() or 0
+
+            latest_session = (
+                session.query(Speech.source_file, Speech.status)
+                .order_by(Speech.date.desc(), Speech.id.desc())
+                .first()
+            )
+            latest_session_file = latest_session[0] if latest_session else None
+            latest_session_status = latest_session[1] if latest_session else None
+
+            _STATUS_CACHE["data"] = {
+                "latest_date": latest_date,
+                "total_sessions": total_sessions,
+                "total_speeches": total_speeches,
+                "total_persons": total_persons,
+                "total_attendance": total_attendance,
+                "total_votings": total_votings,
+                "latest_session_file": latest_session_file,
+                "latest_session_status": latest_session_status,
+            }
+            _STATUS_CACHE["timestamp"] = now
+            _STATUS_CACHE["last_sync_at"] = last_sync_at
+
         days_since_latest = None
-        warning = None
         if latest_date:
             try:
                 latest_dt = datetime.strptime(latest_date, "%Y-%m-%d").date()
                 days_since_latest = (date.today() - latest_dt).days
-                if days_since_latest > 4:
-                    warning = (
-                        f"Viimane istung toimus {days_since_latest} päeva tagasi ({latest_date}). "
-                        "Istungijärgu ajal võib see viidata andmeallika viivitusele."
-                    )
             except ValueError:
                 pass
 
@@ -1701,8 +1737,7 @@ def system_status():
             except Exception:
                 pass
 
-        if sync_warning:
-            warning = f"{warning} {sync_warning}".strip() if warning else sync_warning
+        warning = sync_warning
 
         return {
             "status": "ok",
@@ -1728,7 +1763,7 @@ def system_status():
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
-                "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg.",
+                "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg. Kestus on piiratud järgmise kõne algusega, sest allika lõpuaeg võib ulatuda järgmistesse kõnedesse.",
                 "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
                 "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
                 "sources": [

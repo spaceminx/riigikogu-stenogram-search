@@ -784,12 +784,120 @@ def parse_meeting_speeches(
     return speeches_to_save, meeting_status
 
 
+def process_single_verbatim(
+    verbatim: dict,
+    faction_map: dict,
+    person_name_map: dict,
+    known_person_uuids: set,
+    uuid_to_name_map: dict,
+    processed_meeting_codes: set,
+    processed_source_files: set,
+    unedited_meeting_codes: set,
+    unedited_source_files: set,
+    unedited_sessions: dict,
+) -> bool:
+    """Process a single verbatim record. Returns False if error occurred, else True."""
+    has_errors = False
+    try:
+        verbatim_link = verbatim.get("link", "")
+        meeting_code = (
+            verbatim_link.rstrip("/").split("/")[-1].split("?")[0] if verbatim_link else ""
+        )
+
+        if meeting_code in IGNORED_VERBATIMS:
+            print(f"Skipping ignored verbatim {meeting_code}: {IGNORED_VERBATIMS[meeting_code]}")
+            return True
+
+        v_date_str = verbatim.get("date")
+        if not v_date_str:
+            return True
+
+        v_dt = datetime.strptime(v_date_str.split("T")[0], "%Y-%m-%d")
+        year_str = v_dt.strftime("%Y")
+        date_formatted = v_dt.strftime("%Y-%m-%d")
+
+        time_formatted = "0000"
+        if verbatim_link and len(verbatim_link) >= 4:
+            candidate_time = verbatim_link[-4:]
+            if candidate_time.isdigit():
+                time_formatted = candidate_time
+
+        source_file_key = f"{date_formatted}_{time_formatted}.api"
+
+        if (meeting_code and meeting_code in processed_meeting_codes) or (
+            source_file_key in processed_source_files
+        ):
+            return True
+
+        print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
+
+        rich_meeting = fetch_rich_meeting_data(meeting_code)
+        if rich_meeting is None:
+            print(
+                f"Warning: Could not fetch rich meeting details for {meeting_code}. "
+                "Saving in UNEDITED status to retry on subsequent run."
+            )
+            has_errors = True
+
+        speeches_to_save, meeting_status = parse_meeting_speeches(
+            rich_meeting=rich_meeting,
+            verbatim=verbatim,
+            meeting_code=meeting_code,
+            verbatim_link=verbatim_link,
+            date_formatted=date_formatted,
+            time_formatted=time_formatted,
+            source_file_key=source_file_key,
+            faction_map=faction_map,
+            person_name_map=person_name_map,
+            known_person_uuids=known_person_uuids,
+            uuid_to_name_map=uuid_to_name_map,
+        )
+
+        if rich_meeting is None:
+            meeting_status = "UNEDITED"
+            for s in speeches_to_save:
+                s["status"] = "UNEDITED"
+
+        if speeches_to_save:
+            save_session_to_jsonl(year_str, source_file_key, speeches_to_save)
+            print(
+                f"  -> Saved {len(speeches_to_save)} speeches ({meeting_status}) to {year_str}.jsonl"
+            )
+
+        if meeting_status == "EDITED":
+            if meeting_code:
+                processed_meeting_codes.add(meeting_code)
+            processed_source_files.add(source_file_key)
+            unedited_meeting_codes.discard(meeting_code)
+            unedited_source_files.discard(source_file_key)
+        else:
+            if meeting_code:
+                unedited_meeting_codes.add(meeting_code)
+                unedited_sessions[meeting_code] = {
+                    "source_file": source_file_key,
+                    "date": date_formatted,
+                    "year": year_str,
+                    "status": "UNEDITED",
+                }
+            unedited_source_files.add(source_file_key)
+
+        time.sleep(1.5)
+
+    except Exception as e:
+        print(f"Warning: Error processing verbatim {verbatim.get('title')}: {e}")
+        has_errors = True
+
+    return not has_errors
+
+
 def fetch_and_process_stenograms(
     start_date: str | None = None,
     end_date: str | None = None,
     processed_meeting_codes: set[str] | None = None,
+    check_missing_days: int = UNEDITED_REFETCH_DAYS,
 ) -> bool:
     """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
+    explicit_window = start_date is not None
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
     # Load existing meeting codes and source files from processed jsonl files
@@ -931,94 +1039,85 @@ def fetch_and_process_stenograms(
             continue
 
         for verbatim in verbatims:
-            try:
-                verbatim_link = verbatim.get("link", "")
-                meeting_code = verbatim_link.rstrip("/").split("/")[-1] if verbatim_link else ""
+            ok = process_single_verbatim(
+                verbatim=verbatim,
+                faction_map=faction_map,
+                person_name_map=person_name_map,
+                known_person_uuids=known_person_uuids,
+                uuid_to_name_map=uuid_to_name_map,
+                processed_meeting_codes=processed_meeting_codes,
+                processed_source_files=processed_source_files,
+                unedited_meeting_codes=unedited_meeting_codes,
+                unedited_source_files=unedited_source_files,
+                unedited_sessions=unedited_sessions,
+            )
+            if not ok:
+                has_errors = True
 
-                if meeting_code in IGNORED_VERBATIMS:
-                    print(
-                        f"Skipping ignored verbatim {meeting_code}: {IGNORED_VERBATIMS[meeting_code]}"
+    # In addition to the primary window, check for missing sessions across the last UNEDITED_REFETCH_DAYS days
+    if check_missing_days and check_missing_days > 0 and not explicit_window:
+        print(f"\nChecking last {check_missing_days} days for missing sessions...")
+        missing_start = (datetime.now() - timedelta(days=check_missing_days)).strftime("%Y-%m-%d")
+        missing_end = datetime.now().strftime("%Y-%m-%d")
+        missing_ranges = get_month_ranges(missing_start, missing_end)
+
+        for m_start, m_end in missing_ranges:
+            url = "https://api.riigikogu.ee/api/steno/verbatims"
+            time.sleep(1.0)
+            verbatims = None
+            for _attempt in range(1, 4):
+                try:
+                    resp = requests.get(
+                        url, params={"startDate": m_start, "endDate": m_end}, timeout=(5, 30)
                     )
+                    if resp.status_code == 200:
+                        verbatims = resp.json()
+                        break
+                    if resp.status_code == 429:
+                        time.sleep(15)
+                except Exception:
+                    time.sleep(2)
+
+            if not isinstance(verbatims, list):
+                continue
+
+            for verbatim in verbatims:
+                v_link = verbatim.get("link", "")
+                m_code = v_link.rstrip("/").split("/")[-1].split("?")[0] if v_link else ""
+                if m_code in IGNORED_VERBATIMS:
                     continue
-
-                v_date_str = verbatim.get("date")
-                if not v_date_str:
-                    continue
-
-                v_dt = datetime.strptime(v_date_str.split("T")[0], "%Y-%m-%d")
-                year_str = v_dt.strftime("%Y")
-                date_formatted = v_dt.strftime("%Y-%m-%d")
-
-                time_formatted = "0000"
-                if verbatim_link and len(verbatim_link) >= 4:
-                    candidate_time = verbatim_link[-4:]
-                    if candidate_time.isdigit():
-                        time_formatted = candidate_time
-
-                source_file_key = f"{date_formatted}_{time_formatted}.api"
-
-                if (meeting_code and meeting_code in processed_meeting_codes) or (
-                    source_file_key in processed_source_files
+                if m_code and (
+                    m_code in processed_meeting_codes or m_code in unedited_meeting_codes
                 ):
                     continue
 
-                print(f"Processing verbatim: {verbatim.get('title')} ({verbatim.get('date')})")
+                v_date_str = verbatim.get("date")
+                if v_date_str:
+                    try:
+                        v_dt = datetime.strptime(v_date_str.split("T")[0], "%Y-%m-%d")
+                        d_fmt = v_dt.strftime("%Y-%m-%d")
+                        t_fmt = "0000"
+                        if v_link and len(v_link) >= 4 and v_link[-4:].isdigit():
+                            t_fmt = v_link[-4:]
+                        if f"{d_fmt}_{t_fmt}.api" in processed_source_files:
+                            continue
+                    except ValueError:
+                        pass
 
-                rich_meeting = fetch_rich_meeting_data(meeting_code)
-                if rich_meeting is None:
-                    print(
-                        f"Warning: Could not fetch rich meeting details for {meeting_code}. "
-                        "Saving in UNEDITED status to retry on subsequent run."
-                    )
-                    has_errors = True
-
-                speeches_to_save, meeting_status = parse_meeting_speeches(
-                    rich_meeting=rich_meeting,
+                ok = process_single_verbatim(
                     verbatim=verbatim,
-                    meeting_code=meeting_code,
-                    verbatim_link=verbatim_link,
-                    date_formatted=date_formatted,
-                    time_formatted=time_formatted,
-                    source_file_key=source_file_key,
                     faction_map=faction_map,
                     person_name_map=person_name_map,
                     known_person_uuids=known_person_uuids,
                     uuid_to_name_map=uuid_to_name_map,
+                    processed_meeting_codes=processed_meeting_codes,
+                    processed_source_files=processed_source_files,
+                    unedited_meeting_codes=unedited_meeting_codes,
+                    unedited_source_files=unedited_source_files,
+                    unedited_sessions=unedited_sessions,
                 )
-
-                if rich_meeting is None:
-                    meeting_status = "UNEDITED"
-                    for s in speeches_to_save:
-                        s["status"] = "UNEDITED"
-
-                if speeches_to_save:
-                    save_session_to_jsonl(year_str, source_file_key, speeches_to_save)
-                    print(
-                        f"  -> Saved {len(speeches_to_save)} speeches ({meeting_status}) to {year_str}.jsonl"
-                    )
-
-                if meeting_status == "EDITED":
-                    if meeting_code:
-                        processed_meeting_codes.add(meeting_code)
-                    processed_source_files.add(source_file_key)
-                    unedited_meeting_codes.discard(meeting_code)
-                    unedited_source_files.discard(source_file_key)
-                else:
-                    if meeting_code:
-                        unedited_meeting_codes.add(meeting_code)
-                        unedited_sessions[meeting_code] = {
-                            "source_file": source_file_key,
-                            "date": date_formatted,
-                            "year": year_str,
-                            "status": "UNEDITED",
-                        }
-                    unedited_source_files.add(source_file_key)
-
-                time.sleep(1.5)
-
-            except Exception as e:
-                print(f"Warning: Error processing verbatim {verbatim.get('title')}: {e}")
-                has_errors = True
+                if not ok:
+                    has_errors = True
 
     # Re-fetch and update unedited meetings directly by code, regardless of date range
     if unedited_sessions:

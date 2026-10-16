@@ -177,15 +177,19 @@ def test_overview_activity_excludes_director():
     session.merge(s_regular)
     session.merge(s_director)
     session.commit()
-    session.close()
-
-    res = client.get("/overview")
-    assert res.status_code == 200
-    activity = res.json()["activity"]
-    cur_month_entry = next((item for item in activity if item["month"] == cur_month), None)
-    assert cur_month_entry is not None
-    # Regular speech counted, director speech excluded
-    assert cur_month_entry["count"] >= 1
+    try:
+        res = client.get("/overview")
+        assert res.status_code == 200
+        activity = res.json()["activity"]
+        cur_month_entry = next((item for item in activity if item["month"] == cur_month), None)
+        assert cur_month_entry is not None
+        # Regular speech counted, director speech excluded
+        assert cur_month_entry["count"] >= 1
+    finally:
+        session = SessionLocal()
+        session.query(Speech).filter(Speech.id.in_([8801, 8802])).delete()
+        session.commit()
+        session.close()
 
 
 def test_plenary_session_calendar_and_transcript():
@@ -967,6 +971,125 @@ def test_system_status_metadata_and_stale_warning():
         session.query(SystemMeta).filter(SystemMeta.key == "last_sync_at").delete()
         session.commit()
         session.close()
+
+
+def test_system_status_no_warning_when_session_is_10_days_old():
+    from src.api.routes import _STATUS_CACHE
+
+    _STATUS_CACHE["data"] = None
+
+    ten_days_ago = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    session = SessionLocal()
+    meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+    if meta:
+        meta.value = now_iso
+    else:
+        session.add(SystemMeta(key="last_sync_at", value=now_iso))
+
+    old_sp = Speech(
+        id=999992,
+        date=ten_days_ago,
+        time="1000",
+        source_file="test_10d.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/10d",
+        speaker="Test Speaker",
+        text="Vana kõne",
+        status="EDITED",
+    )
+    session.merge(old_sp)
+    session.commit()
+    session.close()
+
+    try:
+        res = client.get("/system/status")
+        assert res.status_code == 200
+        data = res.json()
+        # Warning MUST NOT be set just because session was 10 days ago
+        assert data["warning"] is None
+        assert data["days_since_latest_session"] >= 10
+    finally:
+        session = SessionLocal()
+        session.query(Speech).filter(Speech.id == 999992).delete()
+        session.commit()
+        session.close()
+        _STATUS_CACHE["data"] = None
+
+
+def test_system_status_and_overview_cache_invalidates_on_last_sync_at():
+    from src.api.routes import _STATUS_CACHE
+    from src.api.search import _OVERVIEW_CACHE, get_dashboard_overview
+
+    _STATUS_CACHE["data"] = None
+    _OVERVIEW_CACHE["data"] = None
+
+    session = SessionLocal()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+    if meta:
+        meta.value = now_iso
+    else:
+        session.add(SystemMeta(key="last_sync_at", value=now_iso))
+    session.commit()
+    session.close()
+
+    try:
+        # Initial call populates cache
+        res1 = client.get("/system/status").json()
+        init_speeches = res1["totals"]["speeches"]
+        assert _STATUS_CACHE["data"] is not None
+
+        ov1 = get_dashboard_overview()
+        assert _OVERVIEW_CACHE["data"] is not None
+        assert _OVERVIEW_CACHE["last_sync_at"] == now_iso
+
+        # Add a new speech behind the scenes
+        session = SessionLocal()
+        temp_sp = Speech(
+            id=999993,
+            date="2026-10-15",
+            time="1000",
+            source_file="test_cache_inv.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/cache_inv",
+            speaker="Cache Test Speaker",
+            text="Vahemälu testkõne",
+            status="EDITED",
+        )
+        session.merge(temp_sp)
+        session.commit()
+        session.close()
+
+        # Without changing last_sync_at, status and overview return cached data
+        res2 = client.get("/system/status").json()
+        assert res2["totals"]["speeches"] == init_speeches
+
+        ov2 = get_dashboard_overview()
+        assert ov2 is ov1
+
+        # Now update last_sync_at in system_meta
+        new_sync_iso = (datetime.now(timezone.utc) + timedelta(seconds=10)).isoformat()
+        session = SessionLocal()
+        meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+        meta.value = new_sync_iso
+        session.commit()
+        session.close()
+
+        # Both caches should invalidate and recompute!
+        res3 = client.get("/system/status").json()
+        assert res3["totals"]["speeches"] == init_speeches + 1
+        assert _STATUS_CACHE["last_sync_at"] == new_sync_iso
+
+        _ov3 = get_dashboard_overview()
+        assert _OVERVIEW_CACHE["last_sync_at"] == new_sync_iso
+
+    finally:
+        session = SessionLocal()
+        session.query(Speech).filter(Speech.id == 999993).delete()
+        session.commit()
+        session.close()
+        _STATUS_CACHE["data"] = None
+        _OVERVIEW_CACHE["data"] = None
 
 
 def test_system_meta_idempotent_schema():

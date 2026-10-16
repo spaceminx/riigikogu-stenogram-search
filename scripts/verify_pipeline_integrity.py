@@ -16,7 +16,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from config import OUTPUT_DIR_PROCESSED
+from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED, UNEDITED_REFETCH_DAYS
 
 
 def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
@@ -68,7 +68,7 @@ def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
 
 
 def verify_pipeline_integrity(
-    days: int = 14,
+    days: int = UNEDITED_REFETCH_DAYS,
     fail_on_missing: bool = True,
     sample_meeting_checks: int = 3,
 ) -> bool:
@@ -123,6 +123,10 @@ def verify_pipeline_integrity(
     for v in official_verbatims:
         link = v.get("link") or ""
         meeting_code = link.rstrip("/").split("/")[-1].split("?")[0] if link else ""
+        if meeting_code in IGNORED_VERBATIMS:
+            print(f"Skipping ignored verbatim {meeting_code}: {IGNORED_VERBATIMS[meeting_code]}")
+            continue
+
         raw_date = v.get("date", "")
         v_date = raw_date.split("T")[0] if raw_date else ""
         title = v.get("title", "")
@@ -203,6 +207,31 @@ def verify_pipeline_integrity(
         for code, dt, reason in truncated_sessions:
             print(f"  - [{dt}] Code: {code} | Reason: {reason}")
 
+    blocked_files = set()
+    for _code, dt, _reason in truncated_sessions:
+        if dt and len(dt) >= 4:
+            yr = dt[:4]
+            blocked_files.add(f"{yr}.jsonl")
+
+    report = {
+        "generated_at": datetime.now().isoformat(),
+        "missing_sessions": [
+            {"code": code, "date": dt, "title": title} for code, dt, title in missing_sessions
+        ],
+        "truncated_sessions": [
+            {"code": code, "date": dt, "reason": reason} for code, dt, reason in truncated_sessions
+        ],
+        "blocked_files": sorted(list(blocked_files)),
+    }
+
+    report_path = os.path.join(OUTPUT_DIR_PROCESSED, "integrity_report.json")
+    try:
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2, ensure_ascii=False)
+        print(f"Wrote integrity report to {report_path}")
+    except Exception as e:
+        print(f"Warning: Could not write integrity report: {e}")
+
     # Check votes integrity (warning only; does not affect pipeline integrity)
     verify_votes_integrity(days=days, fail_on_missing=False)
 
@@ -213,7 +242,7 @@ def verify_pipeline_integrity(
 
 
 def verify_votes_integrity(
-    days: int = 14,
+    days: int = UNEDITED_REFETCH_DAYS,
     fail_on_missing: bool = False,
 ) -> bool:
     """Compare recent official Riigikogu votings against processed votes_{YYYY}.jsonl files."""
@@ -289,5 +318,5 @@ def verify_votes_integrity(
 
 
 if __name__ == "__main__":
-    ok = verify_pipeline_integrity(days=14, fail_on_missing=True)
+    ok = verify_pipeline_integrity(days=UNEDITED_REFETCH_DAYS, fail_on_missing=True)
     sys.exit(0 if ok else 1)

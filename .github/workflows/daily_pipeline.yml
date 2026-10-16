@@ -70,16 +70,21 @@ jobs:
 
       - name: 6. Verify pipeline data integrity
         id: integrity
+        continue-on-error: true
         if: ${{ !cancelled() && steps.download.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/verify_pipeline_integrity.py
 
       - name: 7. Upload updated data and sync state back to Backblaze B2
-        if: ${{ !cancelled() && steps.download.outcome == 'success' && steps.integrity.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
           B2_APP_KEY: ${{ secrets.B2_APP_KEY }}
         run: python scripts/upload_to_b2.py
+
+      - name: 8. Fail run if integrity check failed
+        if: ${{ steps.integrity.outcome == 'failure' }}
+        run: exit 1
 

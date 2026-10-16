@@ -54,6 +54,21 @@ def upload_to_b2(
             except Exception:
                 expected_etags = None
 
+    # Load blocked files from integrity_report.json if present
+    blocked_files = set()
+    report_path = os.path.join(OUTPUT_DIR_PROCESSED, "integrity_report.json")
+    if os.path.exists(report_path):
+        try:
+            with open(report_path, encoding="utf-8") as f:
+                report_data = json.load(f)
+            blocked_files = set(report_data.get("blocked_files", []))
+            if blocked_files:
+                print(
+                    f"Notice: integrity_report.json specifies blocked files: {sorted(blocked_files)}"
+                )
+        except Exception as e:
+            print(f"Notice: Could not read integrity report {report_path}: {e}")
+
     # Collect files to upload from OUTPUT_DIR_PROCESSED (.jsonl and .json files)
     files_to_upload = []
     only_basenames = {os.path.basename(f) for f in only_files} if only_files is not None else None
@@ -61,9 +76,11 @@ def upload_to_b2(
 
     for file_path in glob.glob(os.path.join(OUTPUT_DIR_PROCESSED, "*.*")):
         base_name = os.path.basename(file_path)
-        if base_name in {"backfill_state.json", ".b2_etags.json"} or base_name.startswith(
-            "backfill_"
-        ):
+        if base_name in {
+            "backfill_state.json",
+            ".b2_etags.json",
+            "integrity_report.json",
+        } or base_name.startswith("backfill_"):
             continue
         if only_basenames is not None and base_name not in only_basenames:
             continue
@@ -75,9 +92,11 @@ def upload_to_b2(
         for f in only_files:
             base_name = os.path.basename(f)
             if base_name not in seen_basenames and os.path.exists(f):
-                if base_name in {"backfill_state.json", ".b2_etags.json"} or base_name.startswith(
-                    "backfill_"
-                ):
+                if base_name in {
+                    "backfill_state.json",
+                    ".b2_etags.json",
+                    "integrity_report.json",
+                } or base_name.startswith("backfill_"):
                     continue
                 if f.endswith(".jsonl") or f.endswith(".json"):
                     files_to_upload.append((f, base_name))
@@ -92,6 +111,13 @@ def upload_to_b2(
     failed_count = 0
 
     for local_path, remote_key in files_to_upload:
+        if remote_key in blocked_files:
+            print(
+                f"Skipping {remote_key}: blocked by integrity_report.json due to truncated session."
+            )
+            skipped_count += 1
+            continue
+
         try:
             local_size = os.path.getsize(local_path)
             if local_size == 0:

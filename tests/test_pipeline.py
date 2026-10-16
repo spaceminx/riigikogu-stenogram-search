@@ -2186,3 +2186,612 @@ def test_sync_database_unlemmatized_speeches_results_in_false(monkeypatch):
     meta = s.query(SystemMeta).filter_by(key="last_sync_at").first()
     assert meta is None
     s.close()
+
+
+def test_verify_pipeline_integrity_report_and_blocked_files(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.verify_pipeline_integrity import verify_pipeline_integrity
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    two_days_ago = today - timedelta(days=2)
+
+    # In local JSONL, yesterday's session has 0 speeches (truncated/empty)
+    # two_days_ago session is completely missing from local JSONL
+    code_truncated = f"{yesterday.strftime('%Y%m%d')}1200"
+    file_truncated = f"{yesterday.strftime('%Y-%m-%d')}_1200.api"
+    year_file = tmp_path / f"{yesterday.year}.jsonl"
+    # An empty session: speech_count 0 can happen if represented with an entry having empty text or mock
+    # Wait, load_local_sessions_from_jsonl counts lines per source_file.
+    # If a source_file appears with speech_count 0... wait, how does speech_count become 0?
+    # In load_local_sessions_from_jsonl, if a line has valid source_file, speech_count += 1.
+    # But wait! If local_count is checked against rich meeting API (sample checks) or empty:
+    # Notice line 135: if sp_count == 0: truncated.
+    # Wait, if speech_count is 0 in local_sessions, or if sample check sees local_count < official_speeches * 0.8:
+    # If sample_meeting_checks > 0, rich meeting official_speeches > 5 and local_count < official_speeches * 0.8 -> truncated!
+
+    # Write 1 speech for truncated session
+    mock_speech = {
+        "source_file": file_truncated,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_truncated}#PKP-1",
+        "text": "Üks kõne",
+    }
+    year_file.write_text(json.dumps(mock_speech) + "\n", encoding="utf-8")
+
+    code_missing = f"{two_days_ago.strftime('%Y%m%d')}1000"
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                # Rich meeting for code_truncated has 10 official speeches, but local only has 1 -> truncated!
+                return {
+                    "stenograph": {
+                        "agendaItems": [
+                            {
+                                "speeches": [
+                                    {
+                                        "name": f"Kõneleja {i}",
+                                        "content": "Kõne sisu",
+                                        "speechType": "SPEECH",
+                                    }
+                                    for i in range(10)
+                                ]
+                            }
+                        ]
+                    }
+                }
+            # Verbatims list
+            return [
+                {
+                    "date": f"{yesterday.strftime('%Y-%m-%d')}T12:00:00.000+00:00",
+                    "title": "Kärbitud istung",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_truncated}",
+                },
+                {
+                    "date": f"{two_days_ago.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+                    "title": "Puuduv istung",
+                    "link": f"https://stenogrammid.riigikogu.ee/{code_missing}",
+                },
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    ok = verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=1)
+    assert ok is False
+
+    report_path = tmp_path / "integrity_report.json"
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    missing_codes = [s["code"] for s in report["missing_sessions"]]
+    assert code_missing in missing_codes
+
+    truncated_codes = [s["code"] for s in report["truncated_sessions"]]
+    assert code_truncated in truncated_codes
+
+    # blocked_files MUST contain the truncated session's year file, but NOT block missing sessions
+    assert f"{yesterday.year}.jsonl" in report["blocked_files"]
+
+
+def test_verify_pipeline_integrity_skips_ignored_verbatim(tmp_path, monkeypatch):
+    import requests
+
+    from config import IGNORED_VERBATIMS
+    from scripts.verify_pipeline_integrity import verify_pipeline_integrity
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    ignored_code = next(iter(IGNORED_VERBATIMS.keys()))
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            return [
+                {
+                    "date": "2021-03-25T00:48:00.000+00:00",
+                    "title": "Ignored night verbatim",
+                    "link": f"https://stenogrammid.riigikogu.ee/{ignored_code}",
+                }
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+
+    ok = verify_pipeline_integrity(days=60, fail_on_missing=True, sample_meeting_checks=0)
+    assert ok is True
+
+    report_path = tmp_path / "integrity_report.json"
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert len(report["missing_sessions"]) == 0
+    assert len(report["truncated_sessions"]) == 0
+
+
+def test_fetch_stenograms_fetches_20_day_old_missing_verbatim(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.fetch_stenograms_api import fetch_and_process_stenograms
+
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    twenty_days_ago = today - timedelta(days=20)
+
+    # Write yesterday's session in local JSONL, so latest_existing_date is yesterday
+    code_yesterday = f"{yesterday.strftime('%Y%m%d')}1000"
+    file_yesterday = f"{yesterday.strftime('%Y-%m-%d')}_1000.api"
+    y_file = tmp_path / f"{yesterday.year}.jsonl"
+    mock_existing = {
+        "source_file": file_yesterday,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "time": "1000",
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_yesterday}#PKP-1",
+        "text": "Eile toimunud kõne",
+        "status": "EDITED",
+    }
+    y_file.write_text(json.dumps(mock_existing) + "\n", encoding="utf-8")
+
+    code_missing_20d = f"{twenty_days_ago.strftime('%Y%m%d')}1400"
+    file_missing_20d = f"{twenty_days_ago.strftime('%Y-%m-%d')}_1400.api"
+
+    fetched_meeting_codes = []
+
+    all_verbatims = [
+        {
+            "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+            "title": "Eilne istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+        },
+        {
+            "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
+            "title": "20 päeva vana puuduv istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+        },
+    ]
+
+    class MockResp:
+        def __init__(self, url, params=None):
+            self.url = url
+            self.params = params or {}
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                code = self.url.rstrip("/").split("/")[-1]
+                fetched_meeting_codes.append(code)
+                return {
+                    "meetingStatus": "EDITED",
+                    "stenograph": {
+                        "agendaItems": [
+                            {
+                                "title": "Päevakord",
+                                "speeches": [
+                                    {
+                                        "name": "Kõneleja",
+                                        "content": "20 päeva vana kõne sisu",
+                                        "speechType": "SPEECH",
+                                        "startTime": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:05:00.000+02:00",
+                                        "endTime": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:10:00.000+02:00",
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                }
+            # Filter verbatims by requested startDate/endDate like the real API
+            start = self.params.get("startDate")
+            end = self.params.get("endDate")
+            filtered = []
+            for item in all_verbatims:
+                d = item["date"][:10]
+                if start and d < start:
+                    continue
+                if end and d > end:
+                    continue
+                filtered.append(item)
+            return filtered
+
+    monkeypatch.setattr(
+        requests, "get", lambda url, *args, **kwargs: MockResp(url, kwargs.get("params"))
+    )
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    ok = fetch_and_process_stenograms()
+    assert ok is True
+    assert code_missing_20d in fetched_meeting_codes
+
+    # Check that 20-day-old session was saved into the JSONL file
+    target_year_file = tmp_path / f"{twenty_days_ago.year}.jsonl"
+    assert target_year_file.exists()
+    content = target_year_file.read_text(encoding="utf-8")
+    assert file_missing_20d in content
+    assert "20 päeva vana kõne sisu" in content
+
+
+def test_fetch_stenograms_explicit_start_date_skips_missing_check(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.fetch_stenograms_api import fetch_and_process_stenograms
+
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    twenty_days_ago = today - timedelta(days=20)
+
+    code_yesterday = f"{yesterday.strftime('%Y%m%d')}1000"
+    file_yesterday = f"{yesterday.strftime('%Y-%m-%d')}_1000.api"
+    y_file = tmp_path / f"{yesterday.year}.jsonl"
+    mock_existing = {
+        "source_file": file_yesterday,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "time": "1000",
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_yesterday}#PKP-1",
+        "text": "Eilne kõne",
+        "status": "EDITED",
+    }
+    y_file.write_text(json.dumps(mock_existing) + "\n", encoding="utf-8")
+
+    code_missing_20d = f"{twenty_days_ago.strftime('%Y%m%d')}1400"
+    fetched_meeting_codes = []
+
+    all_verbatims = [
+        {
+            "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+            "title": "Eilne istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+        },
+        {
+            "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
+            "title": "20 päeva vana puuduv istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+        },
+    ]
+
+    class MockResp:
+        def __init__(self, url, params=None):
+            self.url = url
+            self.params = params or {}
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                code = self.url.rstrip("/").split("/")[-1]
+                fetched_meeting_codes.append(code)
+                return {"meetingStatus": "EDITED", "stenograph": {"agendaItems": []}}
+            start = self.params.get("startDate")
+            end = self.params.get("endDate")
+            filtered = []
+            for item in all_verbatims:
+                d = item["date"][:10]
+                if start and d < start:
+                    continue
+                if end and d > end:
+                    continue
+                filtered.append(item)
+            return filtered
+
+    monkeypatch.setattr(
+        requests, "get", lambda url, *args, **kwargs: MockResp(url, kwargs.get("params"))
+    )
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    # Call with explicit start_date: 60-day check MUST NOT run
+    ok = fetch_and_process_stenograms(start_date=yesterday.strftime("%Y-%m-%d"))
+    assert ok is True
+    assert code_missing_20d not in fetched_meeting_codes
+
+
+def test_fetch_stenograms_skips_ignored_verbatim(tmp_path, monkeypatch):
+    import requests
+
+    from config import IGNORED_VERBATIMS
+    from scripts.fetch_stenograms_api import fetch_and_process_stenograms
+
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    ignored_code = next(iter(IGNORED_VERBATIMS.keys()))
+    fetched_codes = []
+
+    class MockResp:
+        def __init__(self, url):
+            self.url = url
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                code = self.url.rstrip("/").split("/")[-1]
+                fetched_codes.append(code)
+                return {}
+            return [
+                {
+                    "date": "2021-03-25T00:48:00.000+00:00",
+                    "title": "Ignored night verbatim",
+                    "link": f"https://stenogrammid.riigikogu.ee/{ignored_code}",
+                }
+            ]
+
+    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    ok = fetch_and_process_stenograms()
+    assert ok is True
+    assert ignored_code not in fetched_codes
+
+
+def test_compute_capped_duration_seconds():
+    from src.load.loader import compute_capped_duration_seconds
+
+    # 1. Overlapping end time is capped at next speech start
+    dur_overlapping = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T10:15:00.000+02:00",
+        next_start_time_str="2026-10-15T10:05:00.000+02:00",
+    )
+    assert dur_overlapping == 300  # 5 minutes, not 15
+
+    # 2. Last speech (no next start time) is unchanged
+    dur_last = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:05:00.000+02:00",
+        end_time_str="2026-10-15T10:20:00.000+02:00",
+        next_start_time_str=None,
+    )
+    assert dur_last == 900  # 15 minutes
+
+    # 3. Next speech starting earlier (inverted start time) changes nothing
+    dur_inverted = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:10:00.000+02:00",
+        end_time_str="2026-10-15T10:15:00.000+02:00",
+        next_start_time_str="2026-10-15T10:05:00.000+02:00",
+    )
+    assert dur_inverted == 300  # end_time - start_time
+
+    # 4. Missing start or end returns None
+    assert compute_capped_duration_seconds(None, "2026-10-15T10:15:00") is None
+    assert compute_capped_duration_seconds("2026-10-15T10:10:00", None) is None
+
+    # 5. Implausible duration (> 3 hours = 10,800 s) returns None
+    dur_implausible = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T14:00:00.000+02:00",  # 4 hours
+        next_start_time_str=None,
+        speech_id=12345,
+    )
+    assert dur_implausible is None
+
+    # Exactly 3 hours (10,800 s) is accepted
+    dur_exact_3h = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T13:00:00.000+02:00",  # 3 hours
+        next_start_time_str=None,
+    )
+    assert dur_exact_3h == 10800
+
+    # 6. Identical next_start_time does not produce 0 s
+    dur_same_start = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T10:10:00.000+02:00",
+        next_start_time_str="2026-10-15T10:00:00.000+02:00",  # Same start time!
+    )
+    assert dur_same_start == 600  # Not 0!
+
+
+def test_apply_capped_durations_identical_start_time():
+    from src.load.loader import apply_capped_durations_to_session_speeches
+
+    speeches = [
+        {
+            "id": 1,
+            "start_time": "2026-10-15T10:00:00.000+02:00",
+            "end_time": "2026-10-15T10:10:00.000+02:00",
+        },
+        {
+            "id": 2,
+            "start_time": "2026-10-15T10:00:00.000+02:00",  # identical start
+            "end_time": "2026-10-15T10:15:00.000+02:00",
+        },
+        {
+            "id": 3,
+            "start_time": "2026-10-15T10:05:00.000+02:00",  # later start
+            "end_time": "2026-10-15T10:20:00.000+02:00",
+        },
+    ]
+    apply_capped_durations_to_session_speeches(speeches)
+    # Speeches 1 and 2 are capped at next later start (10:05 = 300 s), not 0 s!
+    assert speeches[0]["duration_seconds"] == 300
+    assert speeches[1]["duration_seconds"] == 300
+    # Speech 3 is last so keeps end_time - start_time (900 s)
+    assert speeches[2]["duration_seconds"] == 900
+
+
+def test_recompute_durations_dry_run_and_apply_idempotent(tmp_path, monkeypatch):
+    from scripts.recompute_durations import recompute_durations
+    from src.load.database import SessionLocal
+    from src.load.loader import create_tables
+    from src.load.models import Speech
+
+    create_tables()
+    session = SessionLocal()
+
+    # Clean existing speeches
+    session.query(Speech).filter(Speech.source_file == "test_session_dur.api").delete()
+    session.commit()
+
+    sp1 = Speech(
+        date="2026-10-15",
+        time="1000",
+        source_file="test_session_dur.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/123#PKP-1",
+        speaker="Kõneleja Üks",
+        start_time="2026-10-15T10:00:00.000+02:00",
+        end_time="2026-10-15T10:30:00.000+02:00",
+        duration_seconds=1800,  # Uncapped: 30 minutes
+        text="Esimene pikk kõne",
+    )
+    sp2 = Speech(
+        date="2026-10-15",
+        time="1005",
+        source_file="test_session_dur.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/123#PKP-2",
+        speaker="Kõneleja Kaks",
+        start_time="2026-10-15T10:05:00.000+02:00",
+        end_time="2026-10-15T10:15:00.000+02:00",
+        duration_seconds=600,  # 10 minutes
+        text="Teine kõne",
+    )
+    session.add_all([sp1, sp2])
+    session.commit()
+    sp1_id = sp1.id
+    sp2_id = sp2.id
+    session.close()
+
+    try:
+        # 1. Dry run: finds 1 modified row, but database is NOT modified
+        stats_dry = recompute_durations(apply=False)
+        assert stats_dry["modified_rows"] == 1
+        assert len(stats_dry["top_10"]) == 1
+        assert stats_dry["top_10"][0]["diff"] == 1500  # 1800 -> 300
+
+        check_s = SessionLocal()
+        db_sp1 = check_s.query(Speech).filter(Speech.id == sp1_id).first()
+        assert db_sp1.duration_seconds == 1800  # Still old value in DB!
+        check_s.close()
+
+        # 2. Apply: updates database
+        stats_apply = recompute_durations(apply=True)
+        assert stats_apply["modified_rows"] == 1
+
+        check_s = SessionLocal()
+        db_sp1 = check_s.query(Speech).filter(Speech.id == sp1_id).first()
+        assert db_sp1.duration_seconds == 300  # Capped at 10:05!
+        db_sp2 = check_s.query(Speech).filter(Speech.id == sp2_id).first()
+        assert db_sp2.duration_seconds == 600  # Last speech unchanged!
+        check_s.close()
+
+        # 3. Repeat apply: idempotent (0 modified rows)
+        stats_repeat = recompute_durations(apply=True)
+        assert stats_repeat["modified_rows"] == 0
+
+    finally:
+        clean_s = SessionLocal()
+        clean_s.query(Speech).filter(Speech.source_file == "test_session_dur.api").delete()
+        clean_s.commit()
+        clean_s.close()
+
+
+def test_sync_database_lock_creates_and_removes(tmp_path, monkeypatch):
+    from unittest.mock import MagicMock
+
+    import pytest
+
+    import scripts.sync_database as sd
+
+    monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
+    monkeypatch.setattr(sd, "download_from_b2", lambda: True)
+    monkeypatch.setattr(sd, "create_tables", lambda: None)
+    monkeypatch.setattr(sd, "create_indexes", lambda: None)
+    monkeypatch.setattr(sd, "build_missing_lemmas", lambda: 0)
+    monkeypatch.setattr(sd, "build_missing_terms", lambda: None)
+    monkeypatch.setattr(sd, "load_attendance_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_persons_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_votes_to_database", lambda *a, **kw: None)
+
+    mock_session = MagicMock()
+    mock_session.query.return_value.filter_by.return_value.first.return_value = None
+    monkeypatch.setattr(sd, "SessionLocal", lambda: mock_session)
+
+    lock_file = tmp_path / ".sync.lock"
+
+    checked_lock = False
+
+    def check_lock_during_execution(*a, **kw):
+        nonlocal checked_lock
+        assert lock_file.exists()
+        content = lock_file.read_text(encoding="utf-8")
+        assert str(os.getpid()) in content
+        checked_lock = True
+        return []
+
+    monkeypatch.setattr(sd, "sync_current_year_speeches", check_lock_during_execution)
+
+    assert sd.sync_database(skip_download=True) is True
+    assert checked_lock is True
+    assert not lock_file.exists()
+
+    # Verify lock is cleaned up on unhandled exception
+    def fatal_err(*a, **kw):
+        assert lock_file.exists()
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(sd, "create_tables", fatal_err)
+    with pytest.raises(KeyboardInterrupt):
+        sd.sync_database(skip_download=True)
+    assert not lock_file.exists()
+
+
+def test_sync_database_lock_active_exits_1(tmp_path, monkeypatch, capsys):
+    import pytest
+
+    import scripts.sync_database as sd
+
+    monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
+    lock_file = tmp_path / ".sync.lock"
+    lock_file.write_text("99999\n2026-10-16T10:00:00\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exc_info:
+        sd.sync_database(skip_download=True)
+    assert exc_info.value.code == 1
+
+    captured = capsys.readouterr()
+    assert "Sync already running" in captured.out
+    assert lock_file.exists()
+    assert "99999" in lock_file.read_text(encoding="utf-8")
+
+
+def test_sync_database_lock_stale_overwritten(tmp_path, monkeypatch, capsys):
+    import time
+    from unittest.mock import MagicMock
+
+    import scripts.sync_database as sd
+
+    monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
+    monkeypatch.setattr(sd, "download_from_b2", lambda: True)
+    monkeypatch.setattr(sd, "create_tables", lambda: None)
+    monkeypatch.setattr(sd, "create_indexes", lambda: None)
+    monkeypatch.setattr(sd, "sync_current_year_speeches", lambda *a, **kw: [])
+    monkeypatch.setattr(sd, "build_missing_lemmas", lambda: 0)
+    monkeypatch.setattr(sd, "build_missing_terms", lambda: None)
+    monkeypatch.setattr(sd, "load_attendance_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_persons_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_votes_to_database", lambda *a, **kw: None)
+
+    mock_session = MagicMock()
+    mock_session.query.return_value.filter_by.return_value.first.return_value = None
+    monkeypatch.setattr(sd, "SessionLocal", lambda: mock_session)
+
+    lock_file = tmp_path / ".sync.lock"
+    lock_file.write_text("88888\n2026-10-16T00:00:00\n", encoding="utf-8")
+    stale_time = time.time() - 14400
+    os.utime(lock_file, (stale_time, stale_time))
+
+    assert sd.sync_database(skip_download=True) is True
+    captured = capsys.readouterr()
+    assert "Stale lock file" in captured.out
+    assert not lock_file.exists()

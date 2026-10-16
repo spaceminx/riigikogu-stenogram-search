@@ -23,7 +23,7 @@ jobs:
        github.event.workflow_run.event == 'push') ||
       github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 60
     steps:
       - name: Verify DEPLOY_DIR is configured
         run: |
@@ -39,8 +39,37 @@ jobs:
           git config --global --add safe.directory "$DEPLOY_DIR"
           cd "$DEPLOY_DIR" || exit 1
           git fetch origin master && git reset --hard origin/master
+
+          # Wait for database sync to finish before rebuilding/restarting Docker
+          LOCK_FILE="$DEPLOY_DIR/database/.sync.lock"
+          MAX_WAIT=2700
+          WAITED=0
+          INTERVAL=30
+          STALE_THRESHOLD=10800
+
+          while [ -f "$LOCK_FILE" ]; do
+            NOW=$(date +%s)
+            LOCK_MTIME=$(stat -c %Y "$LOCK_FILE" 2>/dev/null || stat -f %m "$LOCK_FILE" 2>/dev/null || echo "$NOW")
+            LOCK_AGE=$((NOW - LOCK_MTIME))
+
+            if [ "$LOCK_AGE" -ge "$STALE_THRESHOLD" ]; then
+              echo "Notice: Stale lock file found (${LOCK_AGE}s >= ${STALE_THRESHOLD}s). Proceeding with deploy."
+              break
+            fi
+
+            if [ "$WAITED" -ge "$MAX_WAIT" ]; then
+              echo "Error: Database sync is still running after 45 minutes ($LOCK_FILE). Aborting deploy."
+              exit 1
+            fi
+
+            echo "Database sync is in progress ($LOCK_FILE exists). Waiting ${INTERVAL}s (${WAITED}s/${MAX_WAIT}s elapsed)..."
+            sleep "$INTERVAL"
+            WAITED=$((WAITED + INTERVAL))
+          done
+
           docker compose up -d --build
 
       - name: Verify service health
         run: |
           curl --retry 10 --retry-delay 3 --retry-all-errors -fsS http://127.0.0.1:8000/
+

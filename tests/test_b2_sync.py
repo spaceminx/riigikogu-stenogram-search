@@ -447,3 +447,50 @@ def test_download_from_b2_dry_run(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "[DRY-RUN] Download 2026.jsonl: new file (500 bytes)" in out
     assert "500 bytes" in out
+
+
+def test_upload_to_b2_skips_blocked_files_and_integrity_report(tmp_path, monkeypatch):
+    """upload_to_b2 skips files listed in blocked_files in integrity_report.json and never uploads integrity_report.json."""
+    monkeypatch.setattr("scripts.upload_to_b2.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setenv("B2_KEY_ID", "test_key")
+    monkeypatch.setenv("B2_APP_KEY", "test_secret")
+
+    # 2025 file is normal
+    f_2025 = tmp_path / "2025.jsonl"
+    f_2025.write_text('{"speaker": "A", "text": "Kone"}\n', encoding="utf-8")
+
+    # 2026 file is blocked
+    f_2026 = tmp_path / "2026.jsonl"
+    f_2026.write_text('{"speaker": "B", "text": "Kone"}\n', encoding="utf-8")
+
+    # integrity_report.json lists 2026.jsonl as blocked
+    report_file = tmp_path / "integrity_report.json"
+    report_file.write_text(
+        json.dumps(
+            {
+                "missing_sessions": [],
+                "truncated_sessions": [
+                    {"code": "123", "date": "2026-03-01", "reason": "Truncated"}
+                ],
+                "blocked_files": ["2026.jsonl"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    uploaded_keys = []
+
+    class MockS3Client:
+        def head_object(self, Bucket, Key):
+            raise Exception("NoSuchKey")
+
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs):
+            uploaded_keys.append(remote_key)
+
+    monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
+
+    ok = upload_to_b2()
+    assert ok is True
+    assert "2025.jsonl" in uploaded_keys
+    assert "2026.jsonl" not in uploaded_keys
+    assert "integrity_report.json" not in uploaded_keys

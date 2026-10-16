@@ -1,5 +1,7 @@
 import json
+import logging
 import re
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import text
@@ -18,6 +20,110 @@ from src.load.models import (
     Vote,
     Voting,
 )
+
+logger = logging.getLogger(__name__)
+
+MAX_PLAUSIBLE_DURATION_SECONDS = 3 * 3600  # 10,800 seconds (3 hours)
+
+
+def compute_capped_duration_seconds(
+    start_time_str: str | None,
+    end_time_str: str | None,
+    next_start_time_str: str | None = None,
+    speech_id: int | str | None = None,
+) -> int | None:
+    """Calculate duration in seconds capped by next speech start time.
+
+    Rule:
+    duration = min(end_time, next_speech.start_time) - start_time.
+    If no next speech or next speech does not start later than this speech: end_time - start_time.
+    If start_time or end_time is missing: None.
+    If duration exceeds 3 hours (10,800 s), store None (unknown) and log speech_id.
+    """
+    if not start_time_str or not end_time_str:
+        return None
+    try:
+        dt_start = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
+        dt_end = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+    effective_end = dt_end
+    if next_start_time_str:
+        try:
+            dt_next_start = datetime.fromisoformat(next_start_time_str.replace("Z", "+00:00"))
+            if dt_next_start > dt_start:
+                effective_end = min(dt_end, dt_next_start)
+        except Exception:
+            pass
+
+    raw_duration = max(0, round((effective_end - dt_start).total_seconds()))
+    if raw_duration > MAX_PLAUSIBLE_DURATION_SECONDS:
+        sp_info = f"id={speech_id}" if speech_id is not None else "id=unknown"
+        logger.warning(
+            "Implausible duration %s s for speech %s (start=%s, end=%s) exceeds 3h limit, storing None",
+            raw_duration,
+            sp_info,
+            start_time_str,
+            end_time_str,
+        )
+        return None
+
+    return raw_duration
+
+
+def apply_capped_durations_to_session_speeches(speeches: list) -> None:
+    """Sort speeches in a session by start_time and calculate capped duration_seconds."""
+    if not speeches:
+        return
+
+    def get_attr(obj, attr):
+        if isinstance(obj, dict):
+            return obj.get(attr)
+        return getattr(obj, attr, None)
+
+    def set_attr(obj, attr, val):
+        if isinstance(obj, dict):
+            obj[attr] = val
+        else:
+            setattr(obj, attr, val)
+
+    indexed = list(enumerate(speeches))
+    indexed.sort(
+        key=lambda item: (
+            get_attr(item[1], "start_time") is None,
+            get_attr(item[1], "start_time") or "",
+            item[0],
+        )
+    )
+
+    for i, (_, cur_sp) in enumerate(indexed):
+        cur_start = get_attr(cur_sp, "start_time")
+        cur_end = get_attr(cur_sp, "end_time")
+        cur_id = get_attr(cur_sp, "id")
+        if not cur_start or not cur_end:
+            set_attr(cur_sp, "duration_seconds", None)
+            continue
+
+        # Find the next speech whose start_time is strictly later than cur_start
+        next_start = None
+        for j in range(i + 1, len(indexed)):
+            cand_start = get_attr(indexed[j][1], "start_time")
+            if not cand_start:
+                continue
+            try:
+                dt_cand = datetime.fromisoformat(cand_start.replace("Z", "+00:00"))
+                dt_cur = datetime.fromisoformat(cur_start.replace("Z", "+00:00"))
+                if dt_cand > dt_cur:
+                    next_start = cand_start
+                    break
+            except Exception:
+                if cand_start > cur_start:
+                    next_start = cand_start
+                    break
+
+        dur = compute_capped_duration_seconds(cur_start, cur_end, next_start, speech_id=cur_id)
+        set_attr(cur_sp, "duration_seconds", dur)
 
 
 def ensure_schema(target_engine=None) -> None:
@@ -386,6 +492,7 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                         continue
 
             for src_file, speeches_list in speeches_by_session.items():
+                apply_capped_durations_to_session_speeches(speeches_list)
                 try:
                     if src_file in unedited_db_files:
                         old_ids = [
