@@ -1,3 +1,4 @@
+import functools
 import logging
 import re
 import time
@@ -69,23 +70,51 @@ def normalize_source_url(url: str | None) -> str | None:
     )
 
 
+@functools.lru_cache(maxsize=50_000)
+def _analyze_token_lemmas(token: str) -> frozenset[str]:
+    """Return normalized base lemmas for a single word token using morphological analysis."""
+    lemmas: set[str] = set()
+    try:
+        analyses = _VABAMORF.analyze([token], disambiguate=False, guess=True, propername=True)
+        for item in analyses:
+            for a in item.get("analysis", []):
+                lemma = a.get("lemma", "")
+                if lemma:
+                    clean = _clean_lemma(lemma)
+                    if clean:
+                        lemmas.add(clean)
+
+        if any(c.isupper() for c in token):
+            lower_token = token.lower()
+            lower_analyses = _VABAMORF.analyze(
+                [lower_token], disambiguate=False, guess=True, propername=True
+            )
+            for item in lower_analyses:
+                for a in item.get("analysis", []):
+                    lemma = a.get("lemma", "")
+                    if lemma:
+                        clean = _clean_lemma(lemma)
+                        if clean:
+                            lemmas.add(clean)
+    except Exception:
+        pass
+    return frozenset(lemmas)
+
+
 def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
-    """Extract surface word tokens from text matching any of target lemmas with high-speed morphological analysis."""
+    """Extract surface word tokens from text matching any target lemmas deterministically."""
     if not text or not target_lemmas:
         return []
     try:
-        tokens = list(set(_WORD_REGEX.findall(text)))
+        tokens = set(_WORD_REGEX.findall(text))
         if not tokens:
             return []
-        analyses = _VABAMORF.analyze([t.lower() for t in tokens])
-        matched = set()
-        for token, item in zip(tokens, analyses, strict=True):
-            for a in item.get("analysis", []):
-                lemma = a.get("lemma", "")
-                if lemma and lemma.lower() in target_lemmas:
-                    matched.add(token)
-                    break
-        return sorted(matched, key=len, reverse=True)
+        matched: set[str] = set()
+        for token in tokens:
+            token_lemmas = _analyze_token_lemmas(token)
+            if token_lemmas & target_lemmas:
+                matched.add(token)
+        return sorted(matched, key=lambda s: (-len(s), s))
     except Exception:
         return []
 

@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 
 # Ensure project root is in sys.path
@@ -6,6 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from scripts.fetch_stenograms_api import split_speaker_role
 from src.api.search import (
+    extract_matched_words,
     fill_missing_periods,
     is_only_stopwords,
     parse_query_groups,
@@ -178,3 +180,52 @@ def test_query_expansion_hyphenated_numbers():
 
     groups_e = parse_query_groups("e-riik")
     assert groups_e == [[["e-riik"]]]
+
+
+def test_extract_matched_words_proper_nouns_and_inflections():
+    text = (
+        "Valitsus tõstab makse ja matee joomine. Teed ehitatakse. "
+        "Martin Helmele vastas Kaja Kallasele Rail Balticu teemal."
+    )
+    # Check inflections and proper nouns
+    assert extract_matched_words(text, {"maks", "tee"}) == ["makse", "Teed"]
+    assert extract_matched_words(text, {"helme"}) == ["Helmele"]
+    assert extract_matched_words(text, {"kallas"}) == ["Kallasele"]
+    # Sorting: longer words first, then alphabetical: 'Balticu' (7) before 'Rail' (4)
+    assert extract_matched_words(text, {"rail", "baltic"}) == ["Balticu", "Rail"]
+
+
+def test_extract_matched_words_determinism_across_hashseeds():
+    script = (
+        "from src.api.search import extract_matched_words\n"
+        'text = "Valitsus tõstab makse ja matee joomine. Teed ehitatakse. Martin Helmele vastas Kaja Kallasele Rail Balticu teemal."\n'
+        'res = extract_matched_words(text, {"maks", "tee", "helme", "kallas", "rail", "baltic"})\n'
+        "print(res)\n"
+    )
+    out0 = subprocess.check_output(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": "0"},
+        text=True,
+    ).strip()
+    out1 = subprocess.check_output(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": "1"},
+        text=True,
+    ).strip()
+    out42 = subprocess.check_output(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": "42"},
+        text=True,
+    ).strip()
+
+    assert out0 == out1 == out42
+    # Verify deterministic ordering: Balticu (7), Kallasele (9) -> length first, then alphabetical
+    # Kallasele (9) -> Balticu (7), Helmele (7) -> makse (5) -> Rail (4), Teed (4)
+    expected = "['Kallasele', 'Balticu', 'Helmele', 'makse', 'Rail', 'Teed']"
+    assert out0 == expected
+
+
+def test_extract_matched_words_edge_cases():
+    assert extract_matched_words("", {"kallas"}) == []
+    assert extract_matched_words("Tere hommikust", set()) == []
+    assert extract_matched_words("Puuduvad vasted", {"kliima"}) == []
