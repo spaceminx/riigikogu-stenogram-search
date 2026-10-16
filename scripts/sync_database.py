@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from sqlalchemy import func
 
-from config import OUTPUT_DIR_PROCESSED, active_years
+from config import DATABASE_DIR, OUTPUT_DIR_PROCESSED, active_years
 from scripts.download_from_b2 import download_from_b2
 from src.load.database import SessionLocal
 from src.load.indexes import create_indexes
@@ -182,149 +182,180 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
 
 def sync_database(skip_download: bool = False) -> bool:
     """Run incremental database sync: download from B2, update SQLite, lemmatize, and index."""
-    t0 = time.time()
-    print("=" * 60)
-    print("STARTING INCREMENTAL DATABASE SYNC")
-    print("=" * 60)
+    Path(DATABASE_DIR).mkdir(parents=True, exist_ok=True)
+    lock_file = os.path.join(DATABASE_DIR, ".sync.lock")
+    lock_created = False
 
-    errors: list[str] = []
+    try:
+        if os.path.exists(lock_file):
+            try:
+                mtime = os.path.getmtime(lock_file)
+                age = time.time() - mtime
+                if age < 3 * 3600:
+                    print("Sync already running")
+                    sys.exit(1)
+                else:
+                    print(f"Notice: Stale lock file ({age:.0f}s old) found. Overwriting.")
+            except SystemExit:
+                raise
+            except Exception as e:
+                print(f"Notice: Could not check lock file: {e}")
 
-    # 1. Download latest data and state from B2
-    if not skip_download:
-        print("\n[1/8] Downloading latest files from Backblaze B2...")
-        try:
-            b2_ok = download_from_b2()
-            if not b2_ok:
-                err_msg = "B2 download failed or returned False"
+        with open(lock_file, "w", encoding="utf-8") as f:
+            f.write(f"{os.getpid()}\n{datetime.now(timezone.utc).isoformat()}\n")
+        lock_created = True
+
+        t0 = time.time()
+        print("=" * 60)
+        print("STARTING INCREMENTAL DATABASE SYNC")
+        print("=" * 60)
+
+        errors: list[str] = []
+
+        # 1. Download latest data and state from B2
+        if not skip_download:
+            print("\n[1/8] Downloading latest files from Backblaze B2...")
+            try:
+                b2_ok = download_from_b2()
+                if not b2_ok:
+                    err_msg = "B2 download failed or returned False"
+                    print(f"Warning: {err_msg}. Continuing with available local files.")
+                    errors.append(err_msg)
+            except Exception as e:
+                err_msg = f"B2 download error: {e}"
                 print(f"Warning: {err_msg}. Continuing with available local files.")
                 errors.append(err_msg)
-        except Exception as e:
-            err_msg = f"B2 download error: {e}"
-            print(f"Warning: {err_msg}. Continuing with available local files.")
-            errors.append(err_msg)
-    else:
-        print("\n[1/8] Skipping B2 download (--skip-download)...")
+        else:
+            print("\n[1/8] Skipping B2 download (--skip-download)...")
 
-    # 2. Ensure tables and indexes exist
-    print("\n[2/8] Ensuring database tables and indexes exist...")
-    try:
-        create_tables()
-        create_indexes()
-    except Exception as e:
-        err_msg = f"Failed to ensure schema/indexes: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # 3. Load current year speeches
-    print("\n[3/8] Inserting new speeches...")
-    try:
-        failed_sources = sync_current_year_speeches()
-        if failed_sources:
-            err_msg = f"Failed to sync {len(failed_sources)} speech session(s): {failed_sources}"
-            print(f"Error: {err_msg}")
-            errors.append(err_msg)
-    except Exception as e:
-        err_msg = f"Speech sync failed: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # 4. Lemmatize any new speeches
-    print("\n[4/8] Checking and lemmatizing new speeches...")
-    try:
-        unlemmatized_count = build_missing_lemmas()
-        if unlemmatized_count and unlemmatized_count > 0:
-            session = SessionLocal()
-            sample_ids = []
-            try:
-                sample_ids = [
-                    r[0]
-                    for r in session.query(Speech.id)
-                    .filter(Speech.text_lemmas.is_(None))
-                    .limit(20)
-                    .all()
-                ]
-            finally:
-                session.close()
-            err_msg = (
-                f"Lemmatization incomplete: {unlemmatized_count} speeches remain without lemmas "
-                f"(sample IDs: {sample_ids})"
-            )
-            print(f"Error: {err_msg}")
-            errors.append(err_msg)
-    except Exception as e:
-        err_msg = f"Lemmatization failed: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # 5. Build term index for new speeches
-    print("\n[5/8] Indexing new terms...")
-    try:
-        build_missing_terms()
-    except Exception as e:
-        err_msg = f"Term indexing failed: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # 6. Attendance
-    print("\n[6/8] Loading attendance records...")
-    try:
-        load_attendance_to_database()
-    except Exception as e:
-        err_msg = f"Attendance loading failed: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # 7. Persons
-    print("\n[7/8] Loading persons...")
-    try:
-        load_persons_to_database()
-    except Exception as e:
-        err_msg = f"Persons loading failed: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # 8. Votes
-    print("\n[8/8] Loading votes...")
-    try:
-        load_votes_to_database(years=active_years())
-    except Exception as e:
-        err_msg = f"Votes loading failed: {e}"
-        print(f"Error: {err_msg}")
-        errors.append(err_msg)
-
-    # Record successful sync timestamp in system_meta only if NO errors occurred
-    if len(errors) == 0:
-        meta_session = SessionLocal()
+        # 2. Ensure tables and indexes exist
+        print("\n[2/8] Ensuring database tables and indexes exist...")
         try:
-            now_utc = datetime.now(timezone.utc).isoformat()
-            row = meta_session.query(SystemMeta).filter_by(key="last_sync_at").first()
-            if row:
-                row.value = now_utc
-            else:
-                meta_session.add(SystemMeta(key="last_sync_at", value=now_utc))
-            meta_session.commit()
-        except Exception as meta_err:
-            meta_session.rollback()
-            err_msg = f"Failed to record last_sync_at in system_meta: {meta_err}"
-            print(f"Notice: {err_msg}")
+            create_tables()
+            create_indexes()
+        except Exception as e:
+            err_msg = f"Failed to ensure schema/indexes: {e}"
+            print(f"Error: {err_msg}")
             errors.append(err_msg)
-        finally:
-            meta_session.close()
-    else:
-        print(f"\nNotice: last_sync_at not updated because {len(errors)} error(s) occurred.")
 
-    duration = time.time() - t0
-    print("\n" + "=" * 60)
-    if len(errors) == 0:
-        print(f"DATABASE SYNC COMPLETE in {duration:.2f} seconds!")
-        print("=" * 60)
-        return True
-    else:
-        print(f"DATABASE SYNC FINISHED WITH {len(errors)} ERROR(S) in {duration:.2f} seconds:")
-        for err in errors:
-            print(f"  - {err}")
-        print("=" * 60)
-        return False
+        # 3. Load current year speeches
+        print("\n[3/8] Inserting new speeches...")
+        try:
+            failed_sources = sync_current_year_speeches()
+            if failed_sources:
+                err_msg = (
+                    f"Failed to sync {len(failed_sources)} speech session(s): {failed_sources}"
+                )
+                print(f"Error: {err_msg}")
+                errors.append(err_msg)
+        except Exception as e:
+            err_msg = f"Speech sync failed: {e}"
+            print(f"Error: {err_msg}")
+            errors.append(err_msg)
+
+        # 4. Lemmatize any new speeches
+        print("\n[4/8] Checking and lemmatizing new speeches...")
+        try:
+            unlemmatized_count = build_missing_lemmas()
+            if unlemmatized_count and unlemmatized_count > 0:
+                session = SessionLocal()
+                sample_ids = []
+                try:
+                    sample_ids = [
+                        r[0]
+                        for r in session.query(Speech.id)
+                        .filter(Speech.text_lemmas.is_(None))
+                        .limit(20)
+                        .all()
+                    ]
+                finally:
+                    session.close()
+                err_msg = (
+                    f"Lemmatization incomplete: {unlemmatized_count} speeches remain without lemmas "
+                    f"(sample IDs: {sample_ids})"
+                )
+                print(f"Error: {err_msg}")
+                errors.append(err_msg)
+        except Exception as e:
+            err_msg = f"Lemmatization failed: {e}"
+            print(f"Error: {err_msg}")
+            errors.append(err_msg)
+
+        # 5. Build term index for new speeches
+        print("\n[5/8] Indexing new terms...")
+        try:
+            build_missing_terms()
+        except Exception as e:
+            err_msg = f"Term indexing failed: {e}"
+            print(f"Error: {err_msg}")
+            errors.append(err_msg)
+
+        # 6. Attendance
+        print("\n[6/8] Loading attendance records...")
+        try:
+            load_attendance_to_database()
+        except Exception as e:
+            err_msg = f"Attendance loading failed: {e}"
+            print(f"Error: {err_msg}")
+            errors.append(err_msg)
+
+        # 7. Persons
+        print("\n[7/8] Loading persons...")
+        try:
+            load_persons_to_database()
+        except Exception as e:
+            err_msg = f"Persons loading failed: {e}"
+            print(f"Error: {err_msg}")
+            errors.append(err_msg)
+
+        # 8. Votes
+        print("\n[8/8] Loading votes...")
+        try:
+            load_votes_to_database(years=active_years())
+        except Exception as e:
+            err_msg = f"Votes loading failed: {e}"
+            print(f"Error: {err_msg}")
+            errors.append(err_msg)
+
+        # Record successful sync timestamp in system_meta only if NO errors occurred
+        if len(errors) == 0:
+            meta_session = SessionLocal()
+            try:
+                now_utc = datetime.now(timezone.utc).isoformat()
+                row = meta_session.query(SystemMeta).filter_by(key="last_sync_at").first()
+                if row:
+                    row.value = now_utc
+                else:
+                    meta_session.add(SystemMeta(key="last_sync_at", value=now_utc))
+                meta_session.commit()
+            except Exception as meta_err:
+                meta_session.rollback()
+                err_msg = f"Failed to record last_sync_at in system_meta: {meta_err}"
+                print(f"Notice: {err_msg}")
+                errors.append(err_msg)
+            finally:
+                meta_session.close()
+        else:
+            print(f"\nNotice: last_sync_at not updated because {len(errors)} error(s) occurred.")
+
+        duration = time.time() - t0
+        print("\n" + "=" * 60)
+        if len(errors) == 0:
+            print(f"DATABASE SYNC COMPLETE in {duration:.2f} seconds!")
+            print("=" * 60)
+            return True
+        else:
+            print(f"DATABASE SYNC FINISHED WITH {len(errors)} ERROR(S) in {duration:.2f} seconds:")
+            for err in errors:
+                print(f"  - {err}")
+            print("=" * 60)
+            return False
+    finally:
+        if lock_created and os.path.exists(lock_file):
+            try:
+                os.remove(lock_file)
+            except Exception as e:
+                print(f"Notice: Could not remove lock file {lock_file}: {e}")
 
 
 if __name__ == "__main__":

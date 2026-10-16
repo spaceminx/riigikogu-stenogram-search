@@ -2550,3 +2550,104 @@ def test_recompute_durations_dry_run_and_apply_idempotent(tmp_path, monkeypatch)
         clean_s.query(Speech).filter(Speech.source_file == "test_session_dur.api").delete()
         clean_s.commit()
         clean_s.close()
+
+
+def test_sync_database_lock_creates_and_removes(tmp_path, monkeypatch):
+    from unittest.mock import MagicMock
+
+    import pytest
+
+    import scripts.sync_database as sd
+
+    monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
+    monkeypatch.setattr(sd, "download_from_b2", lambda: True)
+    monkeypatch.setattr(sd, "create_tables", lambda: None)
+    monkeypatch.setattr(sd, "create_indexes", lambda: None)
+    monkeypatch.setattr(sd, "build_missing_lemmas", lambda: 0)
+    monkeypatch.setattr(sd, "build_missing_terms", lambda: None)
+    monkeypatch.setattr(sd, "load_attendance_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_persons_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_votes_to_database", lambda *a, **kw: None)
+
+    mock_session = MagicMock()
+    mock_session.query.return_value.filter_by.return_value.first.return_value = None
+    monkeypatch.setattr(sd, "SessionLocal", lambda: mock_session)
+
+    lock_file = tmp_path / ".sync.lock"
+
+    checked_lock = False
+
+    def check_lock_during_execution(*a, **kw):
+        nonlocal checked_lock
+        assert lock_file.exists()
+        content = lock_file.read_text(encoding="utf-8")
+        assert str(os.getpid()) in content
+        checked_lock = True
+        return []
+
+    monkeypatch.setattr(sd, "sync_current_year_speeches", check_lock_during_execution)
+
+    assert sd.sync_database(skip_download=True) is True
+    assert checked_lock is True
+    assert not lock_file.exists()
+
+    # Verify lock is cleaned up on unhandled exception
+    def fatal_err(*a, **kw):
+        assert lock_file.exists()
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(sd, "create_tables", fatal_err)
+    with pytest.raises(KeyboardInterrupt):
+        sd.sync_database(skip_download=True)
+    assert not lock_file.exists()
+
+
+def test_sync_database_lock_active_exits_1(tmp_path, monkeypatch, capsys):
+    import pytest
+
+    import scripts.sync_database as sd
+
+    monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
+    lock_file = tmp_path / ".sync.lock"
+    lock_file.write_text("99999\n2026-10-16T10:00:00\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as exc_info:
+        sd.sync_database(skip_download=True)
+    assert exc_info.value.code == 1
+
+    captured = capsys.readouterr()
+    assert "Sync already running" in captured.out
+    assert lock_file.exists()
+    assert "99999" in lock_file.read_text(encoding="utf-8")
+
+
+def test_sync_database_lock_stale_overwritten(tmp_path, monkeypatch, capsys):
+    import time
+    from unittest.mock import MagicMock
+
+    import scripts.sync_database as sd
+
+    monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
+    monkeypatch.setattr(sd, "download_from_b2", lambda: True)
+    monkeypatch.setattr(sd, "create_tables", lambda: None)
+    monkeypatch.setattr(sd, "create_indexes", lambda: None)
+    monkeypatch.setattr(sd, "sync_current_year_speeches", lambda *a, **kw: [])
+    monkeypatch.setattr(sd, "build_missing_lemmas", lambda: 0)
+    monkeypatch.setattr(sd, "build_missing_terms", lambda: None)
+    monkeypatch.setattr(sd, "load_attendance_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_persons_to_database", lambda: None)
+    monkeypatch.setattr(sd, "load_votes_to_database", lambda *a, **kw: None)
+
+    mock_session = MagicMock()
+    mock_session.query.return_value.filter_by.return_value.first.return_value = None
+    monkeypatch.setattr(sd, "SessionLocal", lambda: mock_session)
+
+    lock_file = tmp_path / ".sync.lock"
+    lock_file.write_text("88888\n2026-10-16T00:00:00\n", encoding="utf-8")
+    stale_time = time.time() - 14400
+    os.utime(lock_file, (stale_time, stale_time))
+
+    assert sd.sync_database(skip_download=True) is True
+    captured = capsys.readouterr()
+    assert "Stale lock file" in captured.out
+    assert not lock_file.exists()
