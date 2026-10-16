@@ -16,30 +16,30 @@ from src.api.search import (
 def test_parse_single_keyword():
     groups = parse_query_groups("kliima")
     assert len(groups) == 1
-    assert "kliima" in groups[0]
+    assert any("kliima" in term for term in groups[0])
 
 
 def test_parse_and_condition():
     # Space between words means AND within same group
     groups = parse_query_groups("roheline energia")
     assert len(groups) == 1
-    assert "roheline" in groups[0]
-    assert "energia" in groups[0]
+    assert any("roheline" in term for term in groups[0])
+    assert any("energia" in term for term in groups[0])
 
 
 def test_parse_or_condition():
     # Comma means OR (separate groups)
     groups = parse_query_groups("tuuleenergia, päikeseenergia")
     assert len(groups) == 2
-    assert "tuuleenergia" in groups[0]
-    assert "päikeseenergia" in groups[1]
+    assert any("tuuleenergia" in term for term in groups[0])
+    assert any("päikeseenergia" in term for term in groups[1])
 
 
 def test_stopwords_filtered():
     # 'ja', 'on', 'see' are in STOPWORDS and should be filtered out
     groups = parse_query_groups("ja see on mets")
     assert len(groups) == 1
-    assert groups[0] == ["mets"]
+    assert groups[0] == [["mets"]]
 
 
 def test_is_only_stopwords():
@@ -101,7 +101,7 @@ def test_duplicate_lemmas_deduplicated_in_group():
     # 'maks' and 'maksud' both lemmatize to 'maks'. The AND group should deduplicate lemmas.
     groups = parse_query_groups("maks maksud")
     assert len(groups) == 1
-    assert groups[0] == ["maks"]
+    assert groups[0] == [["maks"]]
 
 
 def test_pronoun_stopwords_filtered():
@@ -109,7 +109,7 @@ def test_pronoun_stopwords_filtered():
     assert is_only_stopwords("tema ta nad") is True
     groups = parse_query_groups("tema räägib")
     assert len(groups) == 1
-    assert "tema" not in groups[0]
+    assert not any("tema" in term for term in groups[0])
 
 
 def test_parse_query_groups_limit_and_messages():
@@ -125,11 +125,11 @@ def test_parse_query_groups_limit_and_messages():
 
     groups = parse_query_groups("ja see on üks väga pikk lause mis räägib riigi eelarvest täna")
     assert len(groups) == 1
-    assert "eelarve" in groups[0]
+    assert any("eelarve" in term for term in groups[0])
 
     groups_empty = parse_query_groups("eelarve,,")
     assert len(groups_empty) == 1
-    assert groups_empty[0] == ["eelarve"]
+    assert groups_empty[0] == [["eelarve"]]
 
 
 def test_is_only_stopwords_limits():
@@ -147,3 +147,34 @@ def test_is_only_stopwords_limits():
         is_only_stopwords("ja see on üks väga pikk lause mis räägib riigi eelarvest täna") is False
     )
     assert is_only_stopwords("eelarve,,") is False
+
+
+def test_query_expansion_capitalization():
+    # 'putin' and 'Putin' should produce identical alternative sets
+    assert parse_query_groups("putin") == parse_query_groups("Putin") == [[["putin", "puttima"]]]
+
+    # 'helme' and 'Helme' should produce identical alternative sets
+    assert parse_query_groups("helme") == parse_query_groups("Helme") == [[["helme", "helmes"]]]
+
+    # 'kallas' and 'Kallas' should produce identical alternative sets
+    assert parse_query_groups("kallas") == parse_query_groups("Kallas") == [[["kallama", "kallas"]]]
+
+    # 'rail baltic' and 'Rail Baltic' should expand both positions symmetrically
+    assert (
+        parse_query_groups("rail baltic")
+        == parse_query_groups("Rail Baltic")
+        == [[["rai", "rail"], ["baltic"]]]
+    )
+
+
+def test_query_expansion_hyphenated_numbers():
+    groups = parse_query_groups("COVID-19")
+    assert len(groups) == 1
+    assert len(groups[0]) == 1
+    alts = set(groups[0][0])
+    assert "covid-19" in alts
+    assert "covid" in alts
+    assert "cov" in alts
+
+    groups_e = parse_query_groups("e-riik")
+    assert groups_e == [[["e-riik"]]]

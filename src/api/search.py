@@ -1,17 +1,28 @@
+import logging
 import re
 import time
 from datetime import datetime, timedelta
 
+from estnltk import Text
 from estnltk.vabamorf.morf import Vabamorf
 from fastapi import HTTPException
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
 from src.load.models import Lemma, Person, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
+logger = logging.getLogger(__name__)
+
 _C0_CONTROL_REGEX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+_HYPHEN_NUM_REGEX = re.compile(r"^([a-zA-Z0-9äöüõÄÖÜÕšžŠŽ]+)-(\d+)$")
+_CLEAN_LEMMA_CHARS = ".,;:!?\"'()[]{}«»`~^/*+=<>@#$%&|\\_"
+
+
+def _clean_lemma(lemma: str) -> str:
+    cleaned = lemma.strip(_CLEAN_LEMMA_CHARS)
+    return cleaned.lower() if any(c.isalnum() for c in cleaned) else ""
 
 
 class LemmatizerUnavailableError(Exception):
@@ -162,6 +173,98 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
     return [{label: period, "count": count} for period, count in results]
 
 
+def _extract_group_terms(group: str) -> tuple[bool, list[list[str]]]:
+    """Extract content terms from a query group with case and hyphen expansions.
+
+    Returns (has_any_words, content_terms) where content_terms is a list of positions,
+    and each position contains a list of alternative lemmas.
+    """
+    if lemmatize_text(group) is None:
+        raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
+
+    try:
+        est_text = Text(f"{group} .")
+        est_text.tag_layer()
+    except Exception as e:
+        logger.error("Lemmatization failed on query group %r: %s", group[:100], e)
+        raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.") from e
+
+    words1 = [w for w in est_text.words if w.text != "." and any(c.isalnum() for c in w.text)]
+    if not words1:
+        return (False, [])
+
+    alternatives_list: list[set[str]] = []
+    for w in words1:
+        base_lemma = _clean_lemma(w.lemma[0])
+        alternatives_list.append({base_lemma} if base_lemma else set())
+
+    # Samm 2 (suurtäht): kui sõna oli algselt väiketäheline, lemmatiseeri ka suurtähelisena (capitalize).
+    if any(any(c.islower() for c in w.text) for w in words1):
+        try:
+            cap_str = " ".join(w.text.capitalize() for w in words1)
+            cap_text = Text(f"{cap_str} .")
+            cap_text.tag_layer()
+            words_cap = [
+                w for w in cap_text.words if w.text != "." and any(c.isalnum() for c in w.text)
+            ]
+            if len(words_cap) == len(words1):
+                for i in range(len(words1)):
+                    l_cap = _clean_lemma(words_cap[i].lemma[0])
+                    if l_cap:
+                        alternatives_list[i].add(l_cap)
+        except Exception:
+            pass
+
+    # Kui sõna oli suurtäheline, lemmatiseeri ka väiketähelisena
+    if any(any(c.isupper() for c in w.text) for w in words1):
+        try:
+            lower_str = " ".join(w.text.lower() for w in words1)
+            lower_text = Text(f"{lower_str} .")
+            lower_text.tag_layer()
+            words_lower = [
+                w for w in lower_text.words if w.text != "." and any(c.isalnum() for c in w.text)
+            ]
+            if len(words_lower) == len(words1):
+                for i in range(len(words1)):
+                    l_lower = _clean_lemma(words_lower[i].lemma[0])
+                    if l_lower:
+                        alternatives_list[i].add(l_lower)
+        except Exception:
+            pass
+
+    # Samm 3 (sidekriipsuga numbrid): kui sõna sisaldab sidekriipsu ja numbrit (nt "COVID-19"),
+    # lisa alternatiiviks ka eesosa ("covid", lemmatiseerituna "covid", "cov").
+    for i, w in enumerate(words1):
+        m = _HYPHEN_NUM_REGEX.match(w.text)
+        if m:
+            prefix = m.group(1)
+            if prefix.lower():
+                alternatives_list[i].add(prefix.lower())
+            try:
+                t_pre = Text(f"{prefix} .")
+                t_pre.tag_layer()
+                for pw in t_pre.words:
+                    if pw.text != ".":
+                        for pl in pw.lemma:
+                            clean_pl = _clean_lemma(pl)
+                            if clean_pl:
+                                alternatives_list[i].add(clean_pl)
+            except Exception:
+                pass
+
+    content_terms: list[list[str]] = []
+    seen_terms: set[tuple[str, ...]] = set()
+    for alts in alternatives_list:
+        filtered = [lemma for lemma in alts if lemma not in STOPWORDS]
+        if filtered:
+            term_tuple = tuple(sorted(filtered))
+            if term_tuple not in seen_terms:
+                seen_terms.add(term_tuple)
+                content_terms.append(list(term_tuple))
+
+    return (True, content_terms)
+
+
 def is_only_stopwords(query: str) -> bool:
     """Check if query contains non-empty words but all of them are in STOPWORDS."""
     check_query_complexity(query)
@@ -170,22 +273,18 @@ def is_only_stopwords(query: str) -> bool:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
     has_any_words = False
     for group in raw_groups:
-        lemmatized = lemmatize_text(group)
-        if lemmatized is None:
-            raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
-        lemmas = lemmatized.split()
-        content_lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
-        if len(content_lemmas) > 10:
+        has_words, terms = _extract_group_terms(group)
+        if len(terms) > 10:
             raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
-        if lemmas:
+        if has_words:
             has_any_words = True
-            if content_lemmas:
+            if terms:
                 return False
     return has_any_words
 
 
-def parse_query_groups(query: str) -> list[list[str]]:
-    """Parse comma-separated OR groups and space-separated AND keywords into filtered lemmas."""
+def parse_query_groups(query: str) -> list[list[list[str]]]:
+    """Parse comma-separated OR groups and space-separated AND keywords into filtered lemma alternatives."""
     check_query_complexity(query)
     groups = []
     raw_groups = [g.strip() for g in query.split(",") if g.strip()]
@@ -193,61 +292,52 @@ def parse_query_groups(query: str) -> list[list[str]]:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
 
     for group in raw_groups:
-        lemmatized = lemmatize_text(group)
-        if lemmatized is None:
-            raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
-        lemmas = lemmatized.split()
-        lemmas = [lemma for lemma in lemmas if lemma not in STOPWORDS]
-        if len(lemmas) > 10:
+        has_words, terms = _extract_group_terms(group)
+        if len(terms) > 10:
             raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
-        if lemmas:
-            groups.append(list(dict.fromkeys(lemmas)))
+        if terms:
+            groups.append(terms)
 
     return groups
 
 
-def build_matching_speech_ids_query(session, groups: list[list[str]]):
+def build_matching_speech_ids_query(session, groups: list[list[list[str]]]):
     """Build a SQL subquery returning distinct speech IDs matching query lemma groups."""
     group_queries = []
 
     for group in groups:
-        q = (
-            session.query(SpeechTerm.speech_id.label("speech_id"))
-            .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-            .filter(Lemma.lemma.in_(group))
-            .group_by(SpeechTerm.speech_id)
-            .having(func.count(func.distinct(Lemma.lemma)) == len(group))
-        )
+        term_queries = []
+        for term_alts in group:
+            tq = (
+                session.query(SpeechTerm.speech_id.label("speech_id"))
+                .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                .filter(Lemma.lemma.in_(term_alts))
+            )
+            term_queries.append(tq)
 
-        group_queries.append(q)
+        if not term_queries:
+            continue
+        if len(term_queries) == 1:
+            gq = term_queries[0]
+        else:
+            gq = term_queries[0].intersect(*term_queries[1:])
+        group_queries.append(gq)
+
+    if not group_queries:
+        return session.query(Speech.id.label("speech_id")).filter(False).subquery()
 
     if len(group_queries) == 1:
         return group_queries[0].subquery()
 
-    union_query = group_queries[0]
-
-    for q in group_queries[1:]:
-        union_query = union_query.union(q)
-
+    union_query = group_queries[0].union(*group_queries[1:])
     return union_query.subquery()
 
 
-def build_matching_conditions(session, groups: list[list[str]]) -> list:
+def build_matching_conditions(session, groups: list[list[list[str]]]) -> list:
     """Build SQL filter conditions for speech IDs matching each lemma group."""
-    matching_conditions = []
-
-    for group in groups:
-        group_query = (
-            session.query(SpeechTerm.speech_id)
-            .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-            .filter(Lemma.lemma.in_(group))
-            .group_by(SpeechTerm.speech_id)
-            .having(func.count(func.distinct(Lemma.lemma)) == len(group))
-        )
-
-        matching_conditions.append(Speech.id.in_(group_query))
-
-    return matching_conditions
+    matched_subquery = build_matching_speech_ids_query(session, groups)
+    col = list(matched_subquery.c)[0]
+    return [Speech.id.in_(select(col))]
 
 
 CHAIR_ROLES = ("Esimees", "Aseesimees")
@@ -346,7 +436,7 @@ def search_by_keyword(
             speech_category=speech_category,
         )
 
-        all_lemmas = [lemma for group in groups for lemma in group]
+        all_lemmas = [lemma for group in groups for term in group for lemma in term]
 
         if sort_by == "match_count_desc":
             base_query = (
@@ -397,25 +487,20 @@ def search_by_keyword(
             else:
                 results = []
 
-        if not speech_filters and len(groups) == 1:
-            if len(groups[0]) == 1:
+        if not speech_filters:
+            if len(groups) == 1 and len(groups[0]) == 1 and len(groups[0][0]) == 1:
                 total_count = (
                     session.query(func.count(SpeechTerm.speech_id))
                     .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-                    .filter(Lemma.lemma == groups[0][0])
+                    .filter(Lemma.lemma == groups[0][0][0])
                     .scalar()
                     or 0
                 )
             else:
-                sub_q = (
-                    session.query(SpeechTerm.speech_id)
-                    .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-                    .filter(Lemma.lemma.in_(groups[0]))
-                    .group_by(SpeechTerm.speech_id)
-                    .having(func.count(func.distinct(Lemma.lemma)) == len(groups[0]))
-                    .subquery()
+                matched_subquery = build_matching_speech_ids_query(session, groups)
+                total_count = (
+                    session.query(func.count()).select_from(matched_subquery).scalar() or 0
                 )
-                total_count = session.query(func.count()).select_from(sub_q).scalar() or 0
         else:
             count_query = session.query(Speech.id).filter(or_(*matching_conditions))
             if speech_filters:
@@ -770,7 +855,7 @@ def keyword_top_speakers(
             speech_category=speech_category,
         )
 
-        all_lemmas = [lemma for group in groups for lemma in group]
+        all_lemmas = [lemma for group in groups for term in group for lemma in term]
         group_expr = func.coalesce(Speech.speaker_uuid, Speech.speaker)
 
         query_builder = (
@@ -832,7 +917,7 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
         target_lemmas: set[str] = set()
         matching_speech_ids: set[int] = set()
         if parsed_groups:
-            target_lemmas = {lemma for group in parsed_groups for lemma in group}
+            target_lemmas = {lemma for group in parsed_groups for term in group for lemma in term}
             if target_lemmas and speeches:
                 speech_ids = [s.id for s in speeches]
                 matching_speech_ids = {
