@@ -912,6 +912,7 @@ def test_system_status():
     assert "last_sync_at" in data
     assert "totals" in data
     assert "methodology" in data
+    assert "search" in data["methodology"]
     assert "attendance" in data["methodology"]
     assert "impartiality" in data["methodology"]
     assert "speech_types" in data["methodology"]
