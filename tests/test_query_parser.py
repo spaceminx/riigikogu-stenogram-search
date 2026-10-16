@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 
 # Ensure project root is in sys.path
@@ -6,6 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from scripts.fetch_stenograms_api import split_speaker_role
 from src.api.search import (
+    extract_matched_words,
     fill_missing_periods,
     is_only_stopwords,
     parse_query_groups,
@@ -16,30 +18,30 @@ from src.api.search import (
 def test_parse_single_keyword():
     groups = parse_query_groups("kliima")
     assert len(groups) == 1
-    assert "kliima" in groups[0]
+    assert any("kliima" in term for term in groups[0])
 
 
 def test_parse_and_condition():
     # Space between words means AND within same group
     groups = parse_query_groups("roheline energia")
     assert len(groups) == 1
-    assert "roheline" in groups[0]
-    assert "energia" in groups[0]
+    assert any("roheline" in term for term in groups[0])
+    assert any("energia" in term for term in groups[0])
 
 
 def test_parse_or_condition():
     # Comma means OR (separate groups)
     groups = parse_query_groups("tuuleenergia, päikeseenergia")
     assert len(groups) == 2
-    assert "tuuleenergia" in groups[0]
-    assert "päikeseenergia" in groups[1]
+    assert any("tuuleenergia" in term for term in groups[0])
+    assert any("päikeseenergia" in term for term in groups[1])
 
 
 def test_stopwords_filtered():
     # 'ja', 'on', 'see' are in STOPWORDS and should be filtered out
     groups = parse_query_groups("ja see on mets")
     assert len(groups) == 1
-    assert groups[0] == ["mets"]
+    assert groups[0] == [["mets"]]
 
 
 def test_is_only_stopwords():
@@ -101,7 +103,7 @@ def test_duplicate_lemmas_deduplicated_in_group():
     # 'maks' and 'maksud' both lemmatize to 'maks'. The AND group should deduplicate lemmas.
     groups = parse_query_groups("maks maksud")
     assert len(groups) == 1
-    assert groups[0] == ["maks"]
+    assert groups[0] == [["maks"]]
 
 
 def test_pronoun_stopwords_filtered():
@@ -109,7 +111,7 @@ def test_pronoun_stopwords_filtered():
     assert is_only_stopwords("tema ta nad") is True
     groups = parse_query_groups("tema räägib")
     assert len(groups) == 1
-    assert "tema" not in groups[0]
+    assert not any("tema" in term for term in groups[0])
 
 
 def test_parse_query_groups_limit_and_messages():
@@ -125,11 +127,11 @@ def test_parse_query_groups_limit_and_messages():
 
     groups = parse_query_groups("ja see on üks väga pikk lause mis räägib riigi eelarvest täna")
     assert len(groups) == 1
-    assert "eelarve" in groups[0]
+    assert any("eelarve" in term for term in groups[0])
 
     groups_empty = parse_query_groups("eelarve,,")
     assert len(groups_empty) == 1
-    assert groups_empty[0] == ["eelarve"]
+    assert groups_empty[0] == [["eelarve"]]
 
 
 def test_is_only_stopwords_limits():
@@ -147,3 +149,83 @@ def test_is_only_stopwords_limits():
         is_only_stopwords("ja see on üks väga pikk lause mis räägib riigi eelarvest täna") is False
     )
     assert is_only_stopwords("eelarve,,") is False
+
+
+def test_query_expansion_capitalization():
+    # 'putin' and 'Putin' should produce identical alternative sets
+    assert parse_query_groups("putin") == parse_query_groups("Putin") == [[["putin", "puttima"]]]
+
+    # 'helme' and 'Helme' should produce identical alternative sets
+    assert parse_query_groups("helme") == parse_query_groups("Helme") == [[["helme", "helmes"]]]
+
+    # 'kallas' and 'Kallas' should produce identical alternative sets
+    assert parse_query_groups("kallas") == parse_query_groups("Kallas") == [[["kallama", "kallas"]]]
+
+    # 'rail baltic' and 'Rail Baltic' should expand both positions symmetrically
+    assert (
+        parse_query_groups("rail baltic")
+        == parse_query_groups("Rail Baltic")
+        == [[["rai", "rail"], ["baltic"]]]
+    )
+
+
+def test_query_expansion_hyphenated_numbers():
+    groups = parse_query_groups("COVID-19")
+    assert len(groups) == 1
+    assert len(groups[0]) == 1
+    alts = set(groups[0][0])
+    assert "covid-19" in alts
+    assert "covid" in alts
+    assert "cov" in alts
+
+    groups_e = parse_query_groups("e-riik")
+    assert groups_e == [[["e-riik"]]]
+
+
+def test_extract_matched_words_proper_nouns_and_inflections():
+    text = (
+        "Valitsus tõstab makse ja matee joomine. Teed ehitatakse. "
+        "Martin Helmele vastas Kaja Kallasele Rail Balticu teemal."
+    )
+    # Check inflections and proper nouns
+    assert extract_matched_words(text, {"maks", "tee"}) == ["makse", "Teed"]
+    assert extract_matched_words(text, {"helme"}) == ["Helmele"]
+    assert extract_matched_words(text, {"kallas"}) == ["Kallasele"]
+    # Sorting: longer words first, then alphabetical: 'Balticu' (7) before 'Rail' (4)
+    assert extract_matched_words(text, {"rail", "baltic"}) == ["Balticu", "Rail"]
+
+
+def test_extract_matched_words_determinism_across_hashseeds():
+    script = (
+        "from src.api.search import extract_matched_words\n"
+        'text = "Valitsus tõstab makse ja matee joomine. Teed ehitatakse. Martin Helmele vastas Kaja Kallasele Rail Balticu teemal."\n'
+        'res = extract_matched_words(text, {"maks", "tee", "helme", "kallas", "rail", "baltic"})\n'
+        "print(res)\n"
+    )
+    out0 = subprocess.check_output(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": "0"},
+        text=True,
+    ).strip()
+    out1 = subprocess.check_output(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": "1"},
+        text=True,
+    ).strip()
+    out42 = subprocess.check_output(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": "42"},
+        text=True,
+    ).strip()
+
+    assert out0 == out1 == out42
+    # Verify deterministic ordering: Balticu (7), Kallasele (9) -> length first, then alphabetical
+    # Kallasele (9) -> Balticu (7), Helmele (7) -> makse (5) -> Rail (4), Teed (4)
+    expected = "['Kallasele', 'Balticu', 'Helmele', 'makse', 'Rail', 'Teed']"
+    assert out0 == expected
+
+
+def test_extract_matched_words_edge_cases():
+    assert extract_matched_words("", {"kallas"}) == []
+    assert extract_matched_words("Tere hommikust", set()) == []
+    assert extract_matched_words("Puuduvad vasted", {"kliima"}) == []
