@@ -897,6 +897,7 @@ def fetch_and_process_stenograms(
     check_missing_days: int = UNEDITED_REFETCH_DAYS,
 ) -> bool:
     """Fetch recent stenograms from Riigikogu API, lemmatize, and append to yearly datasets."""
+    explicit_window = start_date is not None
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
 
     # Load existing meeting codes and source files from processed jsonl files
@@ -1054,7 +1055,7 @@ def fetch_and_process_stenograms(
                 has_errors = True
 
     # In addition to the primary window, check for missing sessions across the last UNEDITED_REFETCH_DAYS days
-    if check_missing_days and check_missing_days > 0 and start_date is None:
+    if check_missing_days and check_missing_days > 0 and not explicit_window:
         print(f"\nChecking last {check_missing_days} days for missing sessions...")
         missing_start = (datetime.now() - timedelta(days=check_missing_days)).strftime("%Y-%m-%d")
         missing_end = datetime.now().strftime("%Y-%m-%d")

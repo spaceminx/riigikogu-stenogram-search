@@ -2351,9 +2351,23 @@ def test_fetch_stenograms_fetches_20_day_old_missing_verbatim(tmp_path, monkeypa
 
     fetched_meeting_codes = []
 
+    all_verbatims = [
+        {
+            "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+            "title": "Eilne istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+        },
+        {
+            "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
+            "title": "20 päeva vana puuduv istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+        },
+    ]
+
     class MockResp:
-        def __init__(self, url):
+        def __init__(self, url, params=None):
             self.url = url
+            self.params = params or {}
             self.status_code = 200
 
         def json(self):
@@ -2379,21 +2393,22 @@ def test_fetch_stenograms_fetches_20_day_old_missing_verbatim(tmp_path, monkeypa
                         ]
                     },
                 }
-            # Verbatims
-            return [
-                {
-                    "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
-                    "title": "Eilne istung",
-                    "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
-                },
-                {
-                    "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
-                    "title": "20 päeva vana puuduv istung",
-                    "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
-                },
-            ]
+            # Filter verbatims by requested startDate/endDate like the real API
+            start = self.params.get("startDate")
+            end = self.params.get("endDate")
+            filtered = []
+            for item in all_verbatims:
+                d = item["date"][:10]
+                if start and d < start:
+                    continue
+                if end and d > end:
+                    continue
+                filtered.append(item)
+            return filtered
 
-    monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
+    monkeypatch.setattr(
+        requests, "get", lambda url, *args, **kwargs: MockResp(url, kwargs.get("params"))
+    )
     monkeypatch.setattr("time.sleep", lambda *args: None)
 
     ok = fetch_and_process_stenograms()
@@ -2406,6 +2421,82 @@ def test_fetch_stenograms_fetches_20_day_old_missing_verbatim(tmp_path, monkeypa
     content = target_year_file.read_text(encoding="utf-8")
     assert file_missing_20d in content
     assert "20 päeva vana kõne sisu" in content
+
+
+def test_fetch_stenograms_explicit_start_date_skips_missing_check(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    import requests
+
+    from scripts.fetch_stenograms_api import fetch_and_process_stenograms
+
+    monkeypatch.setattr("scripts.fetch_stenograms_api.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    today = datetime.now()
+    yesterday = today - timedelta(days=1)
+    twenty_days_ago = today - timedelta(days=20)
+
+    code_yesterday = f"{yesterday.strftime('%Y%m%d')}1000"
+    file_yesterday = f"{yesterday.strftime('%Y-%m-%d')}_1000.api"
+    y_file = tmp_path / f"{yesterday.year}.jsonl"
+    mock_existing = {
+        "source_file": file_yesterday,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "time": "1000",
+        "source_url": f"https://stenogrammid.riigikogu.ee/et/{code_yesterday}#PKP-1",
+        "text": "Eilne kõne",
+        "status": "EDITED",
+    }
+    y_file.write_text(json.dumps(mock_existing) + "\n", encoding="utf-8")
+
+    code_missing_20d = f"{twenty_days_ago.strftime('%Y%m%d')}1400"
+    fetched_meeting_codes = []
+
+    all_verbatims = [
+        {
+            "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
+            "title": "Eilne istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+        },
+        {
+            "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
+            "title": "20 päeva vana puuduv istung",
+            "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+        },
+    ]
+
+    class MockResp:
+        def __init__(self, url, params=None):
+            self.url = url
+            self.params = params or {}
+            self.status_code = 200
+
+        def json(self):
+            if "meeting" in self.url:
+                code = self.url.rstrip("/").split("/")[-1]
+                fetched_meeting_codes.append(code)
+                return {"meetingStatus": "EDITED", "stenograph": {"agendaItems": []}}
+            start = self.params.get("startDate")
+            end = self.params.get("endDate")
+            filtered = []
+            for item in all_verbatims:
+                d = item["date"][:10]
+                if start and d < start:
+                    continue
+                if end and d > end:
+                    continue
+                filtered.append(item)
+            return filtered
+
+    monkeypatch.setattr(
+        requests, "get", lambda url, *args, **kwargs: MockResp(url, kwargs.get("params"))
+    )
+    monkeypatch.setattr("time.sleep", lambda *args: None)
+
+    # Call with explicit start_date: 60-day check MUST NOT run
+    ok = fetch_and_process_stenograms(start_date=yesterday.strftime("%Y-%m-%d"))
+    assert ok is True
+    assert code_missing_20d not in fetched_meeting_codes
 
 
 def test_fetch_stenograms_skips_ignored_verbatim(tmp_path, monkeypatch):
