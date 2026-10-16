@@ -2443,3 +2443,110 @@ def test_fetch_stenograms_skips_ignored_verbatim(tmp_path, monkeypatch):
     ok = fetch_and_process_stenograms()
     assert ok is True
     assert ignored_code not in fetched_codes
+
+
+def test_compute_capped_duration_seconds():
+    from src.load.loader import compute_capped_duration_seconds
+
+    # 1. Overlapping end time is capped at next speech start
+    dur_overlapping = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:00:00.000+02:00",
+        end_time_str="2026-10-15T10:15:00.000+02:00",
+        next_start_time_str="2026-10-15T10:05:00.000+02:00",
+    )
+    assert dur_overlapping == 300  # 5 minutes, not 15
+
+    # 2. Last speech (no next start time) is unchanged
+    dur_last = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:05:00.000+02:00",
+        end_time_str="2026-10-15T10:20:00.000+02:00",
+        next_start_time_str=None,
+    )
+    assert dur_last == 900  # 15 minutes
+
+    # 3. Next speech starting earlier (inverted start time) changes nothing
+    dur_inverted = compute_capped_duration_seconds(
+        start_time_str="2026-10-15T10:10:00.000+02:00",
+        end_time_str="2026-10-15T10:15:00.000+02:00",
+        next_start_time_str="2026-10-15T10:05:00.000+02:00",
+    )
+    assert dur_inverted == 300  # end_time - start_time
+
+    # 4. Missing start or end returns None
+    assert compute_capped_duration_seconds(None, "2026-10-15T10:15:00") is None
+    assert compute_capped_duration_seconds("2026-10-15T10:10:00", None) is None
+
+
+def test_recompute_durations_dry_run_and_apply_idempotent(tmp_path, monkeypatch):
+    from scripts.recompute_durations import recompute_durations
+    from src.load.database import SessionLocal
+    from src.load.loader import create_tables
+    from src.load.models import Speech
+
+    create_tables()
+    session = SessionLocal()
+
+    # Clean existing speeches
+    session.query(Speech).filter(Speech.source_file == "test_session_dur.api").delete()
+    session.commit()
+
+    sp1 = Speech(
+        date="2026-10-15",
+        time="1000",
+        source_file="test_session_dur.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/123#PKP-1",
+        speaker="Kõneleja Üks",
+        start_time="2026-10-15T10:00:00.000+02:00",
+        end_time="2026-10-15T10:30:00.000+02:00",
+        duration_seconds=1800,  # Uncapped: 30 minutes
+        text="Esimene pikk kõne",
+    )
+    sp2 = Speech(
+        date="2026-10-15",
+        time="1005",
+        source_file="test_session_dur.api",
+        source_url="https://stenogrammid.riigikogu.ee/et/123#PKP-2",
+        speaker="Kõneleja Kaks",
+        start_time="2026-10-15T10:05:00.000+02:00",
+        end_time="2026-10-15T10:15:00.000+02:00",
+        duration_seconds=600,  # 10 minutes
+        text="Teine kõne",
+    )
+    session.add_all([sp1, sp2])
+    session.commit()
+    sp1_id = sp1.id
+    sp2_id = sp2.id
+    session.close()
+
+    try:
+        # 1. Dry run: finds 1 modified row, but database is NOT modified
+        stats_dry = recompute_durations(apply=False)
+        assert stats_dry["modified_rows"] == 1
+        assert len(stats_dry["top_10"]) == 1
+        assert stats_dry["top_10"][0]["diff"] == 1500  # 1800 -> 300
+
+        check_s = SessionLocal()
+        db_sp1 = check_s.query(Speech).filter(Speech.id == sp1_id).first()
+        assert db_sp1.duration_seconds == 1800  # Still old value in DB!
+        check_s.close()
+
+        # 2. Apply: updates database
+        stats_apply = recompute_durations(apply=True)
+        assert stats_apply["modified_rows"] == 1
+
+        check_s = SessionLocal()
+        db_sp1 = check_s.query(Speech).filter(Speech.id == sp1_id).first()
+        assert db_sp1.duration_seconds == 300  # Capped at 10:05!
+        db_sp2 = check_s.query(Speech).filter(Speech.id == sp2_id).first()
+        assert db_sp2.duration_seconds == 600  # Last speech unchanged!
+        check_s.close()
+
+        # 3. Repeat apply: idempotent (0 modified rows)
+        stats_repeat = recompute_durations(apply=True)
+        assert stats_repeat["modified_rows"] == 0
+
+    finally:
+        clean_s = SessionLocal()
+        clean_s.query(Speech).filter(Speech.source_file == "test_session_dur.api").delete()
+        clean_s.commit()
+        clean_s.close()

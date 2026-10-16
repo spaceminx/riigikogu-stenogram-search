@@ -15,6 +15,7 @@ from scripts.download_from_b2 import download_from_b2
 from src.load.database import SessionLocal
 from src.load.indexes import create_indexes
 from src.load.loader import (
+    apply_capped_durations_to_session_speeches,
     create_tables,
     load_attendance_to_database,
     load_persons_to_database,
@@ -149,6 +150,7 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                         sp_obj._prev_keys = data.get("previous_speech_keys", [])
                         new_speech_objects.append(sp_obj)
 
+                    apply_capped_durations_to_session_speeches(new_speech_objects)
                     session.add_all(new_speech_objects)
                     session.flush()
 

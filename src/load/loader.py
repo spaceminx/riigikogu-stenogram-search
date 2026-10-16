@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import text
@@ -18,6 +19,79 @@ from src.load.models import (
     Vote,
     Voting,
 )
+
+
+def compute_capped_duration_seconds(
+    start_time_str: str | None,
+    end_time_str: str | None,
+    next_start_time_str: str | None = None,
+) -> int | None:
+    """Calculate duration in seconds capped by next speech start time.
+
+    Rule:
+    duration = min(end_time, next_speech.start_time) - start_time.
+    If no next speech or next speech starts earlier than this speech: end_time - start_time.
+    If start_time or end_time is missing: None.
+    """
+    if not start_time_str or not end_time_str:
+        return None
+    try:
+        dt_start = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
+        dt_end = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+    effective_end = dt_end
+    if next_start_time_str:
+        try:
+            dt_next_start = datetime.fromisoformat(next_start_time_str.replace("Z", "+00:00"))
+            if dt_next_start >= dt_start:
+                effective_end = min(dt_end, dt_next_start)
+        except Exception:
+            pass
+
+    return max(0, round((effective_end - dt_start).total_seconds()))
+
+
+def apply_capped_durations_to_session_speeches(speeches: list) -> None:
+    """Sort speeches in a session by start_time and calculate capped duration_seconds."""
+    if not speeches:
+        return
+
+    def get_attr(obj, attr):
+        if isinstance(obj, dict):
+            return obj.get(attr)
+        return getattr(obj, attr, None)
+
+    def set_attr(obj, attr, val):
+        if isinstance(obj, dict):
+            obj[attr] = val
+        else:
+            setattr(obj, attr, val)
+
+    indexed = list(enumerate(speeches))
+    indexed.sort(
+        key=lambda item: (
+            get_attr(item[1], "start_time") is None,
+            get_attr(item[1], "start_time") or "",
+            item[0],
+        )
+    )
+
+    for i, (_, cur_sp) in enumerate(indexed):
+        cur_start = get_attr(cur_sp, "start_time")
+        cur_end = get_attr(cur_sp, "end_time")
+        if not cur_start or not cur_end:
+            set_attr(cur_sp, "duration_seconds", None)
+            continue
+
+        next_start = None
+        if i + 1 < len(indexed):
+            next_sp = indexed[i + 1][1]
+            next_start = get_attr(next_sp, "start_time")
+
+        dur = compute_capped_duration_seconds(cur_start, cur_end, next_start)
+        set_attr(cur_sp, "duration_seconds", dur)
 
 
 def ensure_schema(target_engine=None) -> None:
@@ -386,6 +460,7 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
                         continue
 
             for src_file, speeches_list in speeches_by_session.items():
+                apply_capped_durations_to_session_speeches(speeches_list)
                 try:
                     if src_file in unedited_db_files:
                         old_ids = [
