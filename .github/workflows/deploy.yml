@@ -45,21 +45,15 @@ jobs:
           MAX_WAIT=2700
           WAITED=0
           INTERVAL=30
+          STALE_THRESHOLD=10800
 
           while [ -f "$LOCK_FILE" ]; do
-            IS_STALE=$(python3 -c "
-          import os, time, sys
-          try:
-              mtime = os.path.getmtime(sys.argv[1])
-              print('yes' if time.time() - mtime >= 10800 else 'no')
-          except FileNotFoundError:
-              print('yes')
-          except Exception:
-              print('no')
-          " "$LOCK_FILE")
+            NOW=$(date +%s)
+            LOCK_MTIME=$(stat -c %Y "$LOCK_FILE" 2>/dev/null || stat -f %m "$LOCK_FILE" 2>/dev/null || echo "$NOW")
+            LOCK_AGE=$((NOW - LOCK_MTIME))
 
-            if [ "$IS_STALE" = "yes" ]; then
-              echo "Notice: Stale lock file found (>3h old). Proceeding with deploy."
+            if [ "$LOCK_AGE" -ge "$STALE_THRESHOLD" ]; then
+              echo "Notice: Stale lock file found (${LOCK_AGE}s >= ${STALE_THRESHOLD}s). Proceeding with deploy."
               break
             fi
 
