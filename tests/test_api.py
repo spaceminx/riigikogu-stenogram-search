@@ -395,10 +395,16 @@ def test_search_export():
     assert res_csv.status_code == 200
     assert "text/csv" in res_csv.headers["content-type"]
     assert "attachment" in res_csv.headers["content-disposition"]
+    assert res_csv.headers["X-License"] == "CC BY-SA 3.0"
 
-    # Verify CSV header and row content
+    # Verify CSV first line comment, header and row content
     csv_text = res_csv.content.decode("utf-8-sig")
-    reader = list(csv.reader(io.StringIO(csv_text)))
+    lines = csv_text.splitlines()
+    assert (
+        lines[0]
+        == "# Allikas: Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me. Litsents: CC BY-SA 3.0"
+    )
+    reader = list(csv.reader(io.StringIO("\n".join(lines[1:]))))
     assert len(reader) >= 1
     header = reader[0]
     expected_header = [
@@ -428,10 +434,15 @@ def test_search_export():
     res_json = client.get("/search/export?q=kliimamuutus&format=json")
     assert res_json.status_code == 200
     assert "application/json" in res_json.headers["content-type"]
+    assert res_json.headers["X-License"] == "CC BY-SA 3.0"
     json_data = res_json.json()
-    if json_data:
-        assert "external_id" in json_data[0]
-        assert "speaker_uuid" in json_data[0]
+    assert json_data["source"] == "Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me"
+    assert json_data["license"] == "CC BY-SA 3.0"
+    assert json_data["license_url"] == "https://creativecommons.org/licenses/by-sa/3.0/"
+    results = json_data["results"]
+    if results:
+        assert "external_id" in results[0]
+        assert "speaker_uuid" in results[0]
 
     # Test invalid format
     res_inv = client.get("/search/export?q=kliimamuutus&format=xml")
@@ -1795,8 +1806,9 @@ def test_same_name_different_persons_uuid_filter_and_endpoints():
     # /search/export with speaker_uuid
     res_exp1 = client.get(f"/search/export?q={lemma_val}&speaker_uuid={u1}&format=json")
     assert res_exp1.status_code == 200
-    assert len(res_exp1.json()) == 1
-    assert res_exp1.json()[0]["speaker_uuid"] == u1
+    assert res_exp1.headers["X-License"] == "CC BY-SA 3.0"
+    assert len(res_exp1.json()["results"]) == 1
+    assert res_exp1.json()["results"][0]["speaker_uuid"] == u1
 
     # /persons/{uuid}/speeches
     res_psp1 = client.get(f"/persons/{u1}/speeches")
