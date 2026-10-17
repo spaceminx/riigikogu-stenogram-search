@@ -1,6 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { formatFactionName, formatMetricRatio, formatVoteSplit } from "../lib/formatters";
+import {
+  formatFactionName,
+  formatMetricRatio,
+  formatVoteSplit,
+  isSmallSample,
+} from "../lib/formatters";
 
 export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort }) {
   const getSortIndicator = (key) => {
@@ -64,68 +69,137 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                 {getSortIndicator("votes_voted_pct")}
               </button>
             </th>
+            <th scope="col" className="att-col-combined">
+              <div className="att-mobile-header-sorts">
+                <button
+                  type="button"
+                  className={`att-sort-btn ${sortConfig.key === "votes_voted_pct" ? "is-active" : ""}`}
+                  onClick={() => requestSort("votes_voted_pct")}
+                  aria-sort={getAriaSort("votes_voted_pct")}
+                >
+                  Hääletustel {getSortIndicator("votes_voted_pct")}
+                </button>
+                <span className="att-mobile-sort-sep">·</span>
+                <button
+                  type="button"
+                  className={`att-sort-btn ${sortConfig.key === "registered_pct" ? "is-active" : ""}`}
+                  onClick={() => requestSort("registered_pct")}
+                  aria-sort={getAriaSort("registered_pct")}
+                >
+                  Kontrollides {getSortIndicator("registered_pct")}
+                </button>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
           {sortedStats.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+              <td colSpan={6} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
                 Valitud filtritele vastavaid saadikuid ei leitud.
               </td>
             </tr>
           ) : (
-            sortedStats.map((stat, idx) => (
-              <tr key={stat.member_uuid || idx}>
-                <td className="att-col-rank">{idx + 1}</td>
-                <td className="att-col-name">
-                  {stat.member_uuid ? (
-                    <Link
-                      to={`/saadik/${encodeURIComponent(stat.member_uuid)}`}
-                      className="speaker-name-link"
+            sortedStats.map((stat, idx) => {
+              const checksTotal = stat.total_checks ?? stat.total_sessions ?? 0;
+              const isChecksSmall = checksTotal < 20;
+              const votesTotal = stat.votes_total ?? 0;
+              const isVotesSmall = votesTotal < 50;
+              const isRowSmall = isSmallSample(stat, sortConfig.key);
+
+              return (
+                <tr
+                  key={stat.member_uuid || idx}
+                  className={isRowSmall ? "att-row-small-sample" : ""}
+                >
+                  <td className="att-col-rank">{idx + 1}</td>
+                  <td className="att-col-name">
+                    {stat.member_uuid ? (
+                      <Link
+                        to={`/saadik/${encodeURIComponent(stat.member_uuid)}`}
+                        className="speaker-name-link"
+                      >
+                        {stat.member_name}
+                      </Link>
+                    ) : (
+                      stat.member_name
+                    )}
+                    {stat.faction && (
+                      <div className="att-mobile-faction-badge">
+                        <span className="faction-badge" title={stat.faction}>
+                          {formatFactionName(stat.faction)}
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="att-col-faction">
+                    <span className="faction-badge" title={stat.faction}>
+                      {formatFactionName(stat.faction)}
+                    </span>
+                  </td>
+                  <td className="att-col-registered">
+                    <div
+                      className={`att-metric-cell ${isChecksSmall ? "att-metric-small-sample" : ""}`}
                     >
-                      {stat.member_name}
-                    </Link>
-                  ) : (
-                    stat.member_name
-                  )}
-                  {stat.faction && (
-                    <div className="att-mobile-faction-badge">
-                      <span className="faction-badge" title={stat.faction}>
-                        {formatFactionName(stat.faction)}
+                      <span className="att-metric-main">
+                        {formatMetricRatio(
+                          stat.registered_pct,
+                          stat.registered_checks ?? stat.present_sessions,
+                          checksTotal
+                        )}
+                        {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
                       </span>
                     </div>
-                  )}
-                </td>
-                <td className="att-col-faction">
-                  <span className="faction-badge" title={stat.faction}>
-                    {formatFactionName(stat.faction)}
-                  </span>
-                </td>
-                <td className="att-col-registered">
-                  <div className="att-metric-cell">
-                    <span className="att-metric-main">
-                      {formatMetricRatio(
-                        stat.registered_pct,
-                        stat.registered_checks ?? stat.present_sessions,
-                        stat.total_checks ?? stat.total_sessions
-                      )}
-                    </span>
-                  </div>
-                </td>
-                <td className="att-col-votes">
-                  <div className="att-metric-cell">
-                    <span className="att-metric-main">
-                      {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, stat.votes_total)}
-                    </span>
-                    {stat.votes_total > 0 && (
-                      <span className="att-metric-subtext">
-                        {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, stat.votes_total)}
+                  </td>
+                  <td className="att-col-votes">
+                    <div
+                      className={`att-metric-cell ${isVotesSmall ? "att-metric-small-sample" : ""}`}
+                    >
+                      <span className="att-metric-main">
+                        {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
+                        {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
                       </span>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))
+                      {votesTotal > 0 && (
+                        <span className="att-metric-subtext">
+                          {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="att-col-combined">
+                    <div className="att-mobile-stacked-cell">
+                      <div
+                        className={`att-mobile-metric-row ${isVotesSmall ? "att-metric-small-sample" : ""}`}
+                      >
+                        <span className="att-mobile-metric-label">Hääletustel:</span>{" "}
+                        <span className="att-mobile-metric-val">
+                          {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
+                          {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
+                        </span>
+                      </div>
+                      {votesTotal > 0 && (
+                        <div className="att-metric-subtext att-mobile-subtext">
+                          {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
+                        </div>
+                      )}
+                      <div
+                        className={`att-mobile-metric-row ${isChecksSmall ? "att-metric-small-sample" : ""}`}
+                      >
+                        <span className="att-mobile-metric-label">Kontrollides:</span>{" "}
+                        <span className="att-mobile-metric-val">
+                          {formatMetricRatio(
+                            stat.registered_pct,
+                            stat.registered_checks ?? stat.present_sessions,
+                            checksTotal
+                          )}
+                          {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>

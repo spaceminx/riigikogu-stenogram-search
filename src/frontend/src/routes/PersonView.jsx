@@ -21,7 +21,7 @@ import {
   fetchSpeechContext,
 } from "../lib/api";
 import { formatDate } from "../lib/calendarUtils";
-import { formatVoteSplit, toRoman } from "../lib/formatters";
+import { formatPercent, formatVoteSplit, toRoman } from "../lib/formatters";
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
@@ -382,7 +382,7 @@ export function PersonView({ theme = "light" }) {
   if (attendanceLoading) {
     formattedAttendance = "…";
   } else if (attendance && !attendanceError && attendance.total_sessions > 0) {
-    formattedAttendance = `${attendance.attendance_percentage}%`;
+    formattedAttendance = formatPercent(attendance.attendance_percentage);
   }
 
   let formattedVotes = "—";
@@ -394,7 +394,7 @@ export function PersonView({ theme = "light" }) {
     attendance.votes?.total > 0 &&
     attendance.votes.voted_pct != null
   ) {
-    formattedVotes = `${attendance.votes.voted_pct}%`;
+    formattedVotes = formatPercent(attendance.votes.voted_pct);
   }
 
   const formatFactionPeriod = (start, end) => {
@@ -801,7 +801,7 @@ export function PersonView({ theme = "light" }) {
                     )}
                     <td className="person-stats-col-num">
                       {memAtt && memAtt.total_sessions > 0
-                        ? `${memAtt.attendance_percentage}% (${memAtt.present_sessions}/${memAtt.total_sessions})`
+                        ? `${formatPercent(memAtt.attendance_percentage)} (${memAtt.present_sessions}/${memAtt.total_sessions})`
                         : "—"}
                     </td>
                   </tr>
@@ -861,7 +861,7 @@ export function PersonView({ theme = "light" }) {
             <span className="alignment-main-text">
               Hääletas samamoodi kui fraktsiooni enamus:{" "}
               <strong className="person-metric-value-primary">
-                {factionAlignment.share_same != null ? `${factionAlignment.share_same}%` : "—"}
+                {formatPercent(factionAlignment.share_same)}
               </strong>{" "}
               ({factionAlignment.same} / {factionAlignment.same + factionAlignment.different}{" "}
               hääletust)

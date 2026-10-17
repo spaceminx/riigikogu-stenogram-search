@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { fetchAttendance, fetchFactionAttendance, fetchFactionsList } from "../lib/api";
-import { formatFactionName } from "../lib/formatters";
+import { formatFactionName, sortAttendanceItems } from "../lib/formatters";
 import AttendanceMembersTable from "../components/AttendanceMembersTable";
 import AttendanceFactionsTable from "../components/AttendanceFactionsTable";
 
@@ -109,63 +109,15 @@ export function AttendanceView({
     setSearchParams(next, { replace: true });
   };
 
-  const sortedStats = useMemo(() => {
-    let sortableItems = [...attendanceStats];
-    if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
-        const valA = a[sortConfig.key];
-        const valB = b[sortConfig.key];
+  const sortedStats = useMemo(
+    () => sortAttendanceItems(attendanceStats, sortConfig),
+    [attendanceStats, sortConfig]
+  );
 
-        if (valA == null && valB == null) return 0;
-        if (valA == null) return 1;
-        if (valB == null) return -1;
-
-        if (valA < valB) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (valA > valB) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        if (sortConfig.key === "votes_voted_pct") {
-          return (b.votes_voted ?? 0) - (a.votes_voted ?? 0);
-        }
-        if (sortConfig.key === "registered_pct") {
-          return (b.registered_checks ?? 0) - (a.registered_checks ?? 0);
-        }
-        return (b.present_sessions ?? 0) - (a.present_sessions ?? 0);
-      });
-    }
-    return sortableItems;
-  }, [attendanceStats, sortConfig]);
-
-  const sortedFactionStats = useMemo(() => {
-    let sortableItems = [...factionStats];
-    if (factionSortConfig.key) {
-      sortableItems.sort((a, b) => {
-        const valA = a[factionSortConfig.key];
-        const valB = b[factionSortConfig.key];
-
-        if (valA == null && valB == null) return 0;
-        if (valA == null) return 1;
-        if (valB == null) return -1;
-
-        if (valA < valB) {
-          return factionSortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (valA > valB) {
-          return factionSortConfig.direction === "ascending" ? 1 : -1;
-        }
-        if (factionSortConfig.key === "votes_voted_pct") {
-          return (b.votes_voted ?? 0) - (a.votes_voted ?? 0);
-        }
-        if (factionSortConfig.key === "registered_pct") {
-          return (b.registered_checks ?? 0) - (a.registered_checks ?? 0);
-        }
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [factionStats, factionSortConfig]);
+  const sortedFactionStats = useMemo(
+    () => sortAttendanceItems(factionStats, factionSortConfig),
+    [factionStats, factionSortConfig]
+  );
 
   if (membershipsLoading && (!memberships || memberships.length === 0)) {
     return (

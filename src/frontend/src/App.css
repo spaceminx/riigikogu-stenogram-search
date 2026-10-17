@@ -712,6 +712,33 @@
   font-variant-numeric: tabular-nums;
 }
 
+.att-col-combined {
+  display: none;
+}
+
+.att-sample-note {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.att-metric-small-sample {
+  opacity: 0.75;
+}
+
+.att-metric-small-sample .att-metric-main {
+  color: var(--color-text-muted, #64748b);
+  font-weight: 500;
+}
+
+.att-row-small-sample {
+  opacity: 0.8;
+}
+
 .attendance-page-intro {
   margin: 0 0 1.25rem 0;
   font-size: 0.9rem;
@@ -866,6 +893,23 @@ html[data-theme="dark"] .att-metric-subtext {
   color: #94a3b8;
 }
 
+html[data-theme="dark"] .att-sample-note {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .att-metric-small-sample .att-metric-main {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .att-mobile-metric-label,
+html[data-theme="dark"] .att-mobile-subtext {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .att-mobile-metric-val {
+  color: #f1f5f9;
+}
+
 html[data-theme="dark"] .attendance-page-intro {
   color: #94a3b8;
 }
@@ -900,11 +944,75 @@ html[data-theme="dark"] .faction-badge {
   display: inline;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 640px) {
   .att-col-faction,
   .att-col-count,
-  .att-col-total {
-    display: none;
+  .att-col-total,
+  .att-col-registered,
+  .att-col-votes {
+    display: none !important;
+  }
+
+  .att-col-combined {
+    display: table-cell !important;
+    width: auto;
+    min-width: 0;
+    padding: 0.45rem 0.35rem;
+    vertical-align: middle;
+    text-align: right;
+  }
+
+  th.att-col-combined {
+    text-align: right;
+  }
+
+  .att-mobile-header-sorts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    justify-content: flex-end;
+  }
+
+  .att-mobile-sort-sep {
+    color: var(--color-text-muted, #94a3b8);
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+
+  .att-mobile-stacked-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    line-height: 1.25;
+  }
+
+  .att-mobile-metric-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    justify-content: flex-end;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .att-mobile-metric-label {
+    font-size: 0.72rem;
+    color: var(--color-text-muted, #64748b);
+  }
+
+  .att-mobile-metric-val {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .att-mobile-subtext {
+    font-size: 0.68rem;
+    color: var(--color-text-muted, #64748b);
+    text-align: right;
+    margin-top: -0.05rem;
+    margin-bottom: 0.05rem;
+    white-space: nowrap;
   }
 
   .att-header-text-full {
@@ -968,24 +1076,6 @@ html[data-theme="dark"] .faction-badge {
     width: auto;
     min-width: 48px;
     padding-right: 0.35rem;
-  }
-
-  .att-col-registered,
-  .att-col-votes {
-    width: auto;
-    min-width: 0;
-    font-size: 0.78rem;
-    padding: 0.4rem 0.25rem;
-  }
-
-  .att-metric-main {
-    font-size: 0.78rem;
-    white-space: nowrap;
-  }
-
-  .att-metric-subtext {
-    font-size: 0.68rem;
-    line-height: 1.15;
   }
 
   .att-sort-btn {
