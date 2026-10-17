@@ -402,7 +402,7 @@ def test_search_export():
     lines = csv_text.splitlines()
     assert (
         lines[0]
-        == "# Allikas: Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me. Litsents: CC BY-SA 3.0"
+        == "# Allikas: Riigikogu avaandmed (api.riigikogu.ee) – töödeldud: riigivaade.me – litsents: CC BY-SA 3.0"
     )
     reader = list(csv.reader(io.StringIO("\n".join(lines[1:]))))
     assert len(reader) >= 1

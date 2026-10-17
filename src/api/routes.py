@@ -567,7 +567,7 @@ def search_export(
 
         output = io.StringIO()
         output.write(
-            "# Allikas: Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me. Litsents: CC BY-SA 3.0\n"
+            "# Allikas: Riigikogu avaandmed (api.riigikogu.ee) – töödeldud: riigivaade.me – litsents: CC BY-SA 3.0\n"
         )
         writer = csv.writer(output)
         writer.writerow(
