@@ -216,7 +216,11 @@ function AppContent() {
             <Route
               path="/kohalolek"
               element={
-                <AttendanceView memberships={memberships} membershipsLoading={membershipsLoading} />
+                <AttendanceView
+                  memberships={memberships}
+                  membershipsLoading={membershipsLoading}
+                  onOpenMethodology={() => setShowMethodologyModal(true)}
+                />
               }
             />
             <Route path="/kone/:id" element={<SpeechView />} />

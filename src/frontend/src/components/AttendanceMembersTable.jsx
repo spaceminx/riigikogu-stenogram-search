@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { formatFactionName, getPercentageColor } from "../lib/formatters";
+import { formatFactionName, formatMetricRatio, formatVoteSplit } from "../lib/formatters";
 
 export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort }) {
   const getSortIndicator = (key) => {
@@ -38,35 +38,30 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                 Fraktsioon {getSortIndicator("faction")}
               </button>
             </th>
-            <th scope="col" className="att-col-total" aria-sort={getAriaSort("total_sessions")}>
-              <button
-                type="button"
-                className="att-sort-btn"
-                onClick={() => requestSort("total_sessions")}
-              >
-                Kontrolle {getSortIndicator("total_sessions")}
-              </button>
-            </th>
-            <th scope="col" className="att-col-present" aria-sort={getAriaSort("present_sessions")}>
-              <button
-                type="button"
-                className="att-sort-btn"
-                onClick={() => requestSort("present_sessions")}
-              >
-                Kohal {getSortIndicator("present_sessions")}
-              </button>
-            </th>
             <th
               scope="col"
-              className="att-col-percent"
-              aria-sort={getAriaSort("attendance_percentage")}
+              className="att-col-registered"
+              aria-sort={getAriaSort("registered_pct")}
             >
               <button
                 type="button"
                 className="att-sort-btn"
-                onClick={() => requestSort("attendance_percentage")}
+                onClick={() => requestSort("registered_pct")}
               >
-                % {getSortIndicator("attendance_percentage")}
+                <span className="att-header-text-full">Registreerus kontrollides</span>
+                <span className="att-header-text-short">Kontrollides</span>{" "}
+                {getSortIndicator("registered_pct")}
+              </button>
+            </th>
+            <th scope="col" className="att-col-votes" aria-sort={getAriaSort("votes_voted_pct")}>
+              <button
+                type="button"
+                className="att-sort-btn"
+                onClick={() => requestSort("votes_voted_pct")}
+              >
+                <span className="att-header-text-full">Osales hääletustel</span>
+                <span className="att-header-text-short">Hääletustel</span>{" "}
+                {getSortIndicator("votes_voted_pct")}
               </button>
             </th>
           </tr>
@@ -74,7 +69,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
         <tbody>
           {sortedStats.length === 0 ? (
             <tr>
-              <td colSpan={6} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+              <td colSpan={5} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
                 Valitud filtritele vastavaid saadikuid ei leitud.
               </td>
             </tr>
@@ -106,20 +101,27 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                     {formatFactionName(stat.faction)}
                   </span>
                 </td>
-                <td className="att-col-total">{stat.total_sessions}</td>
-                <td className="att-col-present">{stat.present_sessions}</td>
-                <td className="att-col-percent">
-                  <div className="percent-bar-container">
-                    <div className="percent-bar-bg">
-                      <div
-                        className="percent-bar-fill"
-                        style={{
-                          width: `${stat.attendance_percentage}%`,
-                          backgroundColor: getPercentageColor(stat.attendance_percentage),
-                        }}
-                      />
-                    </div>
-                    <span className="percent-text">{stat.attendance_percentage}%</span>
+                <td className="att-col-registered">
+                  <div className="att-metric-cell">
+                    <span className="att-metric-main">
+                      {formatMetricRatio(
+                        stat.registered_pct,
+                        stat.registered_checks ?? stat.present_sessions,
+                        stat.total_checks ?? stat.total_sessions
+                      )}
+                    </span>
+                  </div>
+                </td>
+                <td className="att-col-votes">
+                  <div className="att-metric-cell">
+                    <span className="att-metric-main">
+                      {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, stat.votes_total)}
+                    </span>
+                    {stat.votes_total > 0 && (
+                      <span className="att-metric-subtext">
+                        {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, stat.votes_total)}
+                      </span>
+                    )}
                   </div>
                 </td>
               </tr>

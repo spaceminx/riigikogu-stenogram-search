@@ -1,8 +1,8 @@
 """Shared voting query and formatting utilities."""
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_, case, func
 
-from src.load.models import Voting
+from src.load.models import SystemMeta, Vote, Voting
 
 
 def is_technical_voting(
@@ -44,3 +44,160 @@ def format_session_source_file(
     except Exception:
         pass
     return None
+
+
+_VOTE_PARTICIPATION_CACHE: dict = {
+    "last_sync_at": None,
+    "members": {},
+    "factions": {},
+}
+
+
+def _get_last_sync_at(session) -> str | None:
+    try:
+        row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+        return row.value if row else None
+    except Exception:
+        return None
+
+
+def clear_vote_participation_cache() -> None:
+    """Clear in-memory cached vote participation data."""
+    _VOTE_PARTICIPATION_CACHE["last_sync_at"] = None
+    _VOTE_PARTICIPATION_CACHE["members"].clear()
+    _VOTE_PARTICIPATION_CACHE["factions"].clear()
+
+
+def _normalize_membership_key(membership: str | int | None) -> str:
+    if membership is None or str(membership).lower() == "all":
+        return "all"
+    return str(membership)
+
+
+def get_member_vote_participation(session, membership: str | int | None = None) -> dict[str, dict]:
+    """Calculate vote participation per member on public, non-technical votings.
+
+    Returns mapping from member_uuid to:
+        {"voted": int, "not_voted": int, "absent": int, "total": int, "voted_pct": float | None}
+    """
+    last_sync = _get_last_sync_at(session)
+    if _VOTE_PARTICIPATION_CACHE["last_sync_at"] != last_sync:
+        _VOTE_PARTICIPATION_CACHE["last_sync_at"] = last_sync
+        _VOTE_PARTICIPATION_CACHE["members"].clear()
+        _VOTE_PARTICIPATION_CACHE["factions"].clear()
+
+    cache_key = _normalize_membership_key(membership)
+    if cache_key in _VOTE_PARTICIPATION_CACHE["members"]:
+        return _VOTE_PARTICIPATION_CACHE["members"][cache_key]
+
+    is_tech_sql = is_technical_voting_clause()
+    query = (
+        session.query(
+            Vote.member_uuid,
+            func.count(Vote.voting_uuid).label("total"),
+            func.sum(case((Vote.decision.in_(["POOLT", "VASTU", "ERAPOOLETU"]), 1), else_=0)).label(
+                "voted"
+            ),
+            func.sum(case((Vote.decision == "EI_HAALETANUD", 1), else_=0)).label("not_voted"),
+            func.sum(case((Vote.decision == "PUUDUB", 1), else_=0)).label("absent"),
+        )
+        .join(Voting, Vote.voting_uuid == Voting.uuid)
+        .filter(
+            Voting.type == "AVALIK",
+            ~is_tech_sql,
+        )
+    )
+
+    if cache_key != "all":
+        try:
+            mem_int = int(cache_key)
+            query = query.filter(Voting.membership == mem_int)
+        except (ValueError, TypeError):
+            pass
+
+    results = query.group_by(Vote.member_uuid).all()
+
+    stats: dict[str, dict] = {}
+    for member_uuid, total, voted, not_voted, absent in results:
+        tot = int(total) if total else 0
+        v = int(voted) if voted else 0
+        nv = int(not_voted) if not_voted else 0
+        ab = int(absent) if absent else 0
+        pct = round((v / tot) * 100.0, 1) if tot > 0 else None
+        stats[member_uuid] = {
+            "voted": v,
+            "not_voted": nv,
+            "absent": ab,
+            "total": tot,
+            "voted_pct": pct,
+        }
+
+    _VOTE_PARTICIPATION_CACHE["members"][cache_key] = stats
+    return stats
+
+
+def get_faction_vote_participation(session, membership: str | int | None = None) -> dict[str, dict]:
+    """Calculate vote participation per faction on public, non-technical votings.
+
+    Faction is determined by per-ballot Vote.faction.
+    Returns mapping from faction name to:
+        {"voted": int, "not_voted": int, "absent": int, "total": int, "voted_pct": float | None}
+    """
+    last_sync = _get_last_sync_at(session)
+    if _VOTE_PARTICIPATION_CACHE["last_sync_at"] != last_sync:
+        _VOTE_PARTICIPATION_CACHE["last_sync_at"] = last_sync
+        _VOTE_PARTICIPATION_CACHE["members"].clear()
+        _VOTE_PARTICIPATION_CACHE["factions"].clear()
+
+    cache_key = _normalize_membership_key(membership)
+    if cache_key in _VOTE_PARTICIPATION_CACHE["factions"]:
+        return _VOTE_PARTICIPATION_CACHE["factions"][cache_key]
+
+    is_tech_sql = is_technical_voting_clause()
+    query = (
+        session.query(
+            Vote.faction,
+            func.count(Vote.voting_uuid).label("total"),
+            func.sum(case((Vote.decision.in_(["POOLT", "VASTU", "ERAPOOLETU"]), 1), else_=0)).label(
+                "voted"
+            ),
+            func.sum(case((Vote.decision == "EI_HAALETANUD", 1), else_=0)).label("not_voted"),
+            func.sum(case((Vote.decision == "PUUDUB", 1), else_=0)).label("absent"),
+        )
+        .join(Voting, Vote.voting_uuid == Voting.uuid)
+        .filter(
+            Voting.type == "AVALIK",
+            ~is_tech_sql,
+            Vote.faction != "",
+            Vote.faction.isnot(None),
+        )
+    )
+
+    if cache_key != "all":
+        try:
+            mem_int = int(cache_key)
+            query = query.filter(Voting.membership == mem_int)
+        except (ValueError, TypeError):
+            pass
+
+    results = query.group_by(Vote.faction).all()
+
+    stats: dict[str, dict] = {}
+    for faction, total, voted, not_voted, absent in results:
+        if not faction:
+            continue
+        tot = int(total) if total else 0
+        v = int(voted) if voted else 0
+        nv = int(not_voted) if not_voted else 0
+        ab = int(absent) if absent else 0
+        pct = round((v / tot) * 100.0, 1) if tot > 0 else None
+        stats[faction] = {
+            "voted": v,
+            "not_voted": nv,
+            "absent": ab,
+            "total": tot,
+            "voted_pct": pct,
+        }
+
+    _VOTE_PARTICIPATION_CACHE["factions"][cache_key] = stats
+    return stats

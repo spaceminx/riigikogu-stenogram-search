@@ -678,6 +678,62 @@
   font-variant-numeric: tabular-nums;
 }
 
+.att-col-registered {
+  width: 20%;
+  min-width: 140px;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+}
+
+.att-col-votes {
+  width: 26%;
+  min-width: 180px;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+}
+
+.att-metric-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.att-metric-main {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.att-metric-subtext {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.attendance-page-intro {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.5;
+}
+
+.attendance-intro-link {
+  background: none;
+  border: none;
+  color: var(--color-primary, #315b84);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  display: inline;
+}
+
+.attendance-intro-link:hover {
+  text-decoration: none;
+}
+
 .att-col-percent {
   width: 26%;
   min-width: 180px;
@@ -800,6 +856,24 @@ html[data-theme="dark"] .att-col-present {
   color: #cbd5e1;
 }
 
+html[data-theme="dark"] .att-col-registered,
+html[data-theme="dark"] .att-col-votes,
+html[data-theme="dark"] .att-metric-main {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .att-metric-subtext {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .attendance-page-intro {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .attendance-intro-link {
+  color: #93c5fd;
+}
+
 html[data-theme="dark"] .percent-text {
   color: #cbd5e1;
 }
@@ -894,6 +968,24 @@ html[data-theme="dark"] .faction-badge {
     width: auto;
     min-width: 48px;
     padding-right: 0.35rem;
+  }
+
+  .att-col-registered,
+  .att-col-votes {
+    width: auto;
+    min-width: 0;
+    font-size: 0.78rem;
+    padding: 0.4rem 0.25rem;
+  }
+
+  .att-metric-main {
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .att-metric-subtext {
+    font-size: 0.68rem;
+    line-height: 1.15;
   }
 
   .att-sort-btn {
@@ -5958,7 +6050,7 @@ html[data-theme="light"] .methodology-warning {
 
 .person-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 }
 
@@ -5992,6 +6084,14 @@ html[data-theme="light"] .methodology-warning {
   font-size: 0.8rem;
   color: var(--color-text-muted, #64748b);
   text-align: left;
+}
+
+.person-metric-subline {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #64748b);
+  margin-top: 0.2rem;
+  line-height: 1.2;
 }
 
 .person-other-roles {

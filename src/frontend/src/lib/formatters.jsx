@@ -286,3 +286,4 @@ export function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 3
 
 export { toRoman } from "./toRoman.js";
 export { parseQueryToGroups, mergeInputToGroups, serializeGroupsToQuery } from "./queryHelpers.js";
+export { formatMetricRatio, formatVoteSplit } from "./attendanceFormatters.js";
