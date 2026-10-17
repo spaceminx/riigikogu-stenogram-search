@@ -1,7 +1,15 @@
+"""Database indexes and redundant index cleanup.
+
+Indexes stay outside migrations on purpose: build_full_database creates them
+after bulk loading data for speed. create_indexes() is idempotent, with
+INDEXES and REDUNDANT_INDEXES acting as the single source of truth for all
+database indexes.
+"""
+
 from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from src.load.database import engine
-from src.load.loader import ensure_schema
 
 REDUNDANT_INDEXES = [
     "DROP INDEX IF EXISTS idx_lemmas_lemma",
@@ -44,10 +52,10 @@ INDEXES = [
 ]
 
 
-def create_indexes() -> None:
+def create_indexes(target_engine: Engine | None = None) -> None:
     """Create SQLite database indexes for fast keyword search and speaker lookups."""
-    ensure_schema()
-    with engine.connect() as conn:
+    eng = target_engine or engine
+    with eng.connect() as conn:
         for drop_sql in REDUNDANT_INDEXES:
             conn.execute(text(drop_sql))
         for index in INDEXES:
