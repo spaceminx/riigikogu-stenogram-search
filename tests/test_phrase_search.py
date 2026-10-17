@@ -269,7 +269,8 @@ def test_speakers_honour_phrase():
 def test_export_honours_phrase():
     resp = client.get('/search/export?q="riigi eelarve"&format=json')
     assert resp.status_code == 200
-    results = resp.json()
+    assert resp.headers["X-License"] == "CC BY-SA 3.0"
+    results = resp.json()["results"]
     ids = {r["id"] for r in results}
     assert ids == {101, 107}
     assert resp.headers["X-Total-Count"] == "2"

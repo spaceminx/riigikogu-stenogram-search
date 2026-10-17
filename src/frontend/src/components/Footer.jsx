@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export function Footer({ onOpenMethodology }) {
   return (
@@ -7,12 +8,21 @@ export function Footer({ onOpenMethodology }) {
       style={{
         textAlign: "center",
         padding: "2rem 1rem",
-        color: "var(--color-text-muted, #94a3b8)",
+        color: "var(--text-secondary)",
         fontSize: "0.85rem",
       }}
     >
       <p style={{ margin: "0.25rem 0" }}>
-        Riigikogu stenogrammid ja avaandmed ·{" "}
+        <Link
+          to="/andmed"
+          style={{
+            color: "inherit",
+            textDecoration: "underline",
+          }}
+        >
+          Andmed ja privaatsus
+        </Link>
+        {" · "}
         <button
           type="button"
           onClick={onOpenMethodology}
@@ -29,6 +39,7 @@ export function Footer({ onOpenMethodology }) {
           Andmed ja metoodika
         </button>
       </p>
+      <p style={{ margin: "0.25rem 0" }}>Andmed: Riigikogu, CC BY-SA</p>
     </footer>
   );
 }

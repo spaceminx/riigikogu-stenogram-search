@@ -244,7 +244,7 @@ API documentation is available at:
   - `GET /search?q={query}` — Full-text keyword search across speeches (filters: `speaker_uuid`, `membership`, `faction`, `start_date`, `end_date`, `exclude_chair`, `speech_category`).
   - `GET /search/activity?q={query}` — Keyword frequency grouped by day, week, or month (supports `speaker_uuid`).
   - `GET /search/speakers?q={query}` — Most active speakers for a topic (supports `speaker_uuid`).
-  - `GET /search/export?q={query}&format={csv|json}` — Export search results in CSV or JSON (supports `speaker_uuid`).
+  - `GET /search/export?q={query}&format={csv|json}` — Export search results in CSV or JSON (supports `speaker_uuid`; includes CC BY-SA 3.0 license metadata and `X-License` header).
 - **MP Profiles & Statistics:**
   - `GET /persons` — List parliament members with optional name search and active status filter.
   - `GET /persons/{uuid}` — Individual MP profile, metadata, and faction history.

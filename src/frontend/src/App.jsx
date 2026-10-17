@@ -28,6 +28,7 @@ import SessionView from "./routes/SessionView";
 import AttendanceView from "./routes/AttendanceView";
 import SpeechView from "./routes/SpeechView";
 import PersonView from "./routes/PersonView";
+import PrivacyView from "./routes/PrivacyView";
 import NotFoundView from "./routes/NotFoundView";
 import "./App.css";
 
@@ -73,6 +74,8 @@ function PageTitlebar({ memberships = [] }) {
   let title = "Kõnede analüüs";
   if (pathname.startsWith("/kohalolek")) {
     title = "Kohaloleku andmed";
+  } else if (pathname.startsWith("/andmed")) {
+    title = "Andmed ja privaatsus";
   } else if (pathname.startsWith("/otsing")) {
     title = "Otsingutulemused";
   } else if (pathname.startsWith("/istung")) {
@@ -225,6 +228,10 @@ function AppContent() {
             />
             <Route path="/kone/:id" element={<SpeechView />} />
             <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
+            <Route
+              path="/andmed"
+              element={<PrivacyView onOpenMethodology={() => setShowMethodologyModal(true)} />}
+            />
             <Route path="*" element={<NotFoundView />} />
           </Routes>
         </ErrorBoundary>
