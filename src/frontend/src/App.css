@@ -6182,13 +6182,17 @@ html[data-theme="dark"] .person-stats-table tbody tr:hover {
 .alignment-diff-card {
   padding: 0.9rem 1.1rem;
   border-radius: 8px;
-  border: 1px solid var(--panel-border);
+  border: 1px solid #35445b;
   background: rgba(255, 255, 255, 0.04);
 }
 
 html[data-theme="light"] .alignment-diff-card {
   background: rgba(248, 250, 252, 0.8);
   border-color: rgba(203, 213, 225, 0.8);
+}
+
+html[data-theme="dark"] .alignment-diff-card {
+  border-color: #35445b;
 }
 
 .alignment-diff-header {
@@ -6215,6 +6219,14 @@ html[data-theme="light"] .alignment-diff-card {
 
 .alignment-session-link:hover {
   text-decoration: underline;
+}
+
+html[data-theme="dark"] .alignment-session-link {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .alignment-session-link:hover {
+  color: #bfdbfe;
 }
 
 .alignment-diff-desc {
