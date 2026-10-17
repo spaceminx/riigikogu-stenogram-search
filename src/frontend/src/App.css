@@ -2685,7 +2685,9 @@ select:focus-visible {
     font-size: 15px;
   }
   .search-hint {
-    display: none;
+    display: block;
+    font-size: 10.5px;
+    line-height: 1.35;
   }
   .search-controls {
     flex-direction: row;
@@ -6120,6 +6122,13 @@ html[data-theme="light"] .methodology-warning {
   border-radius: 12px;
   border: 1px solid var(--panel-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.person-photo-caption {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #64748b);
+  text-align: center;
+  margin-top: 0.35rem;
 }
 
 .person-photo-placeholder {

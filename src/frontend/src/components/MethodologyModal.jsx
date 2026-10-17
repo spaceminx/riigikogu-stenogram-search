@@ -105,7 +105,7 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
             </p>
             <p>
               {systemStatus?.methodology?.search ||
-                'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Jutumärkides fraas leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).'}
+                'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).'}
             </p>
           </div>
 
