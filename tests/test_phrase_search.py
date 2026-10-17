@@ -290,3 +290,42 @@ def test_matched_words_contains_phrase_substring_not_standalone():
     # must NOT have standalone "riigi" or "eelarvest"
     assert "riigi" not in res101["matched_words"]
     assert "eelarvest" not in res101["matched_words"]
+
+
+def test_phrase_search_fast_path_instr_matches_regex_fallback():
+    from sqlalchemy import func
+
+    from src.api.search import QueryPhrase, build_phrase_filter_clause, parse_query_groups
+
+    session = SessionLocal()
+    try:
+        phrases_to_test = [
+            '"riigi eelarve"',
+            '"Eesti 200"',
+            '"Rail Baltic"',
+            '"suured kärped"',
+            '"tundmatu fraas"',
+        ]
+        for query_str in phrases_to_test:
+            groups = parse_query_groups(query_str)
+            phrase = groups[0].phrases[0]
+
+            fast_cond = build_phrase_filter_clause(phrase, Speech.text_lemmas)
+            fallback_cond = func.phrase_match(Speech.text_lemmas, phrase.pattern)
+
+            ids_fast = {r[0] for r in session.query(Speech.id).filter(fast_cond).all()}
+            ids_fallback = {r[0] for r in session.query(Speech.id).filter(fallback_cond).all()}
+
+            assert ids_fast == ids_fallback
+            if query_str != '"tundmatu fraas"':
+                assert len(ids_fast) > 0
+
+        # Also test phrase with product > 16 falls back to phrase_match
+        big_phrase = QueryPhrase(
+            positions=[{"a", "b"}, {"c", "d"}, {"e", "f"}, {"g", "h"}, {"i", "j"}],
+            pattern="(?:^| )(a|b) (c|d) (e|f) (g|h) (i|j)(?: |$)",
+        )
+        clause = build_phrase_filter_clause(big_phrase, Speech.text_lemmas)
+        assert "phrase_match" in str(clause)
+    finally:
+        session.close()

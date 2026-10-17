@@ -1,5 +1,7 @@
 import functools
+import itertools
 import logging
+import math
 import re
 import time
 from datetime import datetime, timedelta
@@ -7,7 +9,7 @@ from datetime import datetime, timedelta
 from estnltk import Text
 from estnltk.vabamorf.morf import Vabamorf
 from fastapi import HTTPException
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, literal, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
@@ -372,6 +374,22 @@ def _build_phrase_pattern(positions: list[set[str]]) -> str:
     return f"(?:^| ){' '.join(parts)}(?: |$)"
 
 
+def build_phrase_filter_clause(phrase: QueryPhrase, text_col=Speech.text_lemmas):
+    """Build SQL filter condition for a phrase using instr() fast path or phrase_match regex fallback.
+
+    When the product of alternatives across phrase positions is <= 16, build the condition as:
+    OR(instr(' ' || text_lemmas || ' ', ' alt1 alt2 … ') > 0) over all combinations,
+    and fall back to phrase_match only above that limit.
+    """
+    product = math.prod(len(pos) for pos in phrase.positions)
+    if product <= 16:
+        combos = list(itertools.product(*[sorted(pos) for pos in phrase.positions]))
+        haystack = literal(" ").concat(text_col).concat(literal(" "))
+        instr_conds = [func.instr(haystack, f" {' '.join(c)} ") > 0 for c in combos]
+        return or_(*instr_conds) if len(instr_conds) > 1 else instr_conds[0]
+    return func.phrase_match(text_col, phrase.pattern)
+
+
 def _split_group_phrases_and_words(group_str: str) -> tuple[list[str], str]:
     """Split a comma group into quoted phrase strings and unquoted remainder.
 
@@ -573,7 +591,7 @@ def build_matching_conditions(session, groups: list) -> list:
             conds.append(Speech.id.in_(select(cand_col)))
 
         for p in getattr(group, "phrases", []):
-            conds.append(func.phrase_match(Speech.text_lemmas, p.pattern))
+            conds.append(build_phrase_filter_clause(p, Speech.text_lemmas))
 
         if conds:
             if len(conds) == 1:
