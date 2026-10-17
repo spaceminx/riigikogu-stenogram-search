@@ -33,22 +33,29 @@ export function PrivacyView({ onOpenMethodology }) {
         <div
           style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}
         >
-          <ShieldCheck size={28} color="var(--color-primary, #3b82f6)" />
+          <ShieldCheck size={28} color="var(--accent-primary)" />
           <h1 style={{ margin: 0, fontSize: "1.75rem" }}>Andmed ja privaatsus</h1>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem", lineHeight: 1.6 }}>
           <section>
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Kes haldab</h2>
-            <p style={{ margin: 0, color: "var(--color-text-secondary, #94a3b8)" }}>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Riigivaate veebilehte haldab {CONTROLLER_NAME}. Küsimused, parandusettepanekud ja
-              vastuväited: {CONTACT_EMAIL}.
+              vastuväited:{" "}
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                style={{ color: "var(--accent-primary)", textDecoration: "underline" }}
+              >
+                {CONTACT_EMAIL}
+              </a>
+              .
             </p>
           </section>
 
           <section>
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Külastajate andmed</h2>
-            <p style={{ margin: 0, color: "var(--color-text-secondary, #94a3b8)" }}>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Riigivaade ei kogu külastajate isikuandmeid ega kasuta küpsiseid ega analüütikat.
               Brauserisse salvestatakse ainult valitud teema (hele või tume). Veebilehte ja API-t
               vahendavad Vercel ja Cloudflare, kes töötlevad turvalisuse ja töökindluse tagamiseks
@@ -60,12 +67,18 @@ export function PrivacyView({ onOpenMethodology }) {
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>
               Riigikogu liikmete andmed
             </h2>
-            <p style={{ margin: 0, color: "var(--color-text-secondary, #94a3b8)" }}>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Riigivaade avaldab Riigikogu liikmete kohta avalikest allikatest pärit andmeid (nimi,
               foto, fraktsioon, valimisringkond, kõned, hääletused ja kohalolek). Andmeid
               töödeldakse parlamendi töö läbipaistvuse ja avalikkuse teavitamise eesmärgil. Kui
-              leiate vea või soovite esitada vastuväite, kirjutage {CONTACT_EMAIL}. Vigased andmed
-              parandatakse.
+              leiate vea või soovite esitada vastuväite, kirjutage{" "}
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                style={{ color: "var(--accent-primary)", textDecoration: "underline" }}
+              >
+                {CONTACT_EMAIL}
+              </a>
+              . Vigased andmed parandatakse.
             </p>
           </section>
 
@@ -73,7 +86,7 @@ export function PrivacyView({ onOpenMethodology }) {
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>
               Andmeallikad ja litsentsid
             </h2>
-            <p style={{ margin: 0, color: "var(--color-text-secondary, #94a3b8)" }}>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Stenogrammid, hääletused, kohalolek ja saadikute andmed: Riigikogu avaandmed
               (api.riigikogu.ee), litsents CC BY-SA 3.0. Saadikute fotod: Riigikogu. Videod:
               Riigikogu YouTube&apos;i kanal, litsents CC BY-SA. Riigivaate töödeldud andmed, sh
@@ -83,7 +96,7 @@ export function PrivacyView({ onOpenMethodology }) {
 
           <section>
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Erapooletus</h2>
-            <p style={{ margin: 0, color: "var(--color-text-secondary, #94a3b8)" }}>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Kuidas andmeid arvutatakse, vaata{" "}
               <button
                 type="button"
@@ -91,7 +104,7 @@ export function PrivacyView({ onOpenMethodology }) {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "var(--color-primary, #3b82f6)",
+                  color: "var(--accent-primary)",
                   textDecoration: "underline",
                   cursor: "pointer",
                   font: "inherit",
