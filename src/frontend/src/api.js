@@ -193,3 +193,31 @@ export async function fetchPersonAttendance(uuid) {
   const res = await fetch(`${BASE_URL}/persons/${encodeURIComponent(uuid)}/attendance`);
   return handleResponse(res);
 }
+
+export async function fetchFactionAlignment(uuid, membership = "all") {
+  const params = new URLSearchParams();
+  if (membership && membership !== "all") {
+    params.append("membership", membership);
+  }
+  const qs = params.toString();
+  const res = await fetch(
+    `${BASE_URL}/persons/${encodeURIComponent(uuid)}/faction-alignment${qs ? `?${qs}` : ""}`
+  );
+  return handleResponse(res);
+}
+
+export async function fetchFactionAlignmentDifferences(
+  uuid,
+  { membership = "all", limit = 10, offset = 0 } = {}
+) {
+  const params = new URLSearchParams();
+  if (membership && membership !== "all") {
+    params.append("membership", membership);
+  }
+  params.append("limit", String(limit));
+  params.append("offset", String(offset));
+  const res = await fetch(
+    `${BASE_URL}/persons/${encodeURIComponent(uuid)}/faction-alignment/differences?${params.toString()}`
+  );
+  return handleResponse(res);
+}
