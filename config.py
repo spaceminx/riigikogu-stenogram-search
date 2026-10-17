@@ -105,6 +105,14 @@ def get_membership_dates() -> dict[str, tuple[str, str]]:
     return MEMBERSHIP_DATES.copy()
 
 
+def latest_membership() -> str:
+    """Return the highest membership number as string."""
+    dates = MEMBERSHIP_DATES
+    if not dates:
+        dates = DEFAULT_MEMBERSHIP_DATES
+    return str(max(dates.keys(), key=lambda x: int(x)))
+
+
 STOPWORDS = {
     "ja",
     "ning",

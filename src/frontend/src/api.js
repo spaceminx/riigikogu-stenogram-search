@@ -109,7 +109,7 @@ export function getExportUrl(options) {
 }
 
 export async function fetchAttendance({
-  membership = "15",
+  membership = null,
   faction = null,
   activeOnly = false,
 } = {}) {
@@ -118,24 +118,29 @@ export async function fetchAttendance({
   if (faction) params.append("faction", faction);
   if (activeOnly) params.append("active_only", "true");
 
-  const res = await fetch(`${BASE_URL}/attendance/stats?${params.toString()}`);
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/attendance/stats${qs ? `?${qs}` : ""}`);
   return handleResponse(res);
 }
 
-export async function fetchFactionAttendance({ membership = "15", activeOnly = false } = {}) {
+export const fetchAttendanceStats = fetchAttendance;
+
+export async function fetchFactionAttendance({ membership = null, activeOnly = false } = {}) {
   const params = new URLSearchParams();
   if (membership) params.append("membership", membership);
   if (activeOnly) params.append("active_only", "true");
 
-  const res = await fetch(`${BASE_URL}/attendance/factions?${params.toString()}`);
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/attendance/factions${qs ? `?${qs}` : ""}`);
   return handleResponse(res);
 }
 
-export async function fetchFactionsList(membership = "15") {
+export async function fetchFactionsList(membership = null) {
   const params = new URLSearchParams();
   if (membership) params.append("membership", membership);
 
-  const res = await fetch(`${BASE_URL}/attendance/factions/list?${params.toString()}`);
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/attendance/factions/list${qs ? `?${qs}` : ""}`);
   return handleResponse(res);
 }
 

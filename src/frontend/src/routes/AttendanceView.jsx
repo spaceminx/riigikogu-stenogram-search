@@ -6,11 +6,13 @@ import { formatFactionName } from "../lib/formatters";
 import AttendanceMembersTable from "../components/AttendanceMembersTable";
 import AttendanceFactionsTable from "../components/AttendanceFactionsTable";
 
-export function AttendanceView({ memberships = [] }) {
+export function AttendanceView({ memberships = [], membershipsLoading = false }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const attendanceTab = searchParams.get("att_tab") || "members";
-  const attendanceMembership = searchParams.get("att_membership") || "15";
+  const latestMembership = memberships && memberships.length > 0 ? String(memberships[0].id) : null;
+  const attParam = searchParams.get("att_membership");
+  const attendanceMembership = attParam || latestMembership || "";
   const selectedFaction = searchParams.get("att_faction") || "";
   const activeOnly =
     searchParams.get("att_active") === "1" || searchParams.get("att_active") === "true";
@@ -33,7 +35,7 @@ export function AttendanceView({ memberships = [] }) {
 
   const handlePeriodChange = (newPeriod) => {
     const next = new URLSearchParams(searchParams);
-    if (newPeriod === "15") {
+    if (latestMembership && String(newPeriod) === latestMembership) {
       next.delete("att_membership");
     } else {
       next.set("att_membership", String(newPeriod));
@@ -43,24 +45,26 @@ export function AttendanceView({ memberships = [] }) {
     setSearchParams(next, { replace: true });
   };
 
+  const reqMembership = attParam || latestMembership || undefined;
+
   const {
     data: attendanceData,
     error,
     isLoading: loading,
   } = useSWR(
-    ["attendance", attendanceMembership, selectedFaction, activeOnly],
+    ["attendance", reqMembership || "latest", selectedFaction, activeOnly],
     () =>
       Promise.all([
         fetchAttendance({
-          membership: attendanceMembership,
+          membership: reqMembership,
           faction: selectedFaction || null,
           activeOnly,
         }),
         fetchFactionAttendance({
-          membership: attendanceMembership,
+          membership: reqMembership,
           activeOnly,
         }),
-        fetchFactionsList(attendanceMembership),
+        fetchFactionsList(reqMembership),
       ]),
     { revalidateOnFocus: false, shouldRetryOnError: false }
   );
@@ -136,16 +140,29 @@ export function AttendanceView({ memberships = [] }) {
     return sortableItems;
   }, [factionStats, factionSortConfig]);
 
+  if (membershipsLoading && (!memberships || memberships.length === 0)) {
+    return (
+      <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
+        <p className="sidebar-empty-state">Laen koosseisude andmeid…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
       <div className="chart-header" style={{ marginBottom: "1.25rem" }}>
         <h2 style={{ margin: 0 }}>
           Kohaloleku statistika{" "}
-          {attendanceMembership === "15"
-            ? "(XV Riigikogu, 2023–praegu)"
-            : attendanceMembership === "14"
-              ? "(XIV Riigikogu, 2019–2023)"
-              : "(2019–praegu)"}
+          {(() => {
+            const m = memberships.find((x) => String(x.id) === String(attendanceMembership));
+            if (m) {
+              const startYear = m.start_date ? m.start_date.slice(0, 4) : "";
+              const endYear = m.is_current ? "praegu" : m.end_date ? m.end_date.slice(0, 4) : "";
+              const years = startYear && endYear ? `, ${startYear}–${endYear}` : "";
+              return `(${m.name}${years})`;
+            }
+            return attendanceMembership === "all" ? "(2019–praegu)" : "";
+          })()}
         </h2>
       </div>
 
@@ -208,7 +225,7 @@ export function AttendanceView({ memberships = [] }) {
             </div>
           )}
 
-          {attendanceMembership === "15" && (
+          {Boolean(latestMembership && attendanceMembership === latestMembership) && (
             <label className="attendance-checkbox-label">
               <input
                 type="checkbox"

@@ -230,8 +230,6 @@ def is_ambiguous_person_name(
     person_name_map: dict[str, str] | None,
 ) -> bool:
     """Check if a name belongs to multiple individuals in persons.json."""
-    if speaker_name == "Tarmo Tamm":
-        return True
     if uuid_to_name_map:
         matches = [u for u, name in uuid_to_name_map.items() if name == speaker_name]
         if len(matches) > 1:
@@ -250,46 +248,49 @@ def resolve_speaker_uuid(
     uuid_to_name_map: dict[str, str] | None,
     person_name_map: dict[str, str] | None,
     person_factions: dict[str, list[dict]] | None = None,
+    speech_key: str | None = None,
 ) -> tuple[str | None, str]:
     """Resolve canonical MP UUID for a speaker.
 
     Priority order:
-    1. For ambiguous names (multiple individuals with identical full name, e.g. Tarmo Tamm):
-       Date rule and membership period win over raw ems_id. Raw ems_id is only accepted
-       if the individual was an active Riigikogu member on the speech date.
+    1. For ambiguous names (multiple individuals with identical full name):
+       Resolved by the member's faction membership period in person_factions.json.
+       If none or >1 match covers the date, leave speaker_uuid empty and log the speech key.
     2. ems_id in known_uuids and name matches canonical name -> (ems_id, "ems")
     3. ems_id in known_uuids, name does not match, but first name matches (case-insensitive)
        and speaker_name is not any other person's canonical name -> (ems_id, "ems_name_change")
-    4. Tarmo Tamm disambiguation by date (< 2023-04-10) -> (uuid, "tarmo_tamm_date")
-    5. person_name_map match -> (uuid, "name")
-    6. otherwise -> (None, "unresolved")
+    4. person_name_map match -> (uuid, "name")
+    5. otherwise -> (None, "unresolved")
     """
     raw_ems = str(ems_id).strip() if ems_id else None
     dt = date[:10] if date else ""
 
+    if uuid_to_name_map is None:
+        p_known, p_name_map, p_uuid_map = load_persons_metadata()
+        if p_known:
+            if known_uuids is None:
+                known_uuids = p_known
+            if person_name_map is None:
+                person_name_map = p_name_map
+            uuid_to_name_map = p_uuid_map
+
     # 1. Ambiguous name handling (multiple persons with the same name in persons.json)
     if is_ambiguous_person_name(speaker_name, uuid_to_name_map, person_name_map):
         factions = person_factions if person_factions is not None else _get_person_factions()
-        if speaker_name == "Tarmo Tamm":
-            target_uuid = (
-                "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
-                if dt < "2023-04-10"
-                else "236e49d6-eecb-4562-8ad4-bedd586bb149"
-            )
-            if raw_ems == target_uuid:
-                return (raw_ems, "ems")
-            return (target_uuid, "tarmo_tamm_date")
-
-        # General ambiguous name: candidate UUIDs matching this name
         candidate_uuids = [
             u for u, name in (uuid_to_name_map or {}).items() if name == speaker_name
         ]
-        if raw_ems and raw_ems in candidate_uuids:
-            if is_member_on_date(raw_ems, dt, factions):
-                return (raw_ems, "ems")
-        for cand_uuid in candidate_uuids:
-            if is_member_on_date(cand_uuid, dt, factions):
-                return (cand_uuid, "member_period")
+        covering = [u for u in candidate_uuids if is_member_on_date(u, dt, factions)]
+        if len(covering) == 1:
+            matched_uuid = covering[0]
+            if raw_ems == matched_uuid:
+                return (matched_uuid, "ems")
+            return (matched_uuid, "member_period")
+
+        key_info = f" (speech_key: {speech_key})" if speech_key else ""
+        print(
+            f"Notice: Ambiguous speaker '{speaker_name}' on {dt} has {len(covering)} matching faction periods{key_info}"
+        )
         return (None, "unresolved")
 
     # 2. Standard unambiguous resolution via ems_id
@@ -329,18 +330,11 @@ def resolve_speaker_uuid(
                     )
                 return (raw_ems, "ems_name_change")
 
-    # 3. Tarmo Tamm disambiguation by date fallback
-    if speaker_name == "Tarmo Tamm":
-        if dt < "2023-04-10":
-            return ("76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5", "tarmo_tamm_date")
-        else:
-            return ("236e49d6-eecb-4562-8ad4-bedd586bb149", "tarmo_tamm_date")
-
-    # 4. person_name_map
+    # 3. person_name_map
     if person_name_map and speaker_name in person_name_map:
         return (person_name_map[speaker_name], "name")
 
-    # 5. Unresolved
+    # 4. Unresolved
     return (None, "unresolved")
 
 
@@ -628,29 +622,6 @@ def parse_meeting_speeches(
                     continue
 
                 speaker_name, speaker_role = split_speaker_role(speaker_raw)
-                raw_ems_id = sp.get("emsId")
-                raw_ems_str = str(raw_ems_id).strip() if raw_ems_id else None
-                speaker_uuid, _ = resolve_speaker_uuid(
-                    speaker_name=speaker_name,
-                    ems_id=raw_ems_str,
-                    date=date_formatted,
-                    known_uuids=known_person_uuids,
-                    uuid_to_name_map=uuid_to_name_map,
-                    person_name_map=person_name_map,
-                )
-                canonical_name = (
-                    uuid_to_name_map.get(speaker_uuid)
-                    if (speaker_uuid and uuid_to_name_map)
-                    else speaker_name
-                )
-                speaker_faction = get_faction_for_date(faction_map, canonical_name, date_formatted)
-
-                if lemma_cache is not None and raw_text in lemma_cache:
-                    lemmas = lemma_cache[raw_text]
-                else:
-                    lemmas = lemmatize_text(raw_text)
-                video_url = sp.get("parsedVideoLink")
-
                 sp_time_raw = sp.get("startTime")
                 end_time_raw = sp.get("endTime")
                 duration_seconds = compute_duration_seconds(sp_time_raw, end_time_raw)
@@ -660,12 +631,6 @@ def parse_meeting_speeches(
                     time_part = sp_time_raw.split("T")[1].replace(":", "")[:4]
                     if len(time_part) == 4 and time_part.isdigit():
                         sp_time = time_part
-
-                ext_id = sp.get("id")
-                try:
-                    ext_id_int = int(ext_id) if ext_id is not None else None
-                except (ValueError, TypeError):
-                    ext_id_int = None
 
                 clean_time = (
                     (sp_time_raw or sp_time or "0000")
@@ -683,6 +648,36 @@ def parse_meeting_speeches(
                 speech_key = (
                     f"{meeting_code}_{key_suffix}" if meeting_code and speaker_slug else None
                 )
+
+                raw_ems_id = sp.get("emsId")
+                raw_ems_str = str(raw_ems_id).strip() if raw_ems_id else None
+                speaker_uuid, _ = resolve_speaker_uuid(
+                    speaker_name=speaker_name,
+                    ems_id=raw_ems_str,
+                    date=date_formatted,
+                    known_uuids=known_person_uuids,
+                    uuid_to_name_map=uuid_to_name_map,
+                    person_name_map=person_name_map,
+                    speech_key=speech_key,
+                )
+                canonical_name = (
+                    uuid_to_name_map.get(speaker_uuid)
+                    if (speaker_uuid and uuid_to_name_map)
+                    else speaker_name
+                )
+                speaker_faction = get_faction_for_date(faction_map, canonical_name, date_formatted)
+
+                if lemma_cache is not None and raw_text in lemma_cache:
+                    lemmas = lemma_cache[raw_text]
+                else:
+                    lemmas = lemmatize_text(raw_text)
+                video_url = sp.get("parsedVideoLink")
+
+                ext_id = sp.get("id")
+                try:
+                    ext_id_int = int(ext_id) if ext_id is not None else None
+                except (ValueError, TypeError):
+                    ext_id_int = None
 
                 speeches_to_save.append(
                     {
@@ -723,6 +718,13 @@ def parse_meeting_speeches(
                         continue
 
                     speaker_name, speaker_role = split_speaker_role(speaker_raw)
+                    speaker_slug = slugify_estonian(speaker_name)
+                    speech_key = (
+                        f"{meeting_code}_{time_formatted}_{verbatim_idx}_{speaker_slug}"
+                        if meeting_code and speaker_slug
+                        else None
+                    )
+
                     raw_ems_id = event.get("emsId")
                     raw_ems_str = str(raw_ems_id).strip() if raw_ems_id else None
                     speaker_uuid, _ = resolve_speaker_uuid(
@@ -732,6 +734,7 @@ def parse_meeting_speeches(
                         known_uuids=known_person_uuids,
                         uuid_to_name_map=uuid_to_name_map,
                         person_name_map=person_name_map,
+                        speech_key=speech_key,
                     )
                     canonical_name = (
                         uuid_to_name_map.get(speaker_uuid)
@@ -746,12 +749,6 @@ def parse_meeting_speeches(
                         lemmas = lemma_cache[raw_text]
                     else:
                         lemmas = lemmatize_text(raw_text)
-                    speaker_slug = slugify_estonian(speaker_name)
-                    speech_key = (
-                        f"{meeting_code}_{time_formatted}_{verbatim_idx}_{speaker_slug}"
-                        if meeting_code and speaker_slug
-                        else None
-                    )
 
                     speeches_to_save.append(
                         {

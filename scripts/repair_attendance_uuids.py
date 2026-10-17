@@ -14,14 +14,34 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import OUTPUT_DIR_PROCESSED
-
-TARMO_TAMM_CUTOFF = "2023-04-10"
-TARMO_TAMM_UUID_OLD = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
-TARMO_TAMM_UUID_NEW = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+from scripts.fetch_stenograms_api import is_member_on_date
 
 
-def load_persons_name_map(data_dir: str) -> tuple[dict[str, str], set[str]]:
-    """Load canonical full_name to UUID mapping from persons.json for unique names."""
+def load_person_factions(data_dir: str) -> dict[str, list[dict]]:
+    """Load person_factions.json from data_dir or B2."""
+    pf_file = os.path.join(data_dir, "person_factions.json")
+    if not os.path.exists(pf_file):
+        try:
+            from scripts.download_from_b2 import download_from_b2
+
+            print("Kohalik person_factions.json puudub, laadin B2-st...")
+            download_from_b2(include_all_history=False)
+        except Exception as e:
+            print(f"Hoiatus: Ei saanud person_factions.json B2-st alla laadida: {e}")
+
+    if os.path.exists(pf_file):
+        try:
+            with open(pf_file, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+
+def load_persons_name_map(
+    data_dir: str,
+) -> tuple[dict[str, str], set[str], dict[str, list[str]]]:
+    """Load canonical full_name to UUID mapping from persons.json for unique and ambiguous names."""
     persons_file = os.path.join(data_dir, "persons.json")
     if not os.path.exists(persons_file):
         try:
@@ -33,13 +53,13 @@ def load_persons_name_map(data_dir: str) -> tuple[dict[str, str], set[str]]:
             print(f"Hoiatus: Ei saanud persons.json B2-st alla laadida: {e}")
 
     if not os.path.exists(persons_file):
-        return {}, set()
+        return {}, set(), {}
 
     with open(persons_file, encoding="utf-8") as f:
         persons = json.load(f)
 
     name_counts: dict[str, int] = {}
-    name_to_uuid: dict[str, str] = {}
+    name_to_uuids: dict[str, list[str]] = {}
     known_uuids: set[str] = set()
 
     for p in persons:
@@ -47,12 +67,13 @@ def load_persons_name_map(data_dir: str) -> tuple[dict[str, str], set[str]]:
         uuid_val = p.get("uuid")
         if full_name and uuid_val:
             name_counts[full_name] = name_counts.get(full_name, 0) + 1
-            name_to_uuid[full_name] = uuid_val
+            name_to_uuids.setdefault(full_name, []).append(uuid_val)
             known_uuids.add(uuid_val)
 
-    # Keep only uniquely occurring names
-    unique_name_map = {name: uid for name, uid in name_to_uuid.items() if name_counts[name] == 1}
-    return unique_name_map, known_uuids
+    # Unique names and ambiguous names
+    unique_name_map = {name: uids[0] for name, uids in name_to_uuids.items() if len(uids) == 1}
+    ambiguous_name_map = {name: uids for name, uids in name_to_uuids.items() if len(uids) > 1}
+    return unique_name_map, known_uuids, ambiguous_name_map
 
 
 def build_old_names_map(
@@ -116,13 +137,14 @@ def repair_attendance_uuids(
         print(f"Viga: Faili {attendance_file} ei leitud.")
         return {}
 
-    unique_name_map, known_uuids = load_persons_name_map(data_dir)
+    unique_name_map, known_uuids, ambiguous_name_map = load_persons_name_map(data_dir)
+    person_factions = load_person_factions(data_dir)
     old_names_map = build_old_names_map(data_dir, db_path, known_uuids)
 
     total_records = 0
     needed_repair = 0
     resolved_canonical = 0
-    resolved_tarmo_tamm = 0
+    resolved_faction_period = 0
     resolved_old_names = 0
     resolved_refetched = 0
     unresolved_names: dict[str, int] = {}
@@ -154,11 +176,15 @@ def repair_attendance_uuids(
             target_uuid = None
             resolution_type = None
 
-            if member_name == "Tarmo Tamm":
-                target_uuid = (
-                    TARMO_TAMM_UUID_OLD if session_date < TARMO_TAMM_CUTOFF else TARMO_TAMM_UUID_NEW
-                )
-                resolution_type = "tarmo_tamm"
+            if member_name in ambiguous_name_map:
+                cands = ambiguous_name_map[member_name]
+                covering = [u for u in cands if is_member_on_date(u, session_date, person_factions)]
+                if len(covering) == 1:
+                    target_uuid = covering[0]
+                    resolution_type = "faction_period"
+                else:
+                    target_uuid = None
+                    resolution_type = "unresolved"
             elif member_name in unique_name_map:
                 target_uuid = unique_name_map[member_name]
                 resolution_type = "canonical"
@@ -175,8 +201,8 @@ def repair_attendance_uuids(
             else:
                 if resolution_type == "canonical":
                     resolved_canonical += 1
-                elif resolution_type == "tarmo_tamm":
-                    resolved_tarmo_tamm += 1
+                elif resolution_type == "faction_period":
+                    resolved_faction_period += 1
                 elif resolution_type == "old_name":
                     resolved_old_names += 1
 
@@ -286,7 +312,7 @@ def repair_attendance_uuids(
     print(f"Kontrollitud ridu kokku: {total_records}")
     print(f"Uuendatud / parandatud ridu (JSONL): {needed_repair}")
     print(f"  - Kanoonilise nime kaudu: {resolved_canonical}")
-    print(f"  - Tarmo Tamm kuupäevareegliga: {resolved_tarmo_tamm}")
+    print(f"  - Fraktsiooniperioodi kaudu (mitmetähenduslikud nimed): {resolved_faction_period}")
     print(f"  - Speeches vanade nimede kaudu: {resolved_old_names}")
     if refetch_unmapped:
         print(f"  - API refetch kaudu: {resolved_refetched}")
@@ -312,7 +338,8 @@ def repair_attendance_uuids(
         "total_records": total_records,
         "needed_repair": needed_repair,
         "resolved_canonical": resolved_canonical,
-        "resolved_tarmo_tamm": resolved_tarmo_tamm,
+        "resolved_tarmo_tamm": resolved_faction_period,
+        "resolved_faction_period": resolved_faction_period,
         "resolved_old_names": resolved_old_names,
         "resolved_refetched": resolved_refetched,
         "unresolved_names": unresolved_names,

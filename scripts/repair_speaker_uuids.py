@@ -41,9 +41,7 @@ def repair_speaker_uuids(
             print(f"Hoiatus: Ei saanud metaandmeid B2-st alla laadida: {e}")
 
     known_uuids, person_name_map, uuid_to_name_map = load_persons_metadata(data_dir)
-    ambiguous_names = {
-        name for name, cnt in Counter(uuid_to_name_map.values()).items() if cnt > 1
-    } | {"Tarmo Tamm"}
+    ambiguous_names = {name for name, cnt in Counter(uuid_to_name_map.values()).items() if cnt > 1}
 
     if os.path.exists(factions_file):
         with open(factions_file, encoding="utf-8") as f:
@@ -140,6 +138,7 @@ def repair_speaker_uuids(
                         known_uuids=known_uuids,
                         uuid_to_name_map=uuid_to_name_map,
                         person_name_map=person_name_map,
+                        speech_key=row.get("speech_key"),
                     )
                     effective_uuid = resolved_uuid if resolved_uuid is not None else uuid_val
                     canon_name = (
