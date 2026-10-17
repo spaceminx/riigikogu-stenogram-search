@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --test",
+    "check:mobile": "python3 ../../scripts/check_mobile_attendance_fit.py",
     "preview": "vite preview"
   },
   "dependencies": {
