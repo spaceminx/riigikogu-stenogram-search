@@ -6159,3 +6159,111 @@ html[data-theme="dark"] .person-stats-table tbody tr:hover {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Faction Majority Alignment */
+.alignment-main-stat {
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.alignment-diffs-container {
+  margin-top: 1rem;
+  border-top: 1px solid var(--panel-border);
+  padding-top: 1.25rem;
+}
+
+.alignment-diffs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alignment-diff-card {
+  padding: 0.9rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="light"] .alignment-diff-card {
+  background: rgba(248, 250, 252, 0.8);
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+.alignment-diff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.alignment-diff-date {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.alignment-session-link {
+  font-size: 0.8rem;
+  color: var(--color-primary, #315b84);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.alignment-session-link:hover {
+  text-decoration: underline;
+}
+
+.alignment-diff-desc {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 0.25rem;
+}
+
+.alignment-diff-doc {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #64748b);
+  margin-bottom: 0.5rem;
+}
+
+.alignment-diff-comparison {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+}
+
+.alignment-diff-separator {
+  color: var(--color-text-muted, #64748b);
+}
+
+.alignment-decision {
+  font-weight: 600;
+}
+
+.alignment-decision.poolt {
+  color: #10b981;
+}
+
+.alignment-decision.vastu {
+  color: #ef4444;
+}
+
+.alignment-decision.erapooletu {
+  color: #f59e0b;
+}
+
+.alignment-decision.ei_haaletanud {
+  color: #64748b;
+}
+
+.alignment-load-more {
+  margin-top: 1.25rem;
+  text-align: center;
+}

@@ -12,6 +12,10 @@ from sqlalchemy import and_, case, func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
+from src.api.alignment import (
+    get_faction_alignment,
+    get_faction_alignment_differences,
+)
 from src.api.attendance import (
     get_attendance_stats,
     get_faction_attendance_stats,
@@ -1278,6 +1282,65 @@ def get_person_votes(
         session.close()
 
 
+@router.get("/persons/{person_uuid}/faction-alignment")
+def person_faction_alignment(person_uuid: str, membership: str = "all"):
+    """Return faction alignment statistics for a specific MP."""
+    validate_membership(membership)
+    session = SessionLocal()
+    try:
+        return get_faction_alignment(session, person_uuid, membership)
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või hääletuste tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Faction alignment query failed for %s: %s", person_uuid, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Fraktsiooni ühtsuse statistika päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/persons/{person_uuid}/faction-alignment/differences")
+def person_faction_alignment_differences(
+    person_uuid: str,
+    membership: str = "all",
+    limit: int = 50,
+    offset: int = 0,
+):
+    """Return votings where the MP voted differently from their faction majority."""
+    validate_membership(membership)
+    limit = max(1, min(limit, 200))
+    offset = max(0, offset)
+    session = SessionLocal()
+    try:
+        return get_faction_alignment_differences(
+            session, person_uuid, membership=membership, limit=limit, offset=offset
+        )
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või hääletuste tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error(
+            "Faction alignment differences query failed for %s: %s", person_uuid, e, exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Fraktsiooni erinevuste päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
 @router.get("/speeches/by-external-id/{external_id}")
 def get_speech_by_external_id(external_id: str):
     """Get single speech specifically by Riigikogu permalink external_id."""
@@ -1644,6 +1707,26 @@ def get_voting_detail(voting_uuid: str):
                 "type": voting.related_document_type,
             }
 
+        for fac_entry in faction_map.values():
+            pos_total = (
+                fac_entry["in_favor"]
+                + fac_entry["against"]
+                + fac_entry["neutral"]
+                + fac_entry["not_voted"]
+            )
+            majority_pos = None
+            if pos_total > 0:
+                half = pos_total / 2
+                if fac_entry["in_favor"] > half:
+                    majority_pos = "POOLT"
+                elif fac_entry["against"] > half:
+                    majority_pos = "VASTU"
+                elif fac_entry["neutral"] > half:
+                    majority_pos = "ERAPOOLETU"
+                elif fac_entry["not_voted"] > half:
+                    majority_pos = "EI_HAALETANUD"
+            fac_entry["majority_position"] = majority_pos
+
         sorted_factions = sorted(faction_map.values(), key=lambda f: (-f["total"], f["faction"]))
 
         cf = format_session_source_file(voting.sitting_date, voting.sitting_datetime)
@@ -1818,7 +1901,7 @@ def system_status():
             "methodology": {
                 "search": 'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Jutumärkides fraas leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).',
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
-                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta. Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
+                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid alla 3 liikme arvatakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg. Kestus on piiratud järgmise kõne algusega, sest allika lõpuaeg võib ulatuda järgmistesse kõnedesse.",

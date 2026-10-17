@@ -12,6 +12,8 @@ import {
   YAxis,
 } from "recharts";
 import {
+  fetchFactionAlignment,
+  fetchFactionAlignmentDifferences,
   fetchPerson,
   fetchPersonAttendance,
   fetchPersonSpeeches,
@@ -24,6 +26,16 @@ import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
 
 const SPEECHES_PER_PAGE = 20;
+
+const DECISION_LABELS = {
+  POOLT: "poolt",
+  VASTU: "vastu",
+  ERAPOOLETU: "erapooletu",
+  EI_HAALETANUD: "ei hääletanud",
+  PUUDUB: "puudub",
+};
+
+const formatDecision = (dec) => DECISION_LABELS[dec] || dec?.toLowerCase() || "—";
 
 const ROLE_LABELS = {
   mp: "Saadikuna",
@@ -105,6 +117,80 @@ export function PersonView({ theme = "light" }) {
       shouldRetryOnError: false,
     }
   );
+
+  // 5. Fetch Faction Alignment
+  const [alignmentMembership, setAlignmentMembership] = useState("all");
+  const [extraDifferences, setExtraDifferences] = useState([]);
+  const [diffsLoadingMore, setDiffsLoadingMore] = useState(false);
+  const [hasLoadedAll, setHasLoadedAll] = useState(false);
+
+  const { data: factionAlignment } = useSWR(
+    uuid ? `person-faction-alignment-${uuid}-${alignmentMembership}` : null,
+    () => fetchFactionAlignment(uuid, alignmentMembership),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+
+  const { data: initialDifferences, isLoading: diffsInitialLoading } = useSWR(
+    uuid ? `person-faction-diffs-${uuid}-${alignmentMembership}` : null,
+    () =>
+      fetchFactionAlignmentDifferences(uuid, {
+        membership: alignmentMembership,
+        limit: 10,
+        offset: 0,
+      }),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+
+  const differences = useMemo(
+    () => [...(initialDifferences || []), ...extraDifferences],
+    [initialDifferences, extraDifferences]
+  );
+
+  const diffLoading = diffsInitialLoading || diffsLoadingMore;
+
+  const hasMoreDiffs = useMemo(() => {
+    if (hasLoadedAll) return false;
+    if (!initialDifferences) return false;
+    if (initialDifferences.length < 10) return false;
+    if (extraDifferences.length > 0 && extraDifferences.length % 10 !== 0) return false;
+    return true;
+  }, [hasLoadedAll, initialDifferences, extraDifferences]);
+
+  const handleAlignmentMembershipChange = (m) => {
+    setAlignmentMembership(m);
+    setExtraDifferences([]);
+    setHasLoadedAll(false);
+  };
+
+  const handleLoadMoreDifferences = async () => {
+    if (diffLoading || !uuid) return;
+    setDiffsLoadingMore(true);
+    try {
+      const nextItems = await fetchFactionAlignmentDifferences(uuid, {
+        membership: alignmentMembership,
+        limit: 10,
+        offset: differences.length,
+      });
+      if (nextItems && nextItems.length > 0) {
+        setExtraDifferences((prev) => [...prev, ...nextItems]);
+        if (nextItems.length < 10) {
+          setHasLoadedAll(true);
+        }
+      } else {
+        setHasLoadedAll(true);
+      }
+    } catch {
+      // Ignored
+    } finally {
+      setDiffsLoadingMore(false);
+    }
+  };
 
   // Set document.title format: "{nimi} — Riigivaade" with cleanup
   useEffect(() => {
@@ -702,7 +788,145 @@ export function PersonView({ theme = "light" }) {
         </section>
       )}
 
-      {/* 5. Speeches List with Role Tabs & Pagination */}
+      {/* 5. Faction Majority Alignment Panel */}
+      {factionAlignment && factionAlignment.same + factionAlignment.different > 0 && (
+        <section className="glass-panel" aria-label="Hääletamine fraktsiooni enamusega">
+          <div className="chart-header" style={{ marginBottom: "1rem" }}>
+            <div>
+              <span className="section-kicker">HÄÄLETAMINE FRAKTSIOONIGA</span>
+              <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Hääletamine fraktsiooni enamusega</h2>
+            </div>
+          </div>
+
+          {/* Koosseis switch */}
+          {factionAlignment.by_membership && factionAlignment.by_membership.length > 0 && (
+            <div
+              className="segmented-control"
+              role="group"
+              aria-label="Fraktsiooni hääletuste koosseis"
+              style={{ marginBottom: "1.25rem", flexWrap: "wrap" }}
+            >
+              <button
+                type="button"
+                aria-pressed={alignmentMembership === "all"}
+                className={`segmented-btn ${alignmentMembership === "all" ? "active" : ""}`}
+                onClick={() => handleAlignmentMembershipChange("all")}
+              >
+                <span>Kõik koosseisud</span>
+              </button>
+              {factionAlignment.by_membership.map((m) => (
+                <button
+                  key={m.membership}
+                  type="button"
+                  aria-pressed={alignmentMembership === String(m.membership)}
+                  className={`segmented-btn ${alignmentMembership === String(m.membership) ? "active" : ""}`}
+                  onClick={() => handleAlignmentMembershipChange(String(m.membership))}
+                >
+                  <span>{MEMBERSHIP_ROMAN[m.membership] || `${m.membership}. koosseis`}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Main number */}
+          <div className="alignment-main-stat">
+            <span className="alignment-main-text">
+              Hääletas samamoodi kui fraktsiooni enamus:{" "}
+              <strong className="person-metric-value-primary">
+                {factionAlignment.share_same != null ? `${factionAlignment.share_same}%` : "—"}
+              </strong>{" "}
+              ({factionAlignment.same} / {factionAlignment.same + factionAlignment.different}{" "}
+              hääletust)
+            </span>
+          </div>
+
+          {/* Small line with excluded counts */}
+          <p className="person-metric-desc" style={{ marginTop: "0.4rem", marginBottom: "1.5rem" }}>
+            Välja arvatud: {factionAlignment.excluded?.absent ?? 0} puudumist,{" "}
+            {factionAlignment.excluded?.split ?? 0} viigiseisu,{" "}
+            {factionAlignment.excluded?.too_few ?? 0} alla 3 liikmega hääletust,{" "}
+            {factionAlignment.excluded?.no_faction ?? 0} fraktsioonita.
+          </p>
+
+          {/* Differences list */}
+          <div className="alignment-diffs-container">
+            <h3
+              style={{
+                fontSize: "1rem",
+                margin: "0 0 0.75rem 0",
+                color: "var(--color-text-muted)",
+              }}
+            >
+              Erinevad hääletused {differences.length > 0 ? `(${differences.length})` : ""}
+            </h3>
+
+            {differences.length === 0 ? (
+              <p className="sidebar-empty-state">
+                {diffLoading ? "Laen erinevaid hääletusi…" : "Erinevaid hääletusi ei leitud."}
+              </p>
+            ) : (
+              <div className="alignment-diffs-list">
+                {differences.map((diff) => (
+                  <div key={diff.voting_uuid} className="alignment-diff-card">
+                    <div className="alignment-diff-header">
+                      <span className="alignment-diff-date">
+                        {diff.sitting_date ? formatDate(diff.sitting_date) : "—"}
+                      </span>
+                      {diff.sitting_date && (
+                        <Link
+                          to={`/istung/${diff.sitting_date}`}
+                          className="alignment-session-link"
+                          title="Ava selle päeva istungi stenogramm"
+                        >
+                          Vaata istungit
+                        </Link>
+                      )}
+                    </div>
+                    <div className="alignment-diff-desc">{diff.description || "Hääletus"}</div>
+                    {diff.related_document_title && (
+                      <div className="alignment-diff-doc">{diff.related_document_title}</div>
+                    )}
+                    <div className="alignment-diff-comparison">
+                      <span className="alignment-diff-item">
+                        Saadiku otsus:{" "}
+                        <strong
+                          className={`alignment-decision ${diff.member_decision?.toLowerCase()}`}
+                        >
+                          {formatDecision(diff.member_decision)}
+                        </strong>
+                      </span>
+                      <span className="alignment-diff-separator">•</span>
+                      <span className="alignment-diff-item">
+                        Fraktsiooni enamus{diff.faction ? ` (${diff.faction})` : ""}:{" "}
+                        <strong
+                          className={`alignment-decision ${diff.faction_position?.toLowerCase()}`}
+                        >
+                          {formatDecision(diff.faction_position)}
+                        </strong>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {hasMoreDiffs && (
+              <div className="alignment-load-more">
+                <button
+                  type="button"
+                  className="filter-search-btn"
+                  onClick={handleLoadMoreDifferences}
+                  disabled={diffLoading}
+                >
+                  {diffLoading ? "Laen…" : "Näita rohkem"}
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 6. Speeches List with Role Tabs & Pagination */}
       <section className="glass-panel" aria-label="Saadiku kõnede loend">
         <div className="chart-header" style={{ marginBottom: "1rem" }}>
           <div>
