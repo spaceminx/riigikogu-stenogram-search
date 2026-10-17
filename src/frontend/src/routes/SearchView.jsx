@@ -8,7 +8,7 @@ import {
   fetchSpeakers,
   fetchSpeechContext,
 } from "../lib/api";
-import { parseQueryToGroups } from "../lib/formatters";
+import { mergeInputToGroups, parseQueryToGroups } from "../lib/formatters";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
 import SpeechCard from "../components/SpeechCard";
@@ -255,10 +255,7 @@ export function SearchView({
     if (e) e.preventDefault();
     let finalGroups = [...groups];
     if (inputValue.trim()) {
-      const added = parseQueryToGroups(inputValue.trim())[0];
-      if (added && added.length > 0) {
-        finalGroups[finalGroups.length - 1] = [...finalGroups[finalGroups.length - 1], ...added];
-      }
+      finalGroups = mergeInputToGroups(finalGroups, inputValue.trim());
       setGroups(finalGroups);
       setInputValue("");
     }

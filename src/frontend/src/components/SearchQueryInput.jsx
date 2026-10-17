@@ -1,5 +1,5 @@
 import React from "react";
-import { parseQueryToGroups } from "../lib/formatters";
+import { mergeInputToGroups } from "../lib/formatters";
 
 export function SearchQueryInput({
   groups,
@@ -12,26 +12,17 @@ export function SearchQueryInput({
 }) {
   const handleAddAnd = () => {
     if (inputValue.trim()) {
-      const added = parseQueryToGroups(inputValue.trim())[0];
-      if (added && added.length > 0) {
-        const newGroups = [...groups];
-        newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], ...added];
-        setGroups(newGroups);
-        setInputValue("");
-      }
+      const newGroups = mergeInputToGroups(groups, inputValue.trim());
+      setGroups(newGroups);
+      setInputValue("");
     }
   };
 
   const handleAddOr = () => {
     if (inputValue.trim()) {
-      const added = parseQueryToGroups(inputValue.trim())[0];
-      if (added && added.length > 0) {
-        const newGroups = [...groups];
-        newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], ...added];
-        newGroups.push([]);
-        setGroups(newGroups);
-        setInputValue("");
-      }
+      const newGroups = mergeInputToGroups(groups, inputValue.trim());
+      setGroups([...newGroups, []]);
+      setInputValue("");
     } else if (groups[groups.length - 1].length > 0) {
       setGroups([...groups, []]);
     }

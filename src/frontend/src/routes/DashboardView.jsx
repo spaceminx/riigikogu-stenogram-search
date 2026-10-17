@@ -6,7 +6,7 @@ import ActivityChart from "../components/ActivityChart";
 import SpeakersPanel from "../components/SpeakersPanel";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
-import { formatDateTime, normalizeSourceUrl, parseQueryToGroups } from "../lib/formatters";
+import { formatDateTime, mergeInputToGroups, normalizeSourceUrl } from "../lib/formatters";
 
 export function DashboardView({
   dashboardOverview,
@@ -56,10 +56,7 @@ export function DashboardView({
     if (e) e.preventDefault();
     let finalGroups = [...groups];
     if (inputValue.trim()) {
-      const added = parseQueryToGroups(inputValue.trim())[0];
-      if (added && added.length > 0) {
-        finalGroups[finalGroups.length - 1] = [...finalGroups[finalGroups.length - 1], ...added];
-      }
+      finalGroups = mergeInputToGroups(finalGroups, inputValue.trim());
       setGroups(finalGroups);
       setInputValue("");
     }
