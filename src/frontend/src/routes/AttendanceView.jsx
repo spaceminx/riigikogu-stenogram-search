@@ -6,7 +6,11 @@ import { formatFactionName } from "../lib/formatters";
 import AttendanceMembersTable from "../components/AttendanceMembersTable";
 import AttendanceFactionsTable from "../components/AttendanceFactionsTable";
 
-export function AttendanceView({ memberships = [], membershipsLoading = false }) {
+export function AttendanceView({
+  memberships = [],
+  membershipsLoading = false,
+  onOpenMethodology,
+}) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const attendanceTab = searchParams.get("att_tab") || "members";
@@ -74,11 +78,11 @@ export function AttendanceView({ memberships = [], membershipsLoading = false })
   const attendanceFactionsList = attendanceData?.[2] || [];
 
   const [sortConfig, setSortConfig] = useState({
-    key: "present_sessions",
+    key: "votes_voted_pct",
     direction: "descending",
   });
   const [factionSortConfig, setFactionSortConfig] = useState({
-    key: "attendance_percentage",
+    key: "votes_voted_pct",
     direction: "descending",
   });
 
@@ -109,16 +113,26 @@ export function AttendanceView({ memberships = [], membershipsLoading = false })
     let sortableItems = [...attendanceStats];
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const valA = a[sortConfig.key];
+        const valB = b[sortConfig.key];
+
+        if (valA == null && valB == null) return 0;
+        if (valA == null) return 1;
+        if (valB == null) return -1;
+
+        if (valA < valB) {
           return sortConfig.direction === "ascending" ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (valA > valB) {
           return sortConfig.direction === "ascending" ? 1 : -1;
         }
-        if (sortConfig.key !== "present_sessions") {
-          return b.present_sessions - a.present_sessions;
+        if (sortConfig.key === "votes_voted_pct") {
+          return (b.votes_voted ?? 0) - (a.votes_voted ?? 0);
         }
-        return b.attendance_percentage - a.attendance_percentage;
+        if (sortConfig.key === "registered_pct") {
+          return (b.registered_checks ?? 0) - (a.registered_checks ?? 0);
+        }
+        return (b.present_sessions ?? 0) - (a.present_sessions ?? 0);
       });
     }
     return sortableItems;
@@ -128,11 +142,24 @@ export function AttendanceView({ memberships = [], membershipsLoading = false })
     let sortableItems = [...factionStats];
     if (factionSortConfig.key) {
       sortableItems.sort((a, b) => {
-        if (a[factionSortConfig.key] < b[factionSortConfig.key]) {
+        const valA = a[factionSortConfig.key];
+        const valB = b[factionSortConfig.key];
+
+        if (valA == null && valB == null) return 0;
+        if (valA == null) return 1;
+        if (valB == null) return -1;
+
+        if (valA < valB) {
           return factionSortConfig.direction === "ascending" ? -1 : 1;
         }
-        if (a[factionSortConfig.key] > b[factionSortConfig.key]) {
+        if (valA > valB) {
           return factionSortConfig.direction === "ascending" ? 1 : -1;
+        }
+        if (factionSortConfig.key === "votes_voted_pct") {
+          return (b.votes_voted ?? 0) - (a.votes_voted ?? 0);
+        }
+        if (factionSortConfig.key === "registered_pct") {
+          return (b.registered_checks ?? 0) - (a.registered_checks ?? 0);
         }
         return 0;
       });
@@ -150,7 +177,7 @@ export function AttendanceView({ memberships = [], membershipsLoading = false })
 
   return (
     <div className="glass-panel" style={{ marginTop: "0.5rem" }}>
-      <div className="chart-header" style={{ marginBottom: "1.25rem" }}>
+      <div className="chart-header" style={{ marginBottom: "0.5rem" }}>
         <h2 style={{ margin: 0 }}>
           Kohaloleku statistika{" "}
           {(() => {
@@ -165,6 +192,16 @@ export function AttendanceView({ memberships = [], membershipsLoading = false })
           })()}
         </h2>
       </div>
+
+      <p className="attendance-page-intro">
+        Kohalolekut näidatakse kahe eraldi mõõdikuna: registreerumine kohalolekukontrollides ning
+        osalemine avalikel hääletustel.{" "}
+        {onOpenMethodology && (
+          <button type="button" className="attendance-intro-link" onClick={onOpenMethodology}>
+            Loe metoodika kohta
+          </button>
+        )}
+      </p>
 
       <div className="attendance-filter-bar">
         <div className="segmented-control">

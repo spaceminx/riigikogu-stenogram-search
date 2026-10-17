@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import case, func
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
+from src.api.votings import get_faction_vote_participation, get_member_vote_participation
 from src.load.database import SessionLocal
 from src.load.models import Attendance
 
@@ -109,6 +110,8 @@ def get_attendance_stats(
 
         results = query.group_by(member_key).all()
 
+        member_votes = get_member_vote_participation(session, membership=membership)
+
         stats = []
         for member_name, member_uuid, total, present, m_key in results:
             if not total:
@@ -123,6 +126,11 @@ def get_attendance_stats(
             )
             member_faction = faction or faction_map.get(m_key, default_fac)
 
+            mv = member_votes.get(
+                member_uuid,
+                {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+            )
+
             stats.append(
                 {
                     "member_name": member_name,
@@ -131,6 +139,14 @@ def get_attendance_stats(
                     "total_sessions": total_val,
                     "present_sessions": present_val,
                     "attendance_percentage": percentage,
+                    "registered_checks": present_val,
+                    "total_checks": total_val,
+                    "registered_pct": percentage,
+                    "votes_voted": mv["voted"],
+                    "votes_not_voted": mv["not_voted"],
+                    "votes_absent": mv["absent"],
+                    "votes_total": mv["total"],
+                    "votes_voted_pct": mv["voted_pct"],
                 }
             )
 
@@ -175,6 +191,11 @@ def get_person_attendance(person_uuid: str) -> dict:
             round((present_sessions / total_sessions) * 100, 1) if total_sessions > 0 else 0.0
         )
 
+        overall_votes = get_member_vote_participation(session, membership="all").get(
+            person_uuid,
+            {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+        )
+
         by_membership = []
         for mem_id, (start_d, end_d) in sorted(
             MEMBERSHIP_DATES.items(), key=lambda x: int(x[0]), reverse=True
@@ -192,10 +213,14 @@ def get_person_attendance(person_uuid: str) -> dict:
                 .first()
             )
             m_total = int(mem_row[0]) if mem_row and mem_row[0] else 0
-            if m_total > 0:
+            m_votes = get_member_vote_participation(session, membership=str(mem_id)).get(
+                person_uuid,
+                {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+            )
+            if m_total > 0 or m_votes["total"] > 0:
                 m_present = int(mem_row[1]) if mem_row and mem_row[1] else 0
                 m_absent = m_total - m_present
-                m_pct = round((m_present / m_total) * 100, 1)
+                m_pct = round((m_present / m_total) * 100, 1) if m_total > 0 else 0.0
                 by_membership.append(
                     {
                         "membership": str(mem_id),
@@ -203,6 +228,7 @@ def get_person_attendance(person_uuid: str) -> dict:
                         "present_sessions": m_present,
                         "absent_sessions": m_absent,
                         "attendance_percentage": m_pct,
+                        "votes": m_votes,
                     }
                 )
 
@@ -213,6 +239,7 @@ def get_person_attendance(person_uuid: str) -> dict:
             "present_sessions": present_sessions,
             "absent_sessions": absent_sessions,
             "attendance_percentage": percentage,
+            "votes": overall_votes,
             "by_membership": by_membership,
         }
     finally:
@@ -286,12 +313,42 @@ def get_faction_attendance_stats(
                     faction_totals[fac_name]["total"] += int(total) if total else 0
                     faction_totals[fac_name]["present"] += int(present) if present else 0
 
+                active_faction_votes: dict[str, dict[str, int]] = {}
+                member_votes = get_member_vote_participation(session, membership=membership)
+                for uid in active_uuids:
+                    fac = active_uuid_factions.get(
+                        uid, "Fraktsiooni mittekuuluvad Riigikogu liikmed"
+                    )
+                    if fac not in active_faction_votes:
+                        active_faction_votes[fac] = {
+                            "voted": 0,
+                            "not_voted": 0,
+                            "absent": 0,
+                            "total": 0,
+                        }
+                    mv = member_votes.get(uid)
+                    if mv:
+                        active_faction_votes[fac]["voted"] += mv["voted"]
+                        active_faction_votes[fac]["not_voted"] += mv["not_voted"]
+                        active_faction_votes[fac]["absent"] += mv["absent"]
+                        active_faction_votes[fac]["total"] += mv["total"]
+
                 stats = []
                 for fac_name, m_count in active_faction_counts.items():
                     totals = faction_totals.get(fac_name, {"total": 0, "present": 0})
                     total_val = totals["total"]
                     present_val = totals["present"]
                     percentage = round((present_val / total_val) * 100, 1) if total_val > 0 else 0.0
+
+                    f_votes = active_faction_votes.get(
+                        fac_name, {"voted": 0, "not_voted": 0, "absent": 0, "total": 0}
+                    )
+                    v_tot = f_votes["total"]
+                    v_voted = f_votes["voted"]
+                    v_nv = f_votes["not_voted"]
+                    v_ab = f_votes["absent"]
+                    v_pct = round((v_voted / v_tot) * 100.0, 1) if v_tot > 0 else None
+
                     stats.append(
                         {
                             "faction": fac_name,
@@ -299,6 +356,14 @@ def get_faction_attendance_stats(
                             "total_sessions": total_val,
                             "present_sessions": present_val,
                             "attendance_percentage": percentage,
+                            "registered_checks": present_val,
+                            "total_checks": total_val,
+                            "registered_pct": percentage,
+                            "votes_voted": v_voted,
+                            "votes_not_voted": v_nv,
+                            "votes_absent": v_ab,
+                            "votes_total": v_tot,
+                            "votes_voted_pct": v_pct,
                         }
                     )
 
@@ -352,6 +417,14 @@ def get_faction_attendance_stats(
                             "total_sessions": total_val,
                             "present_sessions": present_val,
                             "attendance_percentage": percentage,
+                            "registered_checks": present_val,
+                            "total_checks": total_val,
+                            "registered_pct": percentage,
+                            "votes_voted": 0,
+                            "votes_not_voted": 0,
+                            "votes_absent": 0,
+                            "votes_total": 0,
+                            "votes_voted_pct": None,
                         }
                     )
 
@@ -374,6 +447,8 @@ def get_faction_attendance_stats(
 
         results = query.group_by(Attendance.faction).all()
 
+        faction_votes = get_faction_vote_participation(session, membership=membership)
+
         stats = []
         for fac_name, member_count, total, present in results:
             if not total:
@@ -383,6 +458,11 @@ def get_faction_attendance_stats(
             total_val = int(total)
 
             percentage = round((present_val / total_val) * 100, 1)
+            fv = faction_votes.get(
+                fac_name,
+                {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+            )
+
             stats.append(
                 {
                     "faction": fac_name,
@@ -390,6 +470,14 @@ def get_faction_attendance_stats(
                     "total_sessions": total_val,
                     "present_sessions": present_val,
                     "attendance_percentage": percentage,
+                    "registered_checks": present_val,
+                    "total_checks": total_val,
+                    "registered_pct": percentage,
+                    "votes_voted": fv["voted"],
+                    "votes_not_voted": fv["not_voted"],
+                    "votes_absent": fv["absent"],
+                    "votes_total": fv["total"],
+                    "votes_voted_pct": fv["voted_pct"],
                 }
             )
 

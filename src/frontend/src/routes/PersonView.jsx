@@ -21,7 +21,7 @@ import {
   fetchSpeechContext,
 } from "../lib/api";
 import { formatDate } from "../lib/calendarUtils";
-import { toRoman } from "../lib/formatters";
+import { formatVoteSplit, toRoman } from "../lib/formatters";
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
@@ -385,6 +385,18 @@ export function PersonView({ theme = "light" }) {
     formattedAttendance = `${attendance.attendance_percentage}%`;
   }
 
+  let formattedVotes = "—";
+  if (attendanceLoading) {
+    formattedVotes = "…";
+  } else if (
+    attendance &&
+    !attendanceError &&
+    attendance.votes?.total > 0 &&
+    attendance.votes.voted_pct != null
+  ) {
+    formattedVotes = `${attendance.votes.voted_pct}%`;
+  }
+
   const formatFactionPeriod = (start, end) => {
     const startStr = start ? formatDate(start) : "—";
     const endStr = !end || end === "2099-12-31" ? "praegu" : formatDate(end);
@@ -526,14 +538,38 @@ export function PersonView({ theme = "light" }) {
           </div>
 
           <div className="glass-panel person-metric-card">
-            <span className="person-metric-label">Kohalolek kohalolekukontrollides</span>
+            <span className="person-metric-label">Registreerus kohalolekukontrollis</span>
             <strong className="person-metric-value">{formattedAttendance}</strong>
             <span className="person-metric-desc">
               {attendanceError
                 ? "Kohaloleku andmed puuduvad"
                 : attendance?.total_sessions > 0
-                  ? `${attendance.present_sessions} / ${attendance.total_sessions} korda kohal`
+                  ? `${attendance.present_sessions} / ${attendance.total_sessions} kontrollist`
                   : "Kohalolekukontrollid puuduvad"}
+            </span>
+          </div>
+
+          <div className="glass-panel person-metric-card">
+            <span className="person-metric-label">Osales hääletustel</span>
+            <strong className="person-metric-value">{formattedVotes}</strong>
+            <span className="person-metric-desc">
+              {attendanceError ? (
+                "Hääletuste andmed puuduvad"
+              ) : attendance?.votes?.total > 0 ? (
+                <>
+                  <span>{`${attendance.votes.voted} / ${attendance.votes.total} hääletusest`}</span>
+                  <span className="person-metric-subline">
+                    {formatVoteSplit(
+                      attendance.votes.not_voted,
+                      attendance.votes.absent,
+                      attendance.votes.total,
+                      { decimals: 1 }
+                    )}
+                  </span>
+                </>
+              ) : (
+                "Hääletused puuduvad"
+              )}
             </span>
           </div>
         </div>

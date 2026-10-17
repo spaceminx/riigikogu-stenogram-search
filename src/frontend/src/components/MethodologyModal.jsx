@@ -84,10 +84,8 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
           <div className="methodology-section">
             <h3>1. Kohaloleku mõõtmine</h3>
             <p>
-              Kohaloleku statistika põhineb Riigikogu täiskogu ametlikel kohalolekukontrollidel.
-              Registreeritud kohalolek näitab osalemist kontrollil konkreetsel ajamomendil, mitte
-              saadiku pidevat füüsilist viibimist istungisaalis mitmetunnise arutelu kestel. Samuti
-              ei kajasta see tööd alatistes komisjonides, fraktsioonides ega kohtumisi valijatega.
+              {systemStatus?.methodology?.attendance ||
+                "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse."}
             </p>
           </div>
 
