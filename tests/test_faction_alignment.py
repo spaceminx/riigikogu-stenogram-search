@@ -692,7 +692,10 @@ def test_leave_one_out():
     # Since it is counted in differences, let's verify it appears in /differences:
     resp = client.get("/persons/mp-main-1/faction-alignment/differences?membership=15")
     assert resp.status_code == 200
-    diffs = resp.json()
+    data = resp.json()
+    assert isinstance(data, dict)
+    assert data["total"] == 2
+    diffs = data["results"]
     uuids = [d["voting_uuid"] for d in diffs]
     assert "fa-v-loo" in uuids
     loo_item = next(d for d in diffs if d["voting_uuid"] == "fa-v-loo")
@@ -776,7 +779,12 @@ def test_differences_endpoint_order_and_paging():
         "/persons/mp-main-1/faction-alignment/differences?membership=15&limit=50&offset=0"
     )
     assert resp.status_code == 200
-    items = resp.json()
+    data = resp.json()
+    assert isinstance(data, dict)
+    assert data["total"] == 2
+    assert data["limit"] == 50
+    assert data["offset"] == 0
+    items = data["results"]
     assert isinstance(items, list)
     assert len(items) == 2
     assert items[0]["voting_uuid"] == "fa-v-loo"
@@ -791,15 +799,19 @@ def test_differences_endpoint_order_and_paging():
     resp_p1 = client.get(
         "/persons/mp-main-1/faction-alignment/differences?membership=15&limit=1&offset=0"
     )
-    assert len(resp_p1.json()) == 1
-    assert resp_p1.json()[0]["voting_uuid"] == "fa-v-loo"
+    data_p1 = resp_p1.json()
+    assert data_p1["total"] == 2
+    assert len(data_p1["results"]) == 1
+    assert data_p1["results"][0]["voting_uuid"] == "fa-v-loo"
 
     # Test paging limit=1 offset=1
     resp_p2 = client.get(
         "/persons/mp-main-1/faction-alignment/differences?membership=15&limit=1&offset=1"
     )
-    assert len(resp_p2.json()) == 1
-    assert resp_p2.json()[0]["voting_uuid"] == "fa-v2-diff"
+    data_p2 = resp_p2.json()
+    assert data_p2["total"] == 2
+    assert len(data_p2["results"]) == 1
+    assert data_p2["results"][0]["voting_uuid"] == "fa-v2-diff"
 
 
 def test_voting_detail_majority_position():
@@ -855,3 +867,86 @@ def test_voting_detail_majority_position():
     assert resp_tie.status_code == 200
     fac_tie = next(f for f in resp_tie.json()["by_faction"] if f["faction"] == "Viik Fraktsioon")
     assert fac_tie["majority_position"] is None
+
+
+def test_absent_member_on_split_vote():
+    session = SessionLocal()
+    p_uuid = "mp-absent-split"
+    if not session.query(Person).filter(Person.uuid == p_uuid).first():
+        session.add(
+            Person(
+                uuid=p_uuid,
+                first_name="Mari",
+                last_name="Puuduja",
+                full_name="Mari Puuduja",
+                active=1,
+            )
+        )
+
+    # Voting where Faction Split has 2 POOLT, 2 VASTU among other members, and main MP is PUUDUB
+    v_abs_split = Voting(
+        uuid="fa-v-abs-split",
+        voting_number=100,
+        type="AVALIK",
+        description="Puudumine viigiga hääletusel",
+        date="2026-07-02",
+        start_time="2026-07-02T10:00:00",
+        sitting_date="2026-07-02",
+        sitting_datetime="2026-07-02T10:00:00",
+        membership=15,
+        in_favor=2,
+        against=2,
+        neutral=0,
+        abstained=1,
+    )
+    session.add(v_abs_split)
+    session.add(
+        Vote(
+            voting_uuid="fa-v-abs-split",
+            member_uuid=p_uuid,
+            faction="Fraktsioon Split",
+            decision="PUUDUB",
+        )
+    )
+    session.add(
+        Vote(
+            voting_uuid="fa-v-abs-split",
+            member_uuid="mp-fa-1",
+            faction="Fraktsioon Split",
+            decision="POOLT",
+        )
+    )
+    session.add(
+        Vote(
+            voting_uuid="fa-v-abs-split",
+            member_uuid="mp-fa-2",
+            faction="Fraktsioon Split",
+            decision="POOLT",
+        )
+    )
+    session.add(
+        Vote(
+            voting_uuid="fa-v-abs-split",
+            member_uuid="mp-fa-3",
+            faction="Fraktsioon Split",
+            decision="VASTU",
+        )
+    )
+    session.add(
+        Vote(
+            voting_uuid="fa-v-abs-split",
+            member_uuid="mp-fa-4",
+            faction="Fraktsioon Split",
+            decision="VASTU",
+        )
+    )
+    session.commit()
+    session.close()
+
+    resp = client.get(f"/persons/{p_uuid}/faction-alignment?membership=15")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["excluded"]["absent"] == 1
+    assert data["excluded"]["split"] == 0
+    assert data["same"] == 0
+    assert data["different"] == 0

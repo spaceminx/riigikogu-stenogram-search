@@ -122,7 +122,6 @@ export function PersonView({ theme = "light" }) {
   const [alignmentMembership, setAlignmentMembership] = useState("all");
   const [extraDifferences, setExtraDifferences] = useState([]);
   const [diffsLoadingMore, setDiffsLoadingMore] = useState(false);
-  const [hasLoadedAll, setHasLoadedAll] = useState(false);
 
   const { data: factionAlignment } = useSWR(
     uuid ? `person-faction-alignment-${uuid}-${alignmentMembership}` : null,
@@ -147,43 +146,37 @@ export function PersonView({ theme = "light" }) {
     }
   );
 
+  const totalDifferences = initialDifferences?.total ?? 0;
+
   const differences = useMemo(
-    () => [...(initialDifferences || []), ...extraDifferences],
+    () => [...(initialDifferences?.results || []), ...extraDifferences],
     [initialDifferences, extraDifferences]
   );
 
   const diffLoading = diffsInitialLoading || diffsLoadingMore;
 
   const hasMoreDiffs = useMemo(() => {
-    if (hasLoadedAll) return false;
     if (!initialDifferences) return false;
-    if (initialDifferences.length < 10) return false;
-    if (extraDifferences.length > 0 && extraDifferences.length % 10 !== 0) return false;
-    return true;
-  }, [hasLoadedAll, initialDifferences, extraDifferences]);
+    return differences.length < (initialDifferences.total ?? 0);
+  }, [initialDifferences, differences]);
 
   const handleAlignmentMembershipChange = (m) => {
     setAlignmentMembership(m);
     setExtraDifferences([]);
-    setHasLoadedAll(false);
   };
 
   const handleLoadMoreDifferences = async () => {
     if (diffLoading || !uuid) return;
     setDiffsLoadingMore(true);
     try {
-      const nextItems = await fetchFactionAlignmentDifferences(uuid, {
+      const res = await fetchFactionAlignmentDifferences(uuid, {
         membership: alignmentMembership,
         limit: 10,
         offset: differences.length,
       });
-      if (nextItems && nextItems.length > 0) {
+      const nextItems = res?.results || [];
+      if (nextItems.length > 0) {
         setExtraDifferences((prev) => [...prev, ...nextItems]);
-        if (nextItems.length < 10) {
-          setHasLoadedAll(true);
-        }
-      } else {
-        setHasLoadedAll(true);
       }
     } catch {
       // Ignored
@@ -857,7 +850,7 @@ export function PersonView({ theme = "light" }) {
                 color: "var(--color-text-muted)",
               }}
             >
-              Erinevad hääletused {differences.length > 0 ? `(${differences.length})` : ""}
+              Erinevad hääletused {totalDifferences > 0 ? `(${totalDifferences})` : ""}
             </h3>
 
             {differences.length === 0 ? (

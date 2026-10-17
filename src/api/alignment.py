@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func
 from sqlalchemy.orm import aliased
 
+from src.api.votings import format_session_source_file, is_technical_voting_clause
 from src.load.models import Person, Speech, SystemMeta, Vote, Voting
 
 logger = logging.getLogger(__name__)
@@ -22,37 +23,6 @@ _ALIGNMENT_CACHE: dict = {
     "last_sync_at": None,
     "persons": {},  # person_uuid -> dict of computed data
 }
-
-
-def is_technical_voting_clause():
-    """SQLAlchemy filter condition identifying technical votings."""
-    return and_(
-        Voting.type == "AVALIK",
-        (
-            func.coalesce(Voting.in_favor, 0)
-            + func.coalesce(Voting.against, 0)
-            + func.coalesce(Voting.neutral, 0)
-        )
-        == 0,
-    )
-
-
-def format_session_source_file(
-    sitting_date: str | None, sitting_datetime: str | None
-) -> str | None:
-    """Format expected speeches.source_file name from sitting date and datetime."""
-    if not sitting_date or not sitting_datetime:
-        return None
-    try:
-        if "T" in sitting_datetime:
-            time_part = sitting_datetime.split("T", 1)[1]
-            hh = time_part[:2]
-            mm = time_part[3:5]
-            if len(hh) == 2 and len(mm) == 2 and hh.isdigit() and mm.isdigit():
-                return f"{sitting_date}_{hh}{mm}.api"
-    except Exception:
-        pass
-    return None
 
 
 def _get_last_sync_at(session) -> str | None:
@@ -190,6 +160,9 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
         if not m_fac or m_fac == "Fraktsiooni mittekuuluvad Riigikogu liikmed":
             res_type = "no_faction"
             fac_pos = None
+        elif m_dec == "PUUDUB":
+            res_type = "absent"
+            fac_pos = None
         else:
             counts = other_positions_map.get(v_uuid, {})
             total_other = sum(counts.values())
@@ -207,9 +180,7 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
                     fac_pos = None
                 else:
                     fac_pos = strict_maj
-                    if m_dec == "PUUDUB":
-                        res_type = "absent"
-                    elif m_dec == fac_pos:
+                    if m_dec == fac_pos:
                         res_type = "same"
                     else:
                         res_type = "different"
@@ -315,7 +286,7 @@ def get_faction_alignment_differences(
         diffs = [d for d in diffs if d.get("membership") == mem_int]
 
     paged = diffs[offset : offset + limit]
-    return [
+    results = [
         {
             "voting_uuid": it["voting_uuid"],
             "voting_number": it["voting_number"],
@@ -332,3 +303,9 @@ def get_faction_alignment_differences(
         }
         for it in paged
     ]
+    return {
+        "total": len(diffs),
+        "limit": limit,
+        "offset": offset,
+        "results": results,
+    }

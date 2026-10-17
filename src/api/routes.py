@@ -35,6 +35,11 @@ from src.api.search import (
     sanitize_query,
     search_by_keyword,
 )
+from src.api.votings import (
+    format_session_source_file,
+    is_technical_voting,
+    is_technical_voting_clause,
+)
 from src.load.database import SessionLocal
 from src.load.models import Attendance, Person, Speech, SpeechAlias, SystemMeta, Vote, Voting
 
@@ -50,47 +55,6 @@ def validate_membership(membership: str | None) -> None:
     """Validate membership against dynamic configuration. Raise 422 if unknown."""
     if membership and membership != "all" and membership not in MEMBERSHIP_DATES:
         raise HTTPException(status_code=422, detail="Tundmatu koosseis")
-
-
-def format_session_source_file(
-    sitting_date: str | None, sitting_datetime: str | None
-) -> str | None:
-    """Format expected speeches.source_file name from sitting date and datetime."""
-    if not sitting_date or not sitting_datetime:
-        return None
-    try:
-        if "T" in sitting_datetime:
-            time_part = sitting_datetime.split("T", 1)[1]
-            hh = time_part[:2]
-            mm = time_part[3:5]
-            if len(hh) == 2 and len(mm) == 2 and hh.isdigit() and mm.isdigit():
-                return f"{sitting_date}_{hh}{mm}.api"
-    except Exception:
-        pass
-    return None
-
-
-def is_technical_voting(
-    voting_type: str | None,
-    in_favor: int | None,
-    against: int | None,
-    neutral: int | None,
-) -> bool:
-    """Determine if a voting is technical (AVALIK with 0 in_favor, against, and neutral votes)."""
-    return voting_type == "AVALIK" and ((in_favor or 0) + (against or 0) + (neutral or 0)) == 0
-
-
-def is_technical_voting_clause():
-    """SQLAlchemy filter condition identifying technical votings."""
-    return and_(
-        Voting.type == "AVALIK",
-        (
-            func.coalesce(Voting.in_favor, 0)
-            + func.coalesce(Voting.against, 0)
-            + func.coalesce(Voting.neutral, 0)
-        )
-        == 0,
-    )
 
 
 @router.get("/")
@@ -1901,7 +1865,7 @@ def system_status():
             "methodology": {
                 "search": 'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Jutumärkides fraas leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).',
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
-                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid alla 3 liikme arvatakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
+                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg. Kestus on piiratud järgmise kõne algusega, sest allika lõpuaeg võib ulatuda järgmistesse kõnedesse.",
