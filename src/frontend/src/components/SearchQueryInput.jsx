@@ -104,15 +104,15 @@ export function SearchQueryInput({
         </div>
       </div>
 
-      <div className="search-hint">
-        Iga plokk on eraldi otsingusõna või fraas. Mitmesõnaline plokk otsib täpset fraasi. Lisa
-        plokke nuppudega „+ JA“ ja „+ VÕI“.
-      </div>
-
       <div className="search-controls">
         <button type="submit" className="search-button" disabled={loading}>
           {loading ? "Otsin..." : "Otsi"}
         </button>
+      </div>
+
+      <div className="search-hint">
+        Iga plokk on eraldi otsingusõna või fraas. Mitmesõnaline plokk otsib täpset fraasi. Lisa
+        plokke nuppudega „+ JA“ ja „+ VÕI“.
       </div>
 
       {children}

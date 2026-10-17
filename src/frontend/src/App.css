@@ -1795,6 +1795,7 @@ select:focus-visible {
 }
 
 .search-hint {
+  grid-column: 1 / -1;
   color: #80958c;
   font-size: 11px;
 }
@@ -4254,6 +4255,14 @@ input.search-input:focus-visible {
   justify-content: flex-end;
 }
 
+.search-hint {
+  grid-column: 1 / -1;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: -2px;
+}
+
 .search-filters-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -5034,7 +5043,8 @@ html[data-theme="dark"] .menu-status-row,
 html[data-theme="dark"] .filter-label,
 html[data-theme="dark"] .summary-caption,
 html[data-theme="dark"] .speaker-count-caption,
-html[data-theme="dark"] .sidebar-empty-state {
+html[data-theme="dark"] .sidebar-empty-state,
+html[data-theme="dark"] .search-hint {
   color: #a8b5c6;
 }
 
