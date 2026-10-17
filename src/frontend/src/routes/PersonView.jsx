@@ -410,12 +410,15 @@ export function PersonView({ theme = "light" }) {
         <div className="person-header-content">
           <div className="person-avatar-wrapper">
             {person.photo_url && !imgError ? (
-              <img
-                src={person.photo_url}
-                alt={person.full_name}
-                className="person-photo"
-                onError={() => setImgError(true)}
-              />
+              <>
+                <img
+                  src={person.photo_url}
+                  alt={person.full_name}
+                  className="person-photo"
+                  onError={() => setImgError(true)}
+                />
+                <div className="person-photo-caption">Foto: Riigikogu</div>
+              </>
             ) : (
               <div className="person-photo-placeholder" aria-hidden="true">
                 {initials}

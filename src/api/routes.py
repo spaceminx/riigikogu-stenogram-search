@@ -546,11 +546,18 @@ def search_export(
             "X-Total-Count": str(total_count),
             "X-Export-Count": str(len(results)),
             "X-Export-Truncated": is_truncated,
+            "X-License": "CC BY-SA 3.0",
         }
 
         if format == "json":
+            payload = {
+                "source": "Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me",
+                "license": "CC BY-SA 3.0",
+                "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+                "results": results,
+            }
             return Response(
-                content=json.dumps(results, ensure_ascii=False, indent=2),
+                content=json.dumps(payload, ensure_ascii=False, indent=2),
                 media_type="application/json; charset=utf-8",
                 headers={
                     **common_headers,
@@ -559,6 +566,9 @@ def search_export(
             )
 
         output = io.StringIO()
+        output.write(
+            "# Allikas: Riigikogu avaandmed (api.riigikogu.ee) – töödeldud: riigivaade.me – litsents: CC BY-SA 3.0\n"
+        )
         writer = csv.writer(output)
         writer.writerow(
             [
@@ -1869,7 +1879,7 @@ def system_status():
                 "votings": total_votings,
             },
             "methodology": {
-                "search": 'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Jutumärkides fraas leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).',
+                "search": 'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).',
                 "attendance": "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse.",
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
