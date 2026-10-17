@@ -23,7 +23,8 @@ from scripts.verify_pipeline_integrity import (
 )
 from src.api.main import app
 from src.load.database import SessionLocal
-from src.load.loader import create_tables, ensure_schema, load_votes_to_database
+from src.load.loader import create_tables, load_votes_to_database
+from src.load.migrations import apply_migrations
 from src.load.models import Person, Speech, Vote, Voting
 
 client = TestClient(app)
@@ -32,7 +33,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True, scope="module")
 def setup_votes_db():
     create_tables()
-    ensure_schema()
+    apply_migrations()
     session = SessionLocal()
 
     # Create dummy person if not exists

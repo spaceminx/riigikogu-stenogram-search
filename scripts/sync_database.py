@@ -231,7 +231,11 @@ def sync_database(skip_download: bool = False) -> bool:
         # 2. Ensure tables and indexes exist
         print("\n[2/8] Ensuring database tables and indexes exist...")
         try:
-            create_tables()
+            applied = create_tables()
+            if applied:
+                print(f"Applied migrations: {', '.join(applied)}")
+            else:
+                print("Schema up to date")
             create_indexes()
         except Exception as e:
             err_msg = f"Failed to ensure schema/indexes: {e}"

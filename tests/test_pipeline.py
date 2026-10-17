@@ -1852,7 +1852,8 @@ def test_fetch_stenograms_rich_none_unedited_fallback(tmp_path, monkeypatch):
 def test_ensure_schema_idempotency(tmp_path):
     from sqlalchemy import create_engine
 
-    from src.load.loader import ensure_schema
+    from src.load.indexes import create_indexes
+    from src.load.migrations import apply_migrations
 
     db_path = str(tmp_path / "test_schema.sqlite")
     conn = sqlite3.connect(db_path)
@@ -1865,7 +1866,8 @@ def test_ensure_schema_idempotency(tmp_path):
     eng = create_engine(f"sqlite:///{db_path}")
 
     # First call: should add member_uuid column and index
-    ensure_schema(eng)
+    apply_migrations(eng)
+    create_indexes(eng)
 
     conn = sqlite3.connect(db_path)
     cols = [r[1] for r in conn.execute("PRAGMA table_info(attendance)").fetchall()]
@@ -1875,7 +1877,8 @@ def test_ensure_schema_idempotency(tmp_path):
     conn.close()
 
     # Second call: must be idempotent and succeed without error
-    ensure_schema(eng)
+    apply_migrations(eng)
+    create_indexes(eng)
 
 
 def test_repair_attendance_uuids_logic(tmp_path, monkeypatch):

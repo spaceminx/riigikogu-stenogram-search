@@ -12,7 +12,8 @@ from fastapi.testclient import TestClient
 from config import OUTPUT_DIR_PROCESSED
 from src.api.main import app
 from src.load.database import SessionLocal
-from src.load.loader import create_tables, ensure_schema
+from src.load.loader import create_tables
+from src.load.migrations import apply_migrations
 from src.load.models import Attendance, Lemma, Person, Speech, SpeechAlias, SpeechTerm, SystemMeta
 
 client = TestClient(app)
@@ -1093,8 +1094,8 @@ def test_system_status_and_overview_cache_invalidates_on_last_sync_at():
 
 
 def test_system_meta_idempotent_schema():
-    ensure_schema()
-    ensure_schema()
+    apply_migrations()
+    apply_migrations()
     session = SessionLocal()
     session.query(SystemMeta).all()
     session.close()
