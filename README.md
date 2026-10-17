@@ -196,7 +196,7 @@ Populates `member_uuid` across historical attendance records (`data/processed/at
    ```bash
    python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
-   *Note:* The schema migration (`ensure_schema()`) runs automatically and idempotently on table initialization, adding column `member_uuid TEXT` and index `idx_attendance_member_uuid` if they do not yet exist.
+   *Note:* The schema migration (`apply_migrations()`) runs automatically and idempotently on table initialization, adding column `member_uuid TEXT` and ensuring indexes if they do not yet exist.
 
 #### Ignored Sessions Removal (`remove_ignored_sessions.py`)
 Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` covering the night of 2021-03-24) from yearly JSONL datasets and the SQLite database:
@@ -287,9 +287,16 @@ The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to
 - Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
 - Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host.
 
+### Schema Changes
+Database schema changes are managed via numbered migrations recorded in the `schema_migrations` table:
+- Add a new numbered migration tuple `(version, name, up(conn), verify(conn))` in `src/load/migrations.py`.
+- Never edit an applied migration; always add a new numbered migration.
+- Database indexes stay outside migrations for bulk-load performance; add or drop indexes in `INDEXES` and `REDUNDANT_INDEXES` in `src/load/indexes.py`.
+- Migrations run automatically and idempotently at API startup and during daily database sync (`apply_migrations()`).
+
 ### Production Database Migration
 When deploying updates with schema or data additions (such as the attendance `member_uuid` column):
-1. Code deployment automatically creates missing columns and indexes upon backend initialization via `ensure_schema()`.
+1. Code deployment automatically applies pending migrations and creates missing indexes upon backend initialization via `apply_migrations()` and `create_indexes()`.
 2. To populate historical attendance member UUIDs in production:
    ```bash
    docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
