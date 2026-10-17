@@ -574,9 +574,10 @@ def fetch_votes(
         if modified_years:
             logger.info("Loading modified years %s into database...", sorted(modified_years))
             try:
-                from src.load.loader import ensure_schema, load_votes_to_database
+                from src.load.loader import load_votes_to_database
+                from src.load.migrations import apply_migrations
 
-                ensure_schema()
+                apply_migrations()
                 loaded = load_votes_to_database(years=list(modified_years))
                 logger.info("Loaded %d new votings into database.", loaded)
             except Exception as e:

@@ -177,7 +177,7 @@ Saadikute `member_uuid` sidumiseks olemasolevate kohaloleku andmetega (`data/pro
    ```bash
    python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
-   *Märkus:* Skeemi migratsioon (`ensure_schema()`) toimub automaatselt ja idempotentselt rakenduse käivitumisel, lisades tabelisse veeru `member_uuid TEXT` ja indeksi `idx_attendance_member_uuid`, kui need veel puuduvad.
+   *Märkus:* Skeemi migratsioon (`apply_migrations()`) toimub automaatselt ja idempotentselt rakenduse käivitumisel, lisades tabelisse veeru `member_uuid TEXT` ja tagades vajalikud indeksid, kui need veel puuduvad.
 
 ### 6. FastAPI serveri käivitamine
 ```bash
@@ -207,9 +207,16 @@ Serveri `self-hosted` runner vajab repositooriumi saladust (secret) `DEPLOY_DIR`
 - Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
 - Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/home/<kasutaja>/riigikogu-stenogram-search`).
 
+### Skeemimuudatused
+Andmebaasi skeemimuudatusi hallatakse nummerdatud migratsioonidega, mis salvestatakse tabelisse `schema_migrations`:
+- Uue skeemimuudatuse lisamiseks lisa failis `src/load/migrations.py` listi `MIGRATIONS` uus migratsioon `(version, name, up(conn), verify(conn))`.
+- Ära kunagi muuda juba rakendatud migratsiooni; lisa alati uus nummerdatud migratsioon.
+- Indekseid hoitakse teadlikult migratsioonidest eraldi (et masslaadimisel saaks neid luua lõpus); uued indeksid või eemaldamised defineeritakse failis `src/load/indexes.py` (`INDEXES` ja `REDUNDANT_INDEXES`).
+- Migratsioonid käivituvad automaatselt ja idempotentselt rakenduse API käivitumisel ning igapäevase andmebaasi sünkroonimise käigus (`apply_migrations()`).
+
 ### Tootmiskeskkonna migratsioon
 Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) tootmisse viimisel:
-1. Koodi paigaldamisel teostab rakenduse käivitus vajadusel puuduvate veergude ja indeksite lisamise automaatselt (`ensure_schema()`).
+1. Koodi paigaldamisel teostab rakenduse käivitus vajadusel puuduvate migratsioonide ja indeksite lisamise automaatselt (`apply_migrations()`, `create_indexes()`).
 2. Ajalooliste kohaloleku kirjete UUID-de täitmiseks serveris käivita:
    ```bash
    docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite

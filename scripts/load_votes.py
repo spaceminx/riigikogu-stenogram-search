@@ -15,12 +15,13 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import OUTPUT_DIR_PROCESSED
-from src.load.loader import ensure_schema, load_votes_to_database
+from src.load.loader import load_votes_to_database
+from src.load.migrations import apply_migrations
 
 
 def load_votes(years: list[int] | None = None) -> int:
     """Load voting records into SQLite and report counts per year."""
-    ensure_schema()
+    apply_migrations()
 
     processed_dir = Path(OUTPUT_DIR_PROCESSED)
     if not processed_dir.exists():

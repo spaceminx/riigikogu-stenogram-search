@@ -11,12 +11,10 @@ from config import OUTPUT_DIR_PROCESSED
 from src.load.database import SessionLocal, engine
 from src.load.models import (
     Attendance,
-    Base,
     Person,
     Speech,
     SpeechAlias,
     SpeechTerm,
-    SystemMeta,
     Vote,
     Voting,
 )
@@ -126,86 +124,36 @@ def apply_capped_durations_to_session_speeches(speeches: list) -> None:
         set_attr(cur_sp, "duration_seconds", dur)
 
 
-def ensure_schema(target_engine=None) -> None:
-    """Ensure database schema is up to date (idempotent migration helper)."""
-    eng = target_engine or engine
-    SystemMeta.__table__.create(eng, checkfirst=True)
-    Voting.__table__.create(eng, checkfirst=True)
-    Vote.__table__.create(eng, checkfirst=True)
+def _ensure_schema(conn) -> None:
+    """Private schema baseline helper for 0001_baseline migration."""
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "votings" in tables:
+        v_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(votings)"))}
+        if "sitting_date" not in v_cols:
+            conn.execute(text("ALTER TABLE votings ADD COLUMN sitting_date TEXT;"))
+        if "sitting_datetime" not in v_cols:
+            conn.execute(text("ALTER TABLE votings ADD COLUMN sitting_datetime TEXT;"))
 
-    with eng.connect() as conn:
-        tables = {
-            row[0]
-            for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
-        }
-        if "votings" in tables:
-            v_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(votings)"))}
-            if "sitting_date" not in v_cols:
-                conn.execute(text("ALTER TABLE votings ADD COLUMN sitting_date TEXT;"))
-            if "sitting_datetime" not in v_cols:
-                conn.execute(text("ALTER TABLE votings ADD COLUMN sitting_datetime TEXT;"))
-
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_votings_date ON votings(date);"))
-        conn.execute(
-            text("CREATE INDEX IF NOT EXISTS idx_votings_sitting_date ON votings(sitting_date);")
-        )
-        conn.execute(
-            text(
-                "CREATE INDEX IF NOT EXISTS idx_votings_doc_uuid ON votings(related_document_uuid);"
-            )
-        )
-        conn.execute(
-            text("CREATE INDEX IF NOT EXISTS idx_votes_member_uuid ON votes(member_uuid);")
-        )
-        conn.execute(text("DROP INDEX IF EXISTS idx_votes_voting_uuid;"))
-        conn.execute(text("DROP INDEX IF EXISTS ix_votes_voting_uuid;"))
-        conn.execute(text("DROP INDEX IF EXISTS ix_votings_date;"))
-        conn.execute(text("DROP INDEX IF EXISTS ix_votings_sitting_date;"))
-        conn.execute(text("DROP INDEX IF EXISTS ix_votings_related_document_uuid;"))
-        conn.execute(text("DROP INDEX IF EXISTS ix_votes_member_uuid;"))
-        if "attendance" in tables:
-            cols = {row[1] for row in conn.execute(text("PRAGMA table_info(attendance)"))}
-            if "member_uuid" not in cols:
-                conn.execute(text("ALTER TABLE attendance ADD COLUMN member_uuid TEXT;"))
-            conn.execute(
-                text(
-                    "CREATE INDEX IF NOT EXISTS idx_attendance_member_uuid ON attendance(member_uuid);"
-                )
-            )
-        conn.commit()
+    if "attendance" in tables:
+        cols = {row[1] for row in conn.execute(text("PRAGMA table_info(attendance)"))}
+        if "member_uuid" not in cols:
+            conn.execute(text("ALTER TABLE attendance ADD COLUMN member_uuid TEXT;"))
 
 
-def create_tables() -> None:
-    """Create all database tables and ensure optional columns exist."""
-    Base.metadata.create_all(bind=engine)
-    ensure_schema()
-    with engine.connect() as conn:
-        # Migrate optional columns if speeches table already exists
-        existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(speeches)"))}
-        if existing_cols:
-            if "agenda_title" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN agenda_title TEXT;"))
-            if "video_url" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN video_url TEXT;"))
-            if "status" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN status TEXT;"))
-            if "speaker_uuid" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN speaker_uuid TEXT;"))
-            if "ems_id" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN ems_id TEXT;"))
-            if "speech_type" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN speech_type TEXT;"))
-            if "external_id" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN external_id INTEGER;"))
-            if "start_time" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN start_time TEXT;"))
-            if "end_time" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN end_time TEXT;"))
-            if "duration_seconds" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN duration_seconds INTEGER;"))
-            if "speech_key" not in existing_cols:
-                conn.execute(text("ALTER TABLE speeches ADD COLUMN speech_key TEXT;"))
-        conn.commit()
+def ensure_schema(target_engine=None) -> list[str]:
+    """Deprecated compatibility alias; delegates to apply_migrations."""
+    from src.load.migrations import apply_migrations
+
+    return apply_migrations(target_engine)
+
+
+def create_tables(target_engine=None) -> list[str]:
+    """Create all database tables and apply schema migrations."""
+    from src.load.migrations import apply_migrations
+
+    return apply_migrations(target_engine or engine)
 
 
 def load_attendance_to_database(batch_size: int = 2000) -> None:
@@ -546,7 +494,9 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
 
 def load_votes_to_database(years: list[int | str] | None = None, batch_size: int = 2000) -> int:
     """Load voting records and individual votes from votes_{YYYY}.jsonl files into the database."""
-    ensure_schema()
+    from src.load.migrations import apply_migrations
+
+    apply_migrations()
     processed_dir = Path(OUTPUT_DIR_PROCESSED)
     if not processed_dir.exists():
         return 0

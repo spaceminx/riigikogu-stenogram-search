@@ -16,7 +16,11 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        create_tables()
+        applied = create_tables()
+        if applied:
+            logger.info("Applied migrations: %s", ", ".join(applied))
+        else:
+            logger.info("Schema up to date")
     except Exception as e:
         logger.warning("Database schema check on startup encountered an issue: %s", e)
     yield
