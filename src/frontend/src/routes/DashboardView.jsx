@@ -6,7 +6,7 @@ import ActivityChart from "../components/ActivityChart";
 import SpeakersPanel from "../components/SpeakersPanel";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
-import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
+import { formatDateTime, normalizeSourceUrl, parseQueryToGroups } from "../lib/formatters";
 
 export function DashboardView({
   dashboardOverview,
@@ -56,15 +56,17 @@ export function DashboardView({
     if (e) e.preventDefault();
     let finalGroups = [...groups];
     if (inputValue.trim()) {
-      finalGroups[finalGroups.length - 1] = [
-        ...finalGroups[finalGroups.length - 1],
-        inputValue.trim(),
-      ];
+      const added = parseQueryToGroups(inputValue.trim())[0];
+      if (added && added.length > 0) {
+        finalGroups[finalGroups.length - 1] = [...finalGroups[finalGroups.length - 1], ...added];
+      }
       setGroups(finalGroups);
       setInputValue("");
     }
     finalGroups = finalGroups.filter((g) => g.length > 0);
-    const queryString = finalGroups.map((g) => g.join(" ")).join(", ");
+    const queryString = finalGroups
+      .map((g) => g.map((w) => (w.includes(" ") ? `"${w}"` : w)).join(" "))
+      .join(", ");
 
     const params = new URLSearchParams();
     if (queryString) params.set("q", queryString);

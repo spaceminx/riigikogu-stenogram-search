@@ -255,15 +255,17 @@ export function SearchView({
     if (e) e.preventDefault();
     let finalGroups = [...groups];
     if (inputValue.trim()) {
-      finalGroups[finalGroups.length - 1] = [
-        ...finalGroups[finalGroups.length - 1],
-        inputValue.trim(),
-      ];
+      const added = parseQueryToGroups(inputValue.trim())[0];
+      if (added && added.length > 0) {
+        finalGroups[finalGroups.length - 1] = [...finalGroups[finalGroups.length - 1], ...added];
+      }
       setGroups(finalGroups);
       setInputValue("");
     }
     finalGroups = finalGroups.filter((g) => g.length > 0);
-    const queryString = finalGroups.map((g) => g.join(" ")).join(", ");
+    const queryString = finalGroups
+      .map((g) => g.map((w) => (w.includes(" ") ? `"${w}"` : w)).join(" "))
+      .join(", ");
 
     const next = new URLSearchParams();
     if (queryString) next.set("q", queryString);
