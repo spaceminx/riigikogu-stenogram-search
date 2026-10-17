@@ -11,6 +11,7 @@ from src.api.search import (
     fill_missing_periods,
     is_only_stopwords,
     parse_query_groups,
+    split_query_groups,
     week_key_to_monday,
 )
 
@@ -229,3 +230,37 @@ def test_extract_matched_words_edge_cases():
     assert extract_matched_words("", {"kallas"}) == []
     assert extract_matched_words("Tere hommikust", set()) == []
     assert extract_matched_words("Puuduvad vasted", {"kliima"}) == []
+
+
+def test_comma_splitting_quote_aware():
+    import pytest
+
+    # "eelarve, maks" is still two groups
+    groups = parse_query_groups("eelarve, maks")
+    assert len(groups) == 2
+
+    # "\"hea juhataja, austatud kolleegid\"" is ONE group with one phrase
+    phrase_group = parse_query_groups('"hea juhataja, austatud kolleegid"')
+    assert len(phrase_group) == 1
+    assert len(phrase_group[0].phrases) == 1
+
+    # the 11-group limit counts only commas outside quotes
+    # 10 commas inside quote is still 1 group
+    ten_commas_inside = '"a, b, c, d, e, f, g, h, i, j, k"'
+    assert len(split_query_groups(ten_commas_inside)) == 1
+
+    # 10 groups where some have commas inside quotes is allowed
+    ten_groups = '1, "2a, 2b", 3, 4, 5, 6, 7, 8, 9, 10'
+    assert len(split_query_groups(ten_groups)) == 10
+    assert len(parse_query_groups(ten_groups)) == 10
+
+    # 11 groups outside quotes raises ValueError
+    with pytest.raises(
+        ValueError, match="Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma."
+    ):
+        parse_query_groups('1, "2a, 2b", 3, 4, 5, 6, 7, 8, 9, 10, 11')
+
+    with pytest.raises(
+        ValueError, match="Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma."
+    ):
+        is_only_stopwords('1, "2a, 2b", 3, 4, 5, 6, 7, 8, 9, 10, 11')

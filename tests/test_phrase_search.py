@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
+from src.api.search import parse_query_groups
 from src.load.database import SessionLocal
 from src.load.loader import create_tables
 from src.load.models import Lemma, Speech, SpeechTerm
@@ -113,6 +114,18 @@ def setup_phrase_test_data():
             "speaker_faction": "EKRE fraktsioon",
             "text": "Riigi eelarvest tuleb rääkida, sest vajalikud on suured kärped kuludes.",
             "source_file": "2024-02-06_1000.api",
+        },
+        # id=108: phrase with comma "Hea juhataja, austatud kolleegid!"
+        {
+            "id": 108,
+            "speech_key": "2024-02-07_1000_01",
+            "date": "2024-02-07",
+            "time": "1000",
+            "speaker": "Lauri Hussar",
+            "speaker_uuid": "speaker-lauri",
+            "speaker_faction": "Eesti 200 fraktsioon",
+            "text": "Hea juhataja, austatud kolleegid! Alustame tänast istungit.",
+            "source_file": "2024-02-07_1000.api",
         },
     ]
 
@@ -329,3 +342,17 @@ def test_phrase_search_fast_path_instr_matches_regex_fallback():
         assert "phrase_match" in str(clause)
     finally:
         session.close()
+
+
+def test_phrase_with_comma_matches_across_comma():
+    # "\"hea juhataja, austatud kolleegid\"" is ONE group with one phrase and matches "Hea juhataja, austatud kolleegid!"
+    groups = parse_query_groups('"hea juhataja, austatud kolleegid"')
+    assert len(groups) == 1
+    assert len(groups[0].phrases) == 1
+
+    resp = client.get('/search?q="hea juhataja, austatud kolleegid"')
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_count"] == 1
+    assert data["results"][0]["id"] == 108
+    assert "Hea juhataja, austatud kolleegid" in data["results"][0]["matched_words"]

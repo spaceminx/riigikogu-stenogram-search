@@ -489,11 +489,48 @@ def _extract_group_terms(group: str) -> tuple[bool, list[list[str]]]:
     return (True, content_terms)
 
 
+MAX_QUERY_GROUPS = 10
+
+
+def split_query_groups(query: str) -> list[str]:
+    """Split query string by commas outside double quotes.
+
+    If the query has an odd number of quotes (unmatched quote),
+    quotes are ignored and splitting happens at all commas.
+    """
+    if not query or not query.strip():
+        return []
+    s = query.strip()
+    respect_quotes = s.count('"') % 2 == 0
+
+    groups: list[str] = []
+    current: list[str] = []
+    in_quotes = False
+
+    for ch in s:
+        if ch == '"' and respect_quotes:
+            in_quotes = not in_quotes
+            current.append(ch)
+        elif ch == "," and not in_quotes:
+            part = "".join(current).strip()
+            if part:
+                groups.append(part)
+            current = []
+        else:
+            current.append(ch)
+
+    part = "".join(current).strip()
+    if part:
+        groups.append(part)
+
+    return groups
+
+
 def is_only_stopwords(query: str) -> bool:
     """Check if query contains non-empty words but all of them are in STOPWORDS."""
     check_query_complexity(query)
-    raw_groups = [g.strip() for g in query.split(",") if g.strip()]
-    if len(raw_groups) > 10:
+    raw_groups = split_query_groups(query)
+    if len(raw_groups) > MAX_QUERY_GROUPS:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
     has_any_words = False
     for group in raw_groups:
@@ -515,8 +552,8 @@ def parse_query_groups(query: str) -> list[QueryGroup]:
     """Parse comma-separated OR groups and space-separated AND keywords/phrases into filtered lemma alternatives."""
     check_query_complexity(query)
     groups = []
-    raw_groups = [g.strip() for g in query.split(",") if g.strip()]
-    if len(raw_groups) > 10:
+    raw_groups = split_query_groups(query)
+    if len(raw_groups) > MAX_QUERY_GROUPS:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
 
     for group in raw_groups:

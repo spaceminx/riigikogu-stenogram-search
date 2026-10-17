@@ -72,4 +72,19 @@ describe("queryHelpers mergeInputToGroups and parseQueryToGroups", () => {
     const q = serializeGroupsToQuery(groups);
     assert.strictEqual(q, '"eesti inimesed" eelarve, putin');
   });
+
+  it('Frontend round trip: groups [["eesti inimesed","eelarve"],["hea juhataja, austatud kolleegid"],["putin"]] → serialised ?q= → parseQueryToGroups returns the same groups', () => {
+    const originalGroups = [
+      ["eesti inimesed", "eelarve"],
+      ["hea juhataja, austatud kolleegid"],
+      ["putin"],
+    ];
+    const serialised = serializeGroupsToQuery(originalGroups);
+    assert.strictEqual(
+      serialised,
+      '"eesti inimesed" eelarve, "hea juhataja, austatud kolleegid", putin'
+    );
+    const parsed = parseQueryToGroups(serialised);
+    assert.deepStrictEqual(parsed, originalGroups);
+  });
 });

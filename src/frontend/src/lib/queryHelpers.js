@@ -1,9 +1,38 @@
+export function splitQueryGroups(queryString) {
+  if (!queryString || !queryString.trim()) return [];
+  const str = queryString.trim();
+  const quoteCount = (str.match(/"/g) || []).length;
+  const respectQuotes = quoteCount % 2 === 0;
+
+  const groups = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === '"' && respectQuotes) {
+      inQuotes = !inQuotes;
+      current += ch;
+    } else if (ch === "," && !inQuotes) {
+      const trimmed = current.trim();
+      if (trimmed) {
+        groups.push(trimmed);
+      }
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  const trimmed = current.trim();
+  if (trimmed) {
+    groups.push(trimmed);
+  }
+  return groups;
+}
+
 export function parseQueryToGroups(queryString) {
   if (!queryString || !queryString.trim()) return [[]];
-  const parts = queryString
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
+  const parts = splitQueryGroups(queryString);
   if (parts.length === 0) return [[]];
 
   return parts.map((part) => {
