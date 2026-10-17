@@ -284,4 +284,4 @@ export function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 3
   return prefix + text.slice(start, end).trim() + suffix;
 }
 
-export { parseQueryToGroups, mergeInputToGroups } from "./queryHelpers.js";
+export { parseQueryToGroups, mergeInputToGroups, serializeGroupsToQuery } from "./queryHelpers.js";
