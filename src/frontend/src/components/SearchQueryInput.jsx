@@ -1,4 +1,5 @@
 import React from "react";
+import { mergeInputToGroups } from "../lib/formatters";
 
 export function SearchQueryInput({
   groups,
@@ -11,8 +12,7 @@ export function SearchQueryInput({
 }) {
   const handleAddAnd = () => {
     if (inputValue.trim()) {
-      const newGroups = [...groups];
-      newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], inputValue.trim()];
+      const newGroups = mergeInputToGroups(groups, inputValue.trim());
       setGroups(newGroups);
       setInputValue("");
     }
@@ -20,10 +20,8 @@ export function SearchQueryInput({
 
   const handleAddOr = () => {
     if (inputValue.trim()) {
-      const newGroups = [...groups];
-      newGroups[newGroups.length - 1] = [...newGroups[newGroups.length - 1], inputValue.trim()];
-      newGroups.push([]);
-      setGroups(newGroups);
+      const newGroups = mergeInputToGroups(groups, inputValue.trim());
+      setGroups([...newGroups, []]);
       setInputValue("");
     } else if (groups[groups.length - 1].length > 0) {
       setGroups([...groups, []]);
@@ -56,11 +54,11 @@ export function SearchQueryInput({
               <div className="and-group-box">
                 {group.map((word, wIndex) => (
                   <span key={wIndex} className="token-pill">
-                    {word}
+                    {word.includes(" ") ? `"${word}"` : word}
                     <button
                       type="button"
                       onClick={() => removeWord(gIndex, wIndex)}
-                      title="Eemalda sõna"
+                      title={word.includes(" ") ? "Eemalda fraas" : "Eemalda sõna"}
                     >
                       &times;
                     </button>
@@ -101,6 +99,10 @@ export function SearchQueryInput({
             + VÕI
           </button>
         </div>
+      </div>
+
+      <div className="search-hint">
+        Täpse fraasi otsimiseks kasuta jutumärke, nt &quot;riigi eelarve&quot;.
       </div>
 
       <div className="search-controls">

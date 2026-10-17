@@ -284,12 +284,4 @@ export function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 3
   return prefix + text.slice(start, end).trim() + suffix;
 }
 
-export function parseQueryToGroups(queryString) {
-  if (!queryString || !queryString.trim()) return [[]];
-  const parts = queryString
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
-  if (parts.length === 0) return [[]];
-  return parts.map((part) => part.split(/\s+/).filter(Boolean));
-}
+export { parseQueryToGroups, mergeInputToGroups } from "./queryHelpers.js";

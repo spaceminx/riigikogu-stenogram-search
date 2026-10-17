@@ -659,6 +659,7 @@ def test_api_system_status_methodology_text():
     assert "Salajastel hääletustel" in votes_meta
     assert "istungi kuupäevaga" in votes_meta
     assert "öised hääletused" in votes_meta
+    assert "tehniliseks kirjeks" in votes_meta
 
 
 def test_load_votes_script(tmp_path):
@@ -1167,5 +1168,179 @@ def test_api_votings_sitting_date_filter_and_session_source_file():
         )
         session.query(Voting).filter(Voting.uuid.in_(test_uuids)).delete(synchronize_session=False)
         session.query(Speech).filter(Speech.source_file == speech_file).delete()
+        session.commit()
+        session.close()
+
+
+def test_technical_votings():
+    session = SessionLocal()
+    person_uuid = "person-test-uuid-tech"
+    v_tech_uuid = "v-tech-0-0-0"
+    v_secret_uuid = "v-secret-0-0-0"
+    v_normal_uuid = "v-normal-15-0-0"
+    test_uuids = [v_tech_uuid, v_secret_uuid, v_normal_uuid]
+
+    try:
+        session.query(Vote).filter(Vote.voting_uuid.in_(test_uuids)).delete(
+            synchronize_session=False
+        )
+        session.query(Voting).filter(Voting.uuid.in_(test_uuids)).delete(synchronize_session=False)
+        session.query(Person).filter(Person.uuid == person_uuid).delete()
+        session.commit()
+
+        # Add test person
+        session.add(
+            Person(
+                uuid=person_uuid,
+                first_name="Tehniline",
+                last_name="Testija",
+                full_name="Tehniline Testija",
+                active=1,
+            )
+        )
+
+        # 1. 0/0/0 AVALIK voting (technical)
+        v_tech = Voting(
+            uuid=v_tech_uuid,
+            voting_number=99901,
+            type="AVALIK",
+            description="Tehniline hääletus",
+            date="2026-10-01",
+            start_time="2026-10-01T10:00:00",
+            sitting_date="2026-10-01",
+            sitting_datetime="2026-10-01T10:00:00",
+            membership=15,
+            present=0,
+            absent=101,
+            in_favor=0,
+            against=0,
+            neutral=0,
+            abstained=101,
+        )
+        vote_tech = Vote(
+            voting_uuid=v_tech_uuid,
+            member_uuid=person_uuid,
+            faction="Testfraktsioon",
+            decision="PUUDUB",
+        )
+
+        # 2. 0/0/0 SALAJANE voting (never technical)
+        v_secret = Voting(
+            uuid=v_secret_uuid,
+            voting_number=99902,
+            type="SALAJANE",
+            description="Salajane hääletus",
+            date="2026-10-01",
+            start_time="2026-10-01T11:00:00",
+            sitting_date="2026-10-01",
+            sitting_datetime="2026-10-01T10:00:00",
+            membership=15,
+            present=101,
+            absent=0,
+            in_favor=0,
+            against=0,
+            neutral=0,
+            abstained=0,
+        )
+
+        # 3. 15/0/0 AVALIK voting (not technical)
+        v_normal = Voting(
+            uuid=v_normal_uuid,
+            voting_number=99903,
+            type="AVALIK",
+            description="Tavaline hääletus vähese osalusega",
+            date="2026-10-01",
+            start_time="2026-10-01T12:00:00",
+            sitting_date="2026-10-01",
+            sitting_datetime="2026-10-01T10:00:00",
+            membership=15,
+            present=20,
+            absent=81,
+            in_favor=15,
+            against=0,
+            neutral=0,
+            abstained=5,
+        )
+        vote_normal = Vote(
+            voting_uuid=v_normal_uuid,
+            member_uuid=person_uuid,
+            faction="Testfraktsioon",
+            decision="POOLT",
+        )
+
+        session.add_all([v_tech, v_secret, v_normal, vote_tech, vote_normal])
+        session.commit()
+
+        # Check /votings/{uuid} detail for technical voting
+        resp_tech = client.get(f"/votings/{v_tech_uuid}")
+        assert resp_tech.status_code == 200
+        data_tech = resp_tech.json()
+        assert data_tech["is_technical"] is True
+        assert (
+            data_tech["note"]
+            == "Hääletussüsteemis ei hääletanud keegi; tõenäoliselt tehniline kirje."
+        )
+
+        # Check /votings/{uuid} detail for secret voting (never technical)
+        resp_secret = client.get(f"/votings/{v_secret_uuid}")
+        assert resp_secret.status_code == 200
+        data_secret = resp_secret.json()
+        assert data_secret["is_technical"] is False
+        assert data_secret["note"] is None
+
+        # Check /votings/{uuid} detail for 15/0/0 voting (not technical)
+        resp_normal = client.get(f"/votings/{v_normal_uuid}")
+        assert resp_normal.status_code == 200
+        data_normal = resp_normal.json()
+        assert data_normal["is_technical"] is False
+        assert data_normal["note"] is None
+
+        # Check /votings list filtering with include_technical
+        resp_list_all = client.get(
+            "/votings?start_date=2026-10-01&end_date=2026-10-01&include_technical=true"
+        )
+        assert resp_list_all.status_code == 200
+        uuids_all = [item["uuid"] for item in resp_list_all.json()["results"]]
+        assert v_tech_uuid in uuids_all
+        assert v_secret_uuid in uuids_all
+        assert v_normal_uuid in uuids_all
+
+        # Default include_technical should be True
+        resp_list_default = client.get("/votings?start_date=2026-10-01&end_date=2026-10-01")
+        assert resp_list_default.status_code == 200
+        uuids_default = [item["uuid"] for item in resp_list_default.json()["results"]]
+        assert v_tech_uuid in uuids_default
+
+        resp_list_no_tech = client.get(
+            "/votings?start_date=2026-10-01&end_date=2026-10-01&include_technical=false"
+        )
+        assert resp_list_no_tech.status_code == 200
+        uuids_no_tech = [item["uuid"] for item in resp_list_no_tech.json()["results"]]
+        assert v_tech_uuid not in uuids_no_tech
+        assert v_secret_uuid in uuids_no_tech
+        assert v_normal_uuid in uuids_no_tech
+
+        # Check /persons/{uuid}/votes summary and results
+        resp_person = client.get(f"/persons/{person_uuid}/votes")
+        assert resp_person.status_code == 200
+        data_p = resp_person.json()
+        summary = data_p["summary"]
+        assert summary["technical_excluded"] == 1
+        assert summary["in_favor"] == 1
+        assert summary["absent"] == 0  # v_tech had PUUDUB, but it is excluded from summary
+        assert summary["total"] == 1
+
+        # Technical voting stays in person's results list with is_technical=True
+        results_map = {item["voting_uuid"]: item for item in data_p["results"]}
+        assert results_map[v_tech_uuid]["is_technical"] is True
+        assert results_map[v_normal_uuid]["is_technical"] is False
+
+    finally:
+        session.rollback()
+        session.query(Vote).filter(Vote.voting_uuid.in_(test_uuids)).delete(
+            synchronize_session=False
+        )
+        session.query(Voting).filter(Voting.uuid.in_(test_uuids)).delete(synchronize_session=False)
+        session.query(Person).filter(Person.uuid == person_uuid).delete()
         session.commit()
         session.close()

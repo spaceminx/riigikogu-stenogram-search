@@ -66,6 +66,29 @@ def format_session_source_file(
     return None
 
 
+def is_technical_voting(
+    voting_type: str | None,
+    in_favor: int | None,
+    against: int | None,
+    neutral: int | None,
+) -> bool:
+    """Determine if a voting is technical (AVALIK with 0 in_favor, against, and neutral votes)."""
+    return voting_type == "AVALIK" and ((in_favor or 0) + (against or 0) + (neutral or 0)) == 0
+
+
+def is_technical_voting_clause():
+    """SQLAlchemy filter condition identifying technical votings."""
+    return and_(
+        Voting.type == "AVALIK",
+        (
+            func.coalesce(Voting.in_favor, 0)
+            + func.coalesce(Voting.against, 0)
+            + func.coalesce(Voting.neutral, 0)
+        )
+        == 0,
+    )
+
+
 @router.get("/")
 def root():
     session = SessionLocal()
@@ -1117,14 +1140,27 @@ def get_person_votes(
         if not person:
             raise HTTPException(status_code=404, detail="Saadikut ei leitud.")
 
-        # Summary counts
+        # Summary counts - excluding technical votings
+        is_tech_sql = is_technical_voting_clause()
         dec_query = (
             session.query(Vote.decision, func.count(Vote.decision))
             .join(Voting, Vote.voting_uuid == Voting.uuid)
             .filter(Vote.member_uuid == person_uuid)
+            .filter(~is_tech_sql)
         )
         if membership and membership != "all":
             dec_query = dec_query.filter(Voting.membership == int(membership))
+
+        tech_query = (
+            session.query(func.count(Vote.decision))
+            .join(Voting, Vote.voting_uuid == Voting.uuid)
+            .filter(Vote.member_uuid == person_uuid)
+            .filter(is_tech_sql)
+        )
+        if membership and membership != "all":
+            tech_query = tech_query.filter(Voting.membership == int(membership))
+
+        technical_excluded = tech_query.scalar() or 0
 
         dec_rows = dec_query.group_by(Vote.decision).all()
         summary = {
@@ -1134,6 +1170,7 @@ def get_person_votes(
             "not_voted": 0,
             "absent": 0,
             "total": 0,
+            "technical_excluded": technical_excluded,
         }
         for dec, cnt in dec_rows:
             summary["total"] += cnt
@@ -1181,11 +1218,15 @@ def get_person_votes(
                     "type": voting.related_document_type,
                 }
 
+            is_tech = is_technical_voting(
+                voting.type, voting.in_favor, voting.against, voting.neutral
+            )
             results.append(
                 {
                     "voting_uuid": voting.uuid,
                     "voting_number": voting.voting_number,
                     "type": voting.type,
+                    "is_technical": is_tech,
                     "description": voting.description,
                     "date": voting.date,
                     "start_time": voting.start_time,
@@ -1399,6 +1440,10 @@ def list_votings(
         description="Filtreeri hääletuse liigi järgi (AVALIK või SALAJANE)",
         pattern=r"^(AVALIK|SALAJANE)$",
     ),
+    include_technical: bool = Query(
+        True,
+        description="Kaasa tehnilised hääletused (vaikimisi True)",
+    ),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0, le=1_000_000),
 ):
@@ -1409,6 +1454,8 @@ def list_votings(
     try:
         query = session.query(Voting)
 
+        if not include_technical:
+            query = query.filter(~is_technical_voting_clause())
         if membership and membership != "all":
             query = query.filter(Voting.membership == int(membership))
         if start_date:
@@ -1472,11 +1519,13 @@ def list_votings(
             cf = format_session_source_file(v.sitting_date, v.sitting_datetime)
             session_source_file = cf if cf in existing_source_files else None
 
+            is_tech = is_technical_voting(v.type, v.in_favor, v.against, v.neutral)
             results.append(
                 {
                     "uuid": v.uuid,
                     "voting_number": v.voting_number,
                     "type": v.type,
+                    "is_technical": is_tech,
                     "description": v.description,
                     "date": v.date,
                     "start_time": v.start_time,
@@ -1604,10 +1653,19 @@ def get_voting_detail(voting_uuid: str):
             if exists:
                 session_source_file = cf
 
+        is_tech = is_technical_voting(voting.type, voting.in_favor, voting.against, voting.neutral)
+        note = (
+            "Hääletussüsteemis ei hääletanud keegi; tõenäoliselt tehniline kirje."
+            if is_tech
+            else None
+        )
+
         return {
             "uuid": voting.uuid,
             "voting_number": voting.voting_number,
             "type": voting.type,
+            "is_technical": is_tech,
+            "note": note,
             "description": voting.description,
             "date": voting.date,
             "start_time": voting.start_time,
@@ -1758,9 +1816,9 @@ def system_status():
                 "votings": total_votings,
             },
             "methodology": {
-                "search": 'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul.',
+                "search": 'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Jutumärkides fraas leiab ainult kõned, kus sõnad esinevad järjest (ka käändes).',
                 "attendance": "Kohalolek mõõdab kohalolekukontrolle (hääletussüsteemis registreeritud kohalolekuid), mitte füüsilist saalis viibimist väljaspool kontrollihetki.",
-                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta.",
+                "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused (poolt, vastu, erapooletu, ei hääletanud, puudub) esitatakse faktilise ja kirjeldava statistikana ilma hinnangute või lojaalsusmõõdikuteta. Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
                 "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg. Kestus on piiratud järgmise kõne algusega, sest allika lõpuaeg võib ulatuda järgmistesse kõnedesse.",
