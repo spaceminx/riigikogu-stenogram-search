@@ -11,6 +11,7 @@ import {
   mergeInputToGroups,
   normalizeSourceUrl,
   serializeGroupsToQuery,
+  toRoman,
 } from "../lib/formatters";
 
 export function DashboardView({
@@ -24,10 +25,6 @@ export function DashboardView({
   systemStatus = null,
 }) {
   const navigate = useNavigate();
-  const toRoman = (num) => {
-    const romanMap = { 15: "XV", 14: "XIV", 13: "XIII", 12: "XII", 11: "XI" };
-    return romanMap[num] || String(num);
-  };
   const totalSpeeches = systemStatus?.total_speeches ?? systemStatus?.totals?.speeches;
   const totalPersons = systemStatus?.total_persons ?? systemStatus?.totals?.persons;
   const memText =

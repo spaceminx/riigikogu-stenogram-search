@@ -21,6 +21,7 @@ import {
   fetchSpeechContext,
 } from "../lib/api";
 import { formatDate } from "../lib/calendarUtils";
+import { toRoman } from "../lib/formatters";
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
@@ -44,14 +45,6 @@ const ROLE_LABELS = {
   candidate: "Kandidaadina",
   other: "Muu roll",
   director: "Juhatamisi",
-};
-
-const MEMBERSHIP_ROMAN = {
-  15: "XV Riigikogu",
-  14: "XIV Riigikogu",
-  13: "XIII Riigikogu",
-  12: "XII Riigikogu",
-  11: "XI Riigikogu",
 };
 
 export function PersonView({ theme = "light" }) {
@@ -753,7 +746,9 @@ export function PersonView({ theme = "light" }) {
                 {combinedMemberships.map(({ membership, stats: memStats, attendance: memAtt }) => (
                   <tr key={membership}>
                     <th scope="row" className="person-stats-col-text">
-                      {MEMBERSHIP_ROMAN[membership] || `${membership}. koosseis`}
+                      {toRoman(membership)
+                        ? `${toRoman(membership)} Riigikogu`
+                        : `${membership}. koosseis`}
                     </th>
                     <td className="person-stats-col-num">{memStats?.mp?.speeches ?? 0}</td>
                     <td className="person-stats-col-num">{memStats?.mp?.questions ?? 0}</td>
@@ -815,7 +810,11 @@ export function PersonView({ theme = "light" }) {
                   className={`segmented-btn ${alignmentMembership === String(m.membership) ? "active" : ""}`}
                   onClick={() => handleAlignmentMembershipChange(String(m.membership))}
                 >
-                  <span>{MEMBERSHIP_ROMAN[m.membership] || `${m.membership}. koosseis`}</span>
+                  <span>
+                    {toRoman(m.membership)
+                      ? `${toRoman(m.membership)} Riigikogu`
+                      : `${m.membership}. koosseis`}
+                  </span>
                 </button>
               ))}
             </div>

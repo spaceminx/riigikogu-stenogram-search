@@ -2,7 +2,6 @@ import json
 import os
 import sys
 import time
-from datetime import datetime
 from pathlib import Path
 
 import requests
@@ -49,10 +48,24 @@ def extract_photo_url(member: dict) -> str | None:
 
 def fetch_factions() -> bool:
     """Fetch MP parliamentary faction membership history and person profiles from Riigikogu API."""
-    current_year = datetime.now().year
-    # 13th Riigikogu was 2015-2019, 14th 2019-2023, 15th 2023-2027, 16th 2027+
-    max_membership = 15 + max(0, (current_year - 2023) // 4)
-    target_memberships = list(range(13, max_membership + 1))
+    memberships_file = os.path.join(OUTPUT_DIR_PROCESSED, "memberships.json")
+    target_memberships = []
+    if os.path.exists(memberships_file):
+        try:
+            with open(memberships_file, encoding="utf-8") as f:
+                mem_data = json.load(f)
+            nums = sorted(
+                int(v.get("number", k))
+                for k, v in mem_data.items()
+                if int(v.get("number", k)) >= 13
+            )
+            if nums:
+                target_memberships = nums
+        except Exception as e:
+            print(f"Warning: Failed to load memberships from {memberships_file}: {e}")
+
+    if not target_memberships:
+        target_memberships = list(range(13, 16))
 
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
     out_file = os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json")
@@ -79,7 +92,7 @@ def fetch_factions() -> bool:
                 elif (
                     resp.status_code == 404
                     and len(target_memberships) > 1
-                    and target_memberships[-1] > 15
+                    and target_memberships[-1] > 13
                 ):
                     print(
                         f"Notice: Membership {target_memberships[-1]} not yet available (HTTP 404). Dropping it."

@@ -4,6 +4,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import pytest
+
 from scripts.fetch_stenograms_api import (
     compute_duration_seconds,
     get_faction_for_date,
@@ -1136,31 +1138,104 @@ def test_resolve_speaker_uuid_same_first_name_canonical_mismatch():
     assert method == "name"
 
 
-def test_resolve_speaker_uuid_tarmo_tamm():
+def test_resolve_speaker_uuid_tarmo_tamm(capsys):
     uuid_old = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
     uuid_new = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+    known_uuids = {uuid_old, uuid_new}
+    uuid_to_name_map = {uuid_old: "Tarmo Tamm", uuid_new: "Tarmo Tamm"}
+    person_name_map = {}
+    person_factions = {
+        uuid_old: [
+            {"faction": "Eesti Keskerakonna fraktsioon", "start": "2019-04-04", "end": "2023-04-01"}
+        ],
+        uuid_new: [{"faction": "Eesti 200 fraktsioon", "start": "2023-04-11", "end": "2099-12-31"}],
+    }
 
+    # Tarmo Tamm on 2021-05-04 -> old uuid
     uuid1, method1 = resolve_speaker_uuid(
         speaker_name="Tarmo Tamm",
         ems_id=None,
-        date="2023-04-09",
-        known_uuids=None,
-        uuid_to_name_map=None,
-        person_name_map=None,
+        date="2021-05-04",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+        person_factions=person_factions,
     )
     assert uuid1 == uuid_old
-    assert method1 == "tarmo_tamm_date"
+    assert method1 == "member_period"
 
+    # Tarmo Tamm on 2024-05-04 -> new uuid
     uuid2, method2 = resolve_speaker_uuid(
         speaker_name="Tarmo Tamm",
         ems_id=None,
-        date="2023-04-10",
-        known_uuids=None,
-        uuid_to_name_map=None,
-        person_name_map=None,
+        date="2024-05-04",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+        person_factions=person_factions,
     )
     assert uuid2 == uuid_new
-    assert method2 == "tarmo_tamm_date"
+    assert method2 == "member_period"
+
+    # Both covering -> empty + log notice
+    both_covering_factions = {
+        uuid_old: [{"faction": "Faction A", "start": "2027-01-01", "end": "2027-12-31"}],
+        uuid_new: [{"faction": "Faction B", "start": "2027-01-01", "end": "2027-12-31"}],
+    }
+    capsys.readouterr()  # clear buffer
+    uuid_both, method_both = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=None,
+        date="2027-04-15",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+        person_factions=both_covering_factions,
+        speech_key="speech_both_key",
+    )
+    assert uuid_both is None
+    assert method_both == "unresolved"
+    captured_both = capsys.readouterr().out
+    assert "Notice: Ambiguous speaker 'Tarmo Tamm'" in captured_both
+    assert "speech_both_key" in captured_both
+
+    # Neither covering -> empty + log notice
+    neither_covering_factions = {
+        uuid_old: [{"faction": "Faction A", "start": "2019-01-01", "end": "2020-01-01"}],
+        uuid_new: [{"faction": "Faction B", "start": "2024-01-01", "end": "2025-01-01"}],
+    }
+    uuid_neither, method_neither = resolve_speaker_uuid(
+        speaker_name="Tarmo Tamm",
+        ems_id=None,
+        date="2022-04-15",
+        known_uuids=known_uuids,
+        uuid_to_name_map=uuid_to_name_map,
+        person_name_map=person_name_map,
+        person_factions=neither_covering_factions,
+        speech_key="speech_neither_key",
+    )
+    assert uuid_neither is None
+    assert method_neither == "unresolved"
+    captured_neither = capsys.readouterr().out
+    assert "Notice: Ambiguous speaker 'Tarmo Tamm'" in captured_neither
+    assert "speech_neither_key" in captured_neither
+
+    # Non-ambiguous name keeps its UUID
+    single_uuid = "single-uuid-kaja"
+    uuid_to_name_single = {single_uuid: "Kaja Kallas"}
+    person_name_single = {"Kaja Kallas": single_uuid}
+    known_single = {single_uuid}
+    uuid_single_res, method_single = resolve_speaker_uuid(
+        speaker_name="Kaja Kallas",
+        ems_id=None,
+        date="2024-05-04",
+        known_uuids=known_single,
+        uuid_to_name_map=uuid_to_name_single,
+        person_name_map=person_name_single,
+        person_factions=person_factions,
+    )
+    assert uuid_single_res == single_uuid
+    assert method_single == "name"
 
 
 def test_resolve_speaker_uuid_tarmo_tamm_wrong_ems_id():
@@ -1168,31 +1243,83 @@ def test_resolve_speaker_uuid_tarmo_tamm_wrong_ems_id():
     uuid_new = "236e49d6-eecb-4562-8ad4-bedd586bb149"
     known_uuids = {uuid_old, uuid_new}
     uuid_to_name_map = {uuid_old: "Tarmo Tamm", uuid_new: "Tarmo Tamm"}
-    person_name_map = {}  # Ambiguous names are excluded from person_name_map
+    person_name_map = {}
+    person_factions = {
+        uuid_old: [
+            {"faction": "Eesti Keskerakonna fraktsioon", "start": "2019-04-04", "end": "2023-04-01"}
+        ],
+        uuid_new: [{"faction": "Eesti 200 fraktsioon", "start": "2023-04-11", "end": "2099-12-31"}],
+    }
 
-    # Tarmo Tamm speech in 2025 with wrong emsId (uuid_old) must resolve to uuid_new
+    # Tarmo Tamm speech in 2024 with wrong emsId (uuid_old) must resolve to uuid_new
     resolved_uuid, method = resolve_speaker_uuid(
         speaker_name="Tarmo Tamm",
         ems_id=uuid_old,
-        date="2025-09-10",
+        date="2024-05-04",
         known_uuids=known_uuids,
         uuid_to_name_map=uuid_to_name_map,
         person_name_map=person_name_map,
+        person_factions=person_factions,
     )
     assert resolved_uuid == uuid_new
-    assert method == "tarmo_tamm_date"
+    assert method == "member_period"
 
     # Tarmo Tamm speech in 2021 with valid emsId (uuid_old) resolves to uuid_old
     resolved_uuid2, method2 = resolve_speaker_uuid(
         speaker_name="Tarmo Tamm",
         ems_id=uuid_old,
-        date="2021-05-10",
+        date="2021-05-04",
         known_uuids=known_uuids,
         uuid_to_name_map=uuid_to_name_map,
         person_name_map=person_name_map,
+        person_factions=person_factions,
     )
     assert resolved_uuid2 == uuid_old
     assert method2 == "ems"
+
+
+def test_disambiguation_matches_date_rule_for_all_historical_speeches():
+    import glob
+
+    from config import PROJECT_ROOT
+
+    data_dir = os.path.join(PROJECT_ROOT, "data", "processed")
+    uuid_old = "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5"
+    uuid_new = "236e49d6-eecb-4562-8ad4-bedd586bb149"
+    pf_file = os.path.join(data_dir, "person_factions.json")
+    if not os.path.exists(pf_file):
+        pytest.skip("person_factions.json not found in data/processed")
+
+    with open(pf_file, encoding="utf-8") as f:
+        factions = json.load(f)
+
+    from scripts.fetch_stenograms_api import is_member_on_date
+
+    checked = 0
+    for fpath in sorted(glob.glob(os.path.join(data_dir, "20*.jsonl"))):
+        with open(fpath, encoding="utf-8") as f:
+            for line in f:
+                if "Tarmo Tamm" not in line:
+                    continue
+                d = json.loads(line)
+                if d.get("speaker") != "Tarmo Tamm":
+                    continue
+                dt = d.get("date")[:10]
+                expected_uuid = uuid_old if dt < "2023-04-10" else uuid_new
+                old_active = is_member_on_date(uuid_old, dt, factions)
+                new_active = is_member_on_date(uuid_new, dt, factions)
+                if old_active and not new_active:
+                    resolved = uuid_old
+                elif new_active and not old_active:
+                    resolved = uuid_new
+                else:
+                    resolved = None
+                assert resolved == expected_uuid, (
+                    f"Mismatch on {dt} for speech {d.get('speech_key')}"
+                )
+                checked += 1
+
+    assert checked > 0
 
 
 def test_repair_speaker_uuids_dry_run_and_apply(tmp_path):
@@ -1911,6 +2038,17 @@ def test_repair_attendance_uuids_logic(tmp_path, monkeypatch):
     ]
     with open(os.path.join(data_dir, "persons.json"), "w", encoding="utf-8") as f:
         json.dump(persons, f)
+
+    person_factions = {
+        "76afbcdc-b41d-4fc6-b5eb-d0cce01e94d5": [
+            {"faction": "Keskerakond", "start": "2019-04-04", "end": "2023-04-09"}
+        ],
+        "236e49d6-eecb-4562-8ad4-bedd586bb149": [
+            {"faction": "Eesti 200", "start": "2023-04-10", "end": "2099-12-31"}
+        ],
+    }
+    with open(os.path.join(data_dir, "person_factions.json"), "w", encoding="utf-8") as f:
+        json.dump(person_factions, f)
 
     att_file = os.path.join(data_dir, "attendance.jsonl")
     lines = [

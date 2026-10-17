@@ -2111,3 +2111,154 @@ def test_person_attendance_endpoint():
 
     # 404 for unknown person
     assert client.get("/persons/unknown-att-uuid/attendance").status_code == 404
+
+
+def test_next_membership_simulation():
+    from config import latest_membership
+
+    memberships_file = os.path.join(OUTPUT_DIR_PROCESSED, "memberships.json")
+    old_content = None
+    if os.path.exists(memberships_file):
+        with open(memberships_file, encoding="utf-8") as f:
+            old_content = f.read()
+
+    mock_memberships = {
+        "14": {
+            "number": 14,
+            "name": "XIV Riigikogu",
+            "startDate": "2019-04-04",
+            "endDate": "2023-04-09",
+        },
+        "15": {
+            "number": 15,
+            "name": "XV Riigikogu",
+            "startDate": "2023-04-10",
+            "endDate": "2027-02-25",
+        },
+        "16": {
+            "number": 16,
+            "name": "XVI Riigikogu",
+            "startDate": "2027-03-30",
+            "endDate": "2031-03-31",
+        },
+    }
+
+    try:
+        os.makedirs(OUTPUT_DIR_PROCESSED, exist_ok=True)
+        with open(memberships_file, "w", encoding="utf-8") as f:
+            json.dump(mock_memberships, f)
+
+        # 1. latest_membership() evaluates to 16
+        assert latest_membership() == "16"
+
+        session = SessionLocal()
+        p16 = Person(
+            uuid="uuid-mp-sim-16",
+            first_name="Tulevik",
+            last_name="Saadik",
+            full_name="Tulevik Saadik",
+            active=1,
+        )
+        p15 = Person(
+            uuid="uuid-mp-sim-15",
+            first_name="Vana",
+            last_name="Saadik",
+            full_name="Vana Saadik",
+            active=1,
+        )
+        session.merge(p16)
+        session.merge(p15)
+
+        att16 = Attendance(
+            session_date="2027-04-15T10:00:00",
+            voting_uuid="voting-sim-16",
+            member_uuid="uuid-mp-sim-16",
+            member_name="Tulevik Saadik",
+            faction="Tuleviku fraktsioon",
+            status="KOHAL",
+        )
+        att15 = Attendance(
+            session_date="2024-05-01T10:00:00",
+            voting_uuid="voting-sim-15",
+            member_uuid="uuid-mp-sim-15",
+            member_name="Vana Saadik",
+            faction="Vana fraktsioon",
+            status="KOHAL",
+        )
+        session.add_all([att16, att15])
+
+        lemma = session.query(Lemma).filter(Lemma.lemma == "simulatsioon").first()
+        if not lemma:
+            lemma = Lemma(lemma="simulatsioon")
+            session.add(lemma)
+            session.flush()
+
+        s16 = Speech(
+            speech_key="202704151000_1000_tulevik-saadik",
+            date="2027-04-15",
+            time="1000",
+            source_file="2027-04-15_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/202704151000",
+            speaker="Tulevik Saadik",
+            speaker_role=None,
+            speaker_faction="Tuleviku fraktsioon",
+            speaker_uuid="uuid-mp-sim-16",
+            text="See on simulatsioon tulevikus.",
+            text_lemmas="see olema simulatsioon tulevik",
+        )
+        s15 = Speech(
+            speech_key="202405011000_1000_vana-saadik",
+            date="2024-05-01",
+            time="1000",
+            source_file="2024-05-01_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/202405011000",
+            speaker="Vana Saadik",
+            speaker_role=None,
+            speaker_faction="Vana fraktsioon",
+            speaker_uuid="uuid-mp-sim-15",
+            text="See on simulatsioon praeguses koosseisus.",
+            text_lemmas="see olema simulatsioon praegune koosseis",
+        )
+        session.add_all([s16, s15])
+        session.flush()
+
+        t16 = SpeechTerm(speech_id=s16.id, lemma_id=lemma.id, count=1)
+        t15 = SpeechTerm(speech_id=s15.id, lemma_id=lemma.id, count=1)
+        session.add_all([t16, t15])
+        session.commit()
+        session.close()
+
+        # 2. GET /attendance/stats with no membership param returns only membership 16 rows
+        res_stats = client.get("/attendance/stats")
+        assert res_stats.status_code == 200
+        stats = res_stats.json()
+        names = [row["member_name"] for row in stats]
+        assert "Tulevik Saadik" in names
+        assert "Vana Saadik" not in names
+
+        # 3. GET /memberships lists 16
+        res_mems = client.get("/memberships")
+        assert res_mems.status_code == 200
+        mems = res_mems.json()
+        m16 = next((m for m in mems if m["id"] == "16"), None)
+        assert m16 is not None
+        assert m16["number"] == 16
+        assert m16["start_date"] == "2027-03-30"
+        assert m16["end_date"] == "2031-03-31"
+
+        # 4. GET /search?membership=16 filters by the new dates
+        res_search_16 = client.get("/search?q=simulatsioon&membership=16")
+        assert res_search_16.status_code == 200
+        search_data_16 = res_search_16.json()
+        assert search_data_16["total_count"] >= 1
+        for item in search_data_16["results"]:
+            assert "2027-03-30" <= item["date"] <= "2031-03-31"
+        assert any(item["speaker"] == "Tulevik Saadik" for item in search_data_16["results"])
+        assert not any(item["speaker"] == "Vana Saadik" for item in search_data_16["results"])
+
+    finally:
+        if old_content is not None:
+            with open(memberships_file, "w", encoding="utf-8") as f:
+                f.write(old_content)
+        elif os.path.exists(memberships_file):
+            os.remove(memberships_file)

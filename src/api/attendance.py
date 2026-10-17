@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import case, func
 
-from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
+from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
 from src.load.database import SessionLocal
 from src.load.models import Attendance
 
@@ -35,11 +35,13 @@ def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]
 
 
 def get_attendance_stats(
-    membership: str | None = "15",
+    membership: str | None = None,
     faction: str | None = None,
     active_only: bool = False,
 ) -> list[dict]:
     """Calculate attendance statistics for parliament members with optional filters."""
+    if membership is None:
+        membership = latest_membership()
     session = SessionLocal()
     try:
         from src.load.models import Person
@@ -218,10 +220,12 @@ def get_person_attendance(person_uuid: str) -> dict:
 
 
 def get_faction_attendance_stats(
-    membership: str | None = "15",
+    membership: str | None = None,
     active_only: bool = False,
 ) -> list[dict]:
     """Calculate aggregated attendance statistics for parliamentary factions."""
+    if membership is None:
+        membership = latest_membership()
     session = SessionLocal()
     try:
         from src.load.models import Person
@@ -395,8 +399,10 @@ def get_faction_attendance_stats(
         session.close()
 
 
-def get_factions_list(membership: str | None = "15") -> list[str]:
+def get_factions_list(membership: str | None = None) -> list[str]:
     """Return distinct faction names available for a parliamentary membership."""
+    if membership is None:
+        membership = latest_membership()
     session = SessionLocal()
     try:
         query = (

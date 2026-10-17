@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import and_, case, func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
-from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
+from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
 from src.api.alignment import (
     get_faction_alignment,
     get_faction_alignment_differences,
@@ -178,12 +178,14 @@ def plenary_session(session_date: date):
 
 @router.get("/attendance/stats")
 def attendance_stats(
-    membership: str = Query(
-        "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    membership: str | None = Query(
+        None, description="Riigikogu koosseis (number või all)", pattern=r"^(\d+|all)$"
     ),
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
 ):
+    if membership is None:
+        membership = latest_membership()
     validate_membership(membership)
     try:
         return get_attendance_stats(membership=membership, faction=faction, active_only=active_only)
@@ -202,11 +204,13 @@ def attendance_stats(
 
 @router.get("/attendance/factions")
 def attendance_factions(
-    membership: str = Query(
-        "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    membership: str | None = Query(
+        None, description="Riigikogu koosseis (number või all)", pattern=r"^(\d+|all)$"
     ),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
 ):
+    if membership is None:
+        membership = latest_membership()
     validate_membership(membership)
     try:
         return get_faction_attendance_stats(membership=membership, active_only=active_only)
@@ -225,10 +229,12 @@ def attendance_factions(
 
 @router.get("/attendance/factions/list")
 def factions_list(
-    membership: str = Query(
-        "15", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+    membership: str | None = Query(
+        None, description="Riigikogu koosseis (number või all)", pattern=r"^(\d+|all)$"
     ),
 ):
+    if membership is None:
+        membership = latest_membership()
     validate_membership(membership)
     try:
         return get_factions_list(membership=membership)
@@ -251,7 +257,7 @@ def search(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0, le=1_000_000),
     membership: str = Query(
-        "all", description="Riigikogu koosseis (14, 15 või all)", pattern=r"^(\d+|all)$"
+        "all", description="Riigikogu koosseis (number või all)", pattern=r"^(\d+|all)$"
     ),
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     speaker: str | None = Query(None, description="Filtreeri esineja nime järgi"),

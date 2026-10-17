@@ -284,4 +284,5 @@ export function getSnippet(text, matchedWords = [], groups = [[]], maxLength = 3
   return prefix + text.slice(start, end).trim() + suffix;
 }
 
+export { toRoman } from "./toRoman.js";
 export { parseQueryToGroups, mergeInputToGroups, serializeGroupsToQuery } from "./queryHelpers.js";

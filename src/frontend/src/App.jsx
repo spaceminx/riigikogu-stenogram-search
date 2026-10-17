@@ -17,6 +17,7 @@ import {
   fetchPlenarySessionDates,
   fetchSystemStatus,
 } from "./lib/api";
+import { toRoman } from "./lib/formatters";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -81,12 +82,6 @@ function PageTitlebar({ memberships = [] }) {
   } else if (pathname.startsWith("/saadik")) {
     title = "Saadiku profiil";
   }
-
-  const toRoman = (num) => {
-    const romanMap = { 15: "XV", 14: "XIV", 13: "XIII", 12: "XII", 11: "XI" };
-    return romanMap[num] || String(num);
-  };
-
   const memText =
     memberships && memberships.length > 0
       ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
@@ -123,10 +118,8 @@ function AppContent() {
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
   const [searchFactionsList, setSearchFactionsList] = useState([]);
-  const [memberships, setMemberships] = useState([
-    { id: "15", number: 15, name: "XV Riigikogu (2023–praegu)" },
-    { id: "14", number: 14, name: "XIV Riigikogu (2019–2023)" },
-  ]);
+  const [memberships, setMemberships] = useState([]);
+  const [membershipsLoading, setMembershipsLoading] = useState(true);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -163,7 +156,10 @@ function AppContent() {
           setMemberships(data.filter((m) => m.number >= 14));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setMembershipsLoading(false);
+      });
 
     fetchFactionsList("all")
       .then((data) => {
@@ -217,7 +213,12 @@ function AppContent() {
               }
             />
             <Route path="/istung/:date" element={<SessionView />} />
-            <Route path="/kohalolek" element={<AttendanceView memberships={memberships} />} />
+            <Route
+              path="/kohalolek"
+              element={
+                <AttendanceView memberships={memberships} membershipsLoading={membershipsLoading} />
+              }
+            />
             <Route path="/kone/:id" element={<SpeechView />} />
             <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
             <Route path="*" element={<NotFoundView />} />
