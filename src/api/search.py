@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from estnltk import Text
 from estnltk.vabamorf.morf import Vabamorf
 from fastapi import HTTPException
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
@@ -19,6 +19,42 @@ logger = logging.getLogger(__name__)
 _C0_CONTROL_REGEX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 _HYPHEN_NUM_REGEX = re.compile(r"^([a-zA-Z0-9äöüõÄÖÜÕšžŠŽ]+)-(\d+)$")
 _CLEAN_LEMMA_CHARS = ".,;:!?\"'()[]{}«»`~^/*+=<>@#$%&|\\_"
+
+
+class QueryPhrase:
+    """Represents a quoted search phrase with ordered positions of lemma alternatives."""
+
+    def __init__(self, positions: list[set[str]], pattern: str):
+        self.positions = positions  # list of lemma sets per word position
+        self.pattern = pattern
+
+    def __repr__(self) -> str:
+        return f"QueryPhrase(positions={self.positions!r}, pattern={self.pattern!r})"
+
+
+class QueryGroup(list):
+    """Represents a comma-separated query group containing terms and phrases.
+
+    Inherits from list so that iterating over or indexing the group yields its
+    candidate terms (list[list[str]]), maintaining full backwards compatibility.
+    """
+
+    def __init__(
+        self,
+        terms: list[list[str]],
+        phrases: list[QueryPhrase] | None = None,
+        unquoted_terms: list[list[str]] | None = None,
+    ):
+        super().__init__(terms)
+        self.terms = terms
+        self.phrases = phrases or []
+        self.unquoted_terms = unquoted_terms or []
+
+    def __repr__(self) -> str:
+        return (
+            f"QueryGroup(terms={self.terms!r}, phrases={self.phrases!r},"
+            f" unquoted_terms={self.unquoted_terms!r})"
+        )
 
 
 def _clean_lemma(lemma: str) -> str:
@@ -101,19 +137,60 @@ def _analyze_token_lemmas(token: str) -> frozenset[str]:
     return frozenset(lemmas)
 
 
-def extract_matched_words(text: str, target_lemmas: set[str]) -> list[str]:
-    """Extract surface word tokens from text matching any target lemmas deterministically."""
-    if not text or not target_lemmas:
+def extract_matched_words(
+    text: str,
+    target_lemmas: set[str],
+    phrases: list[QueryPhrase] | None = None,
+    unquoted_lemmas: set[str] | None = None,
+) -> list[str]:
+    """Extract surface word tokens or phrase substrings from text matching target lemmas."""
+    if not text:
+        return []
+    if not target_lemmas and not phrases:
         return []
     try:
-        tokens = set(_WORD_REGEX.findall(text))
-        if not tokens:
+        token_matches = list(_WORD_REGEX.finditer(text))
+        if not token_matches:
             return []
+
         matched: set[str] = set()
-        for token in tokens:
-            token_lemmas = _analyze_token_lemmas(token)
-            if token_lemmas & target_lemmas:
-                matched.add(token)
+
+        if phrases:
+            # 1. Match phrases by walking token sequences in order with their spans
+            for phrase in phrases:
+                k = len(phrase.positions)
+                if k == 0 or len(token_matches) < k:
+                    continue
+                for i in range(len(token_matches) - k + 1):
+                    match = True
+                    for j in range(k):
+                        tok = token_matches[i + j].group(0)
+                        lemmas = _analyze_token_lemmas(tok)
+                        if not (lemmas & phrase.positions[j]):
+                            match = False
+                            break
+                    if match:
+                        start_pos = token_matches[i].start()
+                        end_pos = token_matches[i + k - 1].end()
+                        matched.add(text[start_pos:end_pos])
+
+            # 2. Match non-phrase terms with word-level behavior
+            word_target = (
+                unquoted_lemmas
+                if unquoted_lemmas is not None
+                else (target_lemmas - {lem for p in phrases for pos in p.positions for lem in pos})
+            )
+            if word_target:
+                for tm in token_matches:
+                    tok = tm.group(0)
+                    if _analyze_token_lemmas(tok) & word_target:
+                        matched.add(tok)
+        else:
+            for tm in token_matches:
+                tok = tm.group(0)
+                if _analyze_token_lemmas(tok) & target_lemmas:
+                    matched.add(tok)
+
         return sorted(matched, key=lambda s: (-len(s), s))
     except Exception:
         return []
@@ -202,25 +279,23 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
     return [{label: period, "count": count} for period, count in results]
 
 
-def _extract_group_terms(group: str) -> tuple[bool, list[list[str]]]:
-    """Extract content terms from a query group with case and hyphen expansions.
-
-    Returns (has_any_words, content_terms) where content_terms is a list of positions,
-    and each position contains a list of alternative lemmas.
-    """
-    if lemmatize_text(group) is None:
+def _extract_positions_with_alternatives(text_str: str) -> list[set[str]]:
+    """Lemmatise text into an ordered list of positions, each with a set of alternative lemmas."""
+    if not text_str.strip():
+        return []
+    if lemmatize_text(text_str) is None:
         raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.")
 
     try:
-        est_text = Text(f"{group} .")
+        est_text = Text(f"{text_str} .")
         est_text.tag_layer()
     except Exception as e:
-        logger.error("Lemmatization failed on query group %r: %s", group[:100], e)
+        logger.error("Lemmatization failed on %r: %s", text_str[:100], e)
         raise LemmatizerUnavailableError("Otsingu keeletöötlus pole hetkel saadaval.") from e
 
     words1 = [w for w in est_text.words if w.text != "." and any(c.isalnum() for c in w.text)]
     if not words1:
-        return (False, [])
+        return []
 
     alternatives_list: list[set[str]] = []
     for w in words1:
@@ -281,6 +356,108 @@ def _extract_group_terms(group: str) -> tuple[bool, list[list[str]]]:
             except Exception:
                 pass
 
+    return alternatives_list
+
+
+def _build_phrase_pattern(positions: list[set[str]]) -> str:
+    """Build a regex pattern for SQLite phrase matching: (?:^| )(alt|alt) (alt) ...(?: |$)."""
+    parts = []
+    for pos in positions:
+        alts = sorted(re.escape(lem) for lem in pos if lem)
+        if not alts:
+            continue
+        parts.append(f"({'|'.join(alts)})")
+    if not parts:
+        return ""
+    return f"(?:^| ){' '.join(parts)}(?: |$)"
+
+
+def _split_group_phrases_and_words(group_str: str) -> tuple[list[str], str]:
+    """Split a comma group into quoted phrase strings and unquoted remainder.
+
+    An unmatched quote is ignored (treated as no quotes).
+    """
+    if group_str.count('"') % 2 != 0:
+        return [], group_str.replace('"', " ")
+
+    phrases: list[str] = []
+
+    def _repl(m: re.Match) -> str:
+        content = m.group(1).strip()
+        if content:
+            phrases.append(content)
+        return " "
+
+    unquoted = re.sub(r'"([^"]*)"', _repl, group_str)
+    return phrases, unquoted
+
+
+def _parse_single_group(group_str: str) -> QueryGroup | None:
+    """Parse a single comma group into QueryGroup containing phrases and terms."""
+    phrase_strs, unquoted_str = _split_group_phrases_and_words(group_str)
+
+    phrases: list[QueryPhrase] = []
+    phrase_candidate_terms: list[list[str]] = []
+    total_positions = 0
+
+    for p_str in phrase_strs:
+        positions = _extract_positions_with_alternatives(p_str)
+        if not positions:
+            continue
+        total_positions += len(positions)
+
+        # Check if phrase contains only stopwords
+        is_all_stopwords = all(
+            all(lemma in STOPWORDS for lemma in pos if lemma) for pos in positions
+        )
+        if is_all_stopwords:
+            raise ValueError("Fraas koosneb ainult stoppsõnadest.")
+
+        pattern = _build_phrase_pattern(positions)
+        phrases.append(QueryPhrase(positions=positions, pattern=pattern))
+
+        # Candidate filtering: non-stopword positions of the phrase as normal AND terms
+        for pos in positions:
+            non_stop = [lem for lem in pos if lem not in STOPWORDS]
+            if non_stop:
+                phrase_candidate_terms.append(sorted(non_stop))
+
+    unquoted_terms: list[list[str]] = []
+    if unquoted_str.strip():
+        u_positions = _extract_positions_with_alternatives(unquoted_str)
+        for pos in u_positions:
+            non_stop = [lem for lem in pos if lem not in STOPWORDS]
+            if non_stop:
+                unquoted_terms.append(sorted(non_stop))
+                total_positions += 1
+
+    if total_positions > 10:
+        raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
+
+    combined_terms: list[list[str]] = []
+    seen: set[tuple[str, ...]] = set()
+    for term in phrase_candidate_terms + unquoted_terms:
+        t = tuple(term)
+        if t not in seen:
+            seen.add(t)
+            combined_terms.append(term)
+
+    if not combined_terms and not phrases:
+        return None
+
+    return QueryGroup(terms=combined_terms, phrases=phrases, unquoted_terms=unquoted_terms)
+
+
+def _extract_group_terms(group: str) -> tuple[bool, list[list[str]]]:
+    """Extract content terms from a query group with case and hyphen expansions.
+
+    Returns (has_any_words, content_terms) where content_terms is a list of positions,
+    and each position contains a list of alternative lemmas.
+    """
+    alternatives_list = _extract_positions_with_alternatives(group)
+    if not alternatives_list:
+        return (False, [])
+
     content_terms: list[list[str]] = []
     seen_terms: set[tuple[str, ...]] = set()
     for alts in alternatives_list:
@@ -302,18 +479,22 @@ def is_only_stopwords(query: str) -> bool:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
     has_any_words = False
     for group in raw_groups:
-        has_words, terms = _extract_group_terms(group)
-        if len(terms) > 10:
-            raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
-        if has_words:
-            has_any_words = True
-            if terms:
-                return False
+        phrase_strs, unquoted_str = _split_group_phrases_and_words(group)
+        for p in phrase_strs:
+            if p.strip():
+                has_any_words = True
+        if unquoted_str.strip():
+            u_pos = _extract_positions_with_alternatives(unquoted_str)
+            if u_pos:
+                has_any_words = True
+        qg = _parse_single_group(group)
+        if qg is not None:
+            return False
     return has_any_words
 
 
-def parse_query_groups(query: str) -> list[list[list[str]]]:
-    """Parse comma-separated OR groups and space-separated AND keywords into filtered lemma alternatives."""
+def parse_query_groups(query: str) -> list[QueryGroup]:
+    """Parse comma-separated OR groups and space-separated AND keywords/phrases into filtered lemma alternatives."""
     check_query_complexity(query)
     groups = []
     raw_groups = [g.strip() for g in query.split(",") if g.strip()]
@@ -321,22 +502,21 @@ def parse_query_groups(query: str) -> list[list[list[str]]]:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
 
     for group in raw_groups:
-        has_words, terms = _extract_group_terms(group)
-        if len(terms) > 10:
-            raise ValueError("Liiga palju sõnu ühes rühmas: lubatud kuni 10 sisusõna.")
-        if terms:
-            groups.append(terms)
+        qg = _parse_single_group(group)
+        if qg:
+            groups.append(qg)
 
     return groups
 
 
-def build_matching_speech_ids_query(session, groups: list[list[list[str]]]):
+def build_matching_speech_ids_query(session, groups: list):
     """Build a SQL subquery returning distinct speech IDs matching query lemma groups."""
     group_queries = []
 
     for group in groups:
         term_queries = []
-        for term_alts in group:
+        terms = getattr(group, "terms", group)
+        for term_alts in terms:
             tq = (
                 session.query(SpeechTerm.speech_id.label("speech_id"))
                 .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
@@ -362,11 +542,49 @@ def build_matching_speech_ids_query(session, groups: list[list[list[str]]]):
     return union_query.subquery()
 
 
-def build_matching_conditions(session, groups: list[list[list[str]]]) -> list:
+def build_matching_conditions(session, groups: list) -> list:
     """Build SQL filter conditions for speech IDs matching each lemma group."""
-    matched_subquery = build_matching_speech_ids_query(session, groups)
-    col = list(matched_subquery.c)[0]
-    return [Speech.id.in_(select(col))]
+    has_phrases = any(bool(getattr(g, "phrases", None)) for g in groups)
+    if not has_phrases:
+        matched_subquery = build_matching_speech_ids_query(session, groups)
+        col = list(matched_subquery.c)[0]
+        return [Speech.id.in_(select(col))]
+
+    group_conditions = []
+    for group in groups:
+        terms = getattr(group, "terms", group)
+        term_queries = []
+        for term_alts in terms:
+            tq = (
+                session.query(SpeechTerm.speech_id.label("speech_id"))
+                .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
+                .filter(Lemma.lemma.in_(term_alts))
+            )
+            term_queries.append(tq)
+
+        conds = []
+        if term_queries:
+            if len(term_queries) == 1:
+                gq = term_queries[0]
+            else:
+                gq = term_queries[0].intersect(*term_queries[1:])
+            subq = gq.subquery()
+            cand_col = list(subq.c)[0]
+            conds.append(Speech.id.in_(select(cand_col)))
+
+        for p in getattr(group, "phrases", []):
+            conds.append(func.phrase_match(Speech.text_lemmas, p.pattern))
+
+        if conds:
+            if len(conds) == 1:
+                group_conditions.append(conds[0])
+            else:
+                group_conditions.append(and_(*conds))
+
+    if not group_conditions:
+        return [Speech.id.in_(select(Speech.id).filter(False))]
+
+    return group_conditions
 
 
 CHAIR_ROLES = ("Esimees", "Aseesimees")
@@ -516,7 +734,9 @@ def search_by_keyword(
             else:
                 results = []
 
-        if not speech_filters:
+        has_phrases = any(bool(getattr(g, "phrases", None)) for g in groups)
+
+        if not speech_filters and not has_phrases:
             if len(groups) == 1 and len(groups[0]) == 1 and len(groups[0][0]) == 1:
                 total_count = (
                     session.query(func.count(SpeechTerm.speech_id))
@@ -537,10 +757,23 @@ def search_by_keyword(
             total_count = count_query.distinct().count()
 
         target_lemmas_set = set(all_lemmas) if include_matched_words else set()
+        all_phrases = (
+            [p for g in groups for p in getattr(g, "phrases", [])] if include_matched_words else []
+        )
+        unquoted_lemmas = (
+            {lemma for g in groups for term in getattr(g, "unquoted_terms", []) for lemma in term}
+            if include_matched_words
+            else set()
+        )
         output = []
         for speech, match_count in results:
             matched_words = (
-                extract_matched_words(speech.text, target_lemmas_set)
+                extract_matched_words(
+                    speech.text,
+                    target_lemmas_set,
+                    phrases=all_phrases,
+                    unquoted_lemmas=unquoted_lemmas,
+                )
                 if include_matched_words
                 else []
             )
@@ -611,7 +844,7 @@ def keyword_activity(
             date_group = func.strftime("%Y-%W", Speech.date)
             label = "week"
 
-        matched_speeches = build_matching_speech_ids_query(session, groups)
+        matching_conditions = build_matching_conditions(session, groups)
         speech_filters = build_speech_filters(
             membership=membership,
             faction=faction,
@@ -624,7 +857,7 @@ def keyword_activity(
         )
         query_builder = session.query(
             date_group.label("period"), func.count(Speech.id).label("total_count")
-        ).join(matched_speeches, Speech.id == list(matched_speeches.c)[0])
+        ).filter(or_(*matching_conditions))
 
         if speech_filters:
             query_builder = query_builder.filter(*speech_filters)
@@ -954,16 +1187,29 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
 
         target_lemmas: set[str] = set()
         matching_speech_ids: set[int] = set()
-        if parsed_groups:
+        all_phrases = (
+            [p for g in parsed_groups for p in getattr(g, "phrases", [])] if parsed_groups else []
+        )
+        unquoted_lemmas = (
+            {
+                lemma
+                for g in parsed_groups
+                for term in getattr(g, "unquoted_terms", [])
+                for lemma in term
+            }
+            if parsed_groups
+            else set()
+        )
+        if parsed_groups and speeches:
             target_lemmas = {lemma for group in parsed_groups for term in group for lemma in term}
-            if target_lemmas and speeches:
+            if target_lemmas:
                 speech_ids = [s.id for s in speeches]
+                matching_conditions = build_matching_conditions(session, parsed_groups)
                 matching_speech_ids = {
                     row[0]
-                    for row in session.query(SpeechTerm.speech_id)
-                    .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-                    .filter(SpeechTerm.speech_id.in_(speech_ids))
-                    .filter(Lemma.lemma.in_(target_lemmas))
+                    for row in session.query(Speech.id)
+                    .filter(Speech.id.in_(speech_ids))
+                    .filter(or_(*matching_conditions))
                     .all()
                 }
 
@@ -1003,9 +1249,16 @@ def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
                     "source_url": normalize_source_url(s.source_url),
                     "agenda_title": s.agenda_title,
                     "video_url": s.video_url,
-                    "matched_words": extract_matched_words(s.text, target_lemmas)
-                    if s.id in matching_speech_ids
-                    else [],
+                    "matched_words": (
+                        extract_matched_words(
+                            s.text,
+                            target_lemmas,
+                            phrases=all_phrases,
+                            unquoted_lemmas=unquoted_lemmas,
+                        )
+                        if s.id in matching_speech_ids
+                        else []
+                    ),
                 }
                 for s in speeches
             ],
