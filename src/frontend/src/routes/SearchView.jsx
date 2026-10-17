@@ -8,7 +8,7 @@ import {
   fetchSpeakers,
   fetchSpeechContext,
 } from "../lib/api";
-import { mergeInputToGroups, parseQueryToGroups } from "../lib/formatters";
+import { mergeInputToGroups, parseQueryToGroups, serializeGroupsToQuery } from "../lib/formatters";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
 import SpeechCard from "../components/SpeechCard";
@@ -260,9 +260,7 @@ export function SearchView({
       setInputValue("");
     }
     finalGroups = finalGroups.filter((g) => g.length > 0);
-    const queryString = finalGroups
-      .map((g) => g.map((w) => (w.includes(" ") ? `"${w}"` : w)).join(" "))
-      .join(", ");
+    const queryString = serializeGroupsToQuery(finalGroups);
 
     const next = new URLSearchParams();
     if (queryString) next.set("q", queryString);

@@ -25,19 +25,27 @@ export function parseQueryToGroups(queryString) {
 }
 
 export function mergeInputToGroups(currentGroups, input) {
-  if (!input || !input.trim()) {
+  if (typeof input !== "string") {
     return currentGroups && currentGroups.length > 0 ? currentGroups : [[]];
   }
-  const parsed = parseQueryToGroups(input.trim());
-  if (!parsed || parsed.length === 0 || (parsed.length === 1 && parsed[0].length === 0)) {
+  const cleaned = input.replace(/"/g, "").replace(/\s+/g, " ").trim();
+  if (!cleaned) {
     return currentGroups && currentGroups.length > 0 ? currentGroups : [[]];
   }
 
-  const base = currentGroups && currentGroups.length > 0 ? [...currentGroups] : [[]];
+  const base = currentGroups && currentGroups.length > 0 ? currentGroups.map((g) => [...g]) : [[]];
   const lastIndex = base.length - 1;
-  const firstParsed = parsed[0];
-  const remaining = parsed.slice(1);
+  base[lastIndex].push(cleaned);
+  return base;
+}
 
-  const mergedLast = [...base[lastIndex], ...firstParsed];
-  return [...base.slice(0, lastIndex), mergedLast, ...remaining];
+export function serializeGroupsToQuery(groups) {
+  if (!groups || groups.length === 0) return "";
+  return groups
+    .filter((g) => g && g.length > 0)
+    .map((group) =>
+      group.map((pill) => (pill.includes(" ") || pill.includes(",") ? `"${pill}"` : pill)).join(" ")
+    )
+    .filter(Boolean)
+    .join(", ");
 }

@@ -6,7 +6,12 @@ import ActivityChart from "../components/ActivityChart";
 import SpeakersPanel from "../components/SpeakersPanel";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
-import { formatDateTime, mergeInputToGroups, normalizeSourceUrl } from "../lib/formatters";
+import {
+  formatDateTime,
+  mergeInputToGroups,
+  normalizeSourceUrl,
+  serializeGroupsToQuery,
+} from "../lib/formatters";
 
 export function DashboardView({
   dashboardOverview,
@@ -61,9 +66,7 @@ export function DashboardView({
       setInputValue("");
     }
     finalGroups = finalGroups.filter((g) => g.length > 0);
-    const queryString = finalGroups
-      .map((g) => g.map((w) => (w.includes(" ") ? `"${w}"` : w)).join(" "))
-      .join(", ");
+    const queryString = serializeGroupsToQuery(finalGroups);
 
     const params = new URLSearchParams();
     if (queryString) params.set("q", queryString);

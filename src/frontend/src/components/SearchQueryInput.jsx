@@ -23,7 +23,7 @@ export function SearchQueryInput({
       const newGroups = mergeInputToGroups(groups, inputValue.trim());
       setGroups([...newGroups, []]);
       setInputValue("");
-    } else if (groups[groups.length - 1].length > 0) {
+    } else if (groups.length > 0 && groups[groups.length - 1].length > 0) {
       setGroups([...groups, []]);
     }
   };
@@ -52,18 +52,21 @@ export function SearchQueryInput({
             <React.Fragment key={gIndex}>
               {gIndex > 0 && <span className="or-divider">VÕI</span>}
               <div className="and-group-box">
-                {group.map((word, wIndex) => (
-                  <span key={wIndex} className="token-pill">
-                    {word.includes(" ") ? `"${word}"` : word}
-                    <button
-                      type="button"
-                      onClick={() => removeWord(gIndex, wIndex)}
-                      title={word.includes(" ") ? "Eemalda fraas" : "Eemalda sõna"}
-                    >
-                      &times;
-                    </button>
-                  </span>
-                ))}
+                {group.map((word, wIndex) => {
+                  const isPhrase = word.includes(" ") || word.includes(",");
+                  return (
+                    <span key={wIndex} className="token-pill">
+                      {isPhrase ? `"${word}"` : word}
+                      <button
+                        type="button"
+                        onClick={() => removeWord(gIndex, wIndex)}
+                        title={isPhrase ? "Eemalda fraas" : "Eemalda sõna"}
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  );
+                })}
                 {gIndex === groups.length - 1 && (
                   <input
                     type="text"
@@ -102,7 +105,8 @@ export function SearchQueryInput({
       </div>
 
       <div className="search-hint">
-        Täpse fraasi otsimiseks kasuta jutumärke, nt &quot;riigi eelarve&quot;.
+        Iga plokk on eraldi otsingusõna või fraas. Mitmesõnaline plokk otsib täpset fraasi. Lisa
+        plokke nuppudega „+ JA“ ja „+ VÕI“.
       </div>
 
       <div className="search-controls">
