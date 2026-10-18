@@ -2125,8 +2125,10 @@ def test_person_attendance_endpoint():
     assert client.get("/persons/unknown-att-uuid/attendance").status_code == 404
 
 
-def test_next_membership_simulation():
+def test_next_membership_simulation(monkeypatch):
     from config import latest_membership
+
+    monkeypatch.setattr("config._today_str", lambda: "2026-10-18")
 
     memberships_file = os.path.join(OUTPUT_DIR_PROCESSED, "memberships.json")
     old_content = None

@@ -105,13 +105,17 @@ def get_membership_dates() -> dict[str, tuple[str, str]]:
     return MEMBERSHIP_DATES.copy()
 
 
+def _today_str() -> str:
+    return datetime.now().strftime("%Y-%m-%d")
+
+
 def latest_membership(today: str | date | datetime | None = None) -> str:
     """Return the newest membership number whose start date <= today (fallback to highest number)."""
     dates = MEMBERSHIP_DATES
     if not dates:
         dates = DEFAULT_MEMBERSHIP_DATES
     if today is None:
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = _today_str()
     elif isinstance(today, (datetime, date)):
         today_str = today.strftime("%Y-%m-%d")
     else:
