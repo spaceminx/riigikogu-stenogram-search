@@ -115,20 +115,31 @@ export function VotingView() {
         className="glass-panel"
         style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <p style={{ color: "var(--color-text-muted, #64748b)" }}>Laen hääletuse andmeid...</p>
+        <p style={{ color: "var(--text-secondary)" }}>Laen hääletuse andmeid...</p>
       </div>
     );
   }
 
   if (error || !voting) {
+    const is404 =
+      error?.status === 404 ||
+      error?.message?.includes("kood 404") ||
+      error?.message?.includes("Hääletust ei leitud") ||
+      (!error && !voting);
+
     return (
       <div
         className="glass-panel"
         style={{ padding: "3rem 1.5rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <h2 style={{ marginBottom: "0.5rem" }}>Hääletust ei leitud</h2>
-        <p style={{ color: "var(--color-text-muted, #64748b)", marginBottom: "1.5rem" }}>
-          {error?.message || "Hääletust sellise identifikaatoriga ei leitud."}
+        <h2 style={{ marginBottom: "0.5rem" }}>
+          {is404 ? "Hääletust ei leitud" : "Hääletuse laadimine ebaõnnestus."}
+        </h2>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+          {error?.message ||
+            (is404
+              ? "Hääletust sellise identifikaatoriga ei leitud."
+              : "Hääletuse andmete laadimine ebaõnnestus.")}
         </p>
         <Link
           to="/haaletused"
@@ -255,7 +266,7 @@ export function VotingView() {
                         Puudus
                       </th>
                       <th scope="col" className="col-majority">
-                        Enamusotsus
+                        Enamuse seisukoht
                       </th>
                     </tr>
                   </thead>
@@ -318,13 +329,12 @@ export function VotingView() {
                   )}
                 </div>
 
-                <div className="voting-decision-tabs" role="tablist" aria-label="Otsuse filter">
+                <div className="voting-decision-tabs" role="group" aria-label="Otsuse filter">
                   {DECISION_FILTER_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
-                      role="tab"
-                      aria-selected={decisionFilter === opt.value}
+                      aria-pressed={decisionFilter === opt.value}
                       className={`decision-tab-btn ${decisionFilter === opt.value ? "active" : ""}`}
                       onClick={() => setDecisionFilter(opt.value)}
                     >
@@ -338,7 +348,7 @@ export function VotingView() {
             {filteredVotes.length === 0 ? (
               <p
                 style={{
-                  color: "var(--color-text-muted, #64748b)",
+                  color: "var(--text-secondary)",
                   margin: "1.5rem 0",
                   textAlign: "center",
                 }}

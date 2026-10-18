@@ -21,7 +21,9 @@ async function handleResponse(res) {
     } catch {
       // response body was not JSON
     }
-    throw new Error(errorDetail);
+    const err = new Error(errorDetail);
+    err.status = res.status;
+    throw err;
   }
   return res.json();
 }

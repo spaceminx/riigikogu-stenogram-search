@@ -20,6 +20,11 @@ body {
     radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.12), transparent 25%);
   color: var(--text-primary);
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 * {

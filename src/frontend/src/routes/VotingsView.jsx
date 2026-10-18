@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { Search, X } from "lucide-react";
 import { fetchVotings } from "../lib/api";
-import { formatDate } from "../lib/calendarUtils";
-import { formatOvernightTime, formatVotingSummary } from "../lib/votingUtils";
 import DateRangeCalendar from "../DateRangeCalendar";
 import Pagination from "../components/Pagination";
+import VotingRow from "../components/VotingRow";
 
 const PAGE_SIZE = 50;
 
@@ -179,7 +178,7 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
 
       {isLoading && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--color-text-muted, #64748b)" }}>Laen hääletusi...</p>
+          <p style={{ color: "var(--text-secondary)" }}>Laen hääletusi...</p>
         </div>
       )}
 
@@ -194,54 +193,15 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
 
       {!isLoading && !error && results.length === 0 && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--color-text-muted, #64748b)", margin: 0 }}>
-            Hääletusi ei leitud.
-          </p>
+          <p style={{ color: "var(--text-secondary)", margin: 0 }}>Hääletusi ei leitud.</p>
         </div>
       )}
 
       {!isLoading && !error && results.length > 0 && (
         <div className="votings-list">
-          {results.map((voting) => {
-            const sittingDateFormatted = formatDate(voting.sitting_date);
-            const timeFormatted = formatOvernightTime(
-              voting.start_time,
-              voting.sitting_date,
-              voting.date
-            );
-            const dateTimeDisplay = sittingDateFormatted
-              ? `${sittingDateFormatted} ${timeFormatted}`.trim()
-              : timeFormatted;
-            const summary = formatVotingSummary(voting.totals);
-
-            return (
-              <Link key={voting.uuid} to={`/haaletus/${voting.uuid}`} className="voting-row-link">
-                <div className="voting-row-main">
-                  <div className="voting-row-meta">
-                    <span className="voting-row-time">{dateTimeDisplay}</span>
-                    <div className="voting-badges">
-                      {voting.type === "SALAJANE" && (
-                        <span className="voting-badge voting-badge-secret">Salajane</span>
-                      )}
-                      {voting.is_technical && (
-                        <span className="voting-badge voting-badge-technical">Tehniline</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="voting-row-desc">{voting.description}</div>
-                  {voting.related_document?.title && (
-                    <div className="voting-row-doc">
-                      {voting.related_document.reference
-                        ? `${voting.related_document.reference} · `
-                        : ""}
-                      {voting.related_document.title}
-                    </div>
-                  )}
-                  {summary && <div className="voting-row-summary">{summary}</div>}
-                </div>
-              </Link>
-            );
-          })}
+          {results.map((voting) => (
+            <VotingRow key={voting.uuid} voting={voting} showDate={true} />
+          ))}
         </div>
       )}
 

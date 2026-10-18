@@ -5269,6 +5269,14 @@ html[data-theme="dark"] .calendar-hint {
 
 html[data-theme="dark"] {
   color-scheme: dark;
+  --bg-color: #0f172a;
+  --panel-bg: #172235;
+  --panel-border: #29364a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-primary: #60a5fa;
+  --accent-secondary: #93c5fd;
+  --accent-gradient: #60a5fa;
 }
 
 html[data-theme="dark"] body {
@@ -6575,8 +6583,18 @@ html[data-theme="dark"] .alignment-session-link:hover {
    ========================================================================== */
 
 .mobile-menu-nav {
-  display: grid;
+  display: none;
   gap: 4px;
+}
+
+@media (max-width: 640px) {
+  .nav-links {
+    display: none !important;
+  }
+
+  .mobile-menu-nav {
+    display: grid !important;
+  }
 }
 
 .votings-view-container {
@@ -6584,6 +6602,8 @@ html[data-theme="dark"] .alignment-session-link:hover {
   flex-direction: column;
   gap: 1.25rem;
   margin-top: 0.5rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .votings-controls {
@@ -6597,15 +6617,27 @@ html[data-theme="dark"] .alignment-session-link:hover {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
 .votings-search-input-wrap {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 0;
+}
+
+.votings-search-input-wrap .filter-text-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .votings-search-submit {
+  flex-shrink: 0;
   min-height: 40px;
   padding: 0 1.25rem;
+  white-space: nowrap;
 }
 
 .votings-filters-row {
@@ -7115,13 +7147,45 @@ html[data-theme="dark"] .alignment-session-link:hover {
   color: var(--text-primary);
 }
 
-.decision-tab-btn.active {
+.decision-tab-btn.active,
+.decision-tab-btn[aria-pressed="true"] {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: #ffffff;
 }
 
 /* Dark theme overrides */
+html[data-theme="dark"] .voting-detail-title,
+html[data-theme="dark"] .voting-section-heading,
+html[data-theme="dark"] .votings-heading,
+html[data-theme="dark"] .col-faction-name,
+html[data-theme="dark"] .voting-row-desc {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .voting-factions-table td,
+html[data-theme="dark"] .voting-members-table td {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .voting-sitting-link,
+html[data-theme="dark"] .voting-member-link {
+  color: var(--accent-primary);
+}
+
+html[data-theme="dark"] .voting-sitting-link:hover,
+html[data-theme="dark"] .voting-member-link:hover {
+  color: var(--accent-secondary);
+}
+
+html[data-theme="dark"] .decision-tab-btn.active,
+html[data-theme="dark"] .decision-tab-btn[aria-pressed="true"] {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #0f172a;
+  font-weight: 700;
+}
+
 html[data-theme="dark"] .voting-row-link:hover {
   border-color: #60a5fa;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
@@ -7288,5 +7352,32 @@ html[data-theme="dark"] .voting-decision-badge.puudub {
 
   .voting-row-link {
     padding: 1rem;
+  }
+
+  .header {
+    min-height: 56px;
+    margin-bottom: 24px;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .brand-lockup {
+    min-width: 0;
+  }
+
+  .brand-copy strong {
+    font-size: 13px;
+  }
+
+  .brand-copy > span {
+    font-size: 9px;
+  }
+
+  .voting-detail-header {
+    padding: 1.15rem 1rem;
+  }
+
+  .voting-detail-title {
+    font-size: 1.25rem;
   }
 }
