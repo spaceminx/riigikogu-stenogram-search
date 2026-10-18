@@ -71,6 +71,7 @@ export function SearchFilters({
 
       <DateRangeCalendar
         dates={plenaryDates}
+        memberships={memberships}
         value={searchDateRange}
         onChange={setSearchDateRange}
       />

@@ -1,3 +1,5 @@
+import { toRoman } from "./toRoman.js";
+
 export const WEEKDAYS = ["E", "T", "K", "N", "R", "L", "P"];
 export const MONTHS = [
   "jaanuar",
@@ -69,17 +71,68 @@ export function monthTitle(date) {
   return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-export function getPresetRange(presetId, dates) {
-  const today = new Date();
-  const todayKey = toDateKey(today);
+export function getQuickPresets(memberships, today = new Date()) {
+  const todayKey = typeof today === "string" ? today : toDateKey(today);
+  if (!memberships || memberships.length === 0) {
+    return QUICK_PRESETS;
+  }
+  const started = memberships.filter((m) => {
+    const start = m.start_date || m.startDate;
+    return Boolean(start && start <= todayKey);
+  });
+  if (started.length === 0) {
+    return QUICK_PRESETS;
+  }
+  const sorted = [...started].sort((a, b) => Number(b.number || b.id) - Number(a.number || a.id));
+  const topTwo = sorted.slice(0, 2);
+  const presets = topTwo.map((m, index) => {
+    const start = m.start_date || m.startDate;
+    const end = m.end_date || m.endDate;
+    const startYear = start ? start.slice(0, 4) : "";
+    const endYear = end ? end.slice(0, 4) : "";
+    const num = m.number || m.id;
+    const roman = toRoman(num);
+    const isCurrent = index === 0 && (!end || end >= todayKey);
+    const label = isCurrent
+      ? `${roman} Riigikogu (${startYear}–praegu)`
+      : `${roman} Riigikogu (${startYear}–${endYear})`;
+    const startDate = start;
+    const endDate = end && end < todayKey ? end : todayKey;
+    return {
+      id: String(m.id || num),
+      label,
+      startDate,
+      endDate,
+    };
+  });
+
+  return [
+    ...presets,
+    { id: "year", label: "Viimane aasta" },
+    { id: "archive", label: "Kogu arhiiv" },
+  ];
+}
+
+export function getPresetRange(presetId, dates, memberships = null, today = new Date()) {
+  const todayKey = typeof today === "string" ? today : toDateKey(today);
+
+  if (memberships && memberships.length > 0) {
+    const presets = getQuickPresets(memberships, today);
+    const match = presets.find((p) => p.id === presetId);
+    if (match && match.startDate && match.endDate) {
+      return { startDate: match.startDate, endDate: match.endDate };
+    }
+  }
+
   if (presetId === "xv") return { startDate: "2023-04-10", endDate: todayKey };
   if (presetId === "xiv") return { startDate: "2019-04-04", endDate: "2023-04-09" };
   if (presetId === "year") {
-    const yearAgo = new Date(today);
+    const yearDate = typeof today === "string" ? fromDateKey(today) : new Date(today);
+    const yearAgo = new Date(yearDate);
     yearAgo.setFullYear(yearAgo.getFullYear() - 1);
     return { startDate: toDateKey(yearAgo), endDate: todayKey };
   }
-  const orderedDates = [...dates].sort();
+  const orderedDates = [...(dates || [])].sort();
   return {
     startDate: orderedDates[0] || "2019-01-01",
     endDate: orderedDates.at(-1) || todayKey,
