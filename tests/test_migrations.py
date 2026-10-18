@@ -311,6 +311,10 @@ def test_apply_migrations_does_not_call_create_indexes(tmp_path, monkeypatch):
         # Fast-search indexes like idx_speeches_speaker_faction must NOT exist yet
         assert "idx_speeches_speaker_faction" not in index_names
         assert "idx_speech_terms_lemma_speech" not in index_names
+        assert "idx_agenda_items_draft_uuid" not in index_names
+        assert "idx_agenda_items_source_file_steno_title" not in index_names
+        assert "ix_agenda_items_draft_uuid" not in index_names
+        assert "ix_agenda_items_source_file_steno_title" not in index_names
 
 
 def test_migration_0002_applies_on_db_with_0001_already_applied(tmp_path):

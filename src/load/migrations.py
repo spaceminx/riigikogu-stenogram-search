@@ -90,14 +90,6 @@ def _up_0002_agenda_items(conn: Connection) -> None:
             """
         )
     )
-    conn.execute(
-        text("CREATE INDEX IF NOT EXISTS ix_agenda_items_draft_uuid ON agenda_items (draft_uuid);")
-    )
-    conn.execute(
-        text(
-            "CREATE INDEX IF NOT EXISTS ix_agenda_items_source_file_steno_title ON agenda_items (source_file, steno_title);"
-        )
-    )
 
 
 def _verify_0002_agenda_items(conn: Connection) -> None:

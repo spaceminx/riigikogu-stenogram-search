@@ -30,6 +30,8 @@ REDUNDANT_INDEXES = [
     "DROP INDEX IF EXISTS ix_votings_sitting_date",
     "DROP INDEX IF EXISTS ix_votings_related_document_uuid",
     "DROP INDEX IF EXISTS ix_votes_member_uuid",
+    "DROP INDEX IF EXISTS ix_agenda_items_draft_uuid",
+    "DROP INDEX IF EXISTS ix_agenda_items_source_file_steno_title",
 ]
 
 INDEXES = [

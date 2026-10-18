@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Index, Integer, Text, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -150,11 +150,7 @@ class AgendaItem(Base):
     stage = Column(Text, nullable=True)
     decision_code = Column(Text, nullable=True)
     decision_value = Column(Text, nullable=True)
-    draft_uuid = Column(Text, index=True, nullable=True)
+    draft_uuid = Column(Text, nullable=True)
     draft_mark = Column(Text, nullable=True)
     draft_title = Column(Text, nullable=True)
     voting_uuids = Column(Text, nullable=True)
-
-    __table_args__ = (
-        Index("ix_agenda_items_source_file_steno_title", "source_file", "steno_title"),
-    )
