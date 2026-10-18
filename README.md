@@ -75,12 +75,10 @@ python scripts/build_full_database.py
 *Note on historical data updates:*
 The server daily pipeline (`daily_pipeline.py` via cron) only downloads data for active years from B2 (the current year, plus the previous year as long as it falls within the 60-day window until around March 1st) and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and check for WAL temporary files:
 ```bash
-python scripts/download_from_b2.py --all
+docker compose run --rm pipeline python scripts/download_from_b2.py --all
 
-# 1. Build the new database (preferably in a container to ensure correct file permissions)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
-# If building on the host, ensure the container's appuser has rw permissions to the new file (chown if needed):
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# 1. Build the new database in the pipeline container (where B2 credentials live)
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite pipeline python scripts/build_full_database.py
 
 # 2. Stop the API and clean up old WAL temporary files
 docker compose stop backend
@@ -154,7 +152,7 @@ Exact sequence:
 > [!NOTE]
 > **Important deployment notes:**
 > - Until step 3 is completed, the daily pipeline only fetches the last 14 days.
-> - **Execution timing:** Years 2019–2025 can be run at any time, as the server daily pipeline only downloads active-year files and does not overwrite older votes files in B2. Only the 2026 run (step 3) must not run around 07:00 UTC (when the server daily pipeline runs).
+> - **Execution timing:** Years 2019–2025 can be run at any time, as the server daily pipeline only downloads active-year files and does not overwrite older votes files in B2. Only the 2026 run (step 3) must not run around 07:00 server local time (when the server daily pipeline runs).
 > - **Fault tolerance:** The script saves checkpoints every 25 votes and handles interruptions (Ctrl-C / SIGTERM). If any year exits with code 1 (e.g. temporary API network error), re-run the command for that year — already saved votes are skipped and loading resumes from where it left off.
 > - **Estimated runtimes by year** (~5.1 s per vote):
 >   - 2019: 172 votes → ~15 min

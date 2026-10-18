@@ -75,12 +75,10 @@ python scripts/build_full_database.py
 *Märkus ajaloo uuendamise kohta:*
 Serveri igapäevane andmetoru (`daily_pipeline.py` croni kaudu) laeb B2-st alla ainult aktiivsete aastate andmed (jooksev aasta ning eelmine aasta seni, kuni see jääb 60 päeva aknasse, umbes 1. märtsini) ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kontrolli WAL ajutisi faile:
 ```bash
-python scripts/download_from_b2.py --all
+docker compose run --rm pipeline python scripts/download_from_b2.py --all
 
-# 1. Ehita uus andmebaas (soovitatavalt konteineris, et tagada õiged failiõigused)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
-# Kui ehitad hostis, kontrolli ja muuda vajadusel uue faili omanikku (chown), et appuser saaks seda lugeda/kirjutada:
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
+# 1. Ehita uus andmebaas pipeline-konteineris (kus asuvad B2 volitused)
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite pipeline python scripts/build_full_database.py
 
 # 2. Peata API ja puhasta vanad WAL ajutised failid
 docker compose stop backend
@@ -154,7 +152,7 @@ Täpne järjekord:
 > [!NOTE]
 > **Olulised märkused juurutamisel:**
 > - Kuni samm 3 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
-> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest serveri igapäevane andmetoru laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 UTC paiku (mil töötab igapäevane andmetoru).
+> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest serveri igapäevane andmetoru laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 paiku serveri aja järgi (mil töötab igapäevane andmetoru).
 > - **Tõrketaluvus:** Skript teeb vahesalvestusi iga 25 hääletuse järel ning püüab katkestused (Ctrl-C / SIGTERM). Kui mõni aasta lõpetab koodiga 1 (nt ajutine API võrgutõrge), käivita sama aasta käsk uuesti – juba salvestatud hääletused jäetakse vahele ja laadimine jätkub poolelijäänud kohast.
 > - **Hinnangulised ajad aastate kaupa** (~5,1 s hääletuse kohta):
 >   - 2019: 172 hääletust → ~15 min
