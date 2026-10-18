@@ -154,3 +154,4 @@ class AgendaItem(Base):
     draft_mark = Column(Text, nullable=True)
     draft_title = Column(Text, nullable=True)
     voting_uuids = Column(Text, nullable=True)
+    match_method = Column(Text, nullable=True)
