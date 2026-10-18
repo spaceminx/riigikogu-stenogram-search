@@ -228,9 +228,13 @@ def process_agenda_and_verbatims(
                 continue
 
             v_info = verbatim_items_map.get(item_uuid)
+            existing = existing_records.get(item_uuid)
             if v_info:
                 steno_title = v_info["steno_title"]
                 source_file = v_info["source_file"]
+            elif existing:
+                steno_title = existing.get("steno_title")
+                source_file = existing.get("source_file") or fallback_source_file
             else:
                 steno_title = None
                 source_file = fallback_source_file

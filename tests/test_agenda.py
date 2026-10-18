@@ -211,6 +211,58 @@ def test_upsert_re_run_no_duplicates(tmp_path):
     assert loaded[item_uuid]["stage"] == "TEINE_LUGEMINE"
 
 
+def test_upsert_preserves_steno_title_and_source_file_when_verbatims_none():
+    """Existing record with steno_title: re-run with verbatims_data=None keeps steno_title and source_file unchanged while other fields are updated."""
+    item_uuid = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+    existing_record = {
+        "agenda_item_uuid": item_uuid,
+        "sitting_uuid": "sitting-old",
+        "sitting_date": "2026-10-14",
+        "sitting_datetime": "2026-10-14T14:00:00",
+        "source_file": "2026-10-14_1400.api",
+        "steno_title": "Olemasolev stenogrammi pealkiri",
+        "stage": "ESIMENE_LUGEMINE",
+        "decision_value": "Pooleli",
+    }
+    records = {item_uuid: existing_record}
+
+    agenda_update = {
+        "sittings": [
+            {
+                "uuid": "sitting-new",
+                "sittingDateTime": "2026-10-14T14:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": item_uuid,
+                        "order": 5,
+                        "title": "(999 SE II)",
+                        "stage": "TEINE_LUGEMINE",
+                        "decision": {"value": "Lõpetatud"},
+                    }
+                ],
+            }
+        ]
+    }
+
+    added, updated = process_agenda_and_verbatims(
+        agenda_data=agenda_update,
+        verbatims_data=None,
+        existing_records=records,
+    )
+    assert added == 0
+    assert updated == 1
+    assert len(records) == 1
+    r = records[item_uuid]
+    # steno_title and source_file unchanged
+    assert r["steno_title"] == "Olemasolev stenogrammi pealkiri"
+    assert r["source_file"] == "2026-10-14_1400.api"
+    # Other fields updated
+    assert r["stage"] == "TEINE_LUGEMINE"
+    assert r["decision_value"] == "Lõpetatud"
+    assert r["order"] == 5
+    assert r["api_title"] == "(999 SE II)"
+
+
 def test_load_agenda_items_missing_file_warns_only(monkeypatch):
     """Missing agenda_items.jsonl logs warning and returns 0 without failing."""
     import scripts.sync_database
@@ -470,6 +522,13 @@ def test_api_draft_and_speeches_endpoints():
         assert sess_speeches[90001]["draft_uuid"] == draft_uuid
         assert sess_speeches[90004]["agenda_item_uuid"] is None
         assert sess_speeches[90004]["draft_uuid"] is None
+
+        # 5. Limit max 100 validation
+        resp_limit_ok = client.get(f"/drafts/{draft_uuid}/speeches?limit=100")
+        assert resp_limit_ok.status_code == 200
+        resp_limit_too_high = client.get(f"/drafts/{draft_uuid}/speeches?limit=101")
+        assert resp_limit_too_high.status_code == 422
+
     finally:
         clean_sess = SessionLocal()
         try:

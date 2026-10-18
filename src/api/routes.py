@@ -2028,7 +2028,7 @@ def get_draft(draft_uuid: str):
 @router.get("/drafts/{draft_uuid}/speeches")
 def get_draft_speeches(
     draft_uuid: str,
-    limit: int = Query(50, ge=1, le=500, description="Tulemuste limiit (vaikimisi 50)"),
+    limit: int = Query(50, ge=1, le=100, description="Tulemuste limiit (vaikimisi 50)"),
     offset: int = Query(0, ge=0, description="Tulemuste nihe (vaikimisi 0)"),
     agenda_item_uuid: str | None = Query(
         None, description="Filtreeri konkreetse päevakorrapunkti järgi"
