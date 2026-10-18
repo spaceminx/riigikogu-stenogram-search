@@ -1164,3 +1164,106 @@ def test_fallback_mark_only_not_used_when_two_candidates_share_mark(caplog):
     assert records[uuid_2]["match_method"] is None
     assert records[uuid_2]["steno_title"] is None
     assert "Ambiguous mark-only match" in caplog.text
+
+
+def test_single_speech_includes_agenda_item_and_draft_uuid():
+    """Single speech endpoints (/speeches/{id} and /speeches/by-external-id/{ext_id}) return agenda_item_uuid and draft_uuid."""
+    session = SessionLocal()
+    speech_linked_id = 999123
+    speech_unlinked_id = 999124
+    agenda_uuid = "a-single-speech-test-uuid"
+    draft_uuid = "d-single-speech-test-uuid"
+
+    try:
+        agenda = AgendaItem(
+            agenda_item_uuid=agenda_uuid,
+            sitting_date="2026-10-14",
+            source_file="2026-10-14_test.api",
+            order=1,
+            steno_title="Testitud päevakorrapunkt (123 SE)",
+            stage="ESIMENE_LUGEMINE",
+            draft_uuid=draft_uuid,
+            draft_mark="123 SE",
+            draft_title="Test eelnõu",
+        )
+        session.merge(agenda)
+
+        speech_linked = Speech(
+            id=speech_linked_id,
+            external_id=888123,
+            speech_key="20261014_1000_linked",
+            speaker="Peeter Test",
+            speaker_role="Riigikogu liige",
+            speaker_faction="Test fraktsioon",
+            speaker_uuid="speaker-uuid-123",
+            speech_type="SÕNAVÕTT",
+            start_time="10:00:00",
+            end_time="10:02:00",
+            duration_seconds=120,
+            date="2026-10-14",
+            time="10:00",
+            source_file="2026-10-14_test.api",
+            source_url="https://example.com/steno/test",
+            agenda_title="Testitud päevakorrapunkt (123 SE)",
+            text="Tere austatud juhataja ja Riigikogu.",
+        )
+        speech_unlinked = Speech(
+            id=speech_unlinked_id,
+            external_id=888124,
+            speech_key="20261014_1000_unlinked",
+            speaker="Jaan Test",
+            speaker_role="Riigikogu liige",
+            speaker_faction="Test fraktsioon",
+            speaker_uuid="speaker-uuid-124",
+            speech_type="SÕNAVÕTT",
+            start_time="10:05:00",
+            end_time="10:07:00",
+            duration_seconds=120,
+            date="2026-10-14",
+            time="10:05",
+            source_file="2026-10-14_test.api",
+            source_url="https://example.com/steno/test",
+            agenda_title="Muu sidumata punkt",
+            text="Siin on teine kõne.",
+        )
+        session.merge(speech_linked)
+        session.merge(speech_unlinked)
+        session.commit()
+
+        # 1. By internal ID
+        res1 = client.get(f"/speeches/{speech_linked_id}")
+        assert res1.status_code == 200
+        data1 = res1.json()
+        assert data1["agenda_item_uuid"] == agenda_uuid
+        assert data1["draft_uuid"] == draft_uuid
+
+        # 2. By external ID
+        res2 = client.get("/speeches/by-external-id/888123")
+        assert res2.status_code == 200
+        data2 = res2.json()
+        assert data2["agenda_item_uuid"] == agenda_uuid
+        assert data2["draft_uuid"] == draft_uuid
+
+        # 3. By speech_key
+        res3 = client.get("/speeches/20261014_1000_linked")
+        assert res3.status_code == 200
+        data3 = res3.json()
+        assert data3["agenda_item_uuid"] == agenda_uuid
+        assert data3["draft_uuid"] == draft_uuid
+
+        # 4. Unlinked speech
+        res4 = client.get(f"/speeches/{speech_unlinked_id}")
+        assert res4.status_code == 200
+        data4 = res4.json()
+        assert data4["agenda_item_uuid"] is None
+        assert data4["draft_uuid"] is None
+
+    finally:
+        session.query(Speech).filter(Speech.id.in_([speech_linked_id, speech_unlinked_id])).delete(
+            synchronize_session=False
+        )
+        session.query(AgendaItem).filter(AgendaItem.agenda_item_uuid == agenda_uuid).delete(
+            synchronize_session=False
+        )
+        session.commit()
+        session.close()

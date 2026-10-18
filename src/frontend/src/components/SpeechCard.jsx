@@ -70,6 +70,15 @@ export function SpeechCard({
       {speech.agenda_title && (
         <div className="speech-agenda-tag" title={speech.agenda_title}>
           <span className="agenda-kicker">Päevakord:</span>
+          {speech.draft_uuid && (
+            <Link
+              to={`/eelnou/${speech.draft_uuid}`}
+              className="agenda-draft-link"
+              title="Ava eelnõu leht"
+            >
+              Eelnõu
+            </Link>
+          )}
           <span className="agenda-title-text">{speech.agenda_title}</span>
         </div>
       )}
