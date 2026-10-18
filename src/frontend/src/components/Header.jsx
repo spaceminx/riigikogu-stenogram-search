@@ -5,12 +5,15 @@ import {
   CalendarDays,
   Database,
   ExternalLink,
+  FileText,
   Info,
   Landmark,
   Menu,
   Moon,
   RefreshCw,
   Sun,
+  Users,
+  Vote,
 } from "lucide-react";
 import { formatDate } from "../lib/calendarUtils";
 import { formatSyncTime, isSyncStale } from "../lib/formatters";
@@ -26,8 +29,9 @@ export function Header({
   const location = useLocation();
   const pathname = location.pathname;
 
+  const isVotings = pathname.startsWith("/haaletused") || pathname.startsWith("/haaletus");
   const isAttendance = pathname.startsWith("/kohalolek");
-  const isSearchOrDashboard = !isAttendance;
+  const isSearchOrDashboard = !isAttendance && !isVotings;
 
   return (
     <header className="header">
@@ -58,6 +62,13 @@ export function Header({
         >
           Kohalolek
         </Link>
+        <Link
+          to="/haaletused"
+          className={`nav-btn ${isVotings ? "active" : ""}`}
+          aria-current={isVotings ? "page" : undefined}
+        >
+          Hääletused
+        </Link>
       </nav>
       <details className="header-menu">
         <summary className="header-menu-trigger" aria-label="Ava andmevaate menüü">
@@ -65,6 +76,43 @@ export function Header({
           <span>Menüü</span>
         </summary>
         <div className="header-menu-panel">
+          <div className="mobile-menu-nav">
+            <div className="menu-section-label">Navigatsioon</div>
+            <Link
+              to="/"
+              className={`menu-link ${isSearchOrDashboard ? "active" : ""}`}
+              onClick={() => {
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <FileText aria-hidden="true" />
+              <span>Kõneotsing</span>
+            </Link>
+            <Link
+              to="/kohalolek"
+              className={`menu-link ${isAttendance ? "active" : ""}`}
+              onClick={() => {
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <Users aria-hidden="true" />
+              <span>Kohalolek</span>
+            </Link>
+            <Link
+              to="/haaletused"
+              className={`menu-link ${isVotings ? "active" : ""}`}
+              onClick={() => {
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <Vote aria-hidden="true" />
+              <span>Hääletused</span>
+            </Link>
+            <div className="menu-divider" />
+          </div>
           <div className="menu-section-label">Välimus</div>
           <button
             type="button"

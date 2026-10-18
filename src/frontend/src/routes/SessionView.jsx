@@ -2,8 +2,9 @@ import React, { useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ExternalLink } from "lucide-react";
-import { fetchPlenarySession } from "../lib/api";
+import { fetchPlenarySession, fetchVotings } from "../lib/api";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
+import { formatOvernightTime, formatVotingSummary } from "../lib/votingUtils";
 import SpeechCard from "../components/SpeechCard";
 
 export function SessionView() {
@@ -20,6 +21,16 @@ export function SessionView() {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
+
+  const { data: votingsData } = useSWR(
+    date ? `session-votings-${date}` : null,
+    () => fetchVotings({ sittingDate: date, limit: 100 }),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+  const votings = votingsData?.results || [];
 
   // Handle anchor scrolling on load and when hash changes
   useEffect(() => {
@@ -130,6 +141,60 @@ export function SessionView() {
             );
           })}
         </div>
+      )}
+
+      {votings.length > 0 && (
+        <section
+          className="session-votings-section glass-panel"
+          style={{ marginTop: "1.5rem", padding: "1.5rem" }}
+          aria-labelledby="session-votings-title"
+        >
+          <div className="session-votings-header" style={{ marginBottom: "1rem" }}>
+            <h3
+              id="session-votings-title"
+              style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}
+            >
+              Hääletused ({votings.length})
+            </h3>
+          </div>
+          <div className="votings-list">
+            {votings.map((voting) => {
+              const timeDisplay = formatOvernightTime(
+                voting.start_time,
+                voting.sitting_date,
+                voting.date
+              );
+              const summary = formatVotingSummary(voting.totals);
+              return (
+                <Link key={voting.uuid} to={`/haaletus/${voting.uuid}`} className="voting-row-link">
+                  <div className="voting-row-main">
+                    <div className="voting-row-meta">
+                      <span className="voting-row-time">{timeDisplay}</span>
+                      <div className="voting-badges">
+                        {voting.type === "SALAJANE" && (
+                          <span className="voting-badge voting-badge-secret">Salajane</span>
+                        )}
+                        {voting.is_technical && (
+                          <span className="voting-badge voting-badge-technical">Tehniline</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="voting-row-desc">{voting.description}</div>
+                    {voting.related_document?.title && (
+                      <div className="voting-row-doc">
+                        {voting.related_document.reference
+                          ? `${voting.related_document.reference} · `
+                          : ""}
+                        {voting.related_document.title}
+                      </div>
+                    )}
+                    {summary && <div className="voting-row-summary">{summary}</div>}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
       )}
     </div>
   );

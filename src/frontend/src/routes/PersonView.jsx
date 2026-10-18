@@ -903,15 +903,26 @@ export function PersonView({ theme = "light" }) {
                       <span className="alignment-diff-date">
                         {diff.sitting_date ? formatDate(diff.sitting_date) : "—"}
                       </span>
-                      {diff.sitting_date && (
-                        <Link
-                          to={`/istung/${diff.sitting_date}`}
-                          className="alignment-session-link"
-                          title="Ava selle päeva istungi stenogramm"
-                        >
-                          Vaata istungit
-                        </Link>
-                      )}
+                      <div className="alignment-diff-links">
+                        {diff.voting_uuid && (
+                          <Link
+                            to={`/haaletus/${diff.voting_uuid}`}
+                            className="alignment-session-link"
+                            title="Ava selle hääletuse detailvaade"
+                          >
+                            Vaata hääletust
+                          </Link>
+                        )}
+                        {diff.sitting_date && (
+                          <Link
+                            to={`/istung/${diff.sitting_date}`}
+                            className="alignment-session-link"
+                            title="Ava selle päeva istungi stenogramm"
+                          >
+                            Vaata istungit
+                          </Link>
+                        )}
+                      </div>
                     </div>
                     <div className="alignment-diff-desc">{diff.description || "Hääletus"}</div>
                     {diff.related_document_title && (
