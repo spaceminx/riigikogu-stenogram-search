@@ -226,3 +226,39 @@ export async function fetchFactionAlignmentDifferences(
   );
   return handleResponse(res);
 }
+
+export async function fetchVotings(options = {}) {
+  const params = new URLSearchParams();
+  const startDate = options.startDate ?? options.start_date;
+  const endDate = options.endDate ?? options.end_date;
+  const sittingDate = options.sittingDate ?? options.sitting_date;
+  const membership = options.membership;
+  const q = options.q ?? options.query;
+  const documentUuid = options.documentUuid ?? options.document_uuid;
+  const type = options.type;
+  const includeTechnical = options.includeTechnical ?? options.include_technical;
+  const limit = options.limit ?? 50;
+  const offset = options.offset ?? 0;
+
+  if (startDate) params.append("start_date", startDate);
+  if (endDate) params.append("end_date", endDate);
+  if (sittingDate) params.append("sitting_date", sittingDate);
+  if (membership && membership !== "all") params.append("membership", membership);
+  if (q && q.trim()) params.append("q", q.trim());
+  if (documentUuid) params.append("document_uuid", documentUuid);
+  if (type) params.append("type", type);
+  if (includeTechnical !== undefined && includeTechnical !== null) {
+    params.append("include_technical", String(includeTechnical));
+  }
+  if (limit !== undefined && limit !== null) params.append("limit", String(limit));
+  if (offset !== undefined && offset !== null) params.append("offset", String(offset));
+
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/votings${qs ? `?${qs}` : ""}`);
+  return handleResponse(res);
+}
+
+export async function fetchVoting(uuid) {
+  const res = await fetch(`${BASE_URL}/votings/${encodeURIComponent(uuid)}`);
+  return handleResponse(res);
+}
