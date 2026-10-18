@@ -26,7 +26,7 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 - **Andmetoru terviklikkus ja statistika verifitseerimine:** Andmetoru kontrollib igaöiselt istungite täielikkust otse Riigikogu API vastu (`verify_pipeline_integrity.py`), toetab kõnede mahu pistelist kontrolli ametliku statistikaga (`verify_statistics.py`) ja monitoorib süsteemi tervist (`/system/status`).
 - **Läbipaistev metoodika:** Kasutajaliideses on selgitatud kohaloleku, kõnede ja toimetamata tekstide arvestuse põhimõtted.
 - **Kasutajaliides:** Reageeriv React rakendus Dark / Light režiimi toega.
-- **Automaatne andmetoru:** Igaöine GitHub Actions töövoog laeb uued stenogrammid, kontrollib andmete terviklikkust ja sünkroniseerib need Backblaze B2 pilvesalvestusega.
+- **Automaatne andmetoru:** Serveri igapäevane andmetoru laeb uued stenogrammid, kontrollib andmete terviklikkust, sünkroniseerib Backblaze B2 pilvesalvestusega ning uuendab andmebaasi ühtse luku all (koos käsitsi käivitatava GitHub Actions varuvariandiga).
 
 ---
 
@@ -37,7 +37,7 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 | **Frontend** | React 19, Vite, Recharts, ESLint 10, Prettier |
 | **Backend & API** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
 | **Keeletöötlus (NLP)** | EstNLTK, NLTK |
-| **Andmetorud & pilv** | GitHub Actions, Backblaze B2, Requests |
+| **Andmetorud & pilv** | Serveri cron, Backblaze B2, Requests, GitHub Actions |
 | **Paigaldus & konteinerid** | Docker, Docker Compose, Cloudflare Tunnel |
 | **Koodikvaliteet & CI** | Ruff (Python), ESLint + Prettier (JS/React), Pytest, Dependabot, GitHub Actions CI |
 
@@ -73,15 +73,12 @@ python scripts/build_full_database.py
 ```
 
 *Märkus ajaloo uuendamise kohta:*
-Igapäevane automaatne sünkroonimine serveris (`sync_database.py`) laeb B2-st alla ainult aktiivsete aastate andmed (jooksev aasta ning eelmine aasta seni, kuni see jääb 60 päeva aknasse, umbes 1. märtsini) ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kontrolli WAL ajutisi faile:
+Serveri igapäevane andmetoru (`daily_pipeline.py` croni kaudu) laeb B2-st alla ainult aktiivsete aastate andmed (jooksev aasta ning eelmine aasta seni, kuni see jääb 60 päeva aknasse, umbes 1. märtsini) ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kontrolli WAL ajutisi faile:
 ```bash
-python scripts/download_from_b2.py --all
+docker compose run --rm pipeline python scripts/download_from_b2.py --all
 
-# 1. Ehita uus andmebaas (soovitatavalt konteineris, et tagada õiged failiõigused)
-# Märkus: lipp --allow-missing-votes on vajalik seni, kuni hääletuste failid (votes_2019...votes_2025) on B2-sse laaditud.
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py --allow-missing-votes
-# Kui ehitad hostis, kontrolli ja muuda vajadusel uue faili omanikku (chown), et appuser saaks seda lugeda/kirjutada:
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py --allow-missing-votes
+# 1. Ehita uus andmebaas pipeline-konteineris (kus asuvad B2 volitused)
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite pipeline python scripts/build_full_database.py
 
 # 2. Peata API ja puhasta vanad WAL ajutised failid
 docker compose stop backend
@@ -123,22 +120,22 @@ Varasemate istungite (2019–2026) rikaste metaandmete (`external_id`, `ems_id`,
 
 ### Hääletuste ajaloo laadimine (ühekordne)
 
-Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteineri sees (`backend` teenus).
+Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteinerite sees.
 
 Täpne järjekord:
 1. Laadi 2019. aasta hääletused (alates 14. koosseisu algusest 01.04.2019) ja saada Backblaze B2-sse:
    ```bash
-   docker compose exec backend python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
+   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
    ```
 2. Laadi aastad 2020–2025 aastapõhise tsüklina ja saada B2-sse:
    ```bash
    for y in {2020..2025}; do
-     docker compose exec backend python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
+     docker compose run --rm pipeline python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
    done
    ```
 3. Laadi jooksva 2026. aasta hääletused ja saada B2-sse:
    ```bash
-   docker compose exec backend python scripts/fetch_votes.py --start-date 2026-01-01 --upload
+   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2026-01-01 --upload
    ```
 4. Laadi kõik hääletused serveri SQLite andmebaasi:
    ```bash
@@ -155,7 +152,7 @@ Täpne järjekord:
 > [!NOTE]
 > **Olulised märkused juurutamisel:**
 > - Kuni samm 3 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
-> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest GitHub Actions runner laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 UTC paiku (mil töötab igapäevane andmetoru).
+> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest serveri igapäevane andmetoru laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 paiku serveri aja järgi (mil töötab igapäevane andmetoru).
 > - **Tõrketaluvus:** Skript teeb vahesalvestusi iga 25 hääletuse järel ning püüab katkestused (Ctrl-C / SIGTERM). Kui mõni aasta lõpetab koodiga 1 (nt ajutine API võrgutõrge), käivita sama aasta käsk uuesti – juba salvestatud hääletused jäetakse vahele ja laadimine jätkub poolelijäänud kohast.
 > - **Hinnangulised ajad aastate kaupa** (~5,1 s hääletuse kohta):
 >   - 2019: 172 hääletust → ~15 min
@@ -219,13 +216,13 @@ Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) 
 1. Koodi paigaldamisel teostab rakenduse käivitus vajadusel puuduvate migratsioonide ja indeksite lisamise automaatselt (`apply_migrations()`, `create_indexes()`).
 2. Ajalooliste kohaloleku kirjete UUID-de täitmiseks serveris käivita:
    ```bash
-   docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
+   docker compose run --rm pipeline python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
    Eraldi uut tõmmise ehitamist ega teenuse katkestust vaja ei ole.
 3. Duplikaatsete või ignoreeritud istungite eemaldamiseks (nt 24.03.2021 ööistung `202103250048`):
    1) Laadi alla sihtaasta andmestik Backblaze B2-st:
       ```bash
-      docker compose exec backend python scripts/download_from_b2.py --year 2021
+      docker compose run --rm pipeline python scripts/download_from_b2.py --year 2021
       ```
    2) Kontrolli eemaldatavaid kirjeid kuivkäivitusega (oodatav 79 kõnet):
       ```bash
@@ -233,8 +230,41 @@ Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) 
       ```
    3) Rakenda muudatused, laadi uuendatud fail B2-sse ja kustuta kirjed andmebaasist:
       ```bash
-      docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
+      docker compose run --rm pipeline python scripts/remove_ignored_sessions.py --year 2021 --apply
       ```
+
+### Serveri igapäevane andmetoru
+Igapäevane andmetoru töötab serveris ühtse sünkroonimisluku (`database/.sync.lock`) all eraldi ühekordses `pipeline` konteineris:
+`B2 allalaadimine → API andmete pärimine → terviklikkuse kontroll → B2 üleslaadimine → andmebaasi sünkroonimine (in-process)`.
+
+See asendab varasema eraldiseisva `docker exec … sync_database.py` cron-töö.
+
+#### Seadistus (`.env.pipeline`)
+Teenus `pipeline` laeb baasseadistuse failist `.env` ning Backblaze B2 võtmed failist `.env.pipeline`:
+- `B2_KEY_ID`
+- `B2_APP_KEY`
+
+Kuna andmetoru töötab eraldi ühekordses konteineris (`profiles: ["jobs"]`), ei asu B2 kirjutamisõigusega võtmed kunagi pikaajaliselt töötavas API backendi konteineris.
+
+#### Ajastatud cron-töö
+Serveri croni käsk (asendab varasema `sync_database.py` rea):
+```bash
+cd <DEPLOY_DIR> && docker compose run --rm -T pipeline python scripts/daily_pipeline.py >> logs/daily_pipeline.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> logs/daily_pipeline.log 2>&1
+```
+
+#### Käsitsi käivitamine
+Täieliku andmetoru käsitsi käivitamiseks serveris:
+```bash
+cd <DEPLOY_DIR>
+docker compose run --rm pipeline python scripts/daily_pipeline.py
+```
+Kohalikuks käivitamiseks või ilma B2-sse üles laadimata:
+```bash
+docker compose run --rm pipeline python scripts/daily_pipeline.py --no-upload
+```
+
+#### GitHub Actions varuvariant
+GitHub Actions töövoog (`.github/workflows/daily_pipeline.yml`) jääb kättesaadavaks käsitsi käivitatava varuvariandina (`workflow_dispatch`). Kõik käsitsi käivitatud GitHubi töövoo poolt üles laaditud andmed laeb server järgmisel ajastatud käivitusel automaatselt alla esimese B2 sammu käigus.
 
 ---
 
@@ -281,7 +311,7 @@ riigikogu-stenogram-search/
 │   └── workflows/
 │       ├── ci.yml                 # Automaatne CI (Ruff, ESLint, Prettier, Pytest, Vite build)
 │       ├── deploy.yml             # Automaatne serverisse paigaldus pärast masteri CI õnnestumist
-│       └── daily_pipeline.yml     # Igaöine andmetoru (B2 sünkroonimine, API kraapija, terviklikkuse kontroll)
+│       └── daily_pipeline.yml     # Käsitsi käivitatav varu-andmetoru (GitHub Actions)
 ├── config.py                      # Globaalsed seadistused ja dünaamilised koosseisude kuupäevad
 ├── docker-compose.yml             # Multi-container Docker paigaldus
 ├── Dockerfile                     # Tootmistasemel backend Docker konteiner
@@ -290,6 +320,7 @@ riigikogu-stenogram-search/
 ├── scripts/
 │   ├── backfill_history.py        # Ajalooliste stenogrammide rikaste andmete tagasitäitmine
 │   ├── build_full_database.py     # Paralleelne täielik andmebaasi ehitaja
+│   ├── daily_pipeline.py          # Serveri igapäevane andmetoru
 │   ├── download_all_from_b2.py    # Kõigi andmete ja olekute allalaadija B2-st
 │   ├── download_from_b2.py        # Igapäevane inkrementaalne B2 allalaadija
 │   ├── fetch_attendance.py        # Kohaloleku ja hääletuste allalaadija

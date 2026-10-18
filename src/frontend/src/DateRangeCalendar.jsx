@@ -8,9 +8,9 @@ import {
   fromDateKey,
   getMonthDays,
   getPresetRange,
+  getQuickPresets,
   MONTHS,
   monthTitle,
-  QUICK_PRESETS,
   shiftMonth,
   toDateKey,
   WEEKDAYS,
@@ -20,6 +20,7 @@ import {
 export default function DateRangeCalendar({
   compact = false,
   dates = [],
+  memberships = [],
   value = { startDate: "", endDate: "" },
   onChange,
   onSelectDate,
@@ -36,6 +37,7 @@ export default function DateRangeCalendar({
   const popoverRef = useRef(null);
   const [popoverPosition, setPopoverPosition] = useState(null);
   const sessionDates = useMemo(() => new Set(dates), [dates]);
+  const presets = useMemo(() => getQuickPresets(memberships), [memberships]);
   const monthCount = compact ? 1 : 2;
   const months = Array.from({ length: monthCount }, (_, index) => shiftMonth(visibleMonth, index));
 
@@ -44,7 +46,7 @@ export default function DateRangeCalendar({
   };
 
   const applyPreset = (presetId) => {
-    const nextRange = getPresetRange(presetId, dates);
+    const nextRange = getPresetRange(presetId, dates, memberships);
     onChange?.(nextRange);
     setVisibleMonth(clampMonth(fromDateKey(nextRange.startDate)));
   };
@@ -336,7 +338,7 @@ export default function DateRangeCalendar({
           aria-label="Kuupäevavahemiku valimine"
         >
           <div className="calendar-quick-presets" role="group" aria-label="Kiirvalikud">
-            {QUICK_PRESETS.map((preset) => (
+            {presets.map((preset) => (
               <button
                 type="button"
                 className="calendar-preset-button"

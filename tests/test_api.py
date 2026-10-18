@@ -2125,8 +2125,10 @@ def test_person_attendance_endpoint():
     assert client.get("/persons/unknown-att-uuid/attendance").status_code == 404
 
 
-def test_next_membership_simulation():
+def test_next_membership_simulation(monkeypatch):
     from config import latest_membership
+
+    monkeypatch.setattr("config._today_str", lambda: "2026-10-18")
 
     memberships_file = os.path.join(OUTPUT_DIR_PROCESSED, "memberships.json")
     old_content = None
@@ -2160,8 +2162,9 @@ def test_next_membership_simulation():
         with open(memberships_file, "w", encoding="utf-8") as f:
             json.dump(mock_memberships, f)
 
-        # 1. latest_membership() evaluates to 16
-        assert latest_membership() == "16"
+        # 1. latest_membership(): with XVI starting in the future, latest_membership() == "15"; with today after XVI start, == "16"
+        assert latest_membership() == "15"
+        assert latest_membership(today="2027-04-01") == "16"
 
         session = SessionLocal()
         p16 = Person(
@@ -2240,13 +2243,21 @@ def test_next_membership_simulation():
         session.commit()
         session.close()
 
-        # 2. GET /attendance/stats with no membership param returns only membership 16 rows
+        # 2. GET /attendance/stats with no membership param defaults to latest_membership() ("15")
         res_stats = client.get("/attendance/stats")
         assert res_stats.status_code == 200
         stats = res_stats.json()
         names = [row["member_name"] for row in stats]
-        assert "Tulevik Saadik" in names
-        assert "Vana Saadik" not in names
+        assert "Vana Saadik" in names
+        assert "Tulevik Saadik" not in names
+
+        # Querying membership 16 explicitly returns only membership 16 rows
+        res_stats_16 = client.get("/attendance/stats?membership=16")
+        assert res_stats_16.status_code == 200
+        stats_16 = res_stats_16.json()
+        names_16 = [row["member_name"] for row in stats_16]
+        assert "Tulevik Saadik" in names_16
+        assert "Vana Saadik" not in names_16
 
         # 3. GET /memberships lists 16
         res_mems = client.get("/memberships")

@@ -14,9 +14,14 @@ export function AttendanceView({
   const [searchParams, setSearchParams] = useSearchParams();
 
   const attendanceTab = searchParams.get("att_tab") || "members";
-  const latestMembership = memberships && memberships.length > 0 ? String(memberships[0].id) : null;
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const defaultMembership = useMemo(() => {
+    if (!memberships || memberships.length === 0) return null;
+    const started = memberships.find((m) => m.start_date && m.start_date <= todayStr);
+    return started ? String(started.id) : String(memberships[0].id);
+  }, [memberships, todayStr]);
   const attParam = searchParams.get("att_membership");
-  const attendanceMembership = attParam || latestMembership || "";
+  const attendanceMembership = attParam || defaultMembership || "";
   const selectedFaction = searchParams.get("att_faction") || "";
   const activeOnly =
     searchParams.get("att_active") === "1" || searchParams.get("att_active") === "true";
@@ -39,7 +44,7 @@ export function AttendanceView({
 
   const handlePeriodChange = (newPeriod) => {
     const next = new URLSearchParams(searchParams);
-    if (latestMembership && String(newPeriod) === latestMembership) {
+    if (defaultMembership && String(newPeriod) === defaultMembership) {
       next.delete("att_membership");
     } else {
       next.set("att_membership", String(newPeriod));
@@ -49,7 +54,7 @@ export function AttendanceView({
     setSearchParams(next, { replace: true });
   };
 
-  const reqMembership = attParam || latestMembership || undefined;
+  const reqMembership = attParam || defaultMembership || undefined;
 
   const {
     data: attendanceData,
@@ -214,7 +219,7 @@ export function AttendanceView({
             </div>
           )}
 
-          {Boolean(latestMembership && attendanceMembership === latestMembership) && (
+          {Boolean(defaultMembership && attendanceMembership === defaultMembership) && (
             <label className="attendance-checkbox-label">
               <input
                 type="checkbox"

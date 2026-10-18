@@ -239,6 +239,7 @@ export function DashboardView({
             <DateRangeCalendar
               compact
               dates={plenaryDates}
+              memberships={memberships}
               value={{ startDate: "", endDate: "" }}
               onChange={() => {}}
               onSelectDate={handlePlenaryDateSelect}
