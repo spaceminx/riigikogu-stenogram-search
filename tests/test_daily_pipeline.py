@@ -255,3 +255,73 @@ def test_cli_main_argument_parsing(monkeypatch):
     ret = dp.main()
     assert ret == 0
     assert dispatched["no_upload"] is True
+
+
+def test_snapshot_only_active_years_speech_files(tmp_path, monkeypatch):
+    """Snapshot only copies {year}.jsonl for active years and skips missing or other files."""
+    source_dir = tmp_path / "source"
+    target_dir = tmp_path / "target"
+    source_dir.mkdir()
+    target_dir.mkdir()
+
+    # Create various files
+    (source_dir / "2026.jsonl").write_text("2026 speeches\n", encoding="utf-8")
+    (source_dir / "2021.jsonl").write_text("historical speeches\n", encoding="utf-8")
+    (source_dir / "attendance.jsonl").write_text("attendance\n", encoding="utf-8")
+    (source_dir / "factions.json").write_text("factions\n", encoding="utf-8")
+
+    monkeypatch.setattr(dp, "active_years", lambda: ["2026", "2025"])  # 2025 is missing
+
+    count = dp.snapshot_processed_files(str(source_dir), str(target_dir))
+    assert count == 1
+    assert (target_dir / "2026.jsonl").exists()
+    assert not (target_dir / "2025.jsonl").exists()
+    assert not (target_dir / "2021.jsonl").exists()
+    assert not (target_dir / "attendance.jsonl").exists()
+    assert not (target_dir / "factions.json").exists()
+
+
+def test_stale_integrity_report_cleared_before_verify_step(tmp_path, monkeypatch):
+    """Stale integrity report is deleted before verify step; if verify fails without writing report, file is not restored."""
+    processed_dir = tmp_path / "processed"
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    db_dir = tmp_path / "db"
+    db_dir.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(db_dir))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(processed_dir))
+    monkeypatch.setattr(dp, "active_years", lambda: ["2026"])
+
+    sample_file = processed_dir / "2026.jsonl"
+    sample_file.write_text("OLD_INITIAL_DATA\n", encoding="utf-8")
+
+    # Stale report from yesterday
+    stale_report = processed_dir / "integrity_report.json"
+    stale_report.write_text(json.dumps({"blocked_files": ["2026.jsonl"]}), encoding="utf-8")
+
+    verified_sync_data = None
+    report_existed_during_sync = None
+
+    def mock_run(cmd, *args, **kwargs):
+        script_name = os.path.basename(cmd[1])
+        if script_name == "fetch_stenograms_api.py":
+            sample_file.write_text("NEW_FETCHED_DATA\n", encoding="utf-8")
+            return subprocess.CompletedProcess(args=cmd, returncode=0)
+        elif script_name == "verify_pipeline_integrity.py":
+            # Crashes without writing a new integrity_report.json
+            return subprocess.CompletedProcess(args=cmd, returncode=1)
+        return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+    def mock_sync(**kw):
+        nonlocal verified_sync_data, report_existed_during_sync
+        verified_sync_data = sample_file.read_text(encoding="utf-8")
+        report_existed_during_sync = stale_report.exists()
+        return True
+
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", mock_sync)
+
+    exit_code = dp.run_daily_pipeline()
+    assert exit_code == 1
+    assert report_existed_during_sync is False
+    assert verified_sync_data == "NEW_FETCHED_DATA\n"

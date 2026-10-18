@@ -25,7 +25,7 @@ import time
 # Ensure project root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import DATABASE_DIR, OUTPUT_DIR_PROCESSED, PROJECT_ROOT
+from config import DATABASE_DIR, OUTPUT_DIR_PROCESSED, PROJECT_ROOT, active_years
 from scripts.sync_database import sync_database
 from src.load.lock import sync_lock
 
@@ -70,14 +70,15 @@ def run_subprocess_step(
 
 
 def snapshot_processed_files(source_dir: str, target_dir: str) -> int:
-    """Copy all regular files from source_dir to target_dir. Returns file count."""
+    """Copy active-year speech JSONL files from source_dir to target_dir. Returns file count."""
     count = 0
     if not os.path.exists(source_dir):
         return count
-    for name in os.listdir(source_dir):
-        src_file = os.path.join(source_dir, name)
-        if os.path.isfile(src_file) and not name.startswith("."):
-            shutil.copy2(src_file, os.path.join(target_dir, name))
+    for yr in active_years():
+        fname = f"{yr}.jsonl"
+        src_file = os.path.join(source_dir, fname)
+        if os.path.isfile(src_file):
+            shutil.copy2(src_file, os.path.join(target_dir, fname))
             count += 1
     return count
 
@@ -229,6 +230,13 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
 
             # e. verify_pipeline_integrity.py (failure recorded, but continue)
             print("\n--- Step 7: Verify Pipeline Integrity ---")
+            stale_report = os.path.join(OUTPUT_DIR_PROCESSED, "integrity_report.json")
+            if os.path.exists(stale_report):
+                try:
+                    os.remove(stale_report)
+                    print(f"Removed stale integrity report: {stale_report}")
+                except Exception as e:
+                    print(f"Warning: Could not remove stale integrity report {stale_report}: {e}")
             int_ok, int_dur, int_err = run_subprocess_step("scripts/verify_pipeline_integrity.py")
             step_records.append(
                 {
