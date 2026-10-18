@@ -6623,8 +6623,8 @@ html[data-theme="dark"] .alignment-session-link:hover {
 
 .votings-search-input-wrap {
   flex: 1 1 auto;
+  width: auto;
   min-width: 0;
-  width: 0;
 }
 
 .votings-search-input-wrap .filter-text-input {
@@ -6634,7 +6634,8 @@ html[data-theme="dark"] .alignment-session-link:hover {
 }
 
 .votings-search-submit {
-  flex-shrink: 0;
+  width: auto;
+  flex: 0 0 auto;
   min-height: 40px;
   padding: 0 1.25rem;
   white-space: nowrap;
@@ -7310,6 +7311,17 @@ html[data-theme="dark"] .voting-decision-badge.puudub {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .votings-search-submit {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .votings-search-input-wrap {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
   .votings-tech-checkbox {
     margin-left: 0;
   }
