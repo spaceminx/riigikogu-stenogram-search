@@ -41,6 +41,8 @@ STRUCTURAL_TITLES = (
 )
 
 DRAFT_MARK_RE = re.compile(r"\((\d+)\s+[A-ZÕÄÖÜ]+(?:\s+[IV]+)?\)", re.IGNORECASE)
+INTERPELLATION_VERBATIM_RE = re.compile(r"\(nr\.?\s*(\d+)\)", re.IGNORECASE)
+INTERPELLATION_AGENDA_RE = re.compile(r"^(\d+)\s")
 
 
 def extract_draft_mark(title: str | None) -> str | None:
@@ -63,6 +65,24 @@ def extract_reading_stage(title: str | None) -> str | None:
     if "esimene lugemine" in t_lower:
         return "ESIMENE_LUGEMINE"
     return None
+
+
+def extract_interpellation_nr(title: str | None) -> str | None:
+    """Extract interpellation number from verbatim steno title (e.g. '(nr 36)' -> '36')."""
+    if not title:
+        return None
+    m = INTERPELLATION_VERBATIM_RE.search(title)
+    return m.group(1) if m else None
+
+
+def extract_agenda_interpellation_nr(item: dict) -> str | None:
+    """Extract interpellation number from agenda item if documentType is interpellationsAgendaItemDocument."""
+    doc_type = item.get("documentType") or item.get("document_type")
+    if doc_type != "interpellationsAgendaItemDocument":
+        return None
+    title = clean_html(item.get("title") or "")
+    m = INTERPELLATION_AGENDA_RE.match(title)
+    return m.group(1) if m else None
 
 
 def draft_marks_match(mark_digits: str, item_mark: str | int | None) -> bool:
@@ -226,7 +246,10 @@ def match_sitting_fallback(
     unmatched_agenda_items: list[dict],
     unmatched_verbatim_items: list[dict],
 ) -> dict[str, dict]:
-    """Perform fallback matching (by title and draft_mark) within a sitting.
+    """Perform fallback matching within a sitting:
+    a) exact title
+    b) draft mark (mark + stage, or mark-only if no candidate has same mark and stage)
+    c) interpellation number
 
     Returns dict mapping item_uuid -> {steno_title, source_file, match_method}.
     """
@@ -270,6 +293,7 @@ def match_sitting_fallback(
                 )
 
     # Step 2: Match by draft mark + reading
+    # 2a: Match by same mark AND stage (or mark alone if verbatim title has no reading words)
     remaining_v = [
         (idx, v) for idx, v in enumerate(unmatched_verbatim_items) if idx not in matched_v_indices
     ]
@@ -340,6 +364,148 @@ def match_sitting_fallback(
                 matched_v_indices.add(idx)
                 matched_a_uuids.add(a_uuid)
 
+    # 2b: Mark-only fallback if no candidate has the same mark AND stage
+    # (e.g. 494 SE has stage VASTU_VOETUD in agenda while steno says "kolmas lugemine")
+    remaining_v = [
+        (idx, v) for idx, v in enumerate(unmatched_verbatim_items) if idx not in matched_v_indices
+    ]
+    remaining_a = [a for a in unmatched_agenda_items if a.get("uuid") not in matched_a_uuids]
+
+    mark_only_candidates_v: dict[int, list[dict]] = {}
+    mark_only_candidates_a: dict[str, list[tuple[int, dict]]] = {
+        a.get("uuid"): [] for a in remaining_a
+    }
+
+    for idx, v in remaining_v:
+        v_mark = extract_draft_mark(v["steno_title"])
+        if not v_mark:
+            continue
+        v_stage = extract_reading_stage(v["steno_title"])
+        if v_stage is None:
+            continue
+        mark_only_candidates_v[idx] = []
+
+        for a in remaining_a:
+            a_uuid = a.get("uuid")
+            rel_draft = a.get("relatedDraft") if isinstance(a.get("relatedDraft"), dict) else None
+            a_mark = rel_draft.get("mark") if rel_draft else None
+            if not draft_marks_match(v_mark, a_mark):
+                continue
+            mark_only_candidates_v[idx].append(a)
+            mark_only_candidates_a[a_uuid].append((idx, v))
+
+    ambiguous_mark_v: set[int] = set()
+    ambiguous_mark_a: set[str] = set()
+
+    for idx, a_list in mark_only_candidates_v.items():
+        if len(a_list) > 1:
+            ambiguous_mark_v.add(idx)
+            v_title = unmatched_verbatim_items[idx]["steno_title"]
+            logger.warning(
+                "Ambiguous mark-only match in sitting %s for verbatim title '%s': %d agenda candidates share mark. Skipping.",
+                sitting_key,
+                v_title,
+                len(a_list),
+            )
+
+    for a_uuid, v_list in mark_only_candidates_a.items():
+        if len(v_list) > 1:
+            ambiguous_mark_a.add(a_uuid)
+            a_item = next(a for a in remaining_a if a.get("uuid") == a_uuid)
+            logger.warning(
+                "Ambiguous mark-only match in sitting %s for agenda item %s ('%s'): %d verbatim candidates share mark. Skipping.",
+                sitting_key,
+                a_uuid,
+                a_item.get("title"),
+                len(v_list),
+            )
+
+    for idx, a_list in mark_only_candidates_v.items():
+        if idx in ambiguous_mark_v:
+            continue
+        if len(a_list) == 1:
+            a = a_list[0]
+            a_uuid = a.get("uuid")
+            if a_uuid in ambiguous_mark_a:
+                continue
+            if len(mark_only_candidates_a.get(a_uuid, [])) == 1:
+                v = unmatched_verbatim_items[idx]
+                results[a_uuid] = {
+                    "steno_title": v["steno_title"],
+                    "source_file": v["source_file"],
+                    "match_method": "draft_mark",
+                }
+                matched_v_indices.add(idx)
+                matched_a_uuids.add(a_uuid)
+
+    # Step 3: Rule c) Interpellation number
+    remaining_v = [
+        (idx, v) for idx, v in enumerate(unmatched_verbatim_items) if idx not in matched_v_indices
+    ]
+    remaining_a = [a for a in unmatched_agenda_items if a.get("uuid") not in matched_a_uuids]
+
+    interp_candidates_v: dict[int, list[dict]] = {}
+    interp_candidates_a: dict[str, list[tuple[int, dict]]] = {
+        a.get("uuid"): [] for a in remaining_a
+    }
+
+    for idx, v in remaining_v:
+        v_nr = extract_interpellation_nr(v["steno_title"])
+        if not v_nr:
+            continue
+        interp_candidates_v[idx] = []
+
+        for a in remaining_a:
+            a_uuid = a.get("uuid")
+            a_nr = extract_agenda_interpellation_nr(a)
+            if a_nr and a_nr == v_nr:
+                interp_candidates_v[idx].append(a)
+                interp_candidates_a[a_uuid].append((idx, v))
+
+    ambiguous_interp_v: set[int] = set()
+    ambiguous_interp_a: set[str] = set()
+
+    for idx, a_list in interp_candidates_v.items():
+        if len(a_list) > 1:
+            ambiguous_interp_v.add(idx)
+            v_title = unmatched_verbatim_items[idx]["steno_title"]
+            logger.warning(
+                "Ambiguous interpellation match in sitting %s for verbatim title '%s': %d agenda candidates. Skipping.",
+                sitting_key,
+                v_title,
+                len(a_list),
+            )
+
+    for a_uuid, v_list in interp_candidates_a.items():
+        if len(v_list) > 1:
+            ambiguous_interp_a.add(a_uuid)
+            a_item = next(a for a in remaining_a if a.get("uuid") == a_uuid)
+            logger.warning(
+                "Ambiguous interpellation match in sitting %s for agenda item %s ('%s'): %d verbatim candidates. Skipping.",
+                sitting_key,
+                a_uuid,
+                a_item.get("title"),
+                len(v_list),
+            )
+
+    for idx, a_list in interp_candidates_v.items():
+        if idx in ambiguous_interp_v:
+            continue
+        if len(a_list) == 1:
+            a = a_list[0]
+            a_uuid = a.get("uuid")
+            if a_uuid in ambiguous_interp_a:
+                continue
+            if len(interp_candidates_a.get(a_uuid, [])) == 1:
+                v = unmatched_verbatim_items[idx]
+                results[a_uuid] = {
+                    "steno_title": v["steno_title"],
+                    "source_file": v["source_file"],
+                    "match_method": "interpellation_nr",
+                }
+                matched_v_indices.add(idx)
+                matched_a_uuids.add(a_uuid)
+
     return results
 
 
@@ -356,7 +522,7 @@ def process_agenda_and_verbatims(
         return 0, 0
 
     verbatim_by_uuid: dict[str, dict] = {}
-    unmatched_verbatims_by_sitting: dict[str, list[dict]] = {}
+    all_verbatim_entries: list[dict] = []
 
     if verbatims_data and isinstance(verbatims_data, list):
         for v_sitting in verbatims_data:
@@ -370,25 +536,21 @@ def process_agenda_and_verbatims(
                 raw_title = v_item.get("title", "")
                 steno_title = clean_html(raw_title)
 
+                entry = {
+                    "v_uuid": v_uuid if is_valid_uuid(v_uuid) else None,
+                    "steno_title": steno_title or None,
+                    "source_file": v_source_file,
+                    "raw": v_item,
+                }
+                all_verbatim_entries.append(entry)
+
                 if is_valid_uuid(v_uuid):
-                    verbatim_by_uuid[v_uuid] = {
-                        "steno_title": steno_title or None,
-                        "source_file": v_source_file,
-                    }
-                else:
-                    if not steno_title or steno_title in STRUCTURAL_TITLES:
-                        continue
-                    unmatched_verbatims_by_sitting.setdefault(v_source_file, []).append(
-                        {
-                            "steno_title": steno_title,
-                            "source_file": v_source_file,
-                            "raw": v_item,
-                        }
-                    )
+                    verbatim_by_uuid[v_uuid] = entry
 
     # Pass 1: Match agenda items by UUID
     match_results: dict[str, dict] = {}
     unmatched_agenda_by_sitting: dict[str, list[dict]] = {}
+    matched_verbatim_uuids: set[str] = set()
 
     for sitting in agenda_data.get("sittings", []):
         if not isinstance(sitting, dict):
@@ -407,6 +569,7 @@ def process_agenda_and_verbatims(
                 continue
 
             if item_uuid in verbatim_by_uuid:
+                matched_verbatim_uuids.add(item_uuid)
                 match_results[item_uuid] = {
                     "steno_title": verbatim_by_uuid[item_uuid]["steno_title"],
                     "source_file": verbatim_by_uuid[item_uuid]["source_file"],
@@ -414,6 +577,18 @@ def process_agenda_and_verbatims(
                 }
             else:
                 unmatched_agenda_by_sitting.setdefault(sitting_source_file, []).append(item)
+
+    # Collect unmatched verbatims per sitting:
+    # includes items without valid UUID AND items whose valid UUID was not matched in current batch
+    unmatched_verbatims_by_sitting: dict[str, list[dict]] = {}
+    for entry in all_verbatim_entries:
+        v_uuid = entry["v_uuid"]
+        if v_uuid and v_uuid in matched_verbatim_uuids:
+            continue
+        steno_title = entry["steno_title"]
+        if not steno_title or steno_title in STRUCTURAL_TITLES:
+            continue
+        unmatched_verbatims_by_sitting.setdefault(entry["source_file"], []).append(entry)
 
     # Pass 2: Fallback matching per sitting
     for sitting_key, unmatched_agenda in unmatched_agenda_by_sitting.items():

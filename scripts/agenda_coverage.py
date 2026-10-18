@@ -25,6 +25,7 @@ def compute_agenda_coverage(session) -> dict:
             COUNT(CASE WHEN a.agenda_item_uuid IS NOT NULL AND a.match_method = 'uuid' THEN 1 END) AS matched_uuid,
             COUNT(CASE WHEN a.agenda_item_uuid IS NOT NULL AND a.match_method = 'title' THEN 1 END) AS matched_title,
             COUNT(CASE WHEN a.agenda_item_uuid IS NOT NULL AND a.match_method = 'draft_mark' THEN 1 END) AS matched_draft_mark,
+            COUNT(CASE WHEN a.agenda_item_uuid IS NOT NULL AND a.match_method = 'interpellation_nr' THEN 1 END) AS matched_interpellation,
             COUNT(CASE WHEN a.draft_uuid IS NOT NULL AND a.draft_uuid != '' THEN 1 END) AS linked_draft
         FROM speeches s
         LEFT JOIN (
@@ -75,14 +76,14 @@ def compute_agenda_coverage(session) -> dict:
 
 def print_coverage_report(data: dict) -> None:
     """Print formatted coverage summary to stdout."""
-    print("=" * 130)
+    print("=" * 140)
     print("AGENDA ITEMS & DRAFTS SPEECH COVERAGE REPORT")
-    print("=" * 130)
+    print("=" * 140)
     print(
         f"{'Year':<6} | {'Total Speeches':<15} | {'Structural (no agenda item)':<28} | "
-        f"{'Linked to Agenda':<20} | {'UUID':<7} | {'Title':<7} | {'Draft Mark':<10} | {'Linked to Draft':<20}"
+        f"{'Linked to Agenda':<20} | {'UUID':<7} | {'Title':<7} | {'Draft Mark':<10} | {'Interp.':<8} | {'Linked to Draft':<20}"
     )
-    print("-" * 130)
+    print("-" * 140)
 
     total_all = 0
     total_structural = 0
@@ -90,6 +91,7 @@ def print_coverage_report(data: dict) -> None:
     total_uuid = 0
     total_title = 0
     total_draft_mark = 0
+    total_interpellation = 0
     total_draft = 0
 
     for (
@@ -100,6 +102,7 @@ def print_coverage_report(data: dict) -> None:
         matched_uuid,
         matched_title,
         matched_draft_mark,
+        matched_interpellation,
         linked_dr,
     ) in data["yearly"]:
         total_all += total
@@ -108,6 +111,7 @@ def print_coverage_report(data: dict) -> None:
         total_uuid += matched_uuid
         total_title += matched_title
         total_draft_mark += matched_draft_mark
+        total_interpellation += matched_interpellation
         total_draft += linked_dr
 
         remaining = total - structural
@@ -117,10 +121,10 @@ def print_coverage_report(data: dict) -> None:
         dr_str = f"{linked_dr} ({dr_pct:.1f}%)"
         print(
             f"{yr:<6} | {total:<15} | {structural:<28} | {ag_str:<20} | "
-            f"{matched_uuid:<7} | {matched_title:<7} | {matched_draft_mark:<10} | {dr_str:<20}"
+            f"{matched_uuid:<7} | {matched_title:<7} | {matched_draft_mark:<10} | {matched_interpellation:<8} | {dr_str:<20}"
         )
 
-    print("-" * 130)
+    print("-" * 140)
     overall_remaining = total_all - total_structural
     overall_ag_pct = (total_agenda / overall_remaining * 100.0) if overall_remaining > 0 else 0.0
     overall_dr_pct = (total_draft / overall_remaining * 100.0) if overall_remaining > 0 else 0.0
@@ -128,9 +132,9 @@ def print_coverage_report(data: dict) -> None:
     total_dr_str = f"{total_draft} ({overall_dr_pct:.1f}%)"
     print(
         f"{'TOTAL':<6} | {total_all:<15} | {total_structural:<28} | {total_ag_str:<20} | "
-        f"{total_uuid:<7} | {total_title:<7} | {total_draft_mark:<10} | {total_dr_str:<20}"
+        f"{total_uuid:<7} | {total_title:<7} | {total_draft_mark:<10} | {total_interpellation:<8} | {total_dr_str:<20}"
     )
-    print("=" * 130)
+    print("=" * 140)
     print("\nTOP 20 MOST FREQUENT UNLINKED AGENDA TITLES:")
     print("-" * 80)
     print(f"{'Count':<8} | {'Agenda Title'}")

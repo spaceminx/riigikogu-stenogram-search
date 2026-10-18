@@ -1002,7 +1002,7 @@ def test_agenda_coverage_structural_and_match_methods():
         yearly_2028 = [r for r in data["yearly"] if r[0] == "2028"]
         assert len(yearly_2028) == 1
         row = yearly_2028[0]
-        # yr, total, structural, linked_ag, uuid, title, draft_mark, linked_dr
+        # yr, total, structural, linked_ag, uuid, title, draft_mark, interpellation, linked_dr
         assert row[0] == "2028"
         assert row[1] == 3  # total
         assert row[2] == 1  # structural
@@ -1010,7 +1010,8 @@ def test_agenda_coverage_structural_and_match_methods():
         assert row[4] == 1  # matched_uuid
         assert row[5] == 0  # matched_title
         assert row[6] == 1  # matched_draft_mark
-        assert row[7] == 1  # linked_dr
+        assert row[7] == 0  # matched_interpellation
+        assert row[8] == 1  # linked_dr
 
         # Verify print_coverage_report runs smoothly
         print_coverage_report(data)
@@ -1023,3 +1024,143 @@ def test_agenda_coverage_structural_and_match_methods():
         )
         session.commit()
         session.close()
+
+
+def test_interpellation_by_number_incl_verbatim_uuid_not_in_agenda():
+    """Interpellation matched by number (nr N) and title 'N ' even when verbatim has valid UUID not in agenda."""
+    verbatim_uuid = "25341032-aaaa-bbbb-cccc-111111111111"
+    agenda_uuid = "88888888-8888-8888-8888-888888888888"
+
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-interp",
+                "sittingDateTime": "2023-11-06T15:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": agenda_uuid,
+                        "order": 1,
+                        "title": "36 Teede alarahastuse kohta",
+                        "documentType": "interpellationsAgendaItemDocument",
+                    }
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2023-11-06T15:00:00",
+            "title": "Täiskogu korraline istung",
+            "link": "https://stenogrammid.riigikogu.ee/202311061500",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": verbatim_uuid,
+                    "title": "Arupärimine teede alarahastuse kohta (nr 36)",
+                }
+            ],
+        }
+    ]
+    records = {}
+    added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+    assert added == 1
+    assert updated == 0
+    r = records[agenda_uuid]
+    assert r["match_method"] == "interpellation_nr"
+    assert r["source_file"] == "2023-11-06_1500.api"
+    assert r["steno_title"] == "Arupärimine teede alarahastuse kohta (nr 36)"
+
+
+def test_fallback_mark_only_when_stage_differs():
+    """When no candidate has same mark AND stage, accept unique candidate with same mark regardless of stage."""
+    item_uuid = "49400000-0000-0000-0000-000000000494"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-494",
+                "sittingDateTime": "2024-01-15T10:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": item_uuid,
+                        "order": 1,
+                        "title": "(494 SE)",
+                        "stage": "VASTU_VOETUD",
+                        "relatedDraft": {"mark": "494 SE"},
+                    }
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2024-01-15T10:00:00",
+            "title": "Täiskogu istung",
+            "link": "https://stenogrammid.riigikogu.ee/202401151000",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": None,
+                    "title": "Mingi seaduse eelnõu (494 SE) kolmas lugemine",
+                }
+            ],
+        }
+    ]
+    records = {}
+    added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+    assert added == 1
+    r = records[item_uuid]
+    assert r["match_method"] == "draft_mark"
+    assert r["source_file"] == "2024-01-15_1000.api"
+    assert r["steno_title"] == "Mingi seaduse eelnõu (494 SE) kolmas lugemine"
+
+
+def test_fallback_mark_only_not_used_when_two_candidates_share_mark(caplog):
+    """Mark-only fallback is not used when two candidates share the mark."""
+    uuid_1 = "49400000-0000-0000-0000-000000000001"
+    uuid_2 = "49400000-0000-0000-0000-000000000002"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-494-two",
+                "sittingDateTime": "2024-01-15T10:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": uuid_1,
+                        "order": 1,
+                        "title": "(494 SE) variant 1",
+                        "stage": "VASTU_VOETUD",
+                        "relatedDraft": {"mark": "494 SE"},
+                    },
+                    {
+                        "uuid": uuid_2,
+                        "order": 2,
+                        "title": "(494 SE) variant 2",
+                        "stage": "TEINE_LUGEMINE",
+                        "relatedDraft": {"mark": "494 SE"},
+                    },
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2024-01-15T10:00:00",
+            "title": "Täiskogu istung",
+            "link": "https://stenogrammid.riigikogu.ee/202401151000",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": None,
+                    "title": "Mingi seaduse eelnõu (494 SE) kolmas lugemine",
+                }
+            ],
+        }
+    ]
+    records = {}
+    with caplog.at_level("WARNING"):
+        added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+
+    assert added == 2
+    # Neither should be matched because two candidates share mark 494
+    assert records[uuid_1]["match_method"] is None
+    assert records[uuid_1]["steno_title"] is None
+    assert records[uuid_2]["match_method"] is None
+    assert records[uuid_2]["steno_title"] is None
+    assert "Ambiguous mark-only match" in caplog.text
