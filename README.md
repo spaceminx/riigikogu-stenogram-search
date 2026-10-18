@@ -23,7 +23,7 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 - **Attendance & Voting Stats:** Cross-references transcripts with MP attendance records.
 - **Persistent MP UUIDs & Permalinks:** All MP speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that resolve historical IDs after transcripts are officially edited.
 - **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API with dynamic runtime reloading.
-- **Pipeline Integrity & Statistics Verification:** Nightly pipeline verifies transcripts directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), supports on-demand cross-checks against official statistics (`verify_statistics.py`), and reports health via `/system/status`.
+- **Pipeline Integrity & Statistics Verification:** Daily pipeline verifies transcripts directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), supports on-demand cross-checks against official statistics (`verify_statistics.py`), and reports health via `/system/status`.
 - **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
 - **Modern UI:** Responsive single-page application with Dark / Light mode toggle.
 - **Automated Daily Pipeline:** Daily server pipeline fetches new transcripts, validates integrity, syncs to Backblaze B2, and updates the database under a unified lock (with manual GitHub Actions fallback).
@@ -73,15 +73,14 @@ python scripts/build_full_database.py
 ```
 
 *Note on historical data updates:*
-The daily database sync (`sync_database.py`) running on the server only downloads data for active years from B2 (the current year, plus the previous year as long as it falls within the 60-day window until around March 1st) and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and check for WAL temporary files:
+The server daily pipeline (`daily_pipeline.py` via cron) only downloads data for active years from B2 (the current year, plus the previous year as long as it falls within the 60-day window until around March 1st) and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and check for WAL temporary files:
 ```bash
 python scripts/download_from_b2.py --all
 
 # 1. Build the new database (preferably in a container to ensure correct file permissions)
-# Note: The --allow-missing-votes flag is needed until historical votes (votes_2019...votes_2025) are uploaded to B2.
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py --allow-missing-votes
+docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite backend python scripts/build_full_database.py
 # If building on the host, ensure the container's appuser has rw permissions to the new file (chown if needed):
-# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py --allow-missing-votes
+# DATABASE_URL=sqlite:///database/riigikogu_new.sqlite python scripts/build_full_database.py
 
 # 2. Stop the API and clean up old WAL temporary files
 docker compose stop backend
@@ -121,51 +120,51 @@ To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`,
 > ```
 > The current year dataset file in B2 is protected against concurrency conflicts by ETag validation.
 
-### Hääletuste ajaloo laadimine (ühekordne)
+### Historical Voting Data Initial Load (One-Off)
 
-Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteineri sees (`backend` teenus).
+Initial loading of voting history (2019 to present) is performed on the server inside container services.
 
-Täpne järjekord:
-1. Laadi 2019. aasta hääletused (alates 14. koosseisu algusest 01.04.2019) ja saada Backblaze B2-sse:
+Exact sequence:
+1. Load 2019 votings (from the start of the 14th Riigikogu on 2019-04-01) and upload to Backblaze B2:
    ```bash
-   docker compose exec backend python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
+   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
    ```
-2. Laadi aastad 2020–2025 aastapõhise tsüklina ja saada B2-sse:
+2. Load years 2020–2025 in a yearly loop and upload to B2:
    ```bash
    for y in {2020..2025}; do
-     docker compose exec backend python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
+     docker compose run --rm pipeline python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
    done
    ```
-3. Laadi jooksva 2026. aasta hääletused ja saada B2-sse:
+3. Load current 2026 votings and upload to B2:
    ```bash
-   docker compose exec backend python scripts/fetch_votes.py --start-date 2026-01-01 --upload
+   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2026-01-01 --upload
    ```
-4. Laadi kõik hääletused serveri SQLite andmebaasi:
+4. Load all votings into the server SQLite database:
    ```bash
    docker compose exec backend python scripts/load_votes.py
    ```
-5. Kontroll:
+5. Verification:
    ```bash
    curl http://127.0.0.1:8000/system/status
-   # votings = 3621 + pärast 13.10 lisandunud
+   # votings = 3621 + added after Oct 13
 
    curl "http://127.0.0.1:8000/votings?start_date=2026-09-29&end_date=2026-09-29"
    ```
 
 > [!NOTE]
-> **Olulised märkused juurutamisel:**
-> - Kuni samm 3 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
-> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest GitHub Actions runner laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 UTC paiku (mil töötab igapäevane andmetoru).
-> - **Tõrketaluvus:** Skript teeb vahesalvestusi iga 25 hääletuse järel ning püüab katkestused (Ctrl-C / SIGTERM). Kui mõni aasta lõpetab koodiga 1 (nt ajutine API võrgutõrge), käivita sama aasta käsk uuesti – juba salvestatud hääletused jäetakse vahele ja laadimine jätkub poolelijäänud kohast.
-> - **Hinnangulised ajad aastate kaupa** (~5,1 s hääletuse kohta):
->   - 2019: 172 hääletust → ~15 min
->   - 2020: 356 hääletust → ~30 min
->   - 2021: 533 hääletust → ~45 min
->   - 2022: 718 hääletust → ~61 min
->   - 2023: 436 hääletust → ~37 min
->   - 2024: 692 hääletust → ~59 min
->   - 2025: 402 hääletust → ~34 min
->   - 2026: 312 hääletust → ~27 min
+> **Important deployment notes:**
+> - Until step 3 is completed, the daily pipeline only fetches the last 14 days.
+> - **Execution timing:** Years 2019–2025 can be run at any time, as the server daily pipeline only downloads active-year files and does not overwrite older votes files in B2. Only the 2026 run (step 3) must not run around 07:00 UTC (when the server daily pipeline runs).
+> - **Fault tolerance:** The script saves checkpoints every 25 votes and handles interruptions (Ctrl-C / SIGTERM). If any year exits with code 1 (e.g. temporary API network error), re-run the command for that year — already saved votes are skipped and loading resumes from where it left off.
+> - **Estimated runtimes by year** (~5.1 s per vote):
+>   - 2019: 172 votes → ~15 min
+>   - 2020: 356 votes → ~30 min
+>   - 2021: 533 votes → ~45 min
+>   - 2022: 718 votes → ~61 min
+>   - 2023: 436 votes → ~37 min
+>   - 2024: 692 votes → ~59 min
+>   - 2025: 402 votes → ~34 min
+>   - 2026: 312 votes → ~27 min
 
 ### 5. Maintenance & UUID Repair
 
@@ -202,7 +201,7 @@ Populates `member_uuid` across historical attendance records (`data/processed/at
 Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` covering the night of 2021-03-24) from yearly JSONL datasets and the SQLite database:
 1. Download target year dataset from Backblaze B2:
    ```bash
-   docker compose exec backend python scripts/download_from_b2.py --year 2021
+   docker compose run --rm pipeline python scripts/download_from_b2.py --year 2021
    ```
 2. Inspect rows to be removed (dry run, expected 79 speeches):
    ```bash
@@ -210,7 +209,7 @@ Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` cov
    ```
 3. Apply changes, upload updated dataset to Backblaze B2, and delete database records:
    ```bash
-   docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021 --apply
+   docker compose run --rm pipeline python scripts/remove_ignored_sessions.py --year 2021 --apply
    ```
 
 #### Backblaze B2 Content-Based Synchronization (`download_from_b2.py`, `upload_to_b2.py`)
@@ -299,7 +298,7 @@ When deploying updates with schema or data additions (such as the attendance `me
 1. Code deployment automatically applies pending migrations and creates missing indexes upon backend initialization via `apply_migrations()` and `create_indexes()`.
 2. To populate historical attendance member UUIDs in production:
    ```bash
-   docker compose run --rm backend python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
+   docker compose run --rm pipeline python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
    No image rebuild or downtime is required.
 
@@ -381,7 +380,7 @@ riigikogu-stenogram-search/
 │   └── workflows/
 │       ├── ci.yml                 # Automated CI (Ruff, ESLint, Prettier, Pytest, Vite build)
 │       ├── deploy.yml             # Auto-deploy to self-hosted server on master CI success
-│       └── daily_pipeline.yml     # Nightly data pipeline (B2 sync, API fetch, integrity verification)
+│       └── daily_pipeline.yml     # Manual fallback data pipeline (GitHub Actions)
 ├── config.py                      # Global configuration & dynamic membership dates
 ├── docker-compose.yml             # Multi-container Docker deployment
 ├── Dockerfile                     # Multi-stage production backend Docker container
