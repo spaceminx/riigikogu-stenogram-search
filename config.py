@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 UNEDITED_REFETCH_DAYS = 60
 
@@ -105,11 +105,21 @@ def get_membership_dates() -> dict[str, tuple[str, str]]:
     return MEMBERSHIP_DATES.copy()
 
 
-def latest_membership() -> str:
-    """Return the highest membership number as string."""
+def latest_membership(today: str | date | datetime | None = None) -> str:
+    """Return the newest membership number whose start date <= today (fallback to highest number)."""
     dates = MEMBERSHIP_DATES
     if not dates:
         dates = DEFAULT_MEMBERSHIP_DATES
+    if today is None:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+    elif isinstance(today, (datetime, date)):
+        today_str = today.strftime("%Y-%m-%d")
+    else:
+        today_str = str(today)
+
+    started = [k for k, (start, _end) in dates.items() if start <= today_str]
+    if started:
+        return str(max(started, key=lambda x: int(x)))
     return str(max(dates.keys(), key=lambda x: int(x)))
 
 
