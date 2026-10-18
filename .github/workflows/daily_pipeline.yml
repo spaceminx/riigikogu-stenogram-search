@@ -1,10 +1,8 @@
 name: Riigikogu Daily Data Pipeline
 
+# Manual fallback data pipeline (runs when triggered via workflow_dispatch).
+# The scheduled daily pipeline has been migrated to run directly on the server.
 on:
-  schedule:
-    # Pipeline cron is scheduled for 01:12 AM UTC, but actually runs around 05:40–07:40 UTC due to GitHub Actions queue delay. Do not change schedule.
-    - cron: '12 1 * * *'
-
   workflow_dispatch:
 
 concurrency:

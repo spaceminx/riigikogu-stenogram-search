@@ -25,8 +25,7 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 - **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API with dynamic runtime reloading.
 - **Pipeline Integrity & Statistics Verification:** Nightly pipeline verifies transcripts directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), supports on-demand cross-checks against official statistics (`verify_statistics.py`), and reports health via `/system/status`.
 - **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
-- **Modern UI:** Responsive single-page application with Dark / Light mode toggle.
-- **Automated Daily Pipeline:** Nightly GitHub Actions workflow fetches new transcripts, validates integrity, and syncs data to Backblaze B2.
+- **Automated Daily Pipeline:** Daily server pipeline fetches new transcripts, validates integrity, syncs to Backblaze B2, and updates the database under a unified lock (with manual GitHub Actions fallback).
 
 ---
 
@@ -303,6 +302,39 @@ When deploying updates with schema or data additions (such as the attendance `me
    ```
    No image rebuild or downtime is required.
 
+### Server Daily Pipeline
+The daily pipeline runs on the server under a single sync lock (`database/.sync.lock`) inside a dedicated, one-off `pipeline` container:
+`B2 download → fetch API data → integrity verification → B2 upload → in-process DB sync`.
+
+This replaces the previous standalone `docker exec … sync_database.py` cron job.
+
+#### Configuration (`.env.pipeline`)
+The `pipeline` service loads `.env` for baseline configuration and overrides credentials using `.env.pipeline`:
+- `B2_KEY_ID`
+- `B2_APP_KEY`
+
+Because the pipeline runs in a separate one-off container (`profiles: ["jobs"]`), Backblaze B2 write credentials never live inside the long-running API backend container.
+
+#### Scheduled Cron Job
+The intended server cron command (replacing the old `sync_database.py` cron line):
+```bash
+cd <DEPLOY_DIR> && docker compose run --rm -T pipeline python scripts/daily_pipeline.py >> logs/daily_pipeline.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> logs/daily_pipeline.log 2>&1
+```
+
+#### Running by Hand
+To run the full pipeline manually on the server:
+```bash
+cd <DEPLOY_DIR>
+docker compose run --rm pipeline python scripts/daily_pipeline.py
+```
+To run locally or without uploading to Backblaze B2:
+```bash
+docker compose run --rm pipeline python scripts/daily_pipeline.py --no-upload
+```
+
+#### Manual GitHub Actions Fallback
+The GitHub Actions workflow (`.github/workflows/daily_pipeline.yml`) remains available as a manual fallback (`workflow_dispatch`). Any data uploaded by a manual GitHub run is automatically picked up by the server on its next scheduled run during the initial B2 download step.
+
 ---
 
 ## Testing & Code Quality
@@ -362,6 +394,7 @@ riigikogu-stenogram-search/
 │   ├── build_full_database.py     # End-to-end parallel DB build pipeline (--allow-partial)
 │   ├── build_lemmas.py            # Standalone lemma builder script
 │   ├── build_terms.py             # Standalone term index builder script
+│   ├── daily_pipeline.py          # Unified server daily data pipeline
 │   ├── download_all_from_b2.py    # Downloads all data & sync states from Backblaze B2
 │   ├── download_from_b2.py        # Incremental daily B2 downloader (--all)
 │   ├── fetch_attendance.py        # Voting & attendance scraper

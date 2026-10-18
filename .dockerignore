@@ -10,6 +10,7 @@ __pycache__
 src/frontend
 node_modules
 .env
+.env.*
 data/
 database/
 logs/
