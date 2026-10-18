@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: riigikogu-backend:latest
     container_name: riigikogu-backend
     restart: unless-stopped
     ports:
@@ -18,6 +19,23 @@ services:
       resources:
         limits:
           memory: 1024M
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: riigikogu-backend:latest
+    profiles:
+      - jobs
+    volumes:
+      - ./database:/app/database
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+      - path: .env.pipeline
+        required: false
 
   # Cloudflare Tunnel (valikuline: kui soovid tunnelit otse dockeris jooksutada)
   # tunnel:
