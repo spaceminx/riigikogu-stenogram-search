@@ -723,6 +723,7 @@ def load_agenda_items_to_database(batch_size: int = 2000) -> int:
                     "draft_mark": mark_val,
                     "draft_title": record.get("draft_title"),
                     "voting_uuids": v_uuids_json,
+                    "match_method": record.get("match_method"),
                 }
 
                 if u in existing_uuids:

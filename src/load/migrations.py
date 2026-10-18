@@ -126,11 +126,31 @@ def _verify_0002_agenda_items(conn: Connection) -> None:
             )
 
 
+def _up_0003_agenda_match_method(conn: Connection) -> None:
+    existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(agenda_items)"))}
+    if "match_method" not in existing_cols:
+        conn.execute(text("ALTER TABLE agenda_items ADD COLUMN match_method TEXT;"))
+
+
+def _verify_0003_agenda_match_method(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "agenda_items" not in tables:
+        raise RuntimeError("Migration verification failed: missing table 'agenda_items'")
+    existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(agenda_items)"))}
+    if "match_method" not in existing_cols:
+        raise RuntimeError(
+            "Migration verification failed: missing column 'agenda_items.match_method'"
+        )
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
     ("0001", "baseline", _up_0001_baseline, _verify_0001_baseline),
     ("0002", "agenda_items", _up_0002_agenda_items, _verify_0002_agenda_items),
+    ("0003", "agenda_match_method", _up_0003_agenda_match_method, _verify_0003_agenda_match_method),
 ]
 
 

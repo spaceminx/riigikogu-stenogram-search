@@ -644,3 +644,382 @@ def test_agenda_coverage_script():
         session.query(Speech).filter(Speech.id == sp_id).delete(synchronize_session=False)
         session.commit()
         session.close()
+
+
+def test_fallback_match_by_draft_mark():
+    """Verbatim item without uuid + agenda item '(366 SE II)' with mark 366 / TEINE_LUGEMINE in same sitting matched by draft_mark."""
+    valid_uuid = "36600000-0000-0000-0000-000000000366"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-366",
+                "sittingDateTime": "2021-06-13T10:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": valid_uuid,
+                        "order": 1,
+                        "title": "(366 SE II)",
+                        "stage": "TEINE_LUGEMINE",
+                        "relatedDraft": {
+                            "uuid": "draft-uuid-366",
+                            "mark": "366 SE",
+                            "title": "Isikut tõendavate dokumentide seaduse muutmise seadus",
+                        },
+                    }
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2021-06-13T10:00:00",
+            "title": "Täiskogu erakorraline istung",
+            "link": "https://stenogrammid.riigikogu.ee/202106131000",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": None,
+                    "title": "<p>Isikut tõendavate dokumentide seaduse muutmise seaduse eelnõu (366 SE) teine lugemine</p>",
+                }
+            ],
+        }
+    ]
+    records = {}
+    added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+    assert added == 1
+    assert updated == 0
+    r = records[valid_uuid]
+    assert r["match_method"] == "draft_mark"
+    assert r["source_file"] == "2021-06-13_1000.api"
+    assert (
+        r["steno_title"]
+        == "Isikut tõendavate dokumentide seaduse muutmise seaduse eelnõu (366 SE) teine lugemine"
+    )
+
+
+def test_fallback_match_by_exact_title():
+    """Infotund question without uuid, identical titles → matched by title."""
+    valid_uuid = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-infotund",
+                "sittingDateTime": "2022-03-02T12:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": valid_uuid,
+                        "order": 1,
+                        "title": "Küsimus julgeolekuolukorrast",
+                    }
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2022-03-02T12:00:00",
+            "title": "Infotund",
+            "link": "https://stenogrammid.riigikogu.ee/202203021200",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": None,
+                    "title": "<span>Küsimus julgeolekuolukorrast</span>",
+                }
+            ],
+        }
+    ]
+    records = {}
+    added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+    assert added == 1
+    r = records[valid_uuid]
+    assert r["match_method"] == "title"
+    assert r["source_file"] == "2022-03-02_1200.api"
+    assert r["steno_title"] == "Küsimus julgeolekuolukorrast"
+
+
+def test_ambiguous_candidates_logged_and_skipped(caplog):
+    """Two candidates with the same mark and stage in one sitting → no match, logged."""
+    uuid_1 = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1"
+    uuid_2 = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-ambig",
+                "sittingDateTime": "2021-06-13T10:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": uuid_1,
+                        "order": 1,
+                        "title": "(366 SE II) variant A",
+                        "stage": "TEINE_LUGEMINE",
+                        "relatedDraft": {"mark": "366 SE"},
+                    },
+                    {
+                        "uuid": uuid_2,
+                        "order": 2,
+                        "title": "(366 SE II) variant B",
+                        "stage": "TEINE_LUGEMINE",
+                        "relatedDraft": {"mark": "366 SE"},
+                    },
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2021-06-13T10:00:00",
+            "title": "Istung",
+            "link": "https://stenogrammid.riigikogu.ee/202106131000",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": None,
+                    "title": "Eelnõu (366 SE) teine lugemine",
+                }
+            ],
+        }
+    ]
+    records = {}
+    with caplog.at_level("WARNING"):
+        added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+
+    assert added == 2
+    assert records[uuid_1]["match_method"] is None
+    assert records[uuid_1]["steno_title"] is None
+    assert records[uuid_2]["match_method"] is None
+    assert records[uuid_2]["steno_title"] is None
+    assert "Ambiguous draft mark match" in caplog.text
+
+
+def test_structural_titles_never_matched():
+    """Verbatim items with structural titles without UUID are never matched."""
+    uuid_struct = "cccccccc-cccc-cccc-cccc-cccccccccccc"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-struct",
+                "sittingDateTime": "2021-06-13T10:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": uuid_struct,
+                        "order": 1,
+                        "title": "Istungi rakendamine",
+                    }
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2021-06-13T10:00:00",
+            "title": "Istung",
+            "link": "https://stenogrammid.riigikogu.ee/202106131000",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": None,
+                    "title": "<p>Istungi rakendamine</p>",
+                },
+                {
+                    "agendaItemUuid": None,
+                    "title": "Vaba mikrofon",
+                },
+                {
+                    "agendaItemUuid": None,
+                    "title": "Infotund",
+                },
+                {
+                    "agendaItemUuid": None,
+                    "title": "Muud küsimused",
+                },
+            ],
+        }
+    ]
+    records = {}
+    added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+    assert added == 1
+    assert records[uuid_struct]["match_method"] is None
+    assert records[uuid_struct]["steno_title"] is None
+
+
+def test_item_matched_by_uuid_not_touched_by_fallback():
+    """Item matched by UUID is not touched by the fallback."""
+    uuid_1 = "11111111-2222-3333-4444-555555555555"
+    uuid_2 = "66666666-7777-8888-9999-000000000000"
+    agenda_data = {
+        "sittings": [
+            {
+                "uuid": "sitting-uuid-mix",
+                "sittingDateTime": "2021-06-13T10:00:00",
+                "agendaItems": [
+                    {
+                        "uuid": uuid_1,
+                        "order": 1,
+                        "title": "(366 SE II)",
+                        "stage": "TEINE_LUGEMINE",
+                        "relatedDraft": {"mark": "366 SE"},
+                    },
+                    {
+                        "uuid": uuid_2,
+                        "order": 2,
+                        "title": "(366 SE II)",
+                        "stage": "TEINE_LUGEMINE",
+                        "relatedDraft": {"mark": "366 SE"},
+                    },
+                ],
+            }
+        ]
+    }
+    verbatims_data = [
+        {
+            "date": "2021-06-13T10:00:00",
+            "title": "Istung",
+            "link": "https://stenogrammid.riigikogu.ee/202106131000",
+            "agendaItems": [
+                {
+                    "agendaItemUuid": uuid_1,
+                    "title": "UUID-põhine pealkiri (366 SE) teine lugemine",
+                },
+                {
+                    "agendaItemUuid": None,
+                    "title": "Fallback pealkiri (366 SE) teine lugemine",
+                },
+            ],
+        }
+    ]
+    records = {}
+    added, updated = process_agenda_and_verbatims(agenda_data, verbatims_data, records)
+    assert added == 2
+    # uuid_1 was matched by UUID
+    assert records[uuid_1]["match_method"] == "uuid"
+    assert records[uuid_1]["steno_title"] == "UUID-põhine pealkiri (366 SE) teine lugemine"
+    # uuid_2 was matched by fallback
+    assert records[uuid_2]["match_method"] == "draft_mark"
+    assert records[uuid_2]["steno_title"] == "Fallback pealkiri (366 SE) teine lugemine"
+
+
+def test_load_agenda_items_persists_match_method(tmp_path, monkeypatch):
+    """load_agenda_items_to_database populates match_method in agenda_items table."""
+    test_proc_dir = tmp_path / "proc"
+    test_proc_dir.mkdir()
+    monkeypatch.setattr("src.load.loader.OUTPUT_DIR_PROCESSED", str(test_proc_dir))
+
+    item_uuid = "dddddddd-dddd-dddd-dddd-dddddddddddd"
+    jsonl_file = test_proc_dir / "agenda_items.jsonl"
+    record = {
+        "agenda_item_uuid": item_uuid,
+        "sitting_date": "2021-06-13",
+        "source_file": "2021-06-13_1000.api",
+        "steno_title": "Testpealkiri",
+        "match_method": "draft_mark",
+    }
+    jsonl_file.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+    loaded = load_agenda_items_to_database()
+    assert loaded >= 1
+
+    session = SessionLocal()
+    try:
+        item = session.query(AgendaItem).filter(AgendaItem.agenda_item_uuid == item_uuid).first()
+        assert item is not None
+        assert item.match_method == "draft_mark"
+    finally:
+        session.query(AgendaItem).filter(AgendaItem.agenda_item_uuid == item_uuid).delete(
+            synchronize_session=False
+        )
+        session.commit()
+        session.close()
+
+
+def test_agenda_coverage_structural_and_match_methods():
+    """compute_agenda_coverage calculates structural count, eligible percentage, and match_methods."""
+    session = SessionLocal()
+    sp1 = 96001
+    sp2 = 96002
+    sp3 = 96003
+    ag1 = "cov-item-uuid-m1"
+    ag2 = "cov-item-uuid-m2"
+    try:
+        # Speech 1: structural
+        session.add(
+            Speech(
+                id=sp1,
+                date="2028-01-10",
+                time="10:00:00",
+                source_file="2028-01-10_1000.api",
+                source_url="http://example.com/s1",
+                speaker="Kõneleja 1",
+                text="Istungi rakendamise sisu",
+                agenda_title="Istungi rakendamine",
+            )
+        )
+        # Speech 2: linked via uuid
+        session.add(
+            Speech(
+                id=sp2,
+                date="2028-01-10",
+                time="10:05:00",
+                source_file="2028-01-10_1000.api",
+                source_url="http://example.com/s2",
+                speaker="Kõneleja 2",
+                text="Päevakorra punkt 1 sisu",
+                agenda_title="Esimene päevakorrapunkt",
+            )
+        )
+        # Speech 3: linked via draft_mark
+        session.add(
+            Speech(
+                id=sp3,
+                date="2028-01-10",
+                time="10:10:00",
+                source_file="2028-01-10_1000.api",
+                source_url="http://example.com/s3",
+                speaker="Kõneleja 3",
+                text="Päevakorra punkt 2 sisu",
+                agenda_title="Teine päevakorrapunkt",
+            )
+        )
+        session.add(
+            AgendaItem(
+                agenda_item_uuid=ag1,
+                sitting_date="2028-01-10",
+                source_file="2028-01-10_1000.api",
+                steno_title="Esimene päevakorrapunkt",
+                draft_uuid="draft-uuid-cov1",
+                match_method="uuid",
+            )
+        )
+        session.add(
+            AgendaItem(
+                agenda_item_uuid=ag2,
+                sitting_date="2028-01-10",
+                source_file="2028-01-10_1000.api",
+                steno_title="Teine päevakorrapunkt",
+                draft_uuid=None,
+                match_method="draft_mark",
+            )
+        )
+        session.commit()
+
+        data = compute_agenda_coverage(session)
+        yearly_2028 = [r for r in data["yearly"] if r[0] == "2028"]
+        assert len(yearly_2028) == 1
+        row = yearly_2028[0]
+        # yr, total, structural, linked_ag, uuid, title, draft_mark, linked_dr
+        assert row[0] == "2028"
+        assert row[1] == 3  # total
+        assert row[2] == 1  # structural
+        assert row[3] == 2  # linked_ag
+        assert row[4] == 1  # matched_uuid
+        assert row[5] == 0  # matched_title
+        assert row[6] == 1  # matched_draft_mark
+        assert row[7] == 1  # linked_dr
+
+        # Verify print_coverage_report runs smoothly
+        print_coverage_report(data)
+    finally:
+        session.query(AgendaItem).filter(AgendaItem.agenda_item_uuid.in_([ag1, ag2])).delete(
+            synchronize_session=False
+        )
+        session.query(Speech).filter(Speech.id.in_([sp1, sp2, sp3])).delete(
+            synchronize_session=False
+        )
+        session.commit()
+        session.close()
