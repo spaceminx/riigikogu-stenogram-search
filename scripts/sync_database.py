@@ -341,6 +341,5 @@ def sync_database(skip_download: bool = False, skip_lock: bool = False) -> bool:
 
 if __name__ == "__main__":
     skip_dl = "--skip-download" in sys.argv
-    skip_lk = "--skip-lock" in sys.argv
-    success = sync_database(skip_download=skip_dl, skip_lock=skip_lk)
+    success = sync_database(skip_download=skip_dl)
     sys.exit(0 if success else 1)
