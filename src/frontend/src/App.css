@@ -5269,6 +5269,14 @@ html[data-theme="dark"] .calendar-hint {
 
 html[data-theme="dark"] {
   color-scheme: dark;
+  --bg-color: #0f172a;
+  --panel-bg: #172235;
+  --panel-border: #29364a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-primary: #60a5fa;
+  --accent-secondary: #93c5fd;
+  --accent-gradient: #60a5fa;
 }
 
 html[data-theme="dark"] body {
@@ -6562,4 +6570,826 @@ html[data-theme="dark"] .alignment-session-link:hover {
 .alignment-load-more {
   margin-top: 1.25rem;
   text-align: center;
+}
+
+.alignment-diff-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Votings Views & Components Styling
+   ========================================================================== */
+
+.mobile-menu-nav {
+  display: none;
+  gap: 4px;
+}
+
+@media (max-width: 640px) {
+  .nav-links {
+    display: none !important;
+  }
+
+  .mobile-menu-nav {
+    display: grid !important;
+  }
+}
+
+.votings-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.votings-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.votings-search-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.votings-search-input-wrap {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.votings-search-input-wrap .filter-text-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.votings-search-submit {
+  width: auto;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 1.25rem;
+  white-space: nowrap;
+}
+
+.votings-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.votings-tech-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  margin-left: auto;
+}
+
+.votings-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.25rem 0 0;
+}
+
+.votings-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+}
+
+.votings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.voting-row-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.voting-row-link:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.voting-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.voting-row-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.voting-row-time {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.voting-badges {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.voting-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.voting-badge-secret {
+  background: rgba(168, 85, 247, 0.12);
+  color: #8b5cf6;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.voting-badge-technical {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.voting-row-desc {
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.voting-row-doc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.voting-row-summary {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.2rem;
+}
+
+/* Voting Detail Page */
+.voting-detail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.voting-detail-header {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.voting-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.voting-detail-title {
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.voting-related-doc {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.voting-doc-icon {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+}
+
+.voting-doc-text {
+  font-weight: 500;
+}
+
+.voting-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  align-items: center;
+}
+
+.voting-sitting-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.voting-sitting-link:hover {
+  text-decoration: underline;
+}
+
+.voting-meta-item {
+  color: var(--text-secondary);
+}
+
+.voting-technical-callout {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #b45309;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Totals Cards */
+.voting-totals-section {
+  margin: 0;
+}
+
+.voting-totals-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+
+.voting-total-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 1.1rem 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.voting-total-count {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.voting-total-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.voting-total-card.poolt {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.05);
+}
+.voting-total-card.poolt .voting-total-count {
+  color: #10b981;
+}
+.voting-total-card.poolt .voting-total-label {
+  color: #059669;
+}
+
+.voting-total-card.vastu {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+.voting-total-card.vastu .voting-total-count {
+  color: #ef4444;
+}
+.voting-total-card.vastu .voting-total-label {
+  color: #dc2626;
+}
+
+.voting-total-card.erapooletu {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+.voting-total-card.erapooletu .voting-total-count {
+  color: #f59e0b;
+}
+.voting-total-card.erapooletu .voting-total-label {
+  color: #d97706;
+}
+
+.voting-total-card.ei_haaletanud {
+  border-color: rgba(100, 116, 139, 0.3);
+  background: rgba(100, 116, 139, 0.05);
+}
+.voting-total-card.ei_haaletanud .voting-total-count {
+  color: #64748b;
+}
+.voting-total-card.ei_haaletanud .voting-total-label {
+  color: #475569;
+}
+
+.voting-total-card.puudus {
+  border-color: rgba(148, 163, 184, 0.3);
+  background: rgba(148, 163, 184, 0.05);
+}
+.voting-total-card.puudus .voting-total-count {
+  color: #94a3b8;
+}
+.voting-total-card.puudus .voting-total-label {
+  color: #64748b;
+}
+
+.voting-secret-callout {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.voting-section-heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+}
+
+.voting-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.voting-factions-table,
+.voting-members-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.voting-factions-table th,
+.voting-factions-table td,
+.voting-members-table th,
+.voting-members-table td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--panel-border);
+  vertical-align: middle;
+}
+
+.voting-factions-table thead th,
+.voting-members-table thead th {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.voting-factions-table tbody tr:hover,
+.voting-members-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.voting-factions-table tbody tr:last-child td,
+.voting-members-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-faction-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.col-majority-val {
+  white-space: nowrap;
+}
+
+.voting-sort-th-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+}
+
+.voting-sort-th-btn:hover {
+  color: var(--text-primary);
+}
+
+.voting-member-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.voting-member-link:hover {
+  text-decoration: underline;
+}
+
+.col-member-faction {
+  color: var(--text-secondary);
+}
+
+.col-member-decision {
+  white-space: nowrap;
+}
+
+/* Decision Badges */
+.voting-decision-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 65px;
+}
+
+.voting-decision-badge.poolt {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.voting-decision-badge.vastu {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.voting-decision-badge.erapooletu {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.voting-decision-badge.ei_haaletanud {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.voting-decision-badge.puudub {
+  background: rgba(148, 163, 184, 0.12);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* Member filtering controls */
+.voting-members-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.voting-members-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.voting-member-search-wrap {
+  min-width: 200px;
+  flex: 1 1 240px;
+  max-width: 380px;
+}
+
+.voting-decision-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.decision-tab-btn {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 550;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.decision-tab-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+}
+
+.decision-tab-btn.active,
+.decision-tab-btn[aria-pressed="true"] {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+/* Dark theme overrides */
+html[data-theme="dark"] .voting-detail-title,
+html[data-theme="dark"] .voting-section-heading,
+html[data-theme="dark"] .votings-heading,
+html[data-theme="dark"] .col-faction-name,
+html[data-theme="dark"] .voting-row-desc {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .voting-factions-table td,
+html[data-theme="dark"] .voting-members-table td {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .voting-sitting-link,
+html[data-theme="dark"] .voting-member-link {
+  color: var(--accent-primary);
+}
+
+html[data-theme="dark"] .voting-sitting-link:hover,
+html[data-theme="dark"] .voting-member-link:hover {
+  color: var(--accent-secondary);
+}
+
+html[data-theme="dark"] .decision-tab-btn.active,
+html[data-theme="dark"] .decision-tab-btn[aria-pressed="true"] {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #0f172a;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .voting-row-link:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .voting-badge-secret {
+  background: rgba(168, 85, 247, 0.22);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.45);
+}
+
+html[data-theme="dark"] .voting-badge-technical {
+  background: rgba(100, 116, 139, 0.22);
+  color: #94a3b8;
+  border-color: rgba(100, 116, 139, 0.45);
+}
+
+html[data-theme="dark"] .voting-technical-callout {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.4);
+  color: #fde047;
+}
+
+html[data-theme="dark"] .voting-total-card.poolt {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+html[data-theme="dark"] .voting-total-card.poolt .voting-total-count {
+  color: #34d399;
+}
+html[data-theme="dark"] .voting-total-card.poolt .voting-total-label {
+  color: #6ee7b7;
+}
+
+html[data-theme="dark"] .voting-total-card.vastu {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+html[data-theme="dark"] .voting-total-card.vastu .voting-total-count {
+  color: #f87171;
+}
+html[data-theme="dark"] .voting-total-card.vastu .voting-total-label {
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .voting-total-card.erapooletu {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+html[data-theme="dark"] .voting-total-card.erapooletu .voting-total-count {
+  color: #fbbf24;
+}
+html[data-theme="dark"] .voting-total-card.erapooletu .voting-total-label {
+  color: #fcd34d;
+}
+
+html[data-theme="dark"] .voting-total-card.ei_haaletanud {
+  background: rgba(100, 116, 139, 0.1);
+  border-color: rgba(100, 116, 139, 0.35);
+}
+html[data-theme="dark"] .voting-total-card.ei_haaletanud .voting-total-count {
+  color: #94a3b8;
+}
+html[data-theme="dark"] .voting-total-card.ei_haaletanud .voting-total-label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .voting-total-card.puudus {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+html[data-theme="dark"] .voting-total-card.puudus .voting-total-count {
+  color: #cbd5e1;
+}
+html[data-theme="dark"] .voting-total-card.puudus .voting-total-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .voting-factions-table thead th,
+html[data-theme="dark"] .voting-members-table thead th {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="dark"] .voting-factions-table tbody tr:hover,
+html[data-theme="dark"] .voting-members-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="dark"] .decision-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="dark"] .voting-decision-badge.poolt {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+html[data-theme="dark"] .voting-decision-badge.vastu {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+html[data-theme="dark"] .voting-decision-badge.erapooletu {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+html[data-theme="dark"] .voting-decision-badge.ei_haaletanud {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border-color: rgba(100, 116, 139, 0.4);
+}
+
+html[data-theme="dark"] .voting-decision-badge.puudub {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .votings-search-submit {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .votings-search-input-wrap {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .votings-tech-checkbox {
+    margin-left: 0;
+  }
+
+  .voting-totals-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .voting-total-card:nth-child(4) {
+    grid-column: span 1;
+  }
+
+  .voting-total-card:nth-child(5) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .voting-totals-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .voting-total-card:nth-child(5) {
+    grid-column: span 2;
+  }
+
+  .voting-total-count {
+    font-size: 1.5rem;
+  }
+
+  .voting-members-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .voting-member-search-wrap {
+    max-width: none;
+    width: 100%;
+  }
+
+  .voting-row-link {
+    padding: 1rem;
+  }
+
+  .header {
+    min-height: 56px;
+    margin-bottom: 24px;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .brand-lockup {
+    min-width: 0;
+  }
+
+  .brand-copy strong {
+    font-size: 13px;
+  }
+
+  .brand-copy > span {
+    font-size: 9px;
+  }
+
+  .voting-detail-header {
+    padding: 1.15rem 1rem;
+  }
+
+  .voting-detail-title {
+    font-size: 1.25rem;
+  }
 }

@@ -1,16 +1,18 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ExternalLink } from "lucide-react";
-import { fetchPlenarySession } from "../lib/api";
+import { fetchPlenarySession, fetchVotings } from "../lib/api";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 import SpeechCard from "../components/SpeechCard";
+import VotingRow from "../components/VotingRow";
 
 export function SessionView() {
   const { date } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const targetElementRef = useRef(null);
+  const [showAllVotings, setShowAllVotings] = useState(false);
 
   const {
     data: sessionData,
@@ -20,6 +22,17 @@ export function SessionView() {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
+
+  const { data: votingsData } = useSWR(
+    date ? `session-votings-${date}` : null,
+    () => fetchVotings({ sittingDate: date, limit: 100 }),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+  const votings = votingsData?.results || [];
+  const displayedVotings = votings.length > 5 && !showAllVotings ? votings.slice(0, 5) : votings;
 
   // Handle anchor scrolling on load and when hash changes
   useEffect(() => {
@@ -81,9 +94,42 @@ export function SessionView() {
         </div>
       </div>
 
+      {votings.length > 0 && (
+        <section
+          className="session-votings-section glass-panel"
+          style={{ marginBottom: "1.5rem", padding: "1.5rem" }}
+          aria-labelledby="session-votings-title"
+        >
+          <div className="session-votings-header" style={{ marginBottom: "1rem" }}>
+            <h3
+              id="session-votings-title"
+              style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}
+            >
+              Hääletused ({votings.length})
+            </h3>
+          </div>
+          <div className="votings-list">
+            {displayedVotings.map((voting) => (
+              <VotingRow key={voting.uuid} voting={voting} showDate={false} />
+            ))}
+          </div>
+          {votings.length > 5 && !showAllVotings && (
+            <div style={{ marginTop: "1rem", textAlign: "center" }}>
+              <button
+                type="button"
+                className="filter-search-btn"
+                onClick={() => setShowAllVotings(true)}
+              >
+                Näita kõiki hääletusi ({votings.length})
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
       {loading && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--color-text-muted, #64748b)" }}>Laen istungi stenogrammi...</p>
+          <p style={{ color: "var(--text-secondary)" }}>Laen istungi stenogrammi...</p>
         </div>
       )}
 
@@ -101,9 +147,7 @@ export function SessionView() {
 
       {!loading && !error && speeches.length === 0 && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--color-text-muted, #64748b)" }}>
-            Sellel kuupäeval stenogramme ei leitud.
-          </p>
+          <p style={{ color: "var(--text-secondary)" }}>Sellel kuupäeval stenogramme ei leitud.</p>
         </div>
       )}
 

@@ -29,6 +29,8 @@ import AttendanceView from "./routes/AttendanceView";
 import SpeechView from "./routes/SpeechView";
 import PersonView from "./routes/PersonView";
 import PrivacyView from "./routes/PrivacyView";
+import VotingsView from "./routes/VotingsView";
+import VotingView from "./routes/VotingView";
 import NotFoundView from "./routes/NotFoundView";
 import "./App.css";
 
@@ -84,6 +86,10 @@ function PageTitlebar({ memberships = [] }) {
     title = "Kõne stenogramm";
   } else if (pathname.startsWith("/saadik")) {
     title = "Saadiku profiil";
+  } else if (pathname.startsWith("/haaletused")) {
+    title = "Hääletused";
+  } else if (pathname.startsWith("/haaletus")) {
+    title = "Hääletus";
   }
   const memText =
     memberships && memberships.length > 0
@@ -228,6 +234,11 @@ function AppContent() {
             />
             <Route path="/kone/:id" element={<SpeechView />} />
             <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
+            <Route
+              path="/haaletused"
+              element={<VotingsView plenaryDates={plenaryDates} memberships={memberships} />}
+            />
+            <Route path="/haaletus/:uuid" element={<VotingView />} />
             <Route
               path="/andmed"
               element={<PrivacyView onOpenMethodology={() => setShowMethodologyModal(true)} />}
