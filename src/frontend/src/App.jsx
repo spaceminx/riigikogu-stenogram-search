@@ -31,6 +31,7 @@ import PersonView from "./routes/PersonView";
 import PrivacyView from "./routes/PrivacyView";
 import VotingsView from "./routes/VotingsView";
 import VotingView from "./routes/VotingView";
+import DraftView from "./routes/DraftView";
 import NotFoundView from "./routes/NotFoundView";
 import "./App.css";
 
@@ -90,6 +91,8 @@ function PageTitlebar({ memberships = [] }) {
     title = "Hääletused";
   } else if (pathname.startsWith("/haaletus")) {
     title = "Hääletus";
+  } else if (pathname.startsWith("/eelnou")) {
+    title = "Eelnõu";
   }
   const memText =
     memberships && memberships.length > 0
@@ -239,6 +242,7 @@ function AppContent() {
               element={<VotingsView plenaryDates={plenaryDates} memberships={memberships} />}
             />
             <Route path="/haaletus/:uuid" element={<VotingView />} />
+            <Route path="/eelnou/:uuid" element={<DraftView />} />
             <Route
               path="/andmed"
               element={<PrivacyView onOpenMethodology={() => setShowMethodologyModal(true)} />}
