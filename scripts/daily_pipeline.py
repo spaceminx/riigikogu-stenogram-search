@@ -228,6 +228,19 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
             if not vt_ok:
                 required_failures.append("fetch_votes")
 
+            print("\n--- Step 6b: Fetch Agenda Items ---")
+            ag_ok, ag_dur, ag_err = run_subprocess_step("scripts/fetch_agenda.py")
+            step_records.append(
+                {
+                    "name": "fetch_agenda",
+                    "status": "ok" if ag_ok else "failed",
+                    "duration": ag_dur,
+                    "note": "warning only" if not ag_ok else "",
+                }
+            )
+            if not ag_ok:
+                print(f"Warning: fetch_agenda failed ({ag_err}). Continuing.")
+
             # e. verify_pipeline_integrity.py (failure recorded, but continue)
             print("\n--- Step 7: Verify Pipeline Integrity ---")
             stale_report = os.path.join(OUTPUT_DIR_PROCESSED, "integrity_report.json")
