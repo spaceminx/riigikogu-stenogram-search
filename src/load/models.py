@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Index, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -132,3 +132,29 @@ class Vote(Base):
     member_uuid = Column(Text, primary_key=True, nullable=False)
     faction = Column(Text, nullable=True)
     decision = Column(Text, nullable=False)
+
+
+class AgendaItem(Base):
+    __tablename__ = "agenda_items"
+
+    agenda_item_uuid = Column(Text, primary_key=True)
+    sitting_uuid = Column(Text, nullable=True)
+    sitting_date = Column(Text, nullable=True)
+    sitting_datetime = Column(Text, nullable=True)
+    source_file = Column(Text, nullable=True)
+    order = Column(Integer, nullable=True)
+    steno_title = Column(Text, nullable=True)
+    api_title = Column(Text, nullable=True)
+    document_type = Column(Text, nullable=True)
+    type_code = Column(Text, nullable=True)
+    stage = Column(Text, nullable=True)
+    decision_code = Column(Text, nullable=True)
+    decision_value = Column(Text, nullable=True)
+    draft_uuid = Column(Text, index=True, nullable=True)
+    draft_mark = Column(Text, nullable=True)
+    draft_title = Column(Text, nullable=True)
+    voting_uuids = Column(Text, nullable=True)
+
+    __table_args__ = (
+        Index("ix_agenda_items_source_file_steno_title", "source_file", "steno_title"),
+    )

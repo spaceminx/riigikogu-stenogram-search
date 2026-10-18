@@ -25,6 +25,7 @@ from src.api.attendance import (
 from src.api.search import (
     SPEECH_TYPE_CATEGORIES,
     LemmatizerUnavailableError,
+    format_session_speech,
     get_dashboard_overview,
     get_plenary_session_dates,
     get_session_speeches,
@@ -37,11 +38,21 @@ from src.api.search import (
 )
 from src.api.votings import (
     format_session_source_file,
+    format_voting_summary,
     is_technical_voting,
     is_technical_voting_clause,
 )
 from src.load.database import SessionLocal
-from src.load.models import Attendance, Person, Speech, SpeechAlias, SystemMeta, Vote, Voting
+from src.load.models import (
+    AgendaItem,
+    Attendance,
+    Person,
+    Speech,
+    SpeechAlias,
+    SystemMeta,
+    Vote,
+    Voting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1550,48 +1561,7 @@ def list_votings(
             )
             existing_source_files = {r[0] for r in existing_rows}
 
-        results = []
-        for v in items:
-            rel_doc = None
-            if v.related_document_uuid or v.related_document_reference or v.related_document_title:
-                rel_doc = {
-                    "uuid": v.related_document_uuid,
-                    "reference": v.related_document_reference,
-                    "title": v.related_document_title,
-                    "type": v.related_document_type,
-                }
-            cf = format_session_source_file(v.sitting_date, v.sitting_datetime)
-            session_source_file = cf if cf in existing_source_files else None
-
-            is_tech = is_technical_voting(v.type, v.in_favor, v.against, v.neutral)
-            results.append(
-                {
-                    "uuid": v.uuid,
-                    "voting_number": v.voting_number,
-                    "type": v.type,
-                    "is_technical": is_tech,
-                    "description": v.description,
-                    "date": v.date,
-                    "start_time": v.start_time,
-                    "end_time": v.end_time,
-                    "sitting_date": v.sitting_date,
-                    "sitting_datetime": v.sitting_datetime,
-                    "session_source_file": session_source_file,
-                    "membership": v.membership,
-                    "sitting_uuid": v.sitting_uuid,
-                    "sitting_title": v.sitting_title,
-                    "related_document": rel_doc,
-                    "chairman_uuid": v.chairman_uuid,
-                    "totals": {
-                        "present": v.present,
-                        "absent": v.absent,
-                        "in_favor": v.in_favor,
-                        "against": v.against,
-                        "neutral": v.neutral,
-                        "abstained": v.abstained,
-                    },
-                }
-            )
+        results = [format_voting_summary(v, existing_source_files) for v in items]
 
         return {
             "total": total,
@@ -1904,6 +1874,227 @@ def system_status():
         raise HTTPException(
             status_code=500,
             detail="Süsteemi oleku päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/drafts/{draft_uuid}")
+def get_draft(draft_uuid: str):
+    """Return draft details, including readings and votings."""
+    session = SessionLocal()
+    try:
+        agenda_items = (
+            session.query(AgendaItem)
+            .filter(AgendaItem.draft_uuid == draft_uuid)
+            .order_by(
+                AgendaItem.sitting_date.asc(),
+                AgendaItem.order.asc(),
+                AgendaItem.agenda_item_uuid.asc(),
+            )
+            .all()
+        )
+
+        votings = (
+            session.query(Voting)
+            .filter(Voting.related_document_uuid == draft_uuid)
+            .order_by(Voting.sitting_date.asc(), Voting.start_time.asc(), Voting.uuid.asc())
+            .all()
+        )
+
+        if not agenda_items and not votings:
+            raise HTTPException(status_code=404, detail="Eelnõud ei leitud.")
+
+        mark = None
+        title = None
+        for item in agenda_items:
+            if not mark and item.draft_mark:
+                mark = item.draft_mark
+            if not title and item.draft_title:
+                title = item.draft_title
+            if mark and title:
+                break
+
+        if not mark or not title:
+            for v in votings:
+                if not mark and v.related_document_reference:
+                    mark = v.related_document_reference
+                if not title and v.related_document_title:
+                    title = v.related_document_title
+                if mark and title:
+                    break
+
+        pairs = {
+            (item.source_file, item.steno_title)
+            for item in agenda_items
+            if item.source_file and item.steno_title
+        }
+        speech_counts: dict[tuple[str, str], int] = {}
+        if pairs:
+            counts_query = (
+                session.query(
+                    Speech.source_file,
+                    Speech.agenda_title,
+                    func.count(Speech.id),
+                )
+                .filter(
+                    or_(
+                        *[
+                            and_(Speech.source_file == sf, Speech.agenda_title == st)
+                            for sf, st in pairs
+                        ]
+                    )
+                )
+                .group_by(Speech.source_file, Speech.agenda_title)
+                .all()
+            )
+            speech_counts = {(row[0], row[1]): row[2] for row in counts_query}
+
+        readings = []
+        for item in agenda_items:
+            v_uuids = []
+            if isinstance(item.voting_uuids, list):
+                v_uuids = item.voting_uuids
+            elif item.voting_uuids:
+                try:
+                    loaded = json.loads(item.voting_uuids)
+                    if isinstance(loaded, list):
+                        v_uuids = loaded
+                except Exception:
+                    pass
+
+            count = (
+                speech_counts.get((item.source_file, item.steno_title), 0)
+                if item.source_file and item.steno_title
+                else 0
+            )
+
+            readings.append(
+                {
+                    "agenda_item_uuid": item.agenda_item_uuid,
+                    "sitting_date": item.sitting_date,
+                    "source_file": item.source_file,
+                    "steno_title": item.steno_title,
+                    "stage": item.stage,
+                    "decision_value": item.decision_value,
+                    "speech_count": count,
+                    "voting_uuids": v_uuids,
+                }
+            )
+
+        candidate_files = {
+            cf
+            for cf in (
+                format_session_source_file(v.sitting_date, v.sitting_datetime) for v in votings
+            )
+            if cf
+        }
+        existing_source_files = set()
+        if candidate_files:
+            existing_rows = (
+                session.query(Speech.source_file)
+                .filter(Speech.source_file.in_(candidate_files))
+                .distinct()
+                .all()
+            )
+            existing_source_files = {r[0] for r in existing_rows}
+
+        formatted_votings = [format_voting_summary(v, existing_source_files) for v in votings]
+
+        return {
+            "uuid": draft_uuid,
+            "mark": mark,
+            "title": title,
+            "readings": readings,
+            "votings": formatted_votings,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või päevakorra tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Draft detail query failed for %s: %s", draft_uuid, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Eelnõu päring ebaõnnestus.",
+        ) from e
+    finally:
+        session.close()
+
+
+@router.get("/drafts/{draft_uuid}/speeches")
+def get_draft_speeches(
+    draft_uuid: str,
+    limit: int = Query(50, ge=1, le=500, description="Tulemuste limiit (vaikimisi 50)"),
+    offset: int = Query(0, ge=0, description="Tulemuste nihe (vaikimisi 0)"),
+    agenda_item_uuid: str | None = Query(
+        None, description="Filtreeri konkreetse päevakorrapunkti järgi"
+    ),
+):
+    """Return speeches associated with a draft bill, optionally filtered by agenda item."""
+    session = SessionLocal()
+    try:
+        draft_exists = (
+            session.query(AgendaItem.agenda_item_uuid)
+            .filter(AgendaItem.draft_uuid == draft_uuid)
+            .first()
+            is not None
+            or session.query(Voting.uuid).filter(Voting.related_document_uuid == draft_uuid).first()
+            is not None
+        )
+        if not draft_exists:
+            raise HTTPException(status_code=404, detail="Eelnõud ei leitud.")
+
+        base_query = session.query(
+            Speech,
+            AgendaItem.agenda_item_uuid,
+            AgendaItem.draft_uuid,
+        ).join(
+            AgendaItem,
+            and_(
+                Speech.source_file == AgendaItem.source_file,
+                Speech.agenda_title == AgendaItem.steno_title,
+                Speech.agenda_title.isnot(None),
+                AgendaItem.draft_uuid == draft_uuid,
+            ),
+        )
+
+        if agenda_item_uuid:
+            base_query = base_query.filter(AgendaItem.agenda_item_uuid == agenda_item_uuid)
+
+        total = base_query.count()
+        rows = (
+            base_query.order_by(Speech.date.asc(), Speech.start_time.asc(), Speech.id.asc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+
+        results = [
+            format_session_speech(speech, item_uuid, d_uuid) for speech, item_uuid, d_uuid in rows
+        ]
+
+        return {
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "results": results,
+        }
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või päevakorra tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Draft speeches query failed for %s: %s", draft_uuid, e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Eelnõu kõnede päring ebaõnnestus.",
         ) from e
     finally:
         session.close()

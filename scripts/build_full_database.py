@@ -11,7 +11,12 @@ from pathlib import Path
 from config import OUTPUT_DIR_PROCESSED
 from scripts.download_all_from_b2 import download_all_from_b2
 from src.load.indexes import create_indexes
-from src.load.loader import create_tables, load_jsonl_to_database, load_votes_to_database
+from src.load.loader import (
+    create_tables,
+    load_agenda_items_to_database,
+    load_jsonl_to_database,
+    load_votes_to_database,
+)
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms
 
@@ -103,10 +108,11 @@ def build_full_database(
     print("-> Tables created.")
 
     # Step 2: Load JSONL files into SQLite
-    print("\n[Step 2/5] Loading JSONL and vote files from data/processed into SQLite...")
+    print("\n[Step 2/5] Loading JSONL, vote, and agenda files from data/processed into SQLite...")
     load_jsonl_to_database()
     load_votes_to_database()
-    print("-> JSONL and vote files loaded.")
+    load_agenda_items_to_database()
+    print("-> JSONL, vote, and agenda files loaded.")
 
     # Step 3: Multiprocessing Lemmatization
     print(f"\n[Step 3/5] Lemmatizing speeches across {workers} parallel processes...")

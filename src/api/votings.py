@@ -46,6 +46,56 @@ def format_session_source_file(
     return None
 
 
+def format_voting_summary(
+    v: Voting,
+    existing_source_files: set[str] | None = None,
+) -> dict:
+    """Format a Voting row into the standard API summary dictionary."""
+    rel_doc = None
+    if v.related_document_uuid or v.related_document_reference or v.related_document_title:
+        rel_doc = {
+            "uuid": v.related_document_uuid,
+            "reference": v.related_document_reference,
+            "title": v.related_document_title,
+            "type": v.related_document_type,
+        }
+    cf = format_session_source_file(v.sitting_date, v.sitting_datetime)
+    session_source_file = None
+    if cf:
+        if existing_source_files is not None:
+            session_source_file = cf if cf in existing_source_files else None
+        else:
+            session_source_file = cf
+
+    is_tech = is_technical_voting(v.type, v.in_favor, v.against, v.neutral)
+    return {
+        "uuid": v.uuid,
+        "voting_number": v.voting_number,
+        "type": v.type,
+        "is_technical": is_tech,
+        "description": v.description,
+        "date": v.date,
+        "start_time": v.start_time,
+        "end_time": v.end_time,
+        "sitting_date": v.sitting_date,
+        "sitting_datetime": v.sitting_datetime,
+        "session_source_file": session_source_file,
+        "membership": v.membership,
+        "sitting_uuid": v.sitting_uuid,
+        "sitting_title": v.sitting_title,
+        "related_document": rel_doc,
+        "chairman_uuid": v.chairman_uuid,
+        "totals": {
+            "present": v.present,
+            "absent": v.absent,
+            "in_favor": v.in_favor,
+            "against": v.against,
+            "neutral": v.neutral,
+            "abstained": v.abstained,
+        },
+    }
+
+
 _VOTE_PARTICIPATION_CACHE: dict = {
     "last_sync_at": None,
     "members": {},

@@ -13,7 +13,7 @@ from sqlalchemy import and_, func, literal, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
-from src.load.models import Lemma, Person, Speech, SpeechTerm, SystemMeta
+from src.load.models import AgendaItem, Lemma, Person, Speech, SpeechTerm, SystemMeta
 from src.transform.lemmatizer import lemmatize_text
 
 logger = logging.getLogger(__name__)
@@ -937,41 +937,68 @@ def get_plenary_session_dates() -> list[str]:
         session.close()
 
 
+def format_session_speech(
+    speech: Speech,
+    agenda_item_uuid: str | None = None,
+    draft_uuid: str | None = None,
+) -> dict:
+    """Format a Speech model into standard session transcript response dictionary."""
+    return {
+        "id": speech.id,
+        "speech_key": speech.speech_key,
+        "speaker": speech.speaker,
+        "speaker_role": speech.speaker_role,
+        "speaker_faction": speech.speaker_faction,
+        "speaker_uuid": speech.speaker_uuid,
+        "speech_type": speech.speech_type,
+        "external_id": speech.external_id,
+        "start_time": speech.start_time,
+        "end_time": speech.end_time,
+        "duration_seconds": speech.duration_seconds,
+        "text": speech.text,
+        "count": 0,
+        "matched_words": [],
+        "date": speech.date,
+        "time": speech.time,
+        "source_file": speech.source_file,
+        "source_url": normalize_source_url(speech.source_url),
+        "agenda_title": speech.agenda_title,
+        "video_url": speech.video_url,
+        "agenda_item_uuid": agenda_item_uuid,
+        "draft_uuid": draft_uuid,
+    }
+
+
 def get_session_speeches(session_date: str) -> list[dict]:
     """Return the transcript entries for one plenary date, ordered as spoken."""
     session = SessionLocal()
     try:
-        speeches = (
-            session.query(Speech)
+        results = (
+            session.query(
+                Speech,
+                AgendaItem.agenda_item_uuid,
+                AgendaItem.draft_uuid,
+            )
+            .outerjoin(
+                AgendaItem,
+                and_(
+                    Speech.source_file == AgendaItem.source_file,
+                    Speech.agenda_title == AgendaItem.steno_title,
+                    Speech.agenda_title.isnot(None),
+                ),
+            )
             .filter(Speech.date == session_date)
             .order_by(Speech.source_file.asc(), Speech.start_time.asc(), Speech.id.asc())
             .all()
         )
-        return [
-            {
-                "id": speech.id,
-                "speech_key": speech.speech_key,
-                "speaker": speech.speaker,
-                "speaker_role": speech.speaker_role,
-                "speaker_faction": speech.speaker_faction,
-                "speaker_uuid": speech.speaker_uuid,
-                "speech_type": speech.speech_type,
-                "external_id": speech.external_id,
-                "start_time": speech.start_time,
-                "end_time": speech.end_time,
-                "duration_seconds": speech.duration_seconds,
-                "text": speech.text,
-                "count": 0,
-                "matched_words": [],
-                "date": speech.date,
-                "time": speech.time,
-                "source_file": speech.source_file,
-                "source_url": normalize_source_url(speech.source_url),
-                "agenda_title": speech.agenda_title,
-                "video_url": speech.video_url,
-            }
-            for speech in speeches
-        ]
+        seen_speech_ids = set()
+        speeches_list = []
+        for speech, agenda_item_uuid, draft_uuid in results:
+            if speech.id in seen_speech_ids:
+                continue
+            seen_speech_ids.add(speech.id)
+            speeches_list.append(format_session_speech(speech, agenda_item_uuid, draft_uuid))
+        return speeches_list
     finally:
         session.close()
 

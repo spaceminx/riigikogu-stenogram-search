@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from config import OUTPUT_DIR_PROCESSED
 from src.load.database import SessionLocal, engine
 from src.load.models import (
+    AgendaItem,
     Attendance,
     Person,
     Speech,
@@ -486,10 +487,11 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
 
     session.close()
 
-    # Also load attendance, persons, and votes records if files are present
+    # Also load attendance, persons, votes, and agenda_items records if files are present
     load_attendance_to_database(batch_size=batch_size)
     load_persons_to_database()
     load_votes_to_database(batch_size=batch_size)
+    load_agenda_items_to_database(batch_size=batch_size)
 
 
 def load_votes_to_database(years: list[int | str] | None = None, batch_size: int = 2000) -> int:
@@ -660,3 +662,93 @@ def load_votes_to_database(years: list[int | str] | None = None, batch_size: int
         session.close()
 
     return total_votings_loaded
+
+
+def load_agenda_items_to_database(batch_size: int = 2000) -> int:
+    """Load agenda items from data/processed/agenda_items.jsonl into the database."""
+    from src.load.migrations import apply_migrations
+
+    apply_migrations()
+    processed_dir = Path(OUTPUT_DIR_PROCESSED)
+    fpath = processed_dir / "agenda_items.jsonl"
+    if not fpath.exists():
+        print(f"Warning: {fpath} does not exist. Skipping agenda items loading.")
+        return 0
+
+    session = SessionLocal()
+    total_added = 0
+    total_updated = 0
+    try:
+        existing_uuids = set(r[0] for r in session.query(AgendaItem.agenda_item_uuid).all())
+        new_objects = []
+
+        with open(fpath, encoding="utf-8") as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError as err:
+                    raise ValueError(
+                        f"Corrupted JSON on line {line_num} in agenda_items.jsonl: {err}"
+                    ) from err
+
+                u = record.get("agenda_item_uuid")
+                if not u:
+                    continue
+
+                v_uuids = record.get("voting_uuids")
+                v_uuids_json = (
+                    json.dumps(v_uuids) if isinstance(v_uuids, list) else (v_uuids or "[]")
+                )
+                mark_val = (
+                    str(record.get("draft_mark")) if record.get("draft_mark") is not None else None
+                )
+
+                item_data = {
+                    "sitting_uuid": record.get("sitting_uuid"),
+                    "sitting_date": record.get("sitting_date"),
+                    "sitting_datetime": record.get("sitting_datetime"),
+                    "source_file": record.get("source_file"),
+                    "order": record.get("order"),
+                    "steno_title": record.get("steno_title"),
+                    "api_title": record.get("api_title"),
+                    "document_type": record.get("document_type"),
+                    "type_code": record.get("type_code"),
+                    "stage": record.get("stage"),
+                    "decision_code": record.get("decision_code"),
+                    "decision_value": record.get("decision_value"),
+                    "draft_uuid": record.get("draft_uuid"),
+                    "draft_mark": mark_val,
+                    "draft_title": record.get("draft_title"),
+                    "voting_uuids": v_uuids_json,
+                }
+
+                if u in existing_uuids:
+                    session.query(AgendaItem).filter(AgendaItem.agenda_item_uuid == u).update(
+                        item_data
+                    )
+                    total_updated += 1
+                else:
+                    new_objects.append(AgendaItem(agenda_item_uuid=u, **item_data))
+                    existing_uuids.add(u)
+                    total_added += 1
+
+                if len(new_objects) >= batch_size:
+                    session.bulk_save_objects(new_objects)
+                    session.commit()
+                    new_objects.clear()
+
+        if new_objects:
+            session.bulk_save_objects(new_objects)
+            new_objects.clear()
+        session.commit()
+        print(f"Done loading agenda items ({total_added} added, {total_updated} updated).")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    return total_added

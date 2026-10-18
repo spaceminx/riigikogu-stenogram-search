@@ -52,6 +52,8 @@ def _verify_0001_baseline(conn: Connection) -> None:
         row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
     }
     for table_name, table in Base.metadata.tables.items():
+        if table_name == "agenda_items":
+            continue
         if table_name not in tables:
             raise RuntimeError(f"Migration verification failed: missing table '{table_name}'")
         existing_cols = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table_name})"))}
@@ -62,10 +64,81 @@ def _verify_0001_baseline(conn: Connection) -> None:
                 )
 
 
+def _up_0002_agenda_items(conn: Connection) -> None:
+    conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS agenda_items (
+                agenda_item_uuid TEXT PRIMARY KEY,
+                sitting_uuid TEXT,
+                sitting_date TEXT,
+                sitting_datetime TEXT,
+                source_file TEXT,
+                "order" INTEGER,
+                steno_title TEXT,
+                api_title TEXT,
+                document_type TEXT,
+                type_code TEXT,
+                stage TEXT,
+                decision_code TEXT,
+                decision_value TEXT,
+                draft_uuid TEXT,
+                draft_mark TEXT,
+                draft_title TEXT,
+                voting_uuids TEXT
+            );
+            """
+        )
+    )
+    conn.execute(
+        text("CREATE INDEX IF NOT EXISTS ix_agenda_items_draft_uuid ON agenda_items (draft_uuid);")
+    )
+    conn.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS ix_agenda_items_source_file_steno_title ON agenda_items (source_file, steno_title);"
+        )
+    )
+
+
+def _verify_0002_agenda_items(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "agenda_items" not in tables:
+        raise RuntimeError("Migration verification failed: missing table 'agenda_items'")
+
+    existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(agenda_items)"))}
+    expected_cols = [
+        "agenda_item_uuid",
+        "sitting_uuid",
+        "sitting_date",
+        "sitting_datetime",
+        "source_file",
+        "order",
+        "steno_title",
+        "api_title",
+        "document_type",
+        "type_code",
+        "stage",
+        "decision_code",
+        "decision_value",
+        "draft_uuid",
+        "draft_mark",
+        "draft_title",
+        "voting_uuids",
+    ]
+    for col in expected_cols:
+        if col not in existing_cols:
+            raise RuntimeError(
+                f"Migration verification failed: missing column 'agenda_items.{col}'"
+            )
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
     ("0001", "baseline", _up_0001_baseline, _verify_0001_baseline),
+    ("0002", "agenda_items", _up_0002_agenda_items, _verify_0002_agenda_items),
 ]
 
 

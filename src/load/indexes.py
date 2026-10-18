@@ -49,6 +49,8 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_votings_sitting_date ON votings(sitting_date)",
     "CREATE INDEX IF NOT EXISTS idx_votings_doc_uuid ON votings(related_document_uuid)",
     "CREATE INDEX IF NOT EXISTS idx_votes_member_uuid ON votes(member_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_agenda_items_draft_uuid ON agenda_items(draft_uuid)",
+    "CREATE INDEX IF NOT EXISTS idx_agenda_items_source_file_steno_title ON agenda_items(source_file, steno_title)",
 ]
 
 
