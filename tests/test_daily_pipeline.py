@@ -40,6 +40,7 @@ def test_step_order_exactly_a_to_h(tmp_path, monkeypatch):
         "subprocess:fetch_stenograms_api.py",
         "subprocess:fetch_attendance.py",
         "subprocess:fetch_votes.py",
+        "subprocess:fetch_agenda.py",
         "subprocess:verify_pipeline_integrity.py",
         "subprocess:upload_to_b2.py",
         "inprocess:sync_database",
@@ -106,6 +107,24 @@ def test_fetch_memberships_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
     def mock_run(cmd, *args, **kwargs):
         script_name = os.path.basename(cmd[1])
         if script_name == "fetch_memberships.py":
+            return subprocess.CompletedProcess(args=cmd, returncode=1)
+        return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", lambda **kw: True)
+
+    exit_code = dp.run_daily_pipeline()
+    assert exit_code == 0
+
+
+def test_fetch_agenda_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
+    """fetch_agenda failure is warning-only; pipeline exits 0 if everything else succeeds."""
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
+
+    def mock_run(cmd, *args, **kwargs):
+        script_name = os.path.basename(cmd[1])
+        if script_name == "fetch_agenda.py":
             return subprocess.CompletedProcess(args=cmd, returncode=1)
         return subprocess.CompletedProcess(args=cmd, returncode=0)
 

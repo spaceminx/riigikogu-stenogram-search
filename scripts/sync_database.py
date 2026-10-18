@@ -17,6 +17,7 @@ from src.load.indexes import create_indexes
 from src.load.loader import (
     apply_capped_durations_to_session_speeches,
     create_tables,
+    load_agenda_items_to_database,
     load_attendance_to_database,
     load_persons_to_database,
     load_votes_to_database,
@@ -203,10 +204,10 @@ def _sync_database_body(skip_download: bool = False) -> bool:
             print(f"Warning: {err_msg}. Continuing with available local files.")
             errors.append(err_msg)
     else:
-        print("\n[1/8] Skipping B2 download (--skip-download)...")
+        print("\n[1/9] Skipping B2 download (--skip-download)...")
 
     # 2. Ensure tables and indexes exist
-    print("\n[2/8] Ensuring database tables and indexes exist...")
+    print("\n[2/9] Ensuring database tables and indexes exist...")
     try:
         applied = create_tables()
         if applied:
@@ -220,7 +221,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         errors.append(err_msg)
 
     # 3. Load current year speeches
-    print("\n[3/8] Inserting new speeches...")
+    print("\n[3/9] Inserting new speeches...")
     try:
         failed_sources = sync_current_year_speeches()
         if failed_sources:
@@ -233,7 +234,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         errors.append(err_msg)
 
     # 4. Lemmatize any new speeches
-    print("\n[4/8] Checking and lemmatizing new speeches...")
+    print("\n[4/9] Checking and lemmatizing new speeches...")
     try:
         unlemmatized_count = build_missing_lemmas()
         if unlemmatized_count and unlemmatized_count > 0:
@@ -261,7 +262,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         errors.append(err_msg)
 
     # 5. Build term index for new speeches
-    print("\n[5/8] Indexing new terms...")
+    print("\n[5/9] Indexing new terms...")
     try:
         build_missing_terms()
     except Exception as e:
@@ -270,7 +271,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         errors.append(err_msg)
 
     # 6. Attendance
-    print("\n[6/8] Loading attendance records...")
+    print("\n[6/9] Loading attendance records...")
     try:
         load_attendance_to_database()
     except Exception as e:
@@ -279,7 +280,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         errors.append(err_msg)
 
     # 7. Persons
-    print("\n[7/8] Loading persons...")
+    print("\n[7/9] Loading persons...")
     try:
         load_persons_to_database()
     except Exception as e:
@@ -288,11 +289,20 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         errors.append(err_msg)
 
     # 8. Votes
-    print("\n[8/8] Loading votes...")
+    print("\n[8/9] Loading votes...")
     try:
         load_votes_to_database(years=active_years())
     except Exception as e:
         err_msg = f"Votes loading failed: {e}"
+        print(f"Error: {err_msg}")
+        errors.append(err_msg)
+
+    # 9. Agenda items
+    print("\n[9/9] Loading agenda items...")
+    try:
+        load_agenda_items_to_database()
+    except Exception as e:
+        err_msg = f"Agenda items loading failed: {e}"
         print(f"Error: {err_msg}")
         errors.append(err_msg)
 

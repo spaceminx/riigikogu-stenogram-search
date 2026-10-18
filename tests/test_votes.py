@@ -604,17 +604,20 @@ def test_indexes_no_duplicates():
 
         with test_eng.connect() as conn:
             rows = conn.exec_driver_sql(
-                "SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND tbl_name IN ('votings', 'votes');"
+                "SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND tbl_name IN ('votings', 'votes', 'agenda_items');"
             ).fetchall()
 
         index_names = [r[0] for r in rows]
         # Check expected indexes exist
         assert "sqlite_autoindex_votings_1" in index_names
         assert "sqlite_autoindex_votes_1" in index_names
+        assert "sqlite_autoindex_agenda_items_1" in index_names
         assert "idx_votings_date" in index_names
         assert "idx_votings_sitting_date" in index_names
         assert "idx_votings_doc_uuid" in index_names
         assert "idx_votes_member_uuid" in index_names
+        assert "idx_agenda_items_draft_uuid" in index_names
+        assert "idx_agenda_items_source_file_steno_title" in index_names
 
         # Check redundant / duplicate indexes are NOT present
         assert "idx_votes_voting_uuid" not in index_names
@@ -623,9 +626,45 @@ def test_indexes_no_duplicates():
         assert "ix_votings_sitting_date" not in index_names
         assert "ix_votings_related_document_uuid" not in index_names
         assert "ix_votes_member_uuid" not in index_names
+        assert "ix_agenda_items_draft_uuid" not in index_names
+        assert "ix_agenda_items_source_file_steno_title" not in index_names
 
-        # Total indexes across both tables: exactly 6 (2 PK autoindexes + 4 secondary indexes)
-        assert len(rows) == 6
+        # Total indexes across all three tables on fresh DB: exactly 9 (3 PK autoindexes + 6 secondary indexes)
+        assert len(rows) == 9
+
+        # Also test on an existing DB migrated through 0002
+        from src.load.migrations import apply_migrations
+
+        mig_eng = create_engine("sqlite:///:memory:")
+        applied = apply_migrations(mig_eng)
+        assert "0002_agenda_items" in applied
+
+        # Immediately after migration, only PK autoindex exists on agenda_items (no secondary indexes)
+        with mig_eng.connect() as conn:
+            pre_rows = conn.exec_driver_sql(
+                "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name = 'agenda_items';"
+            ).fetchall()
+        pre_index_names = [r[0] for r in pre_rows]
+        assert "sqlite_autoindex_agenda_items_1" in pre_index_names
+        assert "ix_agenda_items_draft_uuid" not in pre_index_names
+        assert "ix_agenda_items_source_file_steno_title" not in pre_index_names
+        assert "idx_agenda_items_draft_uuid" not in pre_index_names
+        assert len(pre_rows) == 1
+
+        # create_indexes creates idx_ indexes and cleans any redundant ones
+        idx_mod.create_indexes(target_engine=mig_eng)
+
+        with mig_eng.connect() as conn:
+            mig_rows = conn.exec_driver_sql(
+                "SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND tbl_name = 'agenda_items';"
+            ).fetchall()
+        mig_index_names = [r[0] for r in mig_rows]
+        assert "sqlite_autoindex_agenda_items_1" in mig_index_names
+        assert "idx_agenda_items_draft_uuid" in mig_index_names
+        assert "idx_agenda_items_source_file_steno_title" in mig_index_names
+        assert "ix_agenda_items_draft_uuid" not in mig_index_names
+        assert "ix_agenda_items_source_file_steno_title" not in mig_index_names
+        assert len(mig_rows) == 3
     finally:
         db.engine = old_eng
         idx_mod.engine = old_eng

@@ -66,6 +66,13 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/fetch_votes.py
 
+      - name: 5c. Fetch agenda items from API
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/fetch_agenda.py
+
       - name: 6. Verify pipeline data integrity
         id: integrity
         continue-on-error: true
