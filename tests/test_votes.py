@@ -1137,6 +1137,19 @@ def test_api_votings_sitting_date_filter_and_session_source_file():
         assert items[1]["date"] == "2026-10-15"
         assert items[1]["sitting_date"] == "2026-10-14"
 
+        # 1b. Test start_date and end_date filter on sitting_date (overnight vote included on 14.10, excluded on 15.10)
+        resp_end_14 = client.get("/votings?start_date=2026-10-14&end_date=2026-10-14")
+        assert resp_end_14.status_code == 200
+        uuids_end_14 = {row["uuid"] for row in resp_end_14.json()["results"]}
+        assert v1_uuid in uuids_end_14
+        assert v2_uuid in uuids_end_14
+        assert v3_uuid not in uuids_end_14
+
+        resp_start_15 = client.get("/votings?start_date=2026-10-15")
+        assert resp_start_15.status_code == 200
+        uuids_start_15 = {row["uuid"] for row in resp_start_15.json()["results"]}
+        assert v1_uuid not in uuids_start_15
+
         # 2. Test filtering by sitting_date=2026-10-12 where speeches row does NOT exist -> null
         resp_other = client.get("/votings?sitting_date=2026-10-12")
         assert resp_other.status_code == 200

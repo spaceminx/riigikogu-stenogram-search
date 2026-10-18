@@ -1497,14 +1497,15 @@ def list_votings(
     try:
         query = session.query(Voting)
 
+        vote_date = func.coalesce(Voting.sitting_date, Voting.date)
         if not include_technical:
             query = query.filter(~is_technical_voting_clause())
         if membership and membership != "all":
             query = query.filter(Voting.membership == int(membership))
         if start_date:
-            query = query.filter(Voting.date >= start_date)
+            query = query.filter(vote_date >= start_date)
         if end_date:
-            query = query.filter(Voting.date <= end_date)
+            query = query.filter(vote_date <= end_date)
         if sitting_date:
             query = query.filter(Voting.sitting_date == sitting_date)
         if document_uuid:
@@ -1527,7 +1528,7 @@ def list_votings(
             order_clauses = [Voting.start_time.asc(), Voting.voting_number.asc()]
         else:
             order_clauses = [
-                Voting.date.desc(),
+                vote_date.desc(),
                 Voting.start_time.desc(),
                 Voting.voting_number.desc(),
             ]
