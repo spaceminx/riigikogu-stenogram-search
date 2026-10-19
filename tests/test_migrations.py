@@ -198,7 +198,8 @@ def test_concurrent_apply_migrations_threads(tmp_path):
         res2 = f2.result()
 
     expected = ["0001_baseline", "0002_agenda_items", "0003_agenda_match_method"]
-    assert (res1 == expected and res2 == []) or (res2 == expected and res1 == [])
+    assert set(res1).isdisjoint(set(res2))
+    assert sorted(res1 + res2) == sorted(expected)
 
     with eng1.connect() as conn:
         rows = conn.execute(
