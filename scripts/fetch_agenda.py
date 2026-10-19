@@ -38,6 +38,7 @@ STRUCTURAL_TITLES = (
     "Infotund",
     "Vaba mikrofon",
     "Muud küsimused",
+    "Jõuluvana",
 )
 
 DRAFT_MARK_RE = re.compile(r"\((\d+)\s+[A-ZÕÄÖÜ]+(?:\s+[IV]+)?\)", re.IGNORECASE)

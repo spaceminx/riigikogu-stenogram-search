@@ -264,3 +264,24 @@ export async function fetchVoting(uuid) {
   const res = await fetch(`${BASE_URL}/votings/${encodeURIComponent(uuid)}`);
   return handleResponse(res);
 }
+
+export async function fetchDraft(uuid) {
+  const res = await fetch(`${BASE_URL}/drafts/${encodeURIComponent(uuid)}`);
+  return handleResponse(res);
+}
+
+export async function fetchDraftSpeeches(
+  uuid,
+  { agendaItemUuid = null, limit = 50, offset = 0 } = {}
+) {
+  const params = new URLSearchParams();
+  if (agendaItemUuid) params.append("agenda_item_uuid", agendaItemUuid);
+  if (limit !== undefined && limit !== null) params.append("limit", String(limit));
+  if (offset !== undefined && offset !== null) params.append("offset", String(offset));
+
+  const qs = params.toString();
+  const res = await fetch(
+    `${BASE_URL}/drafts/${encodeURIComponent(uuid)}/speeches${qs ? `?${qs}` : ""}`
+  );
+  return handleResponse(res);
+}

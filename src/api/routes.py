@@ -1358,6 +1358,19 @@ def get_speech_by_external_id(external_id: str):
         if not speech:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
 
+        agenda_item = None
+        if speech.source_file and speech.agenda_title:
+            agenda_item = (
+                session.query(AgendaItem.agenda_item_uuid, AgendaItem.draft_uuid)
+                .filter(
+                    AgendaItem.source_file == speech.source_file,
+                    AgendaItem.steno_title == speech.agenda_title,
+                )
+                .first()
+            )
+        agenda_item_uuid = agenda_item[0] if agenda_item else None
+        draft_uuid = agenda_item[1] if agenda_item else None
+
         return {
             "id": speech.id,
             "external_id": speech.external_id,
@@ -1379,6 +1392,8 @@ def get_speech_by_external_id(external_id: str):
             "video_url": speech.video_url,
             "status": speech.status,
             "text": speech.text,
+            "agenda_item_uuid": agenda_item_uuid,
+            "draft_uuid": draft_uuid,
         }
     except HTTPException:
         raise
@@ -1436,6 +1451,19 @@ def get_speech_by_id(speech_identifier: str):
         if not speech:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
 
+        agenda_item = None
+        if speech.source_file and speech.agenda_title:
+            agenda_item = (
+                session.query(AgendaItem.agenda_item_uuid, AgendaItem.draft_uuid)
+                .filter(
+                    AgendaItem.source_file == speech.source_file,
+                    AgendaItem.steno_title == speech.agenda_title,
+                )
+                .first()
+            )
+        agenda_item_uuid = agenda_item[0] if agenda_item else None
+        draft_uuid = agenda_item[1] if agenda_item else None
+
         return {
             "id": speech.id,
             "external_id": speech.external_id,
@@ -1457,6 +1485,8 @@ def get_speech_by_id(speech_identifier: str):
             "video_url": speech.video_url,
             "status": speech.status,
             "text": speech.text,
+            "agenda_item_uuid": agenda_item_uuid,
+            "draft_uuid": draft_uuid,
         }
     except HTTPException:
         raise

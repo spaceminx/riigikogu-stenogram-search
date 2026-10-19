@@ -177,10 +177,17 @@ export function VotingView() {
         {voting.related_document && (
           <div className="voting-related-doc">
             <FileText size={16} className="voting-doc-icon" aria-hidden="true" />
-            <span className="voting-doc-text">
-              {voting.related_document.reference ? `${voting.related_document.reference} · ` : ""}
-              {voting.related_document.title}
-            </span>
+            {voting.related_document.type === "DRAFT" && voting.related_document.uuid ? (
+              <Link to={`/eelnou/${voting.related_document.uuid}`} className="voting-doc-link">
+                {voting.related_document.reference ? `${voting.related_document.reference} · ` : ""}
+                {voting.related_document.title}
+              </Link>
+            ) : (
+              <span className="voting-doc-text">
+                {voting.related_document.reference ? `${voting.related_document.reference} · ` : ""}
+                {voting.related_document.title}
+              </span>
+            )}
           </div>
         )}
 
