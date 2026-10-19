@@ -13,7 +13,15 @@ from sqlalchemy import and_, func, literal, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.load.database import SessionLocal
-from src.load.models import AgendaItem, Lemma, Person, Speech, SpeechTerm, SystemMeta
+from src.load.models import (
+    AgendaItem,
+    Lemma,
+    LemmaLink,
+    Person,
+    Speech,
+    SpeechTerm,
+    SystemMeta,
+)
 from src.transform.lemmatizer import lemmatize_text
 
 logger = logging.getLogger(__name__)
@@ -21,6 +29,106 @@ logger = logging.getLogger(__name__)
 _C0_CONTROL_REGEX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 _HYPHEN_NUM_REGEX = re.compile(r"^([a-zA-Z0-9äöüõÄÖÜÕšžŠŽ]+)-(\d+)$")
 _CLEAN_LEMMA_CHARS = ".,;:!?\"'()[]{}«»`~^/*+=<>@#$%&|\\_"
+
+_UNSET = object()
+
+
+def _get_last_sync_at(session) -> str | None:
+    try:
+        row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+        return row.value if row else None
+    except Exception:
+        return None
+
+
+_EXPANSION_CACHE: dict = {
+    "last_sync_at": _UNSET,
+    "expansions": {},
+    "lemma_ids": {},
+    "person_lemmas": None,
+}
+
+
+def clear_expansion_cache() -> None:
+    """Clear cached lemma expansions and person lemmas."""
+    _EXPANSION_CACHE["last_sync_at"] = _UNSET
+    _EXPANSION_CACHE["expansions"].clear()
+    _EXPANSION_CACHE["lemma_ids"].clear()
+    _EXPANSION_CACHE["person_lemmas"] = None
+
+
+def _check_and_update_expansion_sync(session) -> None:
+    last_sync = _get_last_sync_at(session)
+    if _EXPANSION_CACHE["last_sync_at"] != last_sync:
+        _EXPANSION_CACHE["last_sync_at"] = last_sync
+        _EXPANSION_CACHE["expansions"].clear()
+        _EXPANSION_CACHE["lemma_ids"].clear()
+        _EXPANSION_CACHE["person_lemmas"] = None
+
+
+def _get_person_lemmas_cached(session) -> set[str]:
+    _check_and_update_expansion_sync(session)
+    if _EXPANSION_CACHE["person_lemmas"] is None:
+        try:
+            from src.transform.lemma_links import get_person_lemmas
+
+            conn = session.connection() if session else None
+            _EXPANSION_CACHE["person_lemmas"] = get_person_lemmas(conn=conn)
+        except Exception as e:
+            logger.warning("Failed to load person lemmas for search expansion: %s", e)
+            _EXPANSION_CACHE["person_lemmas"] = set()
+    return _EXPANSION_CACHE["person_lemmas"]
+
+
+def _get_lemma_id_cached(session, lemma_str: str) -> int | None:
+    _check_and_update_expansion_sync(session)
+    if lemma_str in _EXPANSION_CACHE["lemma_ids"]:
+        return _EXPANSION_CACHE["lemma_ids"][lemma_str]
+    row = session.query(Lemma.id).filter(Lemma.lemma == lemma_str).first()
+    lem_id = row[0] if row else None
+    _EXPANSION_CACHE["lemma_ids"][lemma_str] = lem_id
+    return lem_id
+
+
+def _get_lemma_expansions_cached(session, target_lemma_id: int) -> dict[str, list[str]]:
+    _check_and_update_expansion_sync(session)
+    if target_lemma_id in _EXPANSION_CACHE["expansions"]:
+        return _EXPANSION_CACHE["expansions"][target_lemma_id]
+
+    rows = (
+        session.query(Lemma.lemma, LemmaLink.kind)
+        .join(LemmaLink, LemmaLink.lemma_id == Lemma.id)
+        .filter(LemmaLink.target_lemma_id == target_lemma_id)
+        .all()
+    )
+    by_kind: dict[str, list[str]] = {"compound_head": [], "name_form": [], "alias": []}
+    for lem_str, kind in rows:
+        if kind in by_kind:
+            by_kind[kind].append(lem_str)
+        else:
+            by_kind[kind] = [lem_str]
+
+    _EXPANSION_CACHE["expansions"][target_lemma_id] = by_kind
+    return by_kind
+
+
+def expand_lemma(session, base_lemma: str, allow_compound_head: bool = True) -> set[str]:
+    """Expand a base lemma with linked compound heads, name forms, and aliases."""
+    expanded = {base_lemma}
+    if not session:
+        return expanded
+    target_id = _get_lemma_id_cached(session, base_lemma)
+    if not target_id:
+        return expanded
+    by_kind = _get_lemma_expansions_cached(session, target_id)
+    if allow_compound_head:
+        for lem in by_kind.get("compound_head", []):
+            expanded.add(lem)
+    for lem in by_kind.get("name_form", []):
+        expanded.add(lem)
+    for lem in by_kind.get("alias", []):
+        expanded.add(lem)
+    return expanded
 
 
 class QueryPhrase:
@@ -324,8 +432,8 @@ def fill_missing_periods(
     return out
 
 
-def _extract_positions_with_alternatives(text_str: str) -> list[set[str]]:
-    """Lemmatise text into an ordered list of positions, each with a set of alternative lemmas."""
+def _extract_positions_with_tokens(text_str: str) -> list[tuple[str, set[str]]]:
+    """Lemmatise text into an ordered list of (token_text, alternative_lemmas_set)."""
     if not text_str.strip():
         return []
     if lemmatize_text(text_str) is None:
@@ -401,7 +509,12 @@ def _extract_positions_with_alternatives(text_str: str) -> list[set[str]]:
             except Exception:
                 pass
 
-    return alternatives_list
+    return [(words1[i].text, alternatives_list[i]) for i in range(len(words1))]
+
+
+def _extract_positions_with_alternatives(text_str: str) -> list[set[str]]:
+    """Lemmatise text into an ordered list of positions, each with a set of alternative lemmas."""
+    return [alts for _tok, alts in _extract_positions_with_tokens(text_str)]
 
 
 def _build_phrase_pattern(positions: list[set[str]]) -> str:
@@ -453,13 +566,19 @@ def _split_group_phrases_and_words(group_str: str) -> tuple[list[str], str]:
     return phrases, unquoted
 
 
-def _parse_single_group(group_str: str) -> QueryGroup | None:
+def _parse_single_group(
+    group_str: str,
+    expand: bool = True,
+    session=None,
+) -> QueryGroup | None:
     """Parse a single comma group into QueryGroup containing phrases and terms."""
     phrase_strs, unquoted_str = _split_group_phrases_and_words(group_str)
 
     phrases: list[QueryPhrase] = []
     phrase_candidate_terms: list[list[str]] = []
     total_positions = 0
+
+    person_lemmas = _get_person_lemmas_cached(session) if (session and expand) else set()
 
     for p_str in phrase_strs:
         positions = _extract_positions_with_alternatives(p_str)
@@ -474,6 +593,18 @@ def _parse_single_group(group_str: str) -> QueryGroup | None:
         if is_all_stopwords:
             raise ValueError("Fraas koosneb ainult stoppsõnadest.")
 
+        # Multi-word phrase expansion: expand name_form and alias per position (no compound_head)
+        # Note: 1-word quoted strings (len(positions) == 1) are quoted in q and get NO expansion.
+        if expand and session and len(positions) >= 2:
+            expanded_positions: list[set[str]] = []
+            for pos in positions:
+                expanded_pos = set(pos)
+                for lem in pos:
+                    if lem:
+                        expanded_pos.update(expand_lemma(session, lem, allow_compound_head=False))
+                expanded_positions.append(expanded_pos)
+            positions = expanded_positions
+
         pattern = _build_phrase_pattern(positions)
         phrases.append(QueryPhrase(positions=positions, pattern=pattern))
 
@@ -485,9 +616,22 @@ def _parse_single_group(group_str: str) -> QueryGroup | None:
 
     unquoted_terms: list[list[str]] = []
     if unquoted_str.strip():
-        u_positions = _extract_positions_with_alternatives(unquoted_str)
-        for pos in u_positions:
-            non_stop = [lem for lem in pos if lem not in STOPWORDS]
+        u_tokens_and_alts = _extract_positions_with_tokens(unquoted_str)
+        for tok, alts in u_tokens_and_alts:
+            is_cap = any(c.isupper() for c in tok)
+            expanded_alts = set(alts)
+            if expand and session:
+                for lem in alts:
+                    if not lem:
+                        continue
+                    # Rule B: skip compound_head expansion only when query term is capitalised
+                    # in user's query AND its lemma is a first/last name lemma from persons.
+                    allow_compound_head = not (is_cap and lem in person_lemmas)
+                    expanded_alts.update(
+                        expand_lemma(session, lem, allow_compound_head=allow_compound_head)
+                    )
+
+            non_stop = [lem for lem in expanded_alts if lem not in STOPWORDS]
             if non_stop:
                 unquoted_terms.append(sorted(non_stop))
                 total_positions += 1
@@ -585,13 +729,17 @@ def is_only_stopwords(query: str) -> bool:
             u_pos = _extract_positions_with_alternatives(unquoted_str)
             if u_pos:
                 has_any_words = True
-        qg = _parse_single_group(group)
+        qg = _parse_single_group(group, expand=False)
         if qg is not None:
             return False
     return has_any_words
 
 
-def parse_query_groups(query: str) -> list[QueryGroup]:
+def parse_query_groups(
+    query: str,
+    expand: bool = True,
+    session=None,
+) -> list[QueryGroup]:
     """Parse comma-separated OR groups and space-separated AND keywords/phrases into filtered lemma alternatives."""
     check_query_complexity(query)
     groups = []
@@ -599,12 +747,20 @@ def parse_query_groups(query: str) -> list[QueryGroup]:
     if len(raw_groups) > MAX_QUERY_GROUPS:
         raise ValueError("Liiga palju otsingurühmi: lubatud kuni 10 komaga eraldatud rühma.")
 
-    for group in raw_groups:
-        qg = _parse_single_group(group)
-        if qg:
-            groups.append(qg)
+    close_session_at_end = False
+    if expand and session is None:
+        session = SessionLocal()
+        close_session_at_end = True
 
-    return groups
+    try:
+        for group in raw_groups:
+            qg = _parse_single_group(group, expand=expand, session=session)
+            if qg:
+                groups.append(qg)
+        return groups
+    finally:
+        if close_session_at_end:
+            session.close()
 
 
 def build_matching_speech_ids_query(session, groups: list):
@@ -751,6 +907,7 @@ def search_by_keyword(
     include_matched_words: bool = True,
     exclude_chair: bool = False,
     speech_category: str | None = None,
+    expand: bool = True,
 ) -> tuple[list[dict], int]:
     """Search speeches by keyword query with lemma matching, filters, and frequency scoring."""
     if is_only_stopwords(query):
@@ -764,7 +921,7 @@ def search_by_keyword(
     session = SessionLocal()
 
     try:
-        groups = parse_query_groups(query)
+        groups = parse_query_groups(query, expand=expand, session=session)
 
         if not groups:
             return [], 0
@@ -905,19 +1062,10 @@ def search_by_keyword(
         session.close()
 
 
-_UNSET = object()
 _ACTIVITY_DENOMINATOR_CACHE: dict = {
     "last_sync_at": _UNSET,
     "denominators": {},
 }
-
-
-def _get_last_sync_at(session) -> str | None:
-    try:
-        row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
-        return row.value if row else None
-    except Exception:
-        return None
 
 
 def clear_activity_denominator_cache() -> None:
@@ -1003,6 +1151,7 @@ def keyword_activity(
     end_date: str | None = None,
     exclude_chair: bool = False,
     speech_category: str | None = None,
+    expand: bool = True,
 ) -> list[dict]:
     """Calculate timeline frequency of keyword occurrences aggregated by day, week, or month with filters."""
     if is_only_stopwords(query):
@@ -1015,7 +1164,7 @@ def keyword_activity(
 
     session = SessionLocal()
     try:
-        groups = parse_query_groups(query)
+        groups = parse_query_groups(query, expand=expand, session=session)
         if not groups:
             return []
 
@@ -1330,6 +1479,7 @@ def keyword_top_speakers(
     end_date: str | None = None,
     exclude_chair: bool = False,
     speech_category: str | None = None,
+    expand: bool = True,
 ) -> list[dict]:
     """Rank parliament members by mention count for a given keyword query with filters."""
     if is_only_stopwords(query):
@@ -1342,7 +1492,7 @@ def keyword_top_speakers(
 
     session = SessionLocal()
     try:
-        groups = parse_query_groups(query)
+        groups = parse_query_groups(query, expand=expand, session=session)
         if not groups:
             return []
 
@@ -1398,14 +1548,17 @@ def keyword_top_speakers(
         session.close()
 
 
-def get_speech_context(speech_id: int, query: str | None = None) -> dict | None:
+def get_speech_context(
+    speech_id: int,
+    query: str | None = None,
+    expand: bool = True,
+) -> dict | None:
     """Retrieve full transcript context (all speeches in chronological order) for a given speech."""
-    parsed_groups = None
-    if query and not is_only_stopwords(query):
-        parsed_groups = parse_query_groups(query)
-
     session = SessionLocal()
     try:
+        parsed_groups = None
+        if query and not is_only_stopwords(query):
+            parsed_groups = parse_query_groups(query, expand=expand, session=session)
         target_speech = session.query(Speech).filter(Speech.id == speech_id).first()
         if not target_speech:
             return None

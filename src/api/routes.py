@@ -290,6 +290,7 @@ def search(
         description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
         pattern=r"^(speeches|questions|procedural)$",
     ),
+    expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
 ):
     q = sanitize_query(q)
     validate_membership(membership)
@@ -307,6 +308,7 @@ def search(
             sort_by=sort_by,
             exclude_chair=exclude_chair,
             speech_category=speech_category,
+            expand=expand,
         )
         return {
             "query": q,
@@ -357,6 +359,7 @@ def search_activity(
         description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
         pattern=r"^(speeches|questions|procedural)$",
     ),
+    expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
 ):
     q = sanitize_query(q)
     if interval not in ("daily", "weekly", "monthly"):
@@ -380,6 +383,7 @@ def search_activity(
                 end_date=end_date,
                 exclude_chair=exclude_chair,
                 speech_category=speech_category,
+                expand=expand,
             ),
         }
     except LemmatizerUnavailableError as e:
@@ -423,6 +427,7 @@ def search_speakers(
         description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
         pattern=r"^(speeches|questions|procedural)$",
     ),
+    expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
 ):
     q = sanitize_query(q)
     validate_membership(membership)
@@ -440,6 +445,7 @@ def search_speakers(
                 end_date=end_date,
                 exclude_chair=exclude_chair,
                 speech_category=speech_category,
+                expand=expand,
             ),
         }
     except LemmatizerUnavailableError as e:
@@ -471,12 +477,13 @@ def search_speakers(
 def speech_context(
     speech_id: int,
     q: str | None = Query(None, description="Otsingupäring lemmade esiletõstmiseks"),
+    expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
 ):
     q = sanitize_query(q)
     if speech_id > MAX_SQLITE_INT or speech_id < MIN_SQLITE_INT:
         raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
     try:
-        context = get_speech_context(speech_id=speech_id, query=q)
+        context = get_speech_context(speech_id=speech_id, query=q, expand=expand)
         if not context:
             raise HTTPException(status_code=404, detail="Kõnet ei leitud.")
         return context
@@ -521,6 +528,7 @@ def search_export(
         description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
         pattern=r"^(speeches|questions|procedural)$",
     ),
+    expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
 ):
     if format not in ("csv", "json"):
         raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
@@ -542,6 +550,7 @@ def search_export(
             include_matched_words=False,
             exclude_chair=exclude_chair,
             speech_category=speech_category,
+            expand=expand,
         )
 
         safe_q = "".join(c for c in q if c.isalnum() or c in ("-", "_")).strip() or "otsing"
@@ -1881,8 +1890,13 @@ def system_status():
             },
             "methodology": {
                 "search": (
-                    'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab ainult kõned, kus sõnad esinevad järjest (ka käändes). '
-                    "Ajajoonel saab valida absoluutarvu või osakaalu. Osakaal näitab, kui suur osa sama perioodi sõnavõttudest (samade filtritega) vastas otsingule; perioodid, kus istungeid ei toimunud, jäetakse tühjaks."
+                    "Otsing võrdleb sõnade algvorme ja kasutab automaatset sisulist laiendust (liitsõnad ja nimevormid), mistõttu on tulemuste arv varasemast suurem. "
+                    "Üldmõiste otsingul (nt eelarve, maks, pension) leitakse ka liitsõnad (nt riigieelarve, tulumaks). "
+                    "Suure algustähega nimeotsing (nt Seeder, Ratas) leiab nime käändevormid (Seederi, Ratase), kuid jätab liitsõnad (jalgratas) välja; "
+                    "väiketähega otsing (ratas) kaasab ka liitsõnad. "
+                    "Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab kõned, kus sõnad esinevad järjest. "
+                    "Täpseks otsinguks ilma liitsõnadeta märkige filter „Ainult täpne sõna“ või kasutage jutumärke. "
+                    "Ajajoonel saab valida absoluutarvu või osakaalu (kõnede osakaal samal perioodil)."
                 ),
                 "attendance": "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse.",
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
