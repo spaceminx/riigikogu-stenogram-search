@@ -1,5 +1,6 @@
 import React from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { formatActivityShare, formatActivityTooltip } from "../lib/activityUtils";
 import {
   formatDayAxis,
   formatDayTooltip,
@@ -9,10 +10,26 @@ import {
   formatWeekTooltip,
 } from "../lib/formatters";
 
+function ActivityCustomTooltip({ active, payload, label, formatLabel, scale, style }) {
+  if (!active || !payload || payload.length === 0) return null;
+  const row = payload[0]?.payload;
+  const formattedLabel = formatLabel(label, payload);
+  const formattedText = formatActivityTooltip(row, scale);
+
+  return (
+    <div style={style.contentStyle}>
+      <div style={style.labelStyle}>{formattedLabel}</div>
+      <div style={style.itemStyle}>{formattedText}</div>
+    </div>
+  );
+}
+
 export function ActivityChart({
   activity = [],
   interval = "monthly",
   onIntervalChange,
+  scale = "count",
+  onScaleChange,
   loading = false,
   error = null,
   theme = "light",
@@ -49,6 +66,13 @@ export function ActivityChart({
       }
       const item = activity.find((row) => row.week === tick);
       return item?.week_start ? formatWeekAxis(item.week_start) : tick;
+    }
+    return tick;
+  };
+
+  const formatYAxisTick = (tick) => {
+    if (scale === "share") {
+      return formatActivityShare(tick) || "0%";
     }
     return tick;
   };
@@ -101,6 +125,24 @@ export function ActivityChart({
               ))}
             </div>
           )}
+          {onScaleChange && (
+            <div className="interval-segmented" role="group" aria-label="Ajajoone skaala">
+              {[
+                ["count", "Arv"],
+                ["share", "Osakaal"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`interval-segment${scale === value ? " is-active" : ""}`}
+                  aria-pressed={scale === value}
+                  onClick={() => onScaleChange(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {error ? (
@@ -139,18 +181,24 @@ export function ActivityChart({
                 tick={{ fill: axisTickColor, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                allowDecimals={false}
+                allowDecimals={scale === "share"}
+                tickFormatter={scale === "share" ? formatYAxisTick : undefined}
               />
               <Tooltip
-                {...tooltipStyle}
+                content={
+                  <ActivityCustomTooltip
+                    formatLabel={formatTooltipLabel}
+                    scale={scale}
+                    style={tooltipStyle}
+                  />
+                }
                 cursor={{
                   fill: theme === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
                 }}
-                labelFormatter={formatTooltipLabel}
               />
               <Bar
-                dataKey="count"
-                name="Kõnesid"
+                dataKey={scale === "share" ? "share" : "count"}
+                name={scale === "share" ? "Osakaal" : "Kõnesid"}
                 fill="#315b84"
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
@@ -165,7 +213,10 @@ export function ActivityChart({
       )}
       {activity.length > 0 && (
         <div className="chart-footer">
-          <span className="legend-dot" /> Kõnede arv valitud perioodis
+          <span className="legend-dot" />{" "}
+          {scale === "share"
+            ? "Otsingule vastavate sõnavõttude osakaal perioodis"
+            : "Kõnede arv valitud perioodis"}
         </div>
       )}
     </section>

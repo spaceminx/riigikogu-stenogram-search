@@ -2287,6 +2287,8 @@ select:focus-visible {
 
 .chart-header {
   margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .chart-header h2 {
@@ -5545,6 +5547,7 @@ html[data-theme="dark"] .archive-stat {
 .timeline-header-controls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
