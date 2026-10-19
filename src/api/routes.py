@@ -1890,13 +1890,13 @@ def system_status():
             },
             "methodology": {
                 "search": (
-                    "Otsing võrdleb sõnade algvorme ja kasutab automaatset sisulist laiendust (liitsõnad ja nimevormid), mistõttu on tulemuste arv varasemast suurem. "
-                    "Üldmõiste otsingul (nt eelarve, maks, pension) leitakse ka liitsõnad (nt riigieelarve, tulumaks). "
-                    "Suure algustähega nimeotsing (nt Seeder, Ratas) leiab nime käändevormid (Seederi, Ratase), kuid jätab liitsõnad (jalgratas) välja; "
-                    "väiketähega otsing (ratas) kaasab ka liitsõnad. "
-                    "Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab kõned, kus sõnad esinevad järjest. "
-                    "Täpseks otsinguks ilma liitsõnadeta märkige filter „Ainult täpne sõna“ või kasutage jutumärke. "
-                    "Ajajoonel saab valida absoluutarvu või osakaalu (kõnede osakaal samal perioodil)."
+                    'Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. '
+                    "Üldmõiste otsingul (nt eelarve, maks, pension) leitakse ka liitsõnad (nt riigieelarve, tulumaks), mistõttu on tulemuste arv varasemast suurem. "
+                    "Suure algustähega nimeotsing (nt Seeder, Ratas) leiab ka nime käändevormid (Seederi, Ratase), kuid jätab liitsõnad (nt jalgratas) välja; väiketähega otsing (ratas) kaasab ka liitsõnad. "
+                    "Täpseks otsinguks ilma liitsõnadeta märgi filter „Ainult täpne sõna“. "
+                    "Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab ainult kõned, kus sõnad esinevad järjest (ka käändes). "
+                    "Ajajoonel saab valida absoluutarvu või osakaalu. "
+                    "Osakaal näitab, kui suur osa sama perioodi sõnavõttudest (samade filtritega) vastas otsingule; perioodid, kus istungeid ei toimunud, jäetakse tühjaks."
                 ),
                 "attendance": "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse.",
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
