@@ -781,7 +781,7 @@ def build_matching_speech_ids_query(session, groups: list):
         if not term_queries:
             continue
         if len(term_queries) == 1:
-            gq = term_queries[0]
+            gq = term_queries[0].distinct()
         else:
             gq = term_queries[0].intersect(*term_queries[1:])
         group_queries.append(gq)
@@ -819,7 +819,7 @@ def build_matching_conditions(session, groups: list) -> list:
         conds = []
         if term_queries:
             if len(term_queries) == 1:
-                gq = term_queries[0]
+                gq = term_queries[0].distinct()
             else:
                 gq = term_queries[0].intersect(*term_queries[1:])
             subq = gq.subquery()
