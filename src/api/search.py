@@ -211,7 +211,12 @@ def week_key_to_monday(key: str):
         return (datetime(year, 1, 1) + timedelta(weeks=week)).date()
 
 
-def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]:
+def fill_missing_periods(
+    results: list,
+    interval: str,
+    label: str,
+    denominators: dict[str, int] | None = None,
+) -> list[dict]:
     """Fill gaps in timeline results with zero-count intervals."""
     if not results:
         return []
@@ -228,7 +233,14 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
         current = start
         while current <= end:
             period = current.strftime("%Y-%m")
-            filled.append({label: period, "count": data.get(period, 0)})
+            cnt = data.get(period, 0)
+            item = {label: period, "count": cnt}
+            if denominators is not None:
+                tot = denominators.get(period, 0)
+                sh = round(cnt / tot, 4) if tot > 0 else None
+                item["total"] = tot
+                item["share"] = sh
+            filled.append(item)
             if current.month == 12:
                 current = current.replace(year=current.year + 1, month=1)
             else:
@@ -251,13 +263,18 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
         while current <= last_monday:
             m_str = current.isoformat()
             week_key = original_keys.get(m_str, current.strftime("%Y-%W"))
-            filled.append(
-                {
-                    label: week_key,
-                    "week_start": m_str,
-                    "count": monday_counts.get(m_str, 0),
-                }
-            )
+            cnt = monday_counts.get(m_str, 0)
+            item = {
+                label: week_key,
+                "week_start": m_str,
+                "count": cnt,
+            }
+            if denominators is not None:
+                tot = denominators.get(m_str, 0)
+                sh = round(cnt / tot, 4) if tot > 0 else None
+                item["total"] = tot
+                item["share"] = sh
+            filled.append(item)
             current += timedelta(days=7)
         return filled
 
@@ -269,16 +286,42 @@ def fill_missing_periods(results: list, interval: str, label: str) -> list[dict]
         current = start
         while current <= end:
             period = current.strftime("%Y-%m-%d")
-            filled.append({label: period, "count": data.get(period, 0)})
+            cnt = data.get(period, 0)
+            item = {label: period, "count": cnt}
+            if denominators is not None:
+                tot = denominators.get(period, 0)
+                sh = round(cnt / tot, 4) if tot > 0 else None
+                item["total"] = tot
+                item["share"] = sh
+            filled.append(item)
             current += timedelta(days=1)
         return filled
 
     if label == "week":
-        return [
-            {label: period, "week_start": week_key_to_monday(period).isoformat(), "count": count}
-            for period, count in results
-        ]
-    return [{label: period, "count": count} for period, count in results]
+        out = []
+        for period, count in results:
+            m_str = week_key_to_monday(period).isoformat()
+            cnt = int(count)
+            item = {label: period, "week_start": m_str, "count": cnt}
+            if denominators is not None:
+                tot = denominators.get(m_str, 0)
+                sh = round(cnt / tot, 4) if tot > 0 else None
+                item["total"] = tot
+                item["share"] = sh
+            out.append(item)
+        return out
+
+    out = []
+    for period, count in results:
+        cnt = int(count)
+        item = {label: period, "count": cnt}
+        if denominators is not None:
+            tot = denominators.get(period, 0)
+            sh = round(cnt / tot, 4) if tot > 0 else None
+            item["total"] = tot
+            item["share"] = sh
+        out.append(item)
+    return out
 
 
 def _extract_positions_with_alternatives(text_str: str) -> list[set[str]]:
@@ -862,6 +905,93 @@ def search_by_keyword(
         session.close()
 
 
+_UNSET = object()
+_ACTIVITY_DENOMINATOR_CACHE: dict = {
+    "last_sync_at": _UNSET,
+    "denominators": {},
+}
+
+
+def _get_last_sync_at(session) -> str | None:
+    try:
+        row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+        return row.value if row else None
+    except Exception:
+        return None
+
+
+def clear_activity_denominator_cache() -> None:
+    """Clear in-memory cached activity denominator data."""
+    _ACTIVITY_DENOMINATOR_CACHE["last_sync_at"] = _UNSET
+    _ACTIVITY_DENOMINATOR_CACHE["denominators"].clear()
+
+
+def get_activity_denominator(
+    session,
+    interval: str = "weekly",
+    membership: str = "all",
+    faction: str | None = None,
+    speaker: str | None = None,
+    speaker_uuid: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    exclude_chair: bool = False,
+    speech_category: str | None = None,
+) -> dict[str, int]:
+    """Calculate and return denominator speech counts per period for the given speech filters."""
+    last_sync = _get_last_sync_at(session)
+    if _ACTIVITY_DENOMINATOR_CACHE["last_sync_at"] != last_sync:
+        _ACTIVITY_DENOMINATOR_CACHE["last_sync_at"] = last_sync
+        _ACTIVITY_DENOMINATOR_CACHE["denominators"].clear()
+
+    cache_key = (
+        interval,
+        str(membership),
+        faction,
+        speaker.strip() if speaker else None,
+        speaker_uuid.strip() if speaker_uuid else None,
+        start_date,
+        end_date,
+        bool(exclude_chair),
+        speech_category,
+    )
+    if cache_key in _ACTIVITY_DENOMINATOR_CACHE["denominators"]:
+        return _ACTIVITY_DENOMINATOR_CACHE["denominators"][cache_key]
+
+    if interval == "daily":
+        date_group = Speech.date
+    elif interval == "monthly":
+        date_group = func.strftime("%Y-%m", Speech.date)
+    else:
+        date_group = func.strftime("%Y-%W", Speech.date)
+
+    speech_filters = build_speech_filters(
+        membership=membership,
+        faction=faction,
+        speaker=speaker,
+        speaker_uuid=speaker_uuid,
+        start_date=start_date,
+        end_date=end_date,
+        exclude_chair=exclude_chair,
+        speech_category=speech_category,
+    )
+    query = session.query(date_group.label("period"), func.count(Speech.id).label("total_count"))
+    if speech_filters:
+        query = query.filter(*speech_filters)
+    denom_results = query.group_by(date_group).all()
+
+    if interval in ("weekly", "week"):
+        denom_map: dict[str, int] = {}
+        for period, count in denom_results:
+            m = week_key_to_monday(period).isoformat()
+            denom_map[m] = denom_map.get(m, 0) + int(count)
+    else:
+        denom_map = {period: int(count) for period, count in denom_results}
+
+    _ACTIVITY_DENOMINATOR_CACHE["denominators"][cache_key] = denom_map
+    return denom_map
+
+
 def keyword_activity(
     query: str,
     interval: str = "weekly",
@@ -918,9 +1048,29 @@ def keyword_activity(
             query_builder = query_builder.filter(*speech_filters)
 
         results = query_builder.group_by(date_group).order_by(date_group).all()
+
+        denom_map = get_activity_denominator(
+            session=session,
+            interval=interval,
+            membership=membership,
+            faction=faction,
+            speaker=speaker,
+            speaker_uuid=speaker_uuid,
+            start_date=start_date,
+            end_date=end_date,
+            exclude_chair=exclude_chair,
+            speech_category=speech_category,
+        )
+
         if interval in ("monthly", "daily", "weekly", "week"):
-            return fill_missing_periods(results, interval, label)
-        return [{label: period, "count": int(total_count)} for period, total_count in results]
+            return fill_missing_periods(results, interval, label, denominators=denom_map)
+        output = []
+        for period, total_count in results:
+            cnt = int(total_count)
+            tot = denom_map.get(period, 0)
+            sh = round(cnt / tot, 4) if tot > 0 else None
+            output.append({label: period, "count": cnt, "total": tot, "share": sh})
+        return output
     finally:
         session.close()
 

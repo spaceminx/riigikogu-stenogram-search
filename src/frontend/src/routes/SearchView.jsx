@@ -9,6 +9,7 @@ import {
   fetchSpeechContext,
 } from "../lib/api";
 import { mergeInputToGroups, parseQueryToGroups, serializeGroupsToQuery } from "../lib/formatters";
+import { parseScaleParam, updateScaleParam } from "../lib/activityUtils";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
 import SpeechCard from "../components/SpeechCard";
@@ -38,6 +39,7 @@ export function SearchView({
   const endDateParam = searchParams.get("end_date") || "";
   const sortParam = searchParams.get("sort") || "date_desc";
   const intervalParam = searchParams.get("interval") || "monthly";
+  const scaleParam = parseScaleParam(searchParams.get("scale"));
   const pageParam = parseInt(searchParams.get("page") || "1", 10) || 1;
   const excludeChairParam =
     searchParams.get("exclude_chair") === "true" || searchParams.get("exclude_chair") === "1";
@@ -274,8 +276,14 @@ export function SearchView({
     if (filterSpeechCategory) next.set("speech_category", filterSpeechCategory);
     if (sortParam && sortParam !== "date_desc") next.set("sort", sortParam);
     if (intervalParam && intervalParam !== "monthly") next.set("interval", intervalParam);
+    if (scaleParam === "share") next.set("scale", "share");
 
     setSearchParams(next);
+  };
+
+  const handleScaleChange = (newScale) => {
+    const next = updateScaleParam(searchParams, newScale);
+    setSearchParams(next, { replace: true });
   };
 
   const handleSortChange = (newSort) => {
@@ -458,6 +466,8 @@ export function SearchView({
             activity={currentActivity}
             interval={intervalParam}
             onIntervalChange={handleIntervalChange}
+            scale={scaleParam}
+            onScaleChange={handleScaleChange}
             loading={activityLoading}
             error={activityError}
             theme={theme}
