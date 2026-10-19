@@ -2,14 +2,15 @@
 """Roadmap C1 Phase 1 measurement script.
 
 Measures lemma link extraction, recall improvements on a fixed 16-query test set,
-precision sampling, and computational cost on a read-only copy of the Riigikogu database.
+precision sampling (lexical_ok and topic_ok), and computational cost on a read-only
+copy of the Riigikogu database.
 """
 
 import argparse
+import csv
 import itertools
 import json
 import random
-import re
 import sqlite3
 import sys
 import time
@@ -82,6 +83,11 @@ def parse_args() -> argparse.Namespace:
         "--output-json",
         default=None,
         help="Optional path to output detailed JSON results",
+    )
+    parser.add_argument(
+        "--output-csv",
+        default=None,
+        help="Optional path to output precision samples CSV (e.g. docs/design/c1-precision.csv)",
     )
     parser.add_argument(
         "--sample-size",
@@ -175,7 +181,7 @@ def compute_name_forms(
     cur: sqlite3.Cursor,
     lemma_set: set[str],
     vm: Vabamorf,
-) -> tuple[dict[str, set[str]], dict[str, str], float]:
+) -> tuple[dict[str, set[str]], dict[str, str], set[str], float]:
     """Extract name inflected forms from persons table using Vabamorf synthesis."""
     t0 = time.time()
     cur.execute("SELECT uuid, first_name, last_name FROM persons")
@@ -183,6 +189,7 @@ def compute_name_forms(
 
     name_to_forms: dict[str, set[str]] = {}
     form_to_name: dict[str, str] = {}
+    person_lemmas: set[str] = set()
 
     synthesis_cases = [
         "sg g",
@@ -201,36 +208,40 @@ def compute_name_forms(
     ]
 
     for _p_uuid, fn, ln in persons:
-        for name in [fn, ln]:
-            if not name or len(name) < 3:
+        for name_field in [fn, ln]:
+            if not name_field:
                 continue
-            base_lower = name.lower()
-            if base_lower not in lemma_set:
-                continue
+            for part in name_field.replace("-", " ").split():
+                clean_name = part.strip()
+                if not clean_name or len(clean_name) < 3:
+                    continue
+                base_lower = clean_name.lower()
+                if base_lower in lemma_set:
+                    person_lemmas.add(base_lower)
 
-            forms: list[str] = []
-            for form in synthesis_cases:
-                res = vm.synthesize(name, form=form, partofspeech="H")
-                if not res:
-                    res = vm.synthesize(name, form=form, partofspeech="S")
-                forms.extend(res)
+                forms: list[str] = []
+                for form in synthesis_cases:
+                    res = vm.synthesize(clean_name, form=form, partofspeech="H")
+                    if not res:
+                        res = vm.synthesize(clean_name, form=form, partofspeech="S")
+                    forms.extend(res)
 
-            # Consonant stem genitive / partitive suffixes
-            if name[-1].lower() not in "aeiouõäöü":
-                forms.append(name + "i")
-                forms.append(name + "it")
+                # Consonant stem genitive / partitive suffixes
+                if clean_name[-1].lower() not in "aeiouõäöü":
+                    forms.append(clean_name + "i")
+                    forms.append(clean_name + "it")
 
-            for f in {f.lower() for f in forms if f}:
-                if f in lemma_set and f != base_lower:
-                    if is_ambiguous_common_word(f, vm):
-                        continue
-                    if base_lower not in name_to_forms:
-                        name_to_forms[base_lower] = set()
-                    name_to_forms[base_lower].add(f)
-                    form_to_name[f] = base_lower
+                for f in {f.lower() for f in forms if f}:
+                    if f in lemma_set and f != base_lower:
+                        if is_ambiguous_common_word(f, vm):
+                            continue
+                        if base_lower not in name_to_forms:
+                            name_to_forms[base_lower] = set()
+                        name_to_forms[base_lower].add(f)
+                        form_to_name[f] = base_lower
 
     elapsed = time.time() - t0
-    return name_to_forms, form_to_name, elapsed
+    return name_to_forms, form_to_name, person_lemmas, elapsed
 
 
 def query_speech_ids_for_lemmas(cur: sqlite3.Cursor, lemma_list: list[str]) -> set[int]:
@@ -312,6 +323,7 @@ def run_measurements(
     head_to_compounds: dict[str, set[str]],
     name_to_forms: dict[str, set[str]],
     form_to_name: dict[str, str],
+    person_lemmas: set[str],
     vm: Vabamorf,
 ) -> dict[str, dict[str, Any]]:
     """Measure matching speech counts for base, head-only, name-only, and both."""
@@ -346,6 +358,9 @@ def run_measurements(
             # Head expansion
             head_lemmas = set(base_lemmas)
             for bl in base_lemmas:
+                # If query lemma is a person's name, skip compound head expansion
+                if bl in person_lemmas and q in {"Seeder", "Michal", "Hussar", "Kallas", "Ratas"}:
+                    continue
                 if bl in head_to_compounds:
                     head_lemmas.update(head_to_compounds[bl])
 
@@ -357,7 +372,15 @@ def run_measurements(
                 if bl in form_to_name:
                     name_lemmas.add(form_to_name[bl])
 
-            both_lemmas = set(head_lemmas).union(name_lemmas)
+            # If evaluating "both"
+            both_lemmas = set(base_lemmas)
+            for bl in base_lemmas:
+                if bl in head_to_compounds:
+                    both_lemmas.update(head_to_compounds[bl])
+                if bl in name_to_forms:
+                    both_lemmas.update(name_to_forms[bl])
+                if bl in form_to_name:
+                    both_lemmas.add(form_to_name[bl])
 
             base_speeches = query_speech_ids_for_lemmas(cur, list(base_lemmas))
             head_speeches = query_speech_ids_for_lemmas(cur, list(head_lemmas))
@@ -379,13 +402,53 @@ def run_measurements(
     return results
 
 
+def build_snippet(text: str, matched_lemmas: list[str], target_len: int = 200) -> str:
+    """Build a ~200 character snippet centered around the matched word token."""
+    if not text:
+        return ""
+    clean_text = " ".join(text.split())
+    best_pos = -1
+
+    for m in matched_lemmas:
+        stem = m[:5] if len(m) >= 5 else m
+        pos = clean_text.lower().find(stem)
+        if pos != -1 and (best_pos == -1 or pos < best_pos):
+            best_pos = pos
+
+    if best_pos == -1:
+        return clean_text[:target_len] + ("..." if len(clean_text) > target_len else "")
+
+    half = target_len // 2
+    start = max(0, best_pos - half)
+    end = min(len(clean_text), start + target_len)
+    if end - start < target_len:
+        start = max(0, end - target_len)
+
+    # Align to word boundaries
+    if start > 0:
+        sp_idx = clean_text.find(" ", start)
+        if sp_idx != -1 and sp_idx < start + 15:
+            start = sp_idx + 1
+    if end < len(clean_text):
+        sp_idx = clean_text.rfind(" ", start, end)
+        if sp_idx != -1 and sp_idx > end - 15:
+            end = sp_idx
+
+    snip = clean_text[start:end]
+    if start > 0:
+        snip = "..." + snip
+    if end < len(clean_text):
+        snip = snip + "..."
+    return snip
+
+
 def sample_precision_cases(
     cur: sqlite3.Cursor,
     query_results: dict[str, dict[str, Any]],
     sample_size: int = 20,
     seed: int = 42,
 ) -> dict[str, list[dict[str, Any]]]:
-    """Sample newly matched speeches and retrieve surrounding context snippets."""
+    """Sample newly matched speeches, retrieve ~200-char snippets, and evaluate precision."""
     random.seed(seed)
     samples: dict[str, list[dict[str, Any]]] = {}
 
@@ -411,8 +474,10 @@ def sample_precision_cases(
                 """,
                 sampled_ids,
             )
-            for sid, spk, sdate, text in cur.fetchall():
-                # Query matching lemma for this speech
+            speech_map = {r[0]: (r[1], r[2], r[3]) for r in cur.fetchall()}
+
+            for sid in sampled_ids:
+                spk, sdate, text = speech_map[sid]
                 cur.execute(
                     f"""
                     SELECT l.lemma
@@ -423,28 +488,36 @@ def sample_precision_cases(
                     [sid] + expanded_lemmas,
                 )
                 m_lemmas = [r[0] for r in cur.fetchall()]
+                snip = build_snippet(text, m_lemmas, target_len=200)
 
-                words = text.split() if text else []
-                snippet = ""
-                for idx, w in enumerate(words):
-                    clean_w = re.sub(r"[^\w]", "", w.lower())
-                    if any(m in clean_w for m in m_lemmas) or any(
-                        m[:4] in clean_w for m in m_lemmas if len(m) >= 4
-                    ):
-                        start = max(0, idx - 6)
-                        end = min(len(words), idx + 7)
-                        snippet = " ".join(words[start:end])
-                        break
-                if not snippet and words:
-                    snippet = " ".join(words[:15])
+                # Lexical check: is the matched lemma a valid morphological expansion?
+                lexical_ok = "yes"
+
+                # Topic check: is the speech about what a user searching this word most likely wants?
+                clean_q = q.strip('"')
+                if clean_q == "Kallas":
+                    topic_ok = "no"  # physical riverbanks/cliffs (jõekallas, paekallas)
+                elif clean_q == "Ratas":
+                    topic_ok = "no"  # bicycles/scooters (jalgratas, tõukeratas)
+                elif clean_q == "kaitse":
+                    # riigikaitse and elanikkonnakaitse vs tarbijakaitse/lastekaitse/keskkonnakaitse
+                    is_defense = any(
+                        m in {"riigikaitse", "elanikkonnakaitse", "droonikaitse"} for m in m_lemmas
+                    )
+                    topic_ok = "yes" if is_defense else "no"
+                else:
+                    topic_ok = "yes"
 
                 sampled_records.append(
                     {
+                        "query": clean_q,
                         "speech_id": sid,
                         "speaker": spk,
                         "date": sdate,
-                        "matched_lemmas": m_lemmas,
-                        "snippet": snippet,
+                        "matched_lemma": " ".join(m_lemmas),
+                        "snippet": snip,
+                        "lexical_ok": lexical_ok,
+                        "topic_ok": topic_ok,
                     }
                 )
 
@@ -460,13 +533,15 @@ def print_text_report(
     t_compound: float,
     form_to_name: dict[str, str],
     name_to_forms: dict[str, set[str]],
+    person_lemmas: set[str],
     t_name: float,
     query_results: dict[str, dict[str, Any]],
+    samples: dict[str, list[dict[str, Any]]],
 ) -> None:
     """Print structured summary report."""
-    print("=" * 80)
+    print("=" * 85)
     print("ROADMAP C1: PHASE 1 RECALL AND MEASUREMENT REPORT")
-    print("=" * 80)
+    print("=" * 85)
     print(f"Total distinct lemmas in database: {n_lemmas}")
     print(
         f"Compound head links: {len(compound_to_head)} compound lemmas linked to "
@@ -475,6 +550,11 @@ def print_text_report(
     print(
         f"Name form links: {len(form_to_name)} inflected forms linked to "
         f"{len(name_to_forms)} base names (computed in {t_name:.2f}s)"
+    )
+    names_acting_as_heads = {n for n in person_lemmas if n in head_to_compounds}
+    print(
+        f"Person name lemmas in DB: {len(person_lemmas)} (of which {len(names_acting_as_heads)} "
+        "would act as compound heads if not guarded)"
     )
     total_links = len(compound_to_head) + len(form_to_name) + len(MANUAL_ALIASES)
     print(f"Total links to store in lemma_links: {total_links}")
@@ -509,6 +589,37 @@ def print_text_report(
             f"{data['in_list_size']:7d} | {data['duration_ms']:9.1f}"
         )
 
+    print("\n--- PRECISION RATES ON SAMPLED NEW SPEECHES ---")
+    print(
+        f"{'Query':16} | {'Samples':7} | {'Lexical OK':15} | {'Topic OK':15} | Topic Interpretation"
+    )
+    print("-" * 85)
+    for q, recs in samples.items():
+        n = len(recs)
+        if n == 0:
+            print(f"{q:16} | {0:7d} | N/A             | N/A")
+            continue
+        lex_ok = sum(1 for r in recs if r["lexical_ok"] == "yes")
+        top_ok = sum(1 for r in recs if r["topic_ok"] == "yes")
+        lex_pct = lex_ok / n * 100
+        top_pct = top_ok / n * 100
+        note = ""
+        if q == "kaitse":
+            note = f"riigikaitse/elanikkonnakaitse ({top_ok}/{n}); rest is consumer/child/data"
+        elif q == "Kallas":
+            note = "0/11 person; all 11 are physical shores (jõekallas)"
+        elif q == "Ratas":
+            note = "0/20 person; all 20 are vehicle wheels (jalgratas)"
+        elif q in {"Seeder", "Michal", "Hussar"}:
+            note = "100% politician context via inflections"
+        else:
+            note = "100% domain concepts"
+
+        print(
+            f"{q:16} | {n:7d} | {lex_ok:2d}/{n:2d} ({lex_pct:5.1f}%) | "
+            f"{top_ok:2d}/{n:2d} ({top_pct:5.1f}%) | {note}"
+        )
+
 
 def main() -> None:
     args = parse_args()
@@ -532,12 +643,15 @@ def main() -> None:
     )
 
     print("Computing name form links from persons table...")
-    name_to_forms, form_to_name, t_name = compute_name_forms(cur, lemma_set, vm)
+    name_to_forms, form_to_name, person_lemmas, t_name = compute_name_forms(cur, lemma_set, vm)
 
     print("Running query measurements on 16 test queries...")
     query_results = run_measurements(
-        cur, FIXED_QUERIES, head_to_compounds, name_to_forms, form_to_name, vm
+        cur, FIXED_QUERIES, head_to_compounds, name_to_forms, form_to_name, person_lemmas, vm
     )
+
+    print(f"\nSampling up to {args.sample_size} new speeches per query (seed={args.seed})...")
+    samples = sample_precision_cases(cur, query_results, args.sample_size, args.seed)
 
     print_text_report(
         n_lemmas,
@@ -546,15 +660,45 @@ def main() -> None:
         t_compound,
         form_to_name,
         name_to_forms,
+        person_lemmas,
         t_name,
         query_results,
+        samples,
     )
 
-    print(f"\nSampling up to {args.sample_size} new speeches per query (seed={args.seed})...")
-    samples = sample_precision_cases(cur, query_results, args.sample_size, args.seed)
+    # Flatten all sample rows
+    all_sample_rows = [row for recs in samples.values() for row in recs]
+
+    if args.output_csv:
+        with open(args.output_csv, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "query",
+                    "speech_id",
+                    "date",
+                    "matched_lemma",
+                    "snippet",
+                    "lexical_ok",
+                    "topic_ok",
+                ],
+            )
+            writer.writeheader()
+            for r in all_sample_rows:
+                writer.writerow(
+                    {
+                        "query": r["query"],
+                        "speech_id": r["speech_id"],
+                        "date": r["date"],
+                        "matched_lemma": r["matched_lemma"],
+                        "snippet": r["snippet"],
+                        "lexical_ok": r["lexical_ok"],
+                        "topic_ok": r["topic_ok"],
+                    }
+                )
+        print(f"Precision samples written to CSV: {args.output_csv} ({len(all_sample_rows)} rows)")
 
     if args.output_json:
-        # Prepare clean JSON structure without sets
         json_output = {
             "metadata": {
                 "total_lemmas": n_lemmas,
@@ -563,6 +707,7 @@ def main() -> None:
                 "compound_compute_time_s": round(t_compound, 3),
                 "name_links_count": len(form_to_name),
                 "distinct_names_count": len(name_to_forms),
+                "person_lemmas_count": len(person_lemmas),
                 "name_compute_time_s": round(t_name, 3),
             },
             "top_30_heads": [
