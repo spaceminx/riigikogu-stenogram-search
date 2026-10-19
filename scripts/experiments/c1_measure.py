@@ -10,6 +10,7 @@ import argparse
 import csv
 import itertools
 import json
+import os
 import random
 import sqlite3
 import sys
@@ -19,33 +20,13 @@ from typing import Any
 
 from estnltk.vabamorf.morf import Vabamorf
 
-# Fixed stoplist of non-compositional, fossilized, or overly general suffix stems
-HEAD_STOPLIST = {
-    "arve",
-    "märk",
-    "kiri",
-    "kaal",
-    "seis",
-    "kord",
-    "koht",
-    "vaade",
-    "salu",
-    "organ",
-    "koll",
-    "kaar",
-    "asi",
-    "osa",
-    "mees",
-    "päev",
-    "aeg",
-    "aasta",
-}
+# Add project root to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-# Bound or non-compositional prefix stems that should not form loose compound links
-BOUND_PREFIXES = {"eel", "all", "üle", "ees", "pea", "ala", "ise"}
-
-# Names that are also ambiguous common nouns/verbs in Estonian dictionary
-AMBIGUOUS_NAME_WORDS = {"kallas", "ratas", "aeg", "aru", "meri", "kütt", "kotkas", "kiik"}
+from src.transform.lemma_links import (
+    compute_compound_heads,
+    compute_name_forms,
+)
 
 # Manual aliases for proper noun variants (e.g. Rail Baltic / Baltica)
 MANUAL_ALIASES = {
@@ -110,138 +91,6 @@ def load_lemmas(cur: sqlite3.Cursor) -> tuple[list[tuple[int, str]], dict[str, i
     lemma_to_id = {row[1]: row[0] for row in rows}
     lemma_set = set(lemma_to_id.keys())
     return rows, lemma_to_id, lemma_set
-
-
-def compute_compound_heads(
-    all_lemmas: list[tuple[int, str]],
-    lemma_set: set[str],
-    vm: Vabamorf,
-    batch_size: int = 5000,
-) -> tuple[dict[str, set[str]], dict[str, str], float]:
-    """Extract compound heads using longest proper suffix rule with guards."""
-    t0 = time.time()
-    lemma_analyses: dict[str, list[str]] = {}
-
-    for i in range(0, len(all_lemmas), batch_size):
-        batch = [row[1] for row in all_lemmas[i : i + batch_size]]
-        analyses = vm.analyze(batch, disambiguate=False, guess=False)
-        for word, item in zip(batch, analyses, strict=False):
-            best_tokens: list[str] = []
-            for a in item.get("analysis", []):
-                tokens = a.get("root_tokens", [])
-                if len(tokens) > len(best_tokens):
-                    best_tokens = tokens
-            lemma_analyses[word] = best_tokens
-
-    compounds = {w: tokens for w, tokens in lemma_analyses.items() if len(tokens) >= 2}
-
-    head_to_compounds: dict[str, set[str]] = {}
-    compound_to_head: dict[str, str] = {}
-
-    for word, tokens in compounds.items():
-        candidates: list[str] = []
-        for i in range(1, len(tokens)):
-            suffix = "".join(tokens[i:])
-            if (
-                len(suffix) >= 4
-                and suffix in lemma_set
-                and suffix != word
-                and suffix not in HEAD_STOPLIST
-            ):
-                prefix = word[: -len(suffix)]
-                if len(prefix) < 4 and prefix in BOUND_PREFIXES:
-                    continue
-                candidates.append(suffix)
-        if candidates:
-            candidates.sort(key=len, reverse=True)
-            chosen_head = candidates[0]
-            compound_to_head[word] = chosen_head
-            if chosen_head not in head_to_compounds:
-                head_to_compounds[chosen_head] = set()
-            head_to_compounds[chosen_head].add(word)
-
-    elapsed = time.time() - t0
-    return head_to_compounds, compound_to_head, elapsed
-
-
-def is_ambiguous_common_word(word: str, vm: Vabamorf) -> bool:
-    """Check if word is a common noun/verb/adverb/adjective in general vocabulary."""
-    analyses = vm.analyze([word], disambiguate=False, guess=False)
-    for it in analyses:
-        for a in it.get("analysis", []):
-            pos = a.get("partofspeech", "")
-            if pos in {"V", "D", "P", "J", "K"} or (
-                pos == "S" and a.get("lemma") in AMBIGUOUS_NAME_WORDS
-            ):
-                return True
-    return False
-
-
-def compute_name_forms(
-    cur: sqlite3.Cursor,
-    lemma_set: set[str],
-    vm: Vabamorf,
-) -> tuple[dict[str, set[str]], dict[str, str], set[str], float]:
-    """Extract name inflected forms from persons table using Vabamorf synthesis."""
-    t0 = time.time()
-    cur.execute("SELECT uuid, first_name, last_name FROM persons")
-    persons = cur.fetchall()
-
-    name_to_forms: dict[str, set[str]] = {}
-    form_to_name: dict[str, str] = {}
-    person_lemmas: set[str] = set()
-
-    synthesis_cases = [
-        "sg g",
-        "sg p",
-        "sg ill",
-        "sg in",
-        "sg el",
-        "sg all",
-        "sg ad",
-        "sg abl",
-        "sg tr",
-        "sg ter",
-        "sg es",
-        "sg ab",
-        "sg kom",
-    ]
-
-    for _p_uuid, fn, ln in persons:
-        for name_field in [fn, ln]:
-            if not name_field:
-                continue
-            for part in name_field.replace("-", " ").split():
-                clean_name = part.strip()
-                if not clean_name or len(clean_name) < 3:
-                    continue
-                base_lower = clean_name.lower()
-                if base_lower in lemma_set:
-                    person_lemmas.add(base_lower)
-
-                forms: list[str] = []
-                for form in synthesis_cases:
-                    res = vm.synthesize(clean_name, form=form, partofspeech="H")
-                    if not res:
-                        res = vm.synthesize(clean_name, form=form, partofspeech="S")
-                    forms.extend(res)
-
-                # Consonant stem genitive / partitive suffixes
-                if clean_name[-1].lower() not in "aeiouõäöü":
-                    forms.append(clean_name + "i")
-                    forms.append(clean_name + "it")
-
-                for f in {f.lower() for f in forms if f}:
-                    if f in lemma_set and f != base_lower:
-                        if is_ambiguous_common_word(f, vm):
-                            continue
-                        if base_lower not in name_to_forms:
-                            name_to_forms[base_lower] = set()
-                        name_to_forms[base_lower].add(f)
-                        form_to_name[f] = base_lower
-
-    elapsed = time.time() - t0
-    return name_to_forms, form_to_name, person_lemmas, elapsed
 
 
 def query_speech_ids_for_lemmas(cur: sqlite3.Cursor, lemma_list: list[str]) -> set[int]:
