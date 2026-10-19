@@ -155,3 +155,11 @@ class AgendaItem(Base):
     draft_title = Column(Text, nullable=True)
     voting_uuids = Column(Text, nullable=True)
     match_method = Column(Text, nullable=True)
+
+
+class LemmaLink(Base):
+    __tablename__ = "lemma_links"
+
+    lemma_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True, nullable=False)
+    target_lemma_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True, nullable=False)
+    kind = Column(Text, primary_key=True, nullable=False)
