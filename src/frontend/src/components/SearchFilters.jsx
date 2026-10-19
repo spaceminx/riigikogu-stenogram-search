@@ -19,6 +19,8 @@ export function SearchFilters({
   setSearchSpeechCategory,
   searchExcludeChair,
   setSearchExcludeChair,
+  searchExactMatch,
+  setSearchExactMatch,
   onResetFilters,
 }) {
   const hasActiveFilters =
@@ -26,6 +28,7 @@ export function SearchFilters({
     searchFaction !== "" ||
     searchSpeaker.trim() !== "" ||
     searchExcludeChair ||
+    searchExactMatch ||
     searchSpeechCategory !== "" ||
     Boolean(searchDateRange.startDate || searchDateRange.endDate);
 
@@ -129,6 +132,18 @@ export function SearchFilters({
             onChange={(e) => setSearchExcludeChair(e.target.checked)}
           />
           <span>Jäta istungi juhataja välja</span>
+        </label>
+      </div>
+
+      <div className="filter-group-item filter-checkbox-item">
+        <label htmlFor="filter-exact-match" className="filter-checkbox-label filter-label">
+          <input
+            id="filter-exact-match"
+            type="checkbox"
+            checked={searchExactMatch}
+            onChange={(e) => setSearchExactMatch(e.target.checked)}
+          />
+          <span>Ainult täpne sõna (ilma liitsõnadeta)</span>
         </label>
       </div>
 

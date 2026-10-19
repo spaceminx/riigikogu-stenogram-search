@@ -42,6 +42,7 @@ function buildSearchQueryString({
   sortBy = "date_desc",
   excludeChair = false,
   speechCategory = null,
+  expand = true,
 } = {}) {
   const params = new URLSearchParams();
   if (query) params.append("q", query);
@@ -57,6 +58,7 @@ function buildSearchQueryString({
   if (sortBy && sortBy !== "date_desc") params.append("sort_by", sortBy);
   if (excludeChair) params.append("exclude_chair", "true");
   if (speechCategory) params.append("speech_category", speechCategory);
+  if (expand === false || expand === "false") params.append("expand", "false");
   return params.toString();
 }
 
@@ -98,9 +100,12 @@ export async function fetchSpeakers(options, legacyLimit = 20, signal) {
   return handleResponse(res);
 }
 
-export async function fetchSpeechContext(speechId, query = null) {
-  const qs = query ? `?q=${encodeURIComponent(query)}` : "";
-  const res = await fetch(`${BASE_URL}/speeches/${speechId}/context${qs}`);
+export async function fetchSpeechContext(speechId, query = null, expand = true) {
+  const params = new URLSearchParams();
+  if (query) params.append("q", query);
+  if (expand === false || expand === "false") params.append("expand", "false");
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/speeches/${speechId}/context${qs ? `?${qs}` : ""}`);
   return handleResponse(res);
 }
 

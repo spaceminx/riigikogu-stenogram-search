@@ -158,13 +158,19 @@ Hindamisel eristatakse kahte täpsuskriteeriumi:
 
 Et vältida poliitikute nimede otsingul jalgrataste ja jõekallaste kuvamist, kehtestatakse selge **nimekaitsereegel**:
 
-> **Reegel:** Kui otsingu lemma langeb kokku `persons` tabeli mis tahes isiku ees- või perekonnanime lemmaga, **jäetakse liitsõnade laiendus (`compound_head`) selle lemma puhul vahele**. Rakendatakse üksnes nimekäände laiendust (`name_form`).
+> **Reegel:** Liitsõnade laiendus (`compound_head`) jäetakse vahele **ainult siis**, kui otsisõna on kasutaja päringus kirjutatud **suure algustähega** (`any(c.isupper() for c in token)`) **JA** selle sõna lemma langeb kokku `persons` tabeli mis tahes isiku ees- või perekonnanime lemmaga.
+>
+> Väiketähelise päringu puhul (nt `ratas`, `kallas`, `laine`, `maastik`, `kivi`) **säilib liitsõnade laiendus** (nt `ratas` leiab ka `jalgratas`, `tõukeratas`).
+>
+> Nimekäände laiendus (`name_form`) toimib **mõlemal juhul** (nii `Ratas` kui ka `ratas` leiavad nimevormid nagu `Ratase`).
+>
+> Suure algustähega päring (nt `Ratas`, `Kallas`) leiab kõnetekstidest endiselt üles ka vastava üldnime baaslemma, sest andmebaasi indeksis (`lemmas` tabelis ja veerus `text_lemmas`) on kõik lemmad talletatud väiketähelisena.
 
-### 4.1 Mõju andmebaasis
+### 4.1 Mõju andmebaasis ja otsingul
 - Andmebaasi `persons` tabelis on **276** unikaalset isikukirjet.
 - Need sisaldavad kokku 188 unikaalset eesnimetokenit ja 263 perenimetokenit (kokku **449** nimeosa).
 - Täpselt **426** neist nimeosadest esinevad andmebaasi `lemmas` tabelis unikaalsete lemmadena.
-- Neist 426-st lemmast **59** käituksid ilma reeglita liitsõna tuumadena:
+- Neist 426-st lemmast **59** käituvad väiketähelisel otsingul liitsõna tuumadena:
   - `ratas` (34 liitsõna, sh `jalgratas`, `tõukeratas`)
   - `kallas` (6 liitsõna, sh `jõekallas`, `merekallas`)
   - `kivi` (48 liitsõna, sh `ohvrikivi`, `takistuskivi`)
@@ -176,7 +182,10 @@ Et vältida poliitikute nimede otsingul jalgrataste ja jõekallaste kuvamist, ke
   - `laul` (27 liitsõna, sh `koorilaul`)
   - `maastik` (54 liitsõna, sh `rahvusmaastik`)
 
-Tänu reeglile otsitakse nimede `Seeder`, `Michal`, `Hussar`, `Kallas`, `Ratas`, `Kivi`, `Kokk` puhul ainult isiku nimevorme (nt `seederi`, `michali`, `hussari`, `kallase`, `ratase`, `koka`), samas kui üldnimedest moodustatud liitsõnu ei kaasata.
+Tänu reeglile:
+- Suure algustähega otsingul `Ratas` otsitakse poliitikut ja tema nimevorme (nt `ratas`, `ratase`), kuid jäetakse liitsõnad (`jalgratas`, `tõukeratas`) välja.
+- Väiketähega otsingul `ratas` leitakse nii poliitik kui ka liitsõnad (`jalgratas`, `tõukeratas`).
+- Konsonantlõpuliste nimede puhul (nt `Seeder`, `Michal`, `Hussar`) leitakse käändevormid (`seederi`, `michali`, `hussari`) mõlemas režiimis.
 
 ---
 
@@ -235,26 +244,17 @@ Kuna andmebaasi migratsioonid käivituvad API teenuse käivitumisel (`apply_migr
 2. Indeksid registreeritakse failis `src/load/indexes.py` (`INDEXES` loendis), kus neid kontrollib ja haldab ühtne `ensure_indexes()` süsteem.
 
 ### 7.2 Seoste arvutamise skript (`scripts/build_lemma_links.py`)
-Seoste loomiseks luuakse iseseisev skript:
+Seoste genereerimiseks luuakse iseseisev käsureaskript:
 - `python scripts/build_lemma_links.py`:
-  - Loeb tabelist `lemmas` uued, veel töötlemata lemmad.
-  - Arvutab liitsõna- ja nimeseosed Vabamorfiga.
-  - Salvestab seosed tabelisse `lemma_links`.
-  - Uuendab tabelis `system_meta` olekumarkerit `lemma_links_max_lemma_id`.
-- `python scripts/build_lemma_links.py --rebuild`:
-  - Kustutab tabelist `lemma_links` kõik read.
-  - Lähtestab `system_meta` väärtuse `lemma_links_max_lemma_id = 0`.
-  - Arvutab kõik seosed algusest peale uuesti (vajalik siis, kui reegleid või stoplisti muudetakse; kestab serveris ~9 sekundit).
+  - Teostab tabeli `lemma_links` täieliku atomaarse ülesehituse ühes transaktsioonis (`DELETE FROM lemma_links` + hulgilisamine).
+  - Töötab kogu lemmade hulga peal (~137k lemmat), võttes aega vaid ~9 sekundit.
+  - Tõrke korral rullitakse transaktsioon tagasi ja varasemad seosed säilivad puutumatult.
 
-### 7.3 Inkrementaalne sünkroniseerimine (`sync_database.py`)
-Tänases andmebaasis on ~57 000 lemmat, millel puuduvad liitsõna- ja nimeseosed. Tingimus `lemmas NOT IN lemma_links` sunniks igapäevasel sünkroniseerimisel kõiki neid 57k lemmat asjatult uuesti analüüsima.
-- **Lahendus:** Kasutatakse olekumarkerit `system_meta` võtmega `lemma_links_max_lemma_id`.
-- Igapäevasel käivitusel loeb `sync_database.py`:
-  ```sql
-  SELECT id, lemma FROM lemmas WHERE id > :lemma_links_max_lemma_id;
-  ```
-- Arvutatakse seosed üksnes lisandunud lemmadele (tavaliselt 20–100 lemmat päevas).
-- See võtab aega alla **0.01 sekundi**, hoides igapäevase konveieri ülikiirena.
+### 7.3 Täielik ülesehitus igal sünkroniseerimisel (`sync_database.py`)
+Algselt kaalutud inkrementaalne olekumarker (`lemma_links_max_lemma_id`) jäetakse teadlikult kõrvale järgmistel põhjustel:
+1. **Pikima sufiksi reegli sõltuvus kogu sõnastikust:** Liitsõna tuuma (`compound_head`) valik pikima sufiksi reegli alusel sõltub kogu teadaolevast lemmade hulgast (`lemma_set`). Inkrementaalselt vaid uusi lemmasid lisades jääksid seosed ajapikku ebakorrapäraseks või aegunuks, kui uued baassõnad muudaksid varasemate liitsõnade optimaalset tuuma.
+2. **Minimaalne arvutuskulu:** Täielik ülesehitus kestab serveris vaid ~9 sekundit (8,5 s liitsõnad, 0,4 s nimed), mistõttu ei ole täiendaval olekumarkeri loogikal jõudluse seisukohalt vajadust.
+3. **Atomaarsus ja veakindlus:** `sync_database.py` käivitab sammuna `[10/10]` funktsiooni `build_lemma_links()`. Kui see õnnestub, asendatakse seosed hetkega; kui tekib viga, rullub transaktsioon tagasi, varasemad seosed jäävad kehtima ja sünkroniseerimisvead logitakse standardselt.
 
 ### 7.4 Tagasipööramisplaan (Rollback)
 Kuna olemasolevaid kõnetabeleid ega indekseid ei muudeta, on tagasipööramine kohene ja ohutu:
@@ -286,16 +286,10 @@ Otsingufiltrite paneeli lisatakse uus märkeruut:
 - Kui märkeruut on valitud, saadetakse API-le `expand=false` ning URL-i lisandub `?expand=false`.
 - Vaikimisi on märkeruut valimata (`expand=true`).
 
-### 8.2 Metoodika selgitustekst (`MethodologyModal.jsx`)
-Faili `src/frontend/src/components/MethodologyModal.jsx` lisatakse järgmine selgitus:
+### 8.2 Metoodika selgitustekst (`routes.py` ja `MethodologyModal.jsx`)
+Süsteemi oleku otspunktis (`/system/status` -> `methodology.search`) ja kasutajaliidese metoodika modaalis (`MethodologyModal.jsx`) esitatakse järgmine täpne selgitustekst:
 
-> **Otsingu laiendused (liitsõnad ja nimekäänded)**
-> 
-> Riigikogu kõnede otsing kasutab automaatset sisulist laiendust, et tagada täielik katvus. Seetõttu on leitud kõnede arv suurem kui varasemas otsingus:
-> 
-> - **Liitsõnade katvus:** Otsides üldmõistet (nt *eelarve*, *maks*, *pension*), leiab süsteem automaatselt ka vastavad liitsõnad (nt *riigieelarve*, *lisaeelarve*, *tulumaks*, *vanaduspension*).
-> - **Pärisnimede vormid:** Konsonandiga lõppevate perekonnanimede otsingul (nt *Seeder*, *Michal*, *Hussar*) kaasatakse automaatselt kõned, kus nimi esineb omastavas või sihitavas käändes (*Seederi*, *Michali*, *Hussari*).
-> - **Täpne otsing:** Kui soovite otsida rangelt ainult baassõna ennast ilma liitsõnadeta, märkige otsingufiltrites ruut *"Ainult täpne sõna (ilma liitsõnadeta)"*. Samuti saab otsisõna panna jutumärkidesse (nt `"eelarve"` või `"Ratas"`).
+> Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt "putin" leiab ka "Putin"); numbrilise lõpuga sidekriipsuga sõnu (nt "COVID-19") otsitakse ka ilma numbrita kujul. Üldmõiste otsingul (nt eelarve, maks, pension) leitakse ka liitsõnad (nt riigieelarve, tulumaks), mistõttu on tulemuste arv varasemast suurem. Suure algustähega nimeotsing (nt Seeder, Ratas) leiab ka nime käändevormid (Seederi, Ratase), kuid jätab liitsõnad (nt jalgratas) välja; väiketähega otsing (ratas) kaasab ka liitsõnad. Täpseks otsinguks ilma liitsõnadeta märgi filter „Ainult täpne sõna“. Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab ainult kõned, kus sõnad esinevad järjest (ka käändes). Ajajoonel saab valida absoluutarvu või osakaalu. Osakaal näitab, kui suur osa sama perioodi sõnavõttudest (samade filtritega) vastas otsingule; perioodid, kus istungeid ei toimunud, jäetakse tühjaks.
 
 ---
 

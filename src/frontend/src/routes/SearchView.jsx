@@ -44,6 +44,7 @@ export function SearchView({
   const excludeChairParam =
     searchParams.get("exclude_chair") === "true" || searchParams.get("exclude_chair") === "1";
   const speechCategoryParam = searchParams.get("speech_category") || "";
+  const exactMatchParam = searchParams.get("expand") === "false";
 
   // Local state for filter form - only written to URL upon search submit
   const [filterMembership, setFilterMembership] = useState(membershipParam);
@@ -55,9 +56,10 @@ export function SearchView({
   });
   const [filterExcludeChair, setFilterExcludeChair] = useState(excludeChairParam);
   const [filterSpeechCategory, setFilterSpeechCategory] = useState(speechCategoryParam);
+  const [filterExactMatch, setFilterExactMatch] = useState(exactMatchParam);
 
   // Sync draft filters during render if URL changes externally (e.g. Back/Forward)
-  const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${speakerUuidParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}`;
+  const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${speakerUuidParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}|${exactMatchParam}`;
   const [prevUrlFiltersKey, setPrevUrlFiltersKey] = useState(urlFiltersKey);
   if (prevUrlFiltersKey !== urlFiltersKey) {
     setPrevUrlFiltersKey(urlFiltersKey);
@@ -67,6 +69,7 @@ export function SearchView({
     setFilterDateRange({ startDate: startDateParam, endDate: endDateParam });
     setFilterExcludeChair(excludeChairParam);
     setFilterSpeechCategory(speechCategoryParam);
+    setFilterExactMatch(exactMatchParam);
   }
 
   const { data: speakerPerson } = useSWR(
@@ -156,6 +159,7 @@ export function SearchView({
           sortBy: sortParam,
           excludeChair: excludeChairParam,
           speechCategory: speechCategoryParam || null,
+          expand: !exactMatchParam,
         },
         abortController.signal
       ),
@@ -171,6 +175,7 @@ export function SearchView({
           endDate: endDateParam || null,
           excludeChair: excludeChairParam,
           speechCategory: speechCategoryParam || null,
+          expand: !exactMatchParam,
         },
         "monthly",
         abortController.signal
@@ -187,6 +192,7 @@ export function SearchView({
           endDate: endDateParam || null,
           excludeChair: excludeChairParam,
           speechCategory: speechCategoryParam || null,
+          expand: !exactMatchParam,
         },
         20,
         abortController.signal
@@ -250,6 +256,7 @@ export function SearchView({
     pageParam,
     excludeChairParam,
     speechCategoryParam,
+    exactMatchParam,
     hasSearchQuery,
   ]);
 
@@ -274,6 +281,7 @@ export function SearchView({
     if (filterDateRange.endDate) next.set("end_date", filterDateRange.endDate);
     if (filterExcludeChair) next.set("exclude_chair", "true");
     if (filterSpeechCategory) next.set("speech_category", filterSpeechCategory);
+    if (filterExactMatch) next.set("expand", "false");
     if (sortParam && sortParam !== "date_desc") next.set("sort", sortParam);
     if (intervalParam && intervalParam !== "monthly") next.set("interval", intervalParam);
     if (scaleParam === "share") next.set("scale", "share");
@@ -328,6 +336,7 @@ export function SearchView({
           endDate: endDateParam || null,
           excludeChair: excludeChairParam,
           speechCategory: speechCategoryParam || null,
+          expand: !exactMatchParam,
         },
         "monthly",
         abortController.signal
@@ -369,11 +378,12 @@ export function SearchView({
     setFilterDateRange({ startDate: "", endDate: "" });
     setFilterExcludeChair(false);
     setFilterSpeechCategory("");
+    setFilterExactMatch(false);
   };
 
   const handleOpenContext = async (speechId) => {
     try {
-      const data = await fetchSpeechContext(speechId, queryParam);
+      const data = await fetchSpeechContext(speechId, queryParam, !exactMatchParam);
       setActiveSpeechContext(data);
     } catch (err) {
       setError(err.message || "Konteksti laadimine ebaõnnestus.");
@@ -398,6 +408,7 @@ export function SearchView({
     sortBy: sortParam,
     excludeChair: excludeChairParam,
     speechCategory: speechCategoryParam || null,
+    expand: !exactMatchParam,
   };
 
   return (
@@ -444,6 +455,8 @@ export function SearchView({
           setSearchSpeechCategory={setFilterSpeechCategory}
           searchExcludeChair={filterExcludeChair}
           setSearchExcludeChair={setFilterExcludeChair}
+          searchExactMatch={filterExactMatch}
+          setSearchExactMatch={setFilterExactMatch}
           onResetFilters={handleResetFilters}
         />
       </SearchQueryInput>

@@ -52,7 +52,7 @@ def _verify_0001_baseline(conn: Connection) -> None:
         row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
     }
     for table_name, table in Base.metadata.tables.items():
-        if table_name == "agenda_items":
+        if table_name in {"agenda_items", "lemma_links"}:
             continue
         if table_name not in tables:
             raise RuntimeError(f"Migration verification failed: missing table '{table_name}'")
@@ -145,12 +145,41 @@ def _verify_0003_agenda_match_method(conn: Connection) -> None:
         )
 
 
+def _up_0004_lemma_links(conn: Connection) -> None:
+    conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS lemma_links (
+                lemma_id INTEGER NOT NULL REFERENCES lemmas(id),
+                target_lemma_id INTEGER NOT NULL REFERENCES lemmas(id),
+                kind TEXT NOT NULL,
+                PRIMARY KEY (lemma_id, target_lemma_id, kind)
+            );
+            """
+        )
+    )
+
+
+def _verify_0004_lemma_links(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "lemma_links" not in tables:
+        raise RuntimeError("Migration verification failed: missing table 'lemma_links'")
+    existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(lemma_links)"))}
+    expected_cols = ["lemma_id", "target_lemma_id", "kind"]
+    for col in expected_cols:
+        if col not in existing_cols:
+            raise RuntimeError(f"Migration verification failed: missing column 'lemma_links.{col}'")
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
     ("0001", "baseline", _up_0001_baseline, _verify_0001_baseline),
     ("0002", "agenda_items", _up_0002_agenda_items, _verify_0002_agenda_items),
     ("0003", "agenda_match_method", _up_0003_agenda_match_method, _verify_0003_agenda_match_method),
+    ("0004", "lemma_links", _up_0004_lemma_links, _verify_0004_lemma_links),
 ]
 
 
