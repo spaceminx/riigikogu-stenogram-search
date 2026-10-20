@@ -248,6 +248,89 @@ def compute_name_forms(
     return name_to_forms, form_to_name, person_lemmas, elapsed
 
 
+# POS preference order (higher index = lower priority)
+_POS_PREFERENCE: list[str] = ["S", "H", "A", "Y"]
+
+
+def pick_best_pos(analyses: list[dict], lemma_text: str) -> str | None:
+    """Determine the best POS tag for a lemma given Vabamorf analyses.
+
+    Preference order: S > H > A > Y > others.
+    First tries analyses where the returned lemma matches the stored lemma (case-insensitive).
+    Falls back to all analyses if no match is found.
+    """
+    lower_lemma = lemma_text.lower()
+
+    def _rank(pos: str) -> int:
+        try:
+            return _POS_PREFERENCE.index(pos)
+        except ValueError:
+            return len(_POS_PREFERENCE)
+
+    def _best_from(pos_list: list[str]) -> str | None:
+        if not pos_list:
+            return None
+        return min(pos_list, key=_rank)
+
+    matching_pos: list[str] = []
+    all_pos: list[str] = []
+
+    for item in analyses:
+        for a in item.get("analysis", []):
+            pos = a.get("partofspeech", "")
+            if not pos:
+                continue
+            all_pos.append(pos)
+            returned_lemma = a.get("lemma", "")
+            if returned_lemma.lower() == lower_lemma:
+                matching_pos.append(pos)
+
+    best = _best_from(matching_pos)
+    if best is not None:
+        return best
+    return _best_from(all_pos)
+
+
+def update_lemma_pos(target_engine: Engine | None = None) -> float:
+    """Analyse every lemma with Vabamorf and update lemmas.pos in bulk.
+
+    Returns elapsed seconds.
+    """
+    t0 = time.time()
+    eng = target_engine or default_engine
+    vm = Vabamorf.instance()
+
+    with eng.connect() as conn:
+        rows = conn.execute(text("SELECT id, lemma FROM lemmas")).fetchall()
+
+    if not rows:
+        return time.time() - t0
+
+    batch_size = 5000
+    id_to_pos: dict[int, str | None] = {}
+
+    for i in range(0, len(rows), batch_size):
+        batch = rows[i : i + batch_size]
+        words = [r[1] for r in batch]
+        analyses = vm.analyze(words, disambiguate=False, guess=False)
+        for (row_id, lemma_text), item_analyses in zip(batch, analyses, strict=False):
+            pos = pick_best_pos([item_analyses], lemma_text)
+            id_to_pos[row_id] = pos
+
+    update_data = [{"lemma_id": lid, "pos": p} for lid, p in id_to_pos.items()]
+
+    with eng.connect() as conn:
+        with conn.begin():
+            conn.execute(
+                text("UPDATE lemmas SET pos = :pos WHERE id = :lemma_id"),
+                update_data,
+            )
+
+    elapsed = time.time() - t0
+    logger.info("Updated lemma POS for %d lemmas in %.2fs", len(id_to_pos), elapsed)
+    return elapsed
+
+
 def build_lemma_links(engine: Engine | None = None) -> dict[str, int]:
     """Perform a full atomic rebuild of the lemma_links table in one transaction.
 

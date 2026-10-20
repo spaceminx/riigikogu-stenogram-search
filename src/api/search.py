@@ -1396,19 +1396,20 @@ def get_dashboard_overview() -> dict:
                     Speech.source_file,
                     Lemma.lemma,
                     Lemma.df,
+                    Lemma.pos,
                     func.sum(SpeechTerm.count).label("occurrences"),
                 )
                 .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
                 .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
                 .filter(Speech.source_file.in_(source_files))
-                .group_by(Speech.source_file, Lemma.id, Lemma.lemma, Lemma.df)
+                .group_by(Speech.source_file, Lemma.id, Lemma.lemma, Lemma.df, Lemma.pos)
                 .all()
             )
             stopwords = {word.casefold() for word in STOPWORDS}
             candidates_by_source: dict[str, list[tuple[float, str]]] = {
                 sf: [] for sf in source_files
             }
-            for source_file, lemma, df, occurrences in topic_rows:
+            for source_file, lemma, df, pos, occurrences in topic_rows:
                 normalized = lemma.casefold()
                 if (
                     len(normalized) < 4
@@ -1418,6 +1419,8 @@ def get_dashboard_overview() -> dict:
                     or total_speeches <= 0
                     or df >= total_speeches
                 ):
+                    continue
+                if pos is not None and pos not in ("S", "H"):
                     continue
                 score = float(occurrences) * math.log(total_speeches / df)
                 candidates_by_source[source_file].append((score, lemma))

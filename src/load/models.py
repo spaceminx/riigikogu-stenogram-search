@@ -61,6 +61,7 @@ class Lemma(Base):
     id = Column(Integer, primary_key=True)
     lemma = Column(Text, unique=True, nullable=False)
     df = Column(Integer, nullable=True)
+    pos = Column(Text, nullable=True)
 
 
 class SpeechTerm(Base):

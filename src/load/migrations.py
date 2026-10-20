@@ -58,7 +58,7 @@ def _verify_0001_baseline(conn: Connection) -> None:
             raise RuntimeError(f"Migration verification failed: missing table '{table_name}'")
         existing_cols = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table_name})"))}
         for col in table.columns:
-            if table_name == "lemmas" and col.name == "df":
+            if table_name == "lemmas" and col.name in ("df", "pos"):
                 continue
             if col.name not in existing_cols:
                 raise RuntimeError(
@@ -207,6 +207,39 @@ def _verify_0005_lemma_df(conn: Connection) -> None:
             raise RuntimeError("Migration verification failed: missing column 'lemmas.df'")
 
 
+def _up_0006_lemma_pos(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "lemmas" not in tables:
+        conn.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS lemmas (
+                    id INTEGER PRIMARY KEY,
+                    lemma TEXT UNIQUE NOT NULL,
+                    df INTEGER,
+                    pos TEXT
+                );
+                """
+            )
+        )
+    else:
+        existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(lemmas)"))}
+        if "pos" not in existing_cols:
+            conn.execute(text("ALTER TABLE lemmas ADD COLUMN pos TEXT;"))
+
+
+def _verify_0006_lemma_pos(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "lemmas" in tables:
+        existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(lemmas)"))}
+        if "pos" not in existing_cols:
+            raise RuntimeError("Migration verification failed: missing column 'lemmas.pos'")
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
@@ -215,6 +248,7 @@ MIGRATIONS: list[MigrationTuple] = [
     ("0003", "agenda_match_method", _up_0003_agenda_match_method, _verify_0003_agenda_match_method),
     ("0004", "lemma_links", _up_0004_lemma_links, _verify_0004_lemma_links),
     ("0005", "lemma_df", _up_0005_lemma_df, _verify_0005_lemma_df),
+    ("0006", "lemma_pos", _up_0006_lemma_pos, _verify_0006_lemma_pos),
 ]
 
 

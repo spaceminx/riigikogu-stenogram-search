@@ -268,6 +268,11 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         print("Updating lemma document frequencies...")
         df_time = update_lemma_df()
         print(f"Lemma document frequencies updated in {df_time:.2f}s.")
+        print("Updating lemma part-of-speech tags...")
+        from src.transform.lemma_links import update_lemma_pos
+
+        pos_time = update_lemma_pos()
+        print(f"Lemma POS tags updated in {pos_time:.2f}s.")
     except Exception as e:
         err_msg = f"Term indexing or df update failed: {e}"
         print(f"Error: {err_msg}")
