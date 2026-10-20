@@ -18,7 +18,7 @@ from src.load.loader import (
     load_votes_to_database,
 )
 from src.transform.lemmatizer import build_missing_lemmas
-from src.transform.term_builder import build_missing_terms
+from src.transform.term_builder import build_missing_terms, update_lemma_df
 
 
 def get_expected_dataset_files(
@@ -125,6 +125,9 @@ def build_full_database(
     t0 = time.time()
     build_missing_terms()
     print(f"-> Term indexing completed in {time.time() - t0:.1f}s.")
+    print("Updating lemma document frequencies...")
+    df_time = update_lemma_df()
+    print(f"-> Lemma document frequencies updated in {df_time:.2f}s.")
 
     # Step 5: Create SQL Indexes
     print("\n[Step 5/5] Creating SQL indexes for fast querying...")

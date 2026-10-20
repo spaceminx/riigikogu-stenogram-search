@@ -1,6 +1,8 @@
+import time
 from collections import Counter
 
 from sqlalchemy import text
+from sqlalchemy.engine import Engine
 from tqdm import tqdm
 
 from src.load.database import SessionLocal, engine
@@ -93,3 +95,32 @@ def build_missing_terms(chunk_size: int = 5000, terms_batch_size: int = 50000) -
         raise
     finally:
         session.close()
+
+
+def update_lemma_df(target_engine: Engine | None = None) -> float:
+    """Update lemmas.df with speech counts for each lemma using UPDATE FROM.
+
+    Returns:
+        float: Elapsed time in seconds.
+    """
+    t0 = time.time()
+    eng = target_engine or engine
+    with eng.connect() as conn:
+        conn.execute(text("PRAGMA busy_timeout = 60000;"))
+        conn.execute(
+            text(
+                """
+                UPDATE lemmas
+                SET df = counts.df
+                FROM (
+                    SELECT lemma_id, COUNT(*) AS df
+                    FROM speech_terms
+                    GROUP BY lemma_id
+                ) AS counts
+                WHERE lemmas.id = counts.lemma_id;
+                """
+            )
+        )
+        conn.commit()
+    elapsed = time.time() - t0
+    return elapsed

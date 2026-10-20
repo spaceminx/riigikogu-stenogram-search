@@ -25,7 +25,7 @@ from src.load.loader import (
 from src.load.lock import sync_lock
 from src.load.models import Speech, SpeechAlias, SpeechTerm, SystemMeta
 from src.transform.lemmatizer import build_missing_lemmas
-from src.transform.term_builder import build_missing_terms
+from src.transform.term_builder import build_missing_terms, update_lemma_df
 
 
 def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) -> list[str]:
@@ -261,12 +261,15 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         print(f"Error: {err_msg}")
         errors.append(err_msg)
 
-    # 5. Build term index for new speeches
+    # 5. Build term index for new speeches and update lemma df
     print("\n[5/10] Indexing new terms...")
     try:
         build_missing_terms()
+        print("Updating lemma document frequencies...")
+        df_time = update_lemma_df()
+        print(f"Lemma document frequencies updated in {df_time:.2f}s.")
     except Exception as e:
-        err_msg = f"Term indexing failed: {e}"
+        err_msg = f"Term indexing or df update failed: {e}"
         print(f"Error: {err_msg}")
         errors.append(err_msg)
 

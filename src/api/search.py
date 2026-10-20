@@ -1390,25 +1390,41 @@ def get_dashboard_overview() -> dict:
         topics_by_source: dict[str, list[str]] = {source_file: [] for source_file in source_files}
 
         if source_files:
+            total_speeches = session.query(func.count(Speech.id)).scalar() or 0
             topic_rows = (
                 session.query(
                     Speech.source_file,
                     Lemma.lemma,
+                    Lemma.df,
                     func.sum(SpeechTerm.count).label("occurrences"),
                 )
                 .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
                 .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
                 .filter(Speech.source_file.in_(source_files))
-                .group_by(Speech.source_file, Lemma.lemma)
-                .order_by(Speech.source_file.asc(), func.sum(SpeechTerm.count).desc())
+                .group_by(Speech.source_file, Lemma.id, Lemma.lemma, Lemma.df)
                 .all()
             )
             stopwords = {word.casefold() for word in STOPWORDS}
-            for source_file, lemma, _occurrences in topic_rows:
+            candidates_by_source: dict[str, list[tuple[float, str]]] = {
+                sf: [] for sf in source_files
+            }
+            for source_file, lemma, df, occurrences in topic_rows:
                 normalized = lemma.casefold()
-                topics = topics_by_source[source_file]
-                if len(normalized) >= 4 and normalized not in stopwords and len(topics) < 3:
-                    topics.append(lemma)
+                if (
+                    len(normalized) < 4
+                    or normalized in stopwords
+                    or df is None
+                    or df < 3
+                    or total_speeches <= 0
+                    or df >= total_speeches
+                ):
+                    continue
+                score = float(occurrences) * math.log(total_speeches / df)
+                candidates_by_source[source_file].append((score, lemma))
+
+            for source_file, candidates in candidates_by_source.items():
+                candidates.sort(key=lambda item: (-item[0], item[1]))
+                topics_by_source[source_file] = [lemma for _, lemma in candidates[:3]]
 
         sessions = [
             {

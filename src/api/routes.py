@@ -36,6 +36,7 @@ from src.api.search import (
     sanitize_query,
     search_by_keyword,
 )
+from src.api.suggest import get_search_suggestions
 from src.api.votings import (
     format_session_source_file,
     format_voting_summary,
@@ -260,6 +261,29 @@ def factions_list(
             status_code=500,
             detail="Fraktsioonide nimekirja päring ebaõnnestus.",
         ) from e
+
+
+@router.get("/suggest")
+def suggest_keywords(
+    prefix: str = Query(..., min_length=1, max_length=40, description="Otsingusõna algus"),
+    limit: int = Query(8, ge=1, le=20, description="Soovituste maksimaalne arv"),
+):
+    trimmed = prefix.strip()
+    if len(trimmed) < 2:
+        raise HTTPException(status_code=422, detail="Sisesta vähemalt 2 tähemärki.")
+    if len(trimmed) > 40:
+        raise HTTPException(status_code=422, detail="Maksimaalne pikkus on 40 tähemärki.")
+
+    session = SessionLocal()
+    try:
+        suggestions = get_search_suggestions(trimmed, limit=limit, session=session)
+        return Response(
+            content=json.dumps(suggestions, ensure_ascii=False),
+            media_type="application/json; charset=utf-8",
+            headers={"Cache-Control": "public, max-age=3600"},
+        )
+    finally:
+        session.close()
 
 
 @router.get("/search")

@@ -1,5 +1,13 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { fetchSuggestions } from "../api";
 import { mergeInputToGroups } from "../lib/formatters";
+import {
+  formatSuggestionCount,
+  getNextHighlightedIndex,
+  isPrefixEligible,
+} from "../lib/suggestHelpers";
+
+const suggestionsCache = new Map();
 
 export function SearchQueryInput({
   groups,
@@ -10,7 +18,151 @@ export function SearchQueryInput({
   loading = false,
   children,
 }) {
+  const [suggestions, setSuggestions] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
+  useEffect(() => {
+    if (!isPrefixEligible(inputValue)) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      return;
+    }
+
+    const trimmed = inputValue.trim().toLowerCase();
+
+    if (suggestionsCache.has(trimmed)) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      const cached = suggestionsCache.get(trimmed);
+      const timer = setTimeout(() => {
+        setSuggestions(cached);
+        setIsOpen(cached.length > 0);
+        setHighlightedIndex(-1);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(async () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const data = await fetchSuggestions(trimmed, {
+          limit: 8,
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted) {
+          const results = Array.isArray(data) ? data : [];
+          suggestionsCache.set(trimmed, results);
+          setSuggestions(results);
+          setIsOpen(results.length > 0);
+          setHighlightedIndex(-1);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setSuggestions([]);
+          setIsOpen(false);
+          setHighlightedIndex(-1);
+        }
+      }
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [inputValue]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setHighlightedIndex(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setInputValue(val);
+    if (!isPrefixEligible(val)) {
+      setSuggestions([]);
+      setIsOpen(false);
+      setHighlightedIndex(-1);
+    }
+  };
+
+  const handleSelectSuggestion = (term) => {
+    if (!term) return;
+    const newGroups = mergeInputToGroups(groups, term);
+    setGroups(newGroups);
+    setInputValue("");
+    setSuggestions([]);
+    setHighlightedIndex(-1);
+    setIsOpen(false);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      if (suggestions.length > 0) {
+        e.preventDefault();
+        if (!isOpen) {
+          setIsOpen(true);
+          setHighlightedIndex(0);
+        } else {
+          setHighlightedIndex((prev) => getNextHighlightedIndex(prev, 1, suggestions.length));
+        }
+      }
+    } else if (e.key === "ArrowUp") {
+      if (suggestions.length > 0) {
+        e.preventDefault();
+        if (!isOpen) {
+          setIsOpen(true);
+          setHighlightedIndex(suggestions.length - 1);
+        } else {
+          setHighlightedIndex((prev) => getNextHighlightedIndex(prev, -1, suggestions.length));
+        }
+      }
+    } else if (e.key === "Enter") {
+      if (isOpen && highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSelectSuggestion(suggestions[highlightedIndex].term);
+      } else {
+        setIsOpen(false);
+      }
+    } else if (e.key === "Escape") {
+      if (isOpen) {
+        e.preventDefault();
+        setIsOpen(false);
+        setHighlightedIndex(-1);
+      }
+    }
+  };
+
   const handleAddAnd = () => {
+    setIsOpen(false);
     if (inputValue.trim()) {
       const newGroups = mergeInputToGroups(groups, inputValue.trim());
       setGroups(newGroups);
@@ -19,6 +171,7 @@ export function SearchQueryInput({
   };
 
   const handleAddOr = () => {
+    setIsOpen(false);
     if (inputValue.trim()) {
       const newGroups = mergeInputToGroups(groups, inputValue.trim());
       setGroups([...newGroups, []]);
@@ -36,15 +189,21 @@ export function SearchQueryInput({
     setGroups(cleaned.length === 0 ? [[]] : cleaned);
   };
 
+  const showDropdown = isPrefixEligible(inputValue) && isOpen && suggestions.length > 0;
+
   return (
     <form onSubmit={onSearch} className="search-section">
       <div className="search-query-row">
         <div
+          ref={containerRef}
           className="search-groups-container"
           onClick={(e) => {
-            if (!e.target.closest("button") && !e.target.classList.contains("search-input")) {
-              const input = e.currentTarget.querySelector(".search-input");
-              if (input) input.focus();
+            if (
+              !e.target.closest("button") &&
+              !e.target.closest(".search-suggestions-dropdown") &&
+              !e.target.classList.contains("search-input")
+            ) {
+              if (inputRef.current) inputRef.current.focus();
             }
           }}
         >
@@ -69,20 +228,68 @@ export function SearchQueryInput({
                 })}
                 {gIndex === groups.length - 1 && (
                   <input
+                    ref={inputRef}
                     type="text"
                     className="search-input"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={showDropdown}
+                    aria-controls={showDropdown ? "search-suggestions-list" : undefined}
+                    aria-activedescendant={
+                      showDropdown && highlightedIndex >= 0
+                        ? `suggestion-option-${highlightedIndex}`
+                        : undefined
+                    }
                     placeholder={
                       group.length === 0 && groups.length === 1
                         ? "Sisesta otsisõna (nt kliima, mets, eelarve)..."
                         : "Lisa sõna..."
                     }
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => {
+                      if (suggestions.length > 0) {
+                        setIsOpen(true);
+                      }
+                    }}
                   />
                 )}
               </div>
             </React.Fragment>
           ))}
+
+          {showDropdown && (
+            <ul
+              id="search-suggestions-list"
+              className="search-suggestions-dropdown"
+              role="listbox"
+              aria-label="Otsingusõnade soovitused"
+            >
+              {suggestions.map((item, idx) => (
+                <li
+                  key={`${item.lemma}-${idx}`}
+                  id={`suggestion-option-${idx}`}
+                  role="option"
+                  aria-selected={idx === highlightedIndex}
+                  className={`search-suggestion-item ${
+                    idx === highlightedIndex ? "is-highlighted" : ""
+                  }`}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelectSuggestion(item.term);
+                  }}
+                  onClick={() => {
+                    handleSelectSuggestion(item.term);
+                  }}
+                  onMouseEnter={() => setHighlightedIndex(idx)}
+                >
+                  <span className="suggestion-term">{item.term}</span>
+                  <span className="suggestion-count">{formatSuggestionCount(item.df)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="logic-buttons" aria-label="Otsingutingimuste loogika">
           <button

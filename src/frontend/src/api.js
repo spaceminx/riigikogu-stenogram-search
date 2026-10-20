@@ -290,3 +290,13 @@ export async function fetchDraftSpeeches(
   );
   return handleResponse(res);
 }
+
+export async function fetchSuggestions(prefix, { limit = 8, signal } = {}) {
+  const params = new URLSearchParams();
+  if (prefix) params.append("prefix", prefix);
+  if (limit !== undefined && limit !== null) params.append("limit", String(limit));
+
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/suggest${qs ? `?${qs}` : ""}`, { signal });
+  return handleResponse(res);
+}
