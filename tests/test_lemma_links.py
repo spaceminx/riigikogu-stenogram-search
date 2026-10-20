@@ -9,7 +9,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
-from src.api.search import _EXPANSION_CACHE, clear_expansion_cache
+from src.api.search import (
+    _EXPANSION_CACHE,
+    QueryGroup,
+    build_matching_speech_ids_query,
+    clear_expansion_cache,
+)
 from src.load.database import SessionLocal, engine
 from src.load.loader import create_tables
 from src.load.models import Lemma, LemmaLink, Person, Speech, SpeechTerm, SystemMeta
@@ -462,3 +467,126 @@ def test_expansion_cache_invalidation():
     # The cache was cleared and only repopulated with new entries
     assert "eelarve" not in _EXPANSION_CACHE["lemma_ids"]
     assert "arve" in _EXPANSION_CACHE["lemma_ids"]
+
+
+def test_distinct_search_count_single_term_alternatives():
+    clear_expansion_cache()
+    # Speech 201 contains two compound alternatives of "eelarve" ("riigieelarve" and "lisaeelarve").
+    # Speech 208 contains base "eelarve".
+    # Total matching distinct speeches must be exactly 2 (speech 201 is counted once).
+    resp = client.get("/search?q=eelarve")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_count"] == 2
+    assert len(data["results"]) == 2
+    assert {r["id"] for r in data["results"]} == {201, 208}
+
+    # Paging through all results must yield exactly total_count speeches
+    page1 = client.get("/search?q=eelarve&limit=1&offset=0").json()
+    page2 = client.get("/search?q=eelarve&limit=1&offset=1").json()
+    page3 = client.get("/search?q=eelarve&limit=1&offset=2").json()
+    assert len(page1["results"]) == 1
+    assert len(page2["results"]) == 1
+    assert len(page3["results"]) == 0
+    all_paged_ids = [page1["results"][0]["id"], page2["results"][0]["id"]]
+    assert len(all_paged_ids) == len(set(all_paged_ids)) == data["total_count"]
+
+    # Activity sum must equal total_count
+    act_resp = client.get("/search/activity?q=eelarve&interval=monthly")
+    assert act_resp.status_code == 200
+    activity = act_resp.json()["activity"]
+    activity_sum = sum(item["count"] for item in activity)
+    assert activity_sum == data["total_count"]
+
+    # Export header X-Total-Count must equal total_count
+    exp_resp = client.get("/search/export?q=eelarve&format=json")
+    assert exp_resp.status_code == 200
+    assert exp_resp.headers["X-Total-Count"] == str(data["total_count"])
+    assert len(exp_resp.json()["results"]) == data["total_count"]
+
+    # Filtered search (e.g. speaker) must also match exactly total_count
+    resp_filtered = client.get("/search?q=eelarve&speaker=Kallas")
+    assert resp_filtered.status_code == 200
+    assert resp_filtered.json()["total_count"] == 2
+
+    # Multi-term query with alternatives: "eelarve vastu" matches speech 201
+    resp_multi = client.get("/search?q=eelarve vastu")
+    assert resp_multi.status_code == 200
+    assert resp_multi.json()["total_count"] == 1
+    act_multi = client.get("/search/activity?q=eelarve vastu&interval=monthly").json()["activity"]
+    assert sum(item["count"] for item in act_multi) == 1
+
+    # Multi-group OR query: "eelarve, seeder"
+    # Matches speeches 201 (riigieelarve, lisaeelarve), 208 (eelarve), and 204 (seederi)
+    resp_or = client.get("/search?q=eelarve, seeder")
+    assert resp_or.status_code == 200
+    assert resp_or.json()["total_count"] == 3
+    act_or = client.get("/search/activity?q=eelarve, seeder&interval=monthly").json()["activity"]
+    assert sum(item["count"] for item in act_or) == 3
+
+
+def test_build_matching_speech_ids_query_single_term_distinct():
+    session = SessionLocal()
+    try:
+        # Single term with multiple alternatives that match speech 201 twice
+        group = QueryGroup(terms=[["riigieelarve", "lisaeelarve"]])
+        subq = build_matching_speech_ids_query(session, [group])
+
+        # Querying speech_id from subquery directly must have no duplicates
+        matched_ids = [row[0] for row in session.query(subq.c.speech_id).all()]
+        assert matched_ids == [201]
+
+        # Fast path count over subquery must count speech 201 only once
+        from sqlalchemy import func
+
+        cnt = session.query(func.count()).select_from(subq).scalar()
+        assert cnt == 1
+    finally:
+        session.close()
+
+
+def test_distinct_search_count_hyphenated_term_without_expansion():
+    session = SessionLocal()
+    try:
+        lem_covid = Lemma(lemma="covid")
+        lem_covid19 = Lemma(lemma="covid-19")
+        session.add_all([lem_covid, lem_covid19])
+        session.flush()
+
+        s_covid = Speech(
+            id=209,
+            speech_key="2024-03-04_1000_01",
+            date="2024-03-04",
+            time="1000",
+            speaker="Kaja Kallas",
+            speaker_uuid="uuid-kallas",
+            speaker_faction="Reformierakonna fraktsioon",
+            text="COVID-19 kriis ja covid viirus.",
+            text_lemmas="covid-19 kriis ja covid viirus",
+            source_file="2024-03-04_1000.api",
+            source_url="https://stenogrammid.riigikogu.ee/et/test",
+            speech_type="SPEECH",
+        )
+        session.add(s_covid)
+        session.flush()
+
+        session.add(SpeechTerm(speech_id=s_covid.id, lemma_id=lem_covid.id, count=1))
+        session.add(SpeechTerm(speech_id=s_covid.id, lemma_id=lem_covid19.id, count=1))
+        session.commit()
+    finally:
+        session.close()
+
+    clear_expansion_cache()
+    # Query "COVID-19" with expand=false extracts multiple alternative lemmas ('covid', 'covid-19', etc.)
+    resp = client.get("/search?q=COVID-19&expand=false")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_count"] == 1
+    assert len(data["results"]) == 1
+    assert data["results"][0]["id"] == 209
+
+    # Activity sum must equal total_count == 1
+    act_resp = client.get("/search/activity?q=COVID-19&expand=false&interval=monthly")
+    assert act_resp.status_code == 200
+    act_sum = sum(item["count"] for item in act_resp.json()["activity"])
+    assert act_sum == data["total_count"] == 1
