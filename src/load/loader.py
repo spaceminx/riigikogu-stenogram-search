@@ -762,6 +762,7 @@ def classify_sitting_type(title: str | None) -> str:
     Rules:
     - "infotund" if title starts with "Infotund" (case-insensitive)
     - "korraline" for "Täiskogu korraline istung"
+    - "täiendav" if "täiendav istung" is in title
     - "lisaistung" if "lisaistung" is in title
     - "erakorraline" if "erakorraline" is in title
     - "muu" otherwise
@@ -776,6 +777,8 @@ def classify_sitting_type(title: str | None) -> str:
         "täiskogu korraline istung"
     ):
         return "korraline"
+    if "täiendav istung" in clean_lower:
+        return "täiendav"
     if "lisaistung" in clean_lower:
         return "lisaistung"
     if "erakorraline" in clean_lower:
@@ -851,12 +854,12 @@ def load_attendance_checks_to_database(batch_size: int = 2000) -> int:
                 if not u:
                     continue
 
+                stitle = record.get("sitting_title")
                 item_data = {
                     "sitting_uuid": record.get("sitting_uuid"),
-                    "sitting_title": record.get("sitting_title"),
+                    "sitting_title": stitle,
                     "sitting_datetime": record.get("sitting_datetime"),
-                    "sitting_type": record.get("sitting_type")
-                    or classify_sitting_type(record.get("sitting_title")),
+                    "sitting_type": classify_sitting_type(stitle),
                 }
 
                 if u in existing_uuids:

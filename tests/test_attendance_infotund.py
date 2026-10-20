@@ -24,6 +24,7 @@ def test_classify_sitting_type():
         classify_sitting_type("Täiskogu korraline istung kolmapäev, 14.10.2026 14:00")
         == "korraline"
     )
+    assert classify_sitting_type("Täiskogu täiendav istung laupäev, 12.06.2021 09:00") == "täiendav"
     assert classify_sitting_type("Täiskogu lisaistung reede, 16.10.2026") == "lisaistung"
     assert classify_sitting_type("Riigikogu erakorraline istungjärk teisipäev") == "erakorraline"
     assert classify_sitting_type("Pidulik istung 24.02.2025") == "muu"

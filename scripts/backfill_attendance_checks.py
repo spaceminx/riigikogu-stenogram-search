@@ -119,6 +119,13 @@ def backfill_attendance_checks(
         print(f"  {st}: {count}")
     print(f"Total: {sum(counts.values())}")
 
+    muu_checks = [r for r in all_checks if r.get("sitting_type") == "muu"]
+    if muu_checks:
+        muu_titles = Counter(r.get("sitting_title") for r in muu_checks)
+        print(f"\nRemaining 'muu' sitting titles ({len(muu_checks)} checks):")
+        for title, count in muu_titles.most_common():
+            print(f"  {count}x: {title}")
+
     if upload:
         print("\nUploading attendance_checks.jsonl to Backblaze B2...")
         try:
