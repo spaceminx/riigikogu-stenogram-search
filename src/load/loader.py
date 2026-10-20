@@ -12,6 +12,7 @@ from src.load.database import SessionLocal, engine
 from src.load.models import (
     AgendaItem,
     Attendance,
+    AttendanceCheck,
     Person,
     Speech,
     SpeechAlias,
@@ -753,3 +754,135 @@ def load_agenda_items_to_database(batch_size: int = 2000) -> int:
         session.close()
 
     return total_added
+
+
+def classify_sitting_type(title: str | None) -> str:
+    """Classify sitting title into standard sitting type.
+
+    Rules:
+    - "infotund" if title starts with "Infotund" (case-insensitive)
+    - "korraline" for "Täiskogu korraline istung"
+    - "lisaistung" if "lisaistung" is in title
+    - "erakorraline" if "erakorraline" is in title
+    - "muu" otherwise
+    """
+    if not title:
+        return "muu"
+    clean = title.strip()
+    clean_lower = clean.lower()
+    if clean_lower.startswith("infotund"):
+        return "infotund"
+    if clean.startswith("Täiskogu korraline istung") or clean_lower.startswith(
+        "täiskogu korraline istung"
+    ):
+        return "korraline"
+    if "lisaistung" in clean_lower:
+        return "lisaistung"
+    if "erakorraline" in clean_lower:
+        return "erakorraline"
+    return "muu"
+
+
+def upsert_attendance_checks_jsonl(records: list[dict], filepath: Path | str | None = None) -> int:
+    """Upsert attendance check records into attendance_checks.jsonl by voting_uuid."""
+    if not records:
+        return 0
+    fpath = Path(filepath or (Path(OUTPUT_DIR_PROCESSED) / "attendance_checks.jsonl"))
+    fpath.parent.mkdir(parents=True, exist_ok=True)
+
+    existing: dict[str, dict] = {}
+    if fpath.exists():
+        with open(fpath, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        row = json.loads(line)
+                        if "voting_uuid" in row:
+                            existing[row["voting_uuid"]] = row
+                    except json.JSONDecodeError:
+                        continue
+
+    for r in records:
+        vu = r.get("voting_uuid")
+        if vu:
+            existing[vu] = r
+
+    tmp_path = fpath.with_suffix(".jsonl.tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        for r in existing.values():
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    tmp_path.replace(fpath)
+    return len(existing)
+
+
+def load_attendance_checks_to_database(batch_size: int = 2000) -> int:
+    """Load attendance checks from data/processed/attendance_checks.jsonl into database."""
+    from src.load.migrations import apply_migrations
+
+    apply_migrations()
+    processed_dir = Path(OUTPUT_DIR_PROCESSED)
+    fpath = processed_dir / "attendance_checks.jsonl"
+    if not fpath.exists():
+        print(f"Warning: {fpath} does not exist. Skipping attendance checks loading.")
+        return 0
+
+    print(f"Loading attendance checks from {fpath.name}...")
+    session = SessionLocal()
+    total_added = 0
+    total_updated = 0
+    try:
+        existing_uuids = set(r[0] for r in session.query(AttendanceCheck.voting_uuid).all())
+        new_objects = []
+
+        with open(fpath, encoding="utf-8") as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError as err:
+                    raise ValueError(
+                        f"Corrupted JSON on line {line_num} in attendance_checks.jsonl: {err}"
+                    ) from err
+
+                u = record.get("voting_uuid")
+                if not u:
+                    continue
+
+                item_data = {
+                    "sitting_uuid": record.get("sitting_uuid"),
+                    "sitting_title": record.get("sitting_title"),
+                    "sitting_datetime": record.get("sitting_datetime"),
+                    "sitting_type": record.get("sitting_type")
+                    or classify_sitting_type(record.get("sitting_title")),
+                }
+
+                if u in existing_uuids:
+                    session.query(AttendanceCheck).filter(AttendanceCheck.voting_uuid == u).update(
+                        item_data
+                    )
+                    total_updated += 1
+                else:
+                    new_objects.append(AttendanceCheck(voting_uuid=u, **item_data))
+                    existing_uuids.add(u)
+                    total_added += 1
+
+                if len(new_objects) >= batch_size:
+                    session.bulk_save_objects(new_objects)
+                    session.commit()
+                    new_objects.clear()
+
+        if new_objects:
+            session.bulk_save_objects(new_objects)
+            new_objects.clear()
+        session.commit()
+        print(f"Done loading attendance checks ({total_added} added, {total_updated} updated).")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    return total_added + total_updated

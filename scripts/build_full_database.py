@@ -14,6 +14,7 @@ from src.load.indexes import create_indexes
 from src.load.loader import (
     create_tables,
     load_agenda_items_to_database,
+    load_attendance_checks_to_database,
     load_jsonl_to_database,
     load_votes_to_database,
 )
@@ -113,6 +114,7 @@ def build_full_database(
     load_jsonl_to_database()
     load_votes_to_database()
     load_agenda_items_to_database()
+    load_attendance_checks_to_database()
     print("-> JSONL, vote, and agenda files loaded.")
 
     # Step 3: Multiprocessing Lemmatization

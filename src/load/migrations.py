@@ -52,7 +52,7 @@ def _verify_0001_baseline(conn: Connection) -> None:
         row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
     }
     for table_name, table in Base.metadata.tables.items():
-        if table_name in {"agenda_items", "lemma_links"}:
+        if table_name in {"agenda_items", "lemma_links", "attendance_checks"}:
             continue
         if table_name not in tables:
             raise RuntimeError(f"Migration verification failed: missing table '{table_name}'")
@@ -240,6 +240,42 @@ def _verify_0006_lemma_pos(conn: Connection) -> None:
             raise RuntimeError("Migration verification failed: missing column 'lemmas.pos'")
 
 
+def _up_0007_attendance_checks(conn: Connection) -> None:
+    conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS attendance_checks (
+                voting_uuid TEXT PRIMARY KEY,
+                sitting_uuid TEXT,
+                sitting_title TEXT,
+                sitting_datetime TEXT,
+                sitting_type TEXT NOT NULL
+            );
+            """
+        )
+    )
+
+
+def _verify_0007_attendance_checks(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "attendance_checks" not in tables:
+        raise RuntimeError("Migration verification failed: missing table 'attendance_checks'")
+    existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(attendance_checks)"))}
+    for col in [
+        "voting_uuid",
+        "sitting_uuid",
+        "sitting_title",
+        "sitting_datetime",
+        "sitting_type",
+    ]:
+        if col not in existing_cols:
+            raise RuntimeError(
+                f"Migration verification failed: missing column 'attendance_checks.{col}'"
+            )
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
@@ -249,6 +285,7 @@ MIGRATIONS: list[MigrationTuple] = [
     ("0004", "lemma_links", _up_0004_lemma_links, _verify_0004_lemma_links),
     ("0005", "lemma_df", _up_0005_lemma_df, _verify_0005_lemma_df),
     ("0006", "lemma_pos", _up_0006_lemma_pos, _verify_0006_lemma_pos),
+    ("0007", "attendance_checks", _up_0007_attendance_checks, _verify_0007_attendance_checks),
 ]
 
 

@@ -119,11 +119,13 @@ export async function fetchAttendance({
   membership = null,
   faction = null,
   activeOnly = false,
+  excludeInfotund = false,
 } = {}) {
   const params = new URLSearchParams();
   if (membership) params.append("membership", membership);
   if (faction) params.append("faction", faction);
   if (activeOnly) params.append("active_only", "true");
+  if (excludeInfotund) params.append("exclude_infotund", "true");
 
   const qs = params.toString();
   const res = await fetch(`${BASE_URL}/attendance/stats${qs ? `?${qs}` : ""}`);
@@ -132,10 +134,15 @@ export async function fetchAttendance({
 
 export const fetchAttendanceStats = fetchAttendance;
 
-export async function fetchFactionAttendance({ membership = null, activeOnly = false } = {}) {
+export async function fetchFactionAttendance({
+  membership = null,
+  activeOnly = false,
+  excludeInfotund = false,
+} = {}) {
   const params = new URLSearchParams();
   if (membership) params.append("membership", membership);
   if (activeOnly) params.append("active_only", "true");
+  if (excludeInfotund) params.append("exclude_infotund", "true");
 
   const qs = params.toString();
   const res = await fetch(`${BASE_URL}/attendance/factions${qs ? `?${qs}` : ""}`);
@@ -201,8 +208,13 @@ export async function fetchPersonSpeeches(
   return handleResponse(res);
 }
 
-export async function fetchPersonAttendance(uuid) {
-  const res = await fetch(`${BASE_URL}/persons/${encodeURIComponent(uuid)}/attendance`);
+export async function fetchPersonAttendance(uuid, { excludeInfotund = false } = {}) {
+  const params = new URLSearchParams();
+  if (excludeInfotund) params.append("exclude_infotund", "true");
+  const qs = params.toString();
+  const res = await fetch(
+    `${BASE_URL}/persons/${encodeURIComponent(uuid)}/attendance${qs ? `?${qs}` : ""}`
+  );
   return handleResponse(res);
 }
 

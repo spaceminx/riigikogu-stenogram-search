@@ -54,6 +54,7 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_agenda_items_draft_uuid ON agenda_items(draft_uuid)",
     "CREATE INDEX IF NOT EXISTS idx_agenda_items_source_file_steno_title ON agenda_items(source_file, steno_title)",
     "CREATE INDEX IF NOT EXISTS idx_lemma_links_target ON lemma_links(target_lemma_id, kind)",
+    "CREATE INDEX IF NOT EXISTS idx_attendance_checks_sitting_type ON attendance_checks(sitting_type)",
 ]
 
 
