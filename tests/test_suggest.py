@@ -122,27 +122,31 @@ def test_suggest_filtering_and_ranking():
         # Set up test lemmas
         lemmas_data = [
             # Person lemma: should be capitalized in term, is_person=True
-            ("seeder", 15),
+            ("seeder", 15, None),
             # Regular lemma with good df
-            ("seadus", 18),
-            ("seaduseelnõu", 10),
+            ("seadus", 18, "S"),
+            ("seaduseelnõu", 10, "S"),
             # High df > 20% of 100 speeches (e.g. df=25): should be excluded
-            ("see", 25),
+            ("see", 25, "P"),
             # Low df < 3: should be excluded
-            ("seente", 2),
+            ("seente", 2, "S"),
             # Stopword: should be excluded
-            ("sest", 12),
+            ("sest", 12, "J"),
             # Non-letter: should be excluded
-            ("123", 5),
+            ("123", 5, "N"),
         ]
 
-        for lemma_text, df_val in lemmas_data:
+        for item in lemmas_data:
+            lemma_text = item[0]
+            df_val = item[1]
+            pos_val = item[2]
             lem = session.query(Lemma).filter_by(lemma=lemma_text).first()
             if not lem:
-                lem = Lemma(lemma=lemma_text, df=df_val)
+                lem = Lemma(lemma=lemma_text, df=df_val, pos=pos_val)
                 session.add(lem)
             else:
                 lem.df = df_val
+                lem.pos = pos_val
         session.commit()
     finally:
         session.close()
@@ -185,12 +189,17 @@ def test_suggest_filtering_and_ranking():
 def test_suggest_estonian_letters():
     session = SessionLocal()
     try:
-        for lemma_text, df_val in [("õpetaja", 8), ("õppus", 6), ("õhk", 5)]:
+        for lemma_text, df_val, pos_val in [
+            ("õpetaja", 8, "S"),
+            ("õppus", 6, "S"),
+            ("õhk", 5, "S"),
+        ]:
             lem = session.query(Lemma).filter_by(lemma=lemma_text).first()
             if not lem:
-                session.add(Lemma(lemma=lemma_text, df=df_val))
+                session.add(Lemma(lemma=lemma_text, df=df_val, pos=pos_val))
             else:
                 lem.df = df_val
+                lem.pos = pos_val
         session.commit()
     finally:
         session.close()

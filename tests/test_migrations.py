@@ -12,7 +12,7 @@ from src.load.models import Base
 
 
 def test_fresh_db_all_tables_exist_and_migration_recorded(tmp_path):
-    """Fresh DB: all declared tables exist, schema_migrations contains 0001 to 0005."""
+    """Fresh DB: all declared tables exist, schema_migrations contains 0001 to 0006."""
     db_path = str(tmp_path / "fresh.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
@@ -23,6 +23,7 @@ def test_fresh_db_all_tables_exist_and_migration_recorded(tmp_path):
         "0003_agenda_match_method",
         "0004_lemma_links",
         "0005_lemma_df",
+        "0006_lemma_pos",
     ]
 
     with eng.connect() as conn:
@@ -36,12 +37,13 @@ def test_fresh_db_all_tables_exist_and_migration_recorded(tmp_path):
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")
 
         ag_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(agenda_items)"))}
         assert "match_method" in ag_cols
@@ -53,6 +55,7 @@ def test_fresh_db_all_tables_exist_and_migration_recorded(tmp_path):
 
         lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
         assert "df" in lem_cols
+        assert "pos" in lem_cols
 
 
 def test_old_shape_db_migrates_columns_and_preserves_data(tmp_path):
@@ -140,6 +143,7 @@ def test_old_shape_db_migrates_columns_and_preserves_data(tmp_path):
         "0003_agenda_match_method",
         "0004_lemma_links",
         "0005_lemma_df",
+        "0006_lemma_pos",
     ]
 
     with eng.connect() as conn:
@@ -182,16 +186,17 @@ def test_old_shape_db_migrates_columns_and_preserves_data(tmp_path):
         assert "target_lemma_id" in ll_cols
         assert "kind" in ll_cols
 
-        # Check lemmas df column exists
+        # Check lemmas df and pos columns exist
         lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
         assert "df" in lem_cols
+        assert "pos" in lem_cols
 
         # Check schema_migrations
         mig_rows = conn.execute(
             text("SELECT version FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(mig_rows) == 5
-        assert [r[0] for r in mig_rows] == ["0001", "0002", "0003", "0004", "0005"]
+        assert len(mig_rows) == 6
+        assert [r[0] for r in mig_rows] == ["0001", "0002", "0003", "0004", "0005", "0006"]
 
 
 def test_second_apply_migrations_returns_empty_and_no_change(tmp_path):
@@ -206,6 +211,7 @@ def test_second_apply_migrations_returns_empty_and_no_change(tmp_path):
         "0003_agenda_match_method",
         "0004_lemma_links",
         "0005_lemma_df",
+        "0006_lemma_pos",
     ]
 
     second_run = apply_migrations(eng)
@@ -215,12 +221,13 @@ def test_second_apply_migrations_returns_empty_and_no_change(tmp_path):
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0][0] == "0001"
         assert rows[1][0] == "0002"
         assert rows[2][0] == "0003"
         assert rows[3][0] == "0004"
         assert rows[4][0] == "0005"
+        assert rows[5][0] == "0006"
 
 
 def test_concurrent_apply_migrations_threads(tmp_path):
@@ -244,6 +251,7 @@ def test_concurrent_apply_migrations_threads(tmp_path):
         "0003_agenda_match_method",
         "0004_lemma_links",
         "0005_lemma_df",
+        "0006_lemma_pos",
     ]
     assert set(res1).isdisjoint(set(res2))
     assert sorted(res1 + res2) == sorted(expected)
@@ -252,32 +260,33 @@ def test_concurrent_apply_migrations_threads(tmp_path):
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")
 
 
 def test_failed_migration_verify_rolls_back_and_does_not_record(tmp_path, monkeypatch):
-    """A test-only migration 0006 whose verify() fails raises, is not recorded, and schema changes roll back."""
+    """A test-only migration 0007 whose verify() fails raises, is not recorded, and schema changes roll back."""
     db_path = str(tmp_path / "failing_mig.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
-    # Baseline, 0002, 0003, 0004 & 0005 succeed first
+    # Baseline, 0002, 0003, 0004, 0005 & 0006 succeed first
     apply_migrations(eng)
 
-    def _up_0006_fail(conn):
+    def _up_0007_fail(conn):
         conn.execute(text("CREATE TABLE test_table_failed (id INTEGER PRIMARY KEY);"))
 
-    def _verify_0006_fail(conn):
+    def _verify_0007_fail(conn):
         raise RuntimeError(
             "Migration verification failed: missing column 'test_table_failed.required_col'"
         )
 
     test_migrations = list(migrations.MIGRATIONS) + [
-        ("0006", "failing_migration", _up_0006_fail, _verify_0006_fail)
+        ("0007", "failing_migration", _up_0007_fail, _verify_0007_fail)
     ]
     monkeypatch.setattr(migrations, "MIGRATIONS", test_migrations)
 
@@ -291,25 +300,25 @@ def test_failed_migration_verify_rolls_back_and_does_not_record(tmp_path, monkey
         # Table must be rolled back
         assert "test_table_failed" not in tables
 
-        # schema_migrations must only have 0001, 0002, 0003, 0004 and 0005
+        # schema_migrations must only have 0001 to 0006
         rows = conn.execute(
             text("SELECT version FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert [r[0] for r in rows] == ["0001", "0002", "0003", "0004", "0005"]
+        assert [r[0] for r in rows] == ["0001", "0002", "0003", "0004", "0005", "0006"]
 
 
-def test_succeeding_test_migration_0006(tmp_path, monkeypatch):
-    """A test-only migration 0006 that succeeds is applied once and recorded."""
+def test_succeeding_test_migration_0007(tmp_path, monkeypatch):
+    """A test-only migration 0007 that succeeds is applied once and recorded."""
     db_path = str(tmp_path / "success_mig.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
-    # Baseline, 0002, 0003, 0004 & 0005 succeed
+    # Baseline to 0006 succeed
     apply_migrations(eng)
 
-    def _up_0006_ok(conn):
+    def _up_0007_ok(conn):
         conn.execute(text("CREATE TABLE test_table_ok (id INTEGER PRIMARY KEY, title TEXT);"))
 
-    def _verify_0006_ok(conn):
+    def _verify_0007_ok(conn):
         tables = {
             r[0] for r in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
         }
@@ -317,12 +326,12 @@ def test_succeeding_test_migration_0006(tmp_path, monkeypatch):
             raise RuntimeError("Missing table 'test_table_ok'")
 
     test_migrations = list(migrations.MIGRATIONS) + [
-        ("0006", "ok_migration", _up_0006_ok, _verify_0006_ok)
+        ("0007", "ok_migration", _up_0007_ok, _verify_0007_ok)
     ]
     monkeypatch.setattr(migrations, "MIGRATIONS", test_migrations)
 
     applied = apply_migrations(eng)
-    assert applied == ["0006_ok_migration"]
+    assert applied == ["0007_ok_migration"]
 
     with eng.connect() as conn:
         tables = {
@@ -333,13 +342,14 @@ def test_succeeding_test_migration_0006(tmp_path, monkeypatch):
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 6
+        assert len(rows) == 7
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
-        assert rows[5] == ("0006", "ok_migration")
+        assert rows[5] == ("0006", "lemma_pos")
+        assert rows[6] == ("0007", "ok_migration")
 
     # Second call applies nothing
     second = apply_migrations(eng)
@@ -380,7 +390,7 @@ def test_apply_migrations_does_not_call_create_indexes(tmp_path, monkeypatch):
 def test_migration_0002_and_0003_and_0004_and_0005_applies_on_db_with_0001_already_applied(
     tmp_path,
 ):
-    """A database that already ran 0001 gets upgraded with migrations 0002 to 0005."""
+    """A database that already ran 0001 gets upgraded with migrations 0002 to 0006."""
     db_path = str(tmp_path / "upgraded.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
@@ -404,6 +414,7 @@ def test_migration_0002_and_0003_and_0004_and_0005_applies_on_db_with_0001_alrea
         "0003_agenda_match_method",
         "0004_lemma_links",
         "0005_lemma_df",
+        "0006_lemma_pos",
     ]
 
     with eng.connect() as conn:
@@ -416,20 +427,22 @@ def test_migration_0002_and_0003_and_0004_and_0005_applies_on_db_with_0001_alrea
         assert "match_method" in ag_cols
         lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
         assert "df" in lem_cols
+        assert "pos" in lem_cols
 
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")
 
 
 def test_migration_0003_to_0005_applies_on_db_with_0001_and_0002_already_applied(tmp_path):
-    """A database that already ran 0001 and 0002 gets upgraded with migrations 0003 to 0005."""
+    """A database that already ran 0001 and 0002 gets upgraded with migrations 0003 to 0006."""
     db_path = str(tmp_path / "upgraded_0003.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
@@ -475,7 +488,12 @@ def test_migration_0003_to_0005_applies_on_db_with_0001_and_0002_already_applied
         conn.commit()
 
     applied = apply_migrations(eng)
-    assert applied == ["0003_agenda_match_method", "0004_lemma_links", "0005_lemma_df"]
+    assert applied == [
+        "0003_agenda_match_method",
+        "0004_lemma_links",
+        "0005_lemma_df",
+        "0006_lemma_pos",
+    ]
 
     with eng.connect() as conn:
         ag_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(agenda_items)"))}
@@ -486,20 +504,22 @@ def test_migration_0003_to_0005_applies_on_db_with_0001_and_0002_already_applied
         assert "lemma_links" in tables
         lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
         assert "df" in lem_cols
+        assert "pos" in lem_cols
 
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")
 
 
 def test_migration_0004_and_0005_applies_on_db_with_0001_to_0003_already_applied(tmp_path):
-    """A database that already ran 0001 to 0003 gets upgraded with migrations 0004 and 0005."""
+    """A database that already ran 0001 to 0003 gets upgraded with migrations 0004 to 0006."""
     db_path = str(tmp_path / "upgraded_0004.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
@@ -521,7 +541,7 @@ def test_migration_0004_and_0005_applies_on_db_with_0001_to_0003_already_applied
         conn.commit()
 
     applied = apply_migrations(eng)
-    assert applied == ["0004_lemma_links", "0005_lemma_df"]
+    assert applied == ["0004_lemma_links", "0005_lemma_df", "0006_lemma_pos"]
 
     with eng.connect() as conn:
         tables = {
@@ -534,20 +554,22 @@ def test_migration_0004_and_0005_applies_on_db_with_0001_to_0003_already_applied
         assert "kind" in ll_cols
         lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
         assert "df" in lem_cols
+        assert "pos" in lem_cols
 
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")
 
 
 def test_migration_0005_applies_on_db_with_0001_to_0004_already_applied(tmp_path):
-    """A database that already ran 0001 to 0004 gets upgraded with migration 0005."""
+    """A database that already ran 0001 to 0004 gets upgraded with migration 0005 and 0006."""
     db_path = str(tmp_path / "upgraded_0005.sqlite")
     eng = create_engine(f"sqlite:///{db_path}")
 
@@ -570,18 +592,63 @@ def test_migration_0005_applies_on_db_with_0001_to_0004_already_applied(tmp_path
         conn.commit()
 
     applied = apply_migrations(eng)
-    assert applied == ["0005_lemma_df"]
+    assert applied == ["0005_lemma_df", "0006_lemma_pos"]
 
     with eng.connect() as conn:
         lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
         assert "df" in lem_cols
+        assert "pos" in lem_cols
 
         rows = conn.execute(
             text("SELECT version, name FROM schema_migrations ORDER BY version")
         ).fetchall()
-        assert len(rows) == 5
+        assert len(rows) == 6
         assert rows[0] == ("0001", "baseline")
         assert rows[1] == ("0002", "agenda_items")
         assert rows[2] == ("0003", "agenda_match_method")
         assert rows[3] == ("0004", "lemma_links")
         assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")
+
+
+def test_migration_0006_applies_on_db_with_0001_to_0005_already_applied(tmp_path):
+    """A database that already ran 0001 to 0005 gets upgraded with migration 0006."""
+    db_path = str(tmp_path / "upgraded_0006.sqlite")
+    eng = create_engine(f"sqlite:///{db_path}")
+
+    # Set up DB with 0001 to 0005 recorded
+    with eng.connect() as conn:
+        conn.execute(
+            text(
+                "CREATE TABLE schema_migrations (version TEXT PRIMARY KEY, name TEXT, applied_at TEXT);"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO schema_migrations (version, name, applied_at) VALUES "
+                "('0001', 'baseline', '2026-10-18T10:00:00Z'), "
+                "('0002', 'agenda_items', '2026-10-18T10:05:00Z'), "
+                "('0003', 'agenda_match_method', '2026-10-18T10:10:00Z'), "
+                "('0004', 'lemma_links', '2026-10-18T10:15:00Z'), "
+                "('0005', 'lemma_df', '2026-10-18T10:20:00Z');"
+            )
+        )
+        conn.commit()
+
+    applied = apply_migrations(eng)
+    assert applied == ["0006_lemma_pos"]
+
+    with eng.connect() as conn:
+        lem_cols = {r[1] for r in conn.execute(text("PRAGMA table_info(lemmas)"))}
+        assert "pos" in lem_cols
+
+        rows = conn.execute(
+            text("SELECT version, name FROM schema_migrations ORDER BY version")
+        ).fetchall()
+        assert len(rows) == 6
+        assert rows[0] == ("0001", "baseline")
+        assert rows[1] == ("0002", "agenda_items")
+        assert rows[2] == ("0003", "agenda_match_method")
+        assert rows[3] == ("0004", "lemma_links")
+        assert rows[4] == ("0005", "lemma_df")
+        assert rows[5] == ("0006", "lemma_pos")

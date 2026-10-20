@@ -17,6 +17,7 @@ from src.load.loader import (
     load_jsonl_to_database,
     load_votes_to_database,
 )
+from src.transform.lemma_links import update_lemma_pos
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms, update_lemma_df
 
@@ -128,6 +129,9 @@ def build_full_database(
     print("Updating lemma document frequencies...")
     df_time = update_lemma_df()
     print(f"-> Lemma document frequencies updated in {df_time:.2f}s.")
+    print("Updating lemma part-of-speech tags...")
+    pos_time = update_lemma_pos()
+    print(f"-> Lemma POS tags updated in {pos_time:.2f}s.")
 
     # Step 5: Create SQL Indexes
     print("\n[Step 5/5] Creating SQL indexes for fast querying...")

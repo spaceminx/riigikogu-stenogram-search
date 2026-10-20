@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from fastapi import HTTPException
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from config import STOPWORDS
 from src.load.models import Lemma, Speech, SystemMeta
@@ -90,11 +90,17 @@ def get_search_suggestions(
 
     # Range query on lemmas table unique index
     query = (
-        session.query(Lemma.lemma, Lemma.df)
+        session.query(Lemma.lemma, Lemma.df, Lemma.pos)
         .filter(Lemma.lemma >= p_lower)
         .filter(Lemma.lemma < p_next)
         .filter(Lemma.df.isnot(None))
         .filter(Lemma.df >= 3)
+        .filter(
+            or_(
+                Lemma.pos.in_(["S", "H", "A", "Y"]),
+                Lemma.pos.is_(None),
+            )
+        )
     )
 
     if total_speeches > 0:
@@ -105,10 +111,13 @@ def get_search_suggestions(
 
     valid_items = []
     stopwords = {w.casefold() for w in STOPWORDS}
-    for lemma_text, df in rows:
+    for lemma_text, df, pos in rows:
         if lemma_text.casefold() in stopwords:
             continue
         if not any(c.isalpha() for c in lemma_text):
+            continue
+        # For NULL-pos lemmas, only keep if it is a known person name lemma
+        if pos is None and lemma_text not in person_lemmas:
             continue
         valid_items.append((lemma_text, int(df)))
 
