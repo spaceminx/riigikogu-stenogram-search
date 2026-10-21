@@ -26,6 +26,7 @@ import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
 import { usePageMeta } from "../lib/usePageMeta";
+import { Rss } from "lucide-react";
 
 const SPEECHES_PER_PAGE = 20;
 
@@ -191,7 +192,21 @@ export function PersonView({ theme = "light" }) {
   const personDesc = person?.full_name
     ? `Riigikogu saadiku ${person.full_name} kõned, hääletused, kohalolek ja fraktsiooniline kuuluvus.`
     : "Riigikogu saadiku profiil, kõned, hääletused ja kohalolek.";
-  usePageMeta(personTitle, personDesc);
+
+  const rssUrl = uuid ? `https://www.riigivaade.me/rss/saadik/${uuid}` : null;
+
+  usePageMeta(
+    personTitle,
+    personDesc,
+    rssUrl
+      ? {
+          rss: {
+            href: rssUrl,
+            title: `Riigivaade: ${person?.full_name || "saadiku"} kõned`,
+          },
+        }
+      : {}
+  );
 
   // Context modal handler
   const handleOpenContext = async (speechId) => {
@@ -495,23 +510,38 @@ export function PersonView({ theme = "light" }) {
             )}
 
             {/* Quick search input for this speaker */}
-            <form onSubmit={handleSearchSubmit} className="person-search-form">
-              <input
-                type="text"
-                className="filter-text-input"
-                placeholder="Otsi selle saadiku kõnesid…"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="filter-search-btn"
-                disabled={!searchKeyword.trim()}
-                title="Ava otsing selle saadiku kõnedest"
-              >
-                Otsi
-              </button>
-            </form>
+            <div className="person-actions-row">
+              <form onSubmit={handleSearchSubmit} className="person-search-form">
+                <input
+                  type="text"
+                  className="filter-text-input"
+                  placeholder="Otsi selle saadiku kõnesid…"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="filter-search-btn"
+                  disabled={!searchKeyword.trim()}
+                  title="Ava otsing selle saadiku kõnedest"
+                >
+                  Otsi
+                </button>
+              </form>
+
+              {uuid && (
+                <a
+                  href={`/rss/saadik/${uuid}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rss-feed-link"
+                  title="Telli selle saadiku kõnede RSS-voog"
+                >
+                  <Rss size={13} aria-hidden="true" />
+                  <span>Telli RSS-voog</span>
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </section>
