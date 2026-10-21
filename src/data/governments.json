@@ -1,0 +1,92 @@
+[
+  {
+    "from": "2016-11-23",
+    "to": "2019-04-29",
+    "government": "Ratas I",
+    "coalition": [
+      "Eesti Keskerakonna fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "Isamaa fraktsioon"
+    ],
+    "source": "https://valitsus.ee/en/news/government-led-juri-ratas-has-resigned-will-continue-its-activities-until-new-government-0"
+  },
+  {
+    "from": "2019-04-29",
+    "to": "2021-01-26",
+    "government": "Ratas II",
+    "coalition": [
+      "Eesti Keskerakonna fraktsioon",
+      "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "Isamaa fraktsioon"
+    ],
+    "source": [
+      "https://valitsus.ee/en/news/government-led-juri-ratas-has-resigned-will-continue-its-activities-until-new-government-0",
+      "https://www.err.ee/934718/juri-ratase-valitsus-andis-ametivande"
+    ]
+  },
+  {
+    "from": "2021-01-26",
+    "to": "2022-06-03",
+    "government": "Kallas I",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti Keskerakonna fraktsioon"
+    ],
+    "source": "https://www.err.ee/1608084865/galerii-kallas-ja-ratas-allkirjastasid-koalitsioonileppe"
+  },
+  {
+    "from": "2022-06-03",
+    "to": "2022-07-18",
+    "government": "Kallas I (vähemusvalitsus)",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon"
+    ],
+    "source": "https://www.err.ee/1608618499/kallas-saatis-keskerakonna-valitsusest-valja"
+  },
+  {
+    "from": "2022-07-18",
+    "to": "2023-04-17",
+    "government": "Kallas II",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Isamaa fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://www.err.ee/1608658435/riigikogu-andis-kallasele-volitused-valitsuse-moodustamiseks"
+  },
+  {
+    "from": "2023-04-17",
+    "to": "2024-07-23",
+    "government": "Kallas III",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti 200 fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://en.wikipedia.org/wiki/Kaja_Kallas%27s_third_cabinet"
+  },
+  {
+    "from": "2024-07-23",
+    "to": "2025-03-11",
+    "government": "Michal",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti 200 fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://en.wikipedia.org/wiki/Kristen_Michal%27s_cabinet"
+  },
+  {
+    "from": "2025-03-11",
+    "to": null,
+    "government": "Michal",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti 200 fraktsioon"
+    ],
+    "source": [
+      "https://valitsus.ee/valitsuse-eesmargid-ja-tegevused/valitsemise-alused/koalitsioonilepe-2025-2027",
+      "https://www.err.ee/1609632832/michal-saatis-sotsid-valitsusest-valja"
+    ]
+  }
+]

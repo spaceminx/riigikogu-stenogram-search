@@ -21,7 +21,7 @@ import {
   fetchSpeechContext,
 } from "../lib/api";
 import { formatDate } from "../lib/calendarUtils";
-import { formatPercent, formatVoteSplit, toRoman } from "../lib/formatters";
+import { formatMetricRatio, formatPercent, formatVoteSplit, toRoman } from "../lib/formatters";
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
@@ -306,6 +306,30 @@ export function PersonView({ theme = "light" }) {
       (a, b) => parseInt(b.membership, 10) - parseInt(a.membership, 10)
     );
   }, [stats, attendance]);
+
+  const roleBreakdownRows = useMemo(() => {
+    if (!attendance?.role_breakdown) return [];
+    const rows = [];
+    const { coalition, opposition } = attendance.role_breakdown;
+
+    if (coalition && (coalition.total_sessions > 0 || coalition.votes?.total > 0)) {
+      rows.push({
+        role: "Koalitsioonis",
+        key: "coalition",
+        ...coalition,
+      });
+    }
+
+    if (opposition && (opposition.total_sessions > 0 || opposition.votes?.total > 0)) {
+      rows.push({
+        role: "Opositsioonis",
+        key: "opposition",
+        ...opposition,
+      });
+    }
+
+    return rows;
+  }, [attendance]);
 
   // Handle 404 and error states for Person
   if (personLoading) {
@@ -659,6 +683,93 @@ export function PersonView({ theme = "light" }) {
           </div>
         )}
       </section>
+
+      {/* Role Breakdown Table (Koalitsioonis / Opositsioonis) */}
+      {roleBreakdownRows.length > 0 && (
+        <section className="glass-panel" aria-label="Koalitsioonis ja opositsioonis">
+          <div className="chart-header" style={{ marginBottom: "0.75rem" }}>
+            <div>
+              <span className="section-kicker">VALITSUSE ROLL</span>
+              <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Koalitsioonis ja opositsioonis</h2>
+            </div>
+          </div>
+
+          <div className="table-responsive-container">
+            <table className="person-stats-table">
+              <caption>Kohalolek ja hääletamine valitsuse koalitsioonis ja opositsioonis</caption>
+              <thead>
+                <tr>
+                  <th scope="col" className="person-stats-col-text">
+                    Roll
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Registreerus kontrollides
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Osales hääletustel
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Ei hääletanud
+                  </th>
+                  <th scope="col" className="person-stats-col-num">
+                    Puudus
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {roleBreakdownRows.map((row) => {
+                  const checksTotal = row.total_sessions ?? 0;
+                  const isChecksSmall = checksTotal < 50;
+                  const votesTotal = row.votes?.total ?? 0;
+                  const isVotesSmall = votesTotal < 50;
+                  const notVotedCount = row.votes?.not_voted ?? 0;
+                  const absentCount = row.votes?.absent ?? 0;
+                  const notVotedPct = votesTotal > 0 ? (notVotedCount / votesTotal) * 100 : null;
+                  const absentPct = votesTotal > 0 ? (absentCount / votesTotal) * 100 : null;
+
+                  return (
+                    <tr key={row.key}>
+                      <th scope="row" className="person-stats-col-text" style={{ fontWeight: 600 }}>
+                        {row.role}
+                      </th>
+                      <td className="person-stats-col-num">
+                        {checksTotal > 0 ? (
+                          <>
+                            {formatMetricRatio(
+                              row.attendance_percentage,
+                              row.present_sessions,
+                              checksTotal
+                            )}
+                            {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="person-stats-col-num">
+                        {votesTotal > 0 ? (
+                          <>
+                            {formatMetricRatio(row.votes?.voted_pct, row.votes?.voted, votesTotal)}
+                            {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="person-stats-col-num">
+                        {votesTotal > 0 ? `${formatPercent(notVotedPct)} (${notVotedCount})` : "—"}
+                      </td>
+                      <td className="person-stats-col-num">
+                        {votesTotal > 0 ? `${formatPercent(absentPct)} (${absentCount})` : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {/* 3. By Year Stacked Chart & Accessible Table */}
       {chartData.length > 0 && (

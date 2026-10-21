@@ -11,6 +11,7 @@ export function AttendanceFactionsTable({
   factionSortConfig,
   requestFactionSort,
   onSelectFaction,
+  role = "",
 }) {
   const getSortIndicator = (key) => {
     if (factionSortConfig.key !== key) return "";
@@ -114,6 +115,10 @@ export function AttendanceFactionsTable({
               const votesTotal = stat.votes_total ?? 0;
               const isVotesSmall = votesTotal < 50;
               const isRowSmall = isSmallSample(stat, factionSortConfig.key);
+              const isNonAligned =
+                stat.faction === "Fraktsiooni mittekuuluvad Riigikogu liikmed" ||
+                stat.faction === "Fraktsioonita";
+              const hideForNonAligned = Boolean(role && isNonAligned);
 
               return (
                 <tr
@@ -148,55 +153,15 @@ export function AttendanceFactionsTable({
                   </td>
                   <td className="att-col-count">{stat.member_count}</td>
                   <td className="att-col-registered">
-                    <div
-                      className={`att-metric-cell ${isChecksSmall ? "att-metric-small-sample" : ""}`}
-                    >
-                      <span className="att-metric-main">
-                        {formatMetricRatio(
-                          stat.registered_pct,
-                          stat.registered_checks ?? stat.present_sessions,
-                          checksTotal
-                        )}
-                        {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="att-col-votes">
-                    <div
-                      className={`att-metric-cell ${isVotesSmall ? "att-metric-small-sample" : ""}`}
-                    >
-                      <span className="att-metric-main">
-                        {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
-                        {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
-                      </span>
-                      {votesTotal > 0 && (
-                        <span className="att-metric-subtext">
-                          {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="att-col-combined">
-                    <div className="att-mobile-stacked-cell">
-                      <div
-                        className={`att-mobile-metric-row ${isVotesSmall ? "att-metric-small-sample" : ""}`}
-                      >
-                        <span className="att-mobile-metric-label">Hääletustel:</span>{" "}
-                        <span className="att-mobile-metric-val">
-                          {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
-                          {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
-                        </span>
+                    {hideForNonAligned ? (
+                      <div className="att-metric-cell">
+                        <span className="att-metric-main">—</span>
                       </div>
-                      {votesTotal > 0 && (
-                        <div className="att-metric-subtext att-mobile-subtext">
-                          {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
-                        </div>
-                      )}
+                    ) : (
                       <div
-                        className={`att-mobile-metric-row ${isChecksSmall ? "att-metric-small-sample" : ""}`}
+                        className={`att-metric-cell ${isChecksSmall ? "att-metric-small-sample" : ""}`}
                       >
-                        <span className="att-mobile-metric-label">Kontrollides:</span>{" "}
-                        <span className="att-mobile-metric-val">
+                        <span className="att-metric-main">
                           {formatMetricRatio(
                             stat.registered_pct,
                             stat.registered_checks ?? stat.present_sessions,
@@ -205,7 +170,65 @@ export function AttendanceFactionsTable({
                           {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
                         </span>
                       </div>
-                    </div>
+                    )}
+                  </td>
+                  <td className="att-col-votes">
+                    {hideForNonAligned ? (
+                      <div className="att-metric-cell">
+                        <span className="att-metric-main">—</span>
+                      </div>
+                    ) : (
+                      <div
+                        className={`att-metric-cell ${isVotesSmall ? "att-metric-small-sample" : ""}`}
+                      >
+                        <span className="att-metric-main">
+                          {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
+                          {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
+                        </span>
+                        {votesTotal > 0 && (
+                          <span className="att-metric-subtext">
+                            {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                  <td className="att-col-combined">
+                    {hideForNonAligned ? (
+                      <div className="att-mobile-stacked-cell">
+                        <span className="att-metric-main">—</span>
+                      </div>
+                    ) : (
+                      <div className="att-mobile-stacked-cell">
+                        <div
+                          className={`att-mobile-metric-row ${isVotesSmall ? "att-metric-small-sample" : ""}`}
+                        >
+                          <span className="att-mobile-metric-label">Hääletustel:</span>{" "}
+                          <span className="att-mobile-metric-val">
+                            {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
+                            {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
+                          </span>
+                        </div>
+                        {votesTotal > 0 && (
+                          <div className="att-metric-subtext att-mobile-subtext">
+                            {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
+                          </div>
+                        )}
+                        <div
+                          className={`att-mobile-metric-row ${isChecksSmall ? "att-metric-small-sample" : ""}`}
+                        >
+                          <span className="att-mobile-metric-label">Kontrollides:</span>{" "}
+                          <span className="att-mobile-metric-val">
+                            {formatMetricRatio(
+                              stat.registered_pct,
+                              stat.registered_checks ?? stat.present_sessions,
+                              checksTotal
+                            )}
+                            {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </td>
                 </tr>
               );

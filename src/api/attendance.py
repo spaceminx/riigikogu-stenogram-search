@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import case, func
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
+from src.api.roles import role_condition
 from src.api.votings import get_faction_vote_participation, get_member_vote_participation
 from src.load.database import SessionLocal
 from src.load.models import Attendance, AttendanceCheck
@@ -40,6 +41,7 @@ def get_attendance_stats(
     faction: str | None = None,
     active_only: bool = False,
     exclude_infotund: bool = False,
+    role: str | None = None,
 ) -> list[dict]:
     """Calculate attendance statistics for parliament members with optional filters."""
     if membership is None:
@@ -76,6 +78,12 @@ def get_attendance_stats(
             )
         if exclude_infotund:
             f_query = f_query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
+        if role in ("coalition", "opposition"):
+            f_query = f_query.filter(
+                role_condition(
+                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                )
+            )
         f_rows = f_query.group_by(member_key).all()
         faction_map = {r[0]: r[1] for r in f_rows}
 
@@ -96,6 +104,13 @@ def get_attendance_stats(
 
         if exclude_infotund:
             query = query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
+
+        if role in ("coalition", "opposition"):
+            query = query.filter(
+                role_condition(
+                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                )
+            )
 
         if active_only:
             if active_uuids:
@@ -124,7 +139,7 @@ def get_attendance_stats(
 
         results = query.group_by(member_key).all()
 
-        member_votes = get_member_vote_participation(session, membership=membership)
+        member_votes = get_member_vote_participation(session, membership=membership, role=role)
 
         stats = []
         for member_name, member_uuid, total, present, m_key in results:
@@ -170,7 +185,96 @@ def get_attendance_stats(
         session.close()
 
 
-def get_person_attendance(person_uuid: str, exclude_infotund: bool = False) -> dict:
+def _compute_person_attendance_data(
+    session,
+    person_uuid: str,
+    infotund_uuids,
+    target_role: str | None = None,
+) -> dict:
+    base_filter = Attendance.member_uuid == person_uuid
+
+    overall_query = session.query(
+        func.count(Attendance.id).label("total"),
+        func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present"),
+    ).filter(base_filter)
+    if infotund_uuids is not None:
+        overall_query = overall_query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
+    if target_role in ("coalition", "opposition"):
+        overall_query = overall_query.filter(
+            role_condition(
+                Attendance.faction, func.substr(Attendance.session_date, 1, 10), target_role
+            )
+        )
+    overall_row = overall_query.first()
+
+    total_sessions = int(overall_row[0]) if overall_row and overall_row[0] else 0
+    present_sessions = int(overall_row[1]) if overall_row and overall_row[1] else 0
+    absent_sessions = total_sessions - present_sessions
+    percentage = round((present_sessions / total_sessions) * 100, 1) if total_sessions > 0 else 0.0
+
+    overall_votes = get_member_vote_participation(session, membership="all", role=target_role).get(
+        person_uuid,
+        {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+    )
+
+    by_membership = []
+    for mem_id, (start_d, end_d) in sorted(
+        MEMBERSHIP_DATES.items(), key=lambda x: int(x[0]), reverse=True
+    ):
+        mem_query = session.query(
+            func.count(Attendance.id).label("total"),
+            func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present"),
+        ).filter(
+            base_filter,
+            Attendance.session_date >= start_d,
+            Attendance.session_date <= f"{end_d}T23:59:59",
+        )
+        if infotund_uuids is not None:
+            mem_query = mem_query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
+        if target_role in ("coalition", "opposition"):
+            mem_query = mem_query.filter(
+                role_condition(
+                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), target_role
+                )
+            )
+        mem_row = mem_query.first()
+        m_total = int(mem_row[0]) if mem_row and mem_row[0] else 0
+        m_votes = get_member_vote_participation(
+            session, membership=str(mem_id), role=target_role
+        ).get(
+            person_uuid,
+            {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+        )
+        if m_total > 0 or m_votes["total"] > 0:
+            m_present = int(mem_row[1]) if mem_row and mem_row[1] else 0
+            m_absent = m_total - m_present
+            m_pct = round((m_present / m_total) * 100, 1) if m_total > 0 else 0.0
+            by_membership.append(
+                {
+                    "membership": str(mem_id),
+                    "total_sessions": m_total,
+                    "present_sessions": m_present,
+                    "absent_sessions": m_absent,
+                    "attendance_percentage": m_pct,
+                    "votes": m_votes,
+                }
+            )
+
+    return {
+        "total_sessions": total_sessions,
+        "present_sessions": present_sessions,
+        "absent_sessions": absent_sessions,
+        "attendance_percentage": percentage,
+        "votes": overall_votes,
+        "by_membership": by_membership,
+    }
+
+
+def get_person_attendance(
+    person_uuid: str,
+    exclude_infotund: bool = False,
+    role: str | None = None,
+) -> dict:
     """Calculate attendance statistics for a specific MP by UUID.
 
     Uses the same attendance definition as get_attendance_stats:
@@ -195,72 +299,29 @@ def get_person_attendance(person_uuid: str, exclude_infotund: bool = False) -> d
             else None
         )
 
-        base_filter = Attendance.member_uuid == person_uuid
-
-        overall_query = session.query(
-            func.count(Attendance.id).label("total"),
-            func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present"),
-        ).filter(base_filter)
-        if exclude_infotund:
-            overall_query = overall_query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
-        overall_row = overall_query.first()
-
-        total_sessions = int(overall_row[0]) if overall_row and overall_row[0] else 0
-        present_sessions = int(overall_row[1]) if overall_row and overall_row[1] else 0
-        absent_sessions = total_sessions - present_sessions
-        percentage = (
-            round((present_sessions / total_sessions) * 100, 1) if total_sessions > 0 else 0.0
+        main_data = _compute_person_attendance_data(
+            session, person_uuid, infotund_uuids, target_role=role
         )
-
-        overall_votes = get_member_vote_participation(session, membership="all").get(
-            person_uuid,
-            {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
+        coalition_data = _compute_person_attendance_data(
+            session, person_uuid, infotund_uuids, target_role="coalition"
         )
-
-        by_membership = []
-        for mem_id, (start_d, end_d) in sorted(
-            MEMBERSHIP_DATES.items(), key=lambda x: int(x[0]), reverse=True
-        ):
-            mem_query = session.query(
-                func.count(Attendance.id).label("total"),
-                func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present"),
-            ).filter(
-                base_filter,
-                Attendance.session_date >= start_d,
-                Attendance.session_date <= f"{end_d}T23:59:59",
-            )
-            if exclude_infotund:
-                mem_query = mem_query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
-            mem_row = mem_query.first()
-            m_total = int(mem_row[0]) if mem_row and mem_row[0] else 0
-            m_votes = get_member_vote_participation(session, membership=str(mem_id)).get(
-                person_uuid,
-                {"voted": 0, "not_voted": 0, "absent": 0, "total": 0, "voted_pct": None},
-            )
-            if m_total > 0 or m_votes["total"] > 0:
-                m_present = int(mem_row[1]) if mem_row and mem_row[1] else 0
-                m_absent = m_total - m_present
-                m_pct = round((m_present / m_total) * 100, 1) if m_total > 0 else 0.0
-                by_membership.append(
-                    {
-                        "membership": str(mem_id),
-                        "total_sessions": m_total,
-                        "present_sessions": m_present,
-                        "absent_sessions": m_absent,
-                        "attendance_percentage": m_pct,
-                        "votes": m_votes,
-                    }
-                )
+        opposition_data = _compute_person_attendance_data(
+            session, person_uuid, infotund_uuids, target_role="opposition"
+        )
 
         return {
             "uuid": person_uuid,
             "member_name": person.full_name,
-            "total_sessions": total_sessions,
-            "present_sessions": present_sessions,
-            "absent_sessions": absent_sessions,
-            "attendance_percentage": percentage,
-            "votes": overall_votes,
-            "by_membership": by_membership,
+            "total_sessions": main_data["total_sessions"],
+            "present_sessions": main_data["present_sessions"],
+            "absent_sessions": main_data["absent_sessions"],
+            "attendance_percentage": main_data["attendance_percentage"],
+            "votes": main_data["votes"],
+            "by_membership": main_data["by_membership"],
+            "role_breakdown": {
+                "coalition": coalition_data,
+                "opposition": opposition_data,
+            },
         }
     finally:
         session.close()
@@ -270,6 +331,7 @@ def get_faction_attendance_stats(
     membership: str | None = None,
     active_only: bool = False,
     exclude_infotund: bool = False,
+    role: str | None = None,
 ) -> list[dict]:
     """Calculate aggregated attendance statistics for parliamentary factions."""
     if membership is None:
@@ -309,6 +371,12 @@ def get_faction_attendance_stats(
                     )
                 if exclude_infotund:
                     f_query = f_query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
+                if role in ("coalition", "opposition"):
+                    f_query = f_query.filter(
+                        role_condition(
+                            Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                        )
+                    )
                 latest_factions = {r[0]: r[1] for r in f_query.group_by(member_key).all()}
 
                 active_faction_counts: dict[str, int] = {}
@@ -333,6 +401,12 @@ def get_faction_attendance_stats(
                     )
                 if exclude_infotund:
                     query = query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
+                if role in ("coalition", "opposition"):
+                    query = query.filter(
+                        role_condition(
+                            Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                        )
+                    )
                 query = query.filter(Attendance.member_uuid.in_(active_uuids))
                 member_results = query.group_by(member_key).all()
 
@@ -347,7 +421,9 @@ def get_faction_attendance_stats(
                     faction_totals[fac_name]["present"] += int(present) if present else 0
 
                 active_faction_votes: dict[str, dict[str, int]] = {}
-                member_votes = get_member_vote_participation(session, membership=membership)
+                member_votes = get_member_vote_participation(
+                    session, membership=membership, role=role
+                )
                 for uid in active_uuids:
                     fac = active_uuid_factions.get(
                         uid, "Fraktsiooni mittekuuluvad Riigikogu liikmed"
@@ -427,6 +503,13 @@ def get_faction_attendance_stats(
                 if exclude_infotund:
                     query = query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
 
+                if role in ("coalition", "opposition"):
+                    query = query.filter(
+                        role_condition(
+                            Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                        )
+                    )
+
                 query = query.filter(Attendance.member_name.in_(active_members))
                 member_results = query.group_by(member_key).all()
 
@@ -484,9 +567,16 @@ def get_faction_attendance_stats(
         if exclude_infotund:
             query = query.filter(Attendance.voting_uuid.not_in(infotund_uuids))
 
+        if role in ("coalition", "opposition"):
+            query = query.filter(
+                role_condition(
+                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                )
+            )
+
         results = query.group_by(Attendance.faction).all()
 
-        faction_votes = get_faction_vote_participation(session, membership=membership)
+        faction_votes = get_faction_vote_participation(session, membership=membership, role=role)
 
         stats = []
         for fac_name, member_count, total, present in results:
