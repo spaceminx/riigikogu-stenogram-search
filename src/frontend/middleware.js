@@ -1,3 +1,15 @@
+import { next } from "@vercel/functions";
+
+export const config = {
+  matcher: [
+    "/kone/:path*",
+    "/saadik/:path*",
+    "/eelnou/:path*",
+    "/haaletus/:path*",
+    "/istung/:path*",
+  ],
+};
+
 // Known bot user-agent pattern (Facebook, Twitter/X, Slack, LinkedIn, Discord, Telegram, WhatsApp, search engine crawlers)
 export const KNOWN_BOT_UA_REGEX =
   /(facebookexternalhit|Facebot|Twitterbot|Slackbot|LinkedInBot|Discordbot|TelegramBot|WhatsApp|Pinterest|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot)/i;
@@ -163,12 +175,12 @@ export default async function middleware(request) {
 
   // If not one of the targeted shared link routes, continue
   if (!route) {
-    return;
+    return next();
   }
 
   const userAgent = request.headers.get("user-agent") || "";
   if (!isBotUserAgent(userAgent)) {
-    return;
+    return next();
   }
 
   // Special handling for /istung/:date: do NOT call the API (GET /sessions/{date} is heavy).
@@ -188,18 +200,17 @@ export default async function middleware(request) {
           });
         }
       } catch {
-        // Fall back to 404 status
         return new Response("Not Found", { status: 404 });
       }
-      return;
+      return new Response("Not Found", { status: 404 });
     }
 
     try {
       const indexResp = await fetch(new URL("/index.html", request.url));
-      if (!indexResp.ok) return;
+      if (!indexResp.ok) return next();
       const html = await indexResp.text();
       const ogMeta = resolveOgMetadata("istung", route.id, null);
-      if (!ogMeta) return;
+      if (!ogMeta) return next();
 
       const modifiedHtml = injectOpenGraphTags(html, ogMeta);
       return new Response(modifiedHtml, {
@@ -210,13 +221,13 @@ export default async function middleware(request) {
         },
       });
     } catch {
-      return;
+      return next();
     }
   }
 
   const apiPath = getApiPath(route.routeType, route.id);
   if (!apiPath) {
-    return;
+    return next();
   }
 
   const apiBase =
@@ -251,13 +262,13 @@ export default async function middleware(request) {
       return new Response("Not Found", { status: 404 });
     }
 
-    if (!indexResp.ok || !dataResp.ok) return;
+    if (!indexResp.ok || !dataResp.ok) return next();
 
     const html = await indexResp.text();
     const data = await dataResp.json();
 
     const ogMeta = resolveOgMetadata(route.routeType, route.id, data);
-    if (!ogMeta) return;
+    if (!ogMeta) return next();
 
     const modifiedHtml = injectOpenGraphTags(html, ogMeta);
     return new Response(modifiedHtml, {
@@ -269,6 +280,6 @@ export default async function middleware(request) {
     });
   } catch {
     // Timeout or network error -> fall back to unchanged SPA
-    return;
+    return next();
   }
 }
