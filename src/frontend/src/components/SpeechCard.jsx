@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Video, FileText } from "lucide-react";
+import { ExternalLink, Video, FileText, Play } from "lucide-react";
 import {
   formatDateTime,
   formatDuration,
@@ -10,6 +10,7 @@ import {
   normalizeSourceUrl,
   SPEECH_TYPE_LABELS,
 } from "../lib/formatters";
+import VideoEmbed from "./VideoEmbed";
 
 export function SpeechCard({
   speech,
@@ -19,6 +20,8 @@ export function SpeechCard({
   isTarget = false,
   onOpenContext,
   cardRef,
+  isVideoOpen = false,
+  onToggleVideo = null,
 }) {
   const speechTypeLabel = SPEECH_TYPE_LABELS[speech.speech_type];
   const durationText = formatDuration(speech.duration_seconds);
@@ -117,6 +120,19 @@ export function SpeechCard({
         )}
 
         <div className="speech-card-links">
+          {mode === "session" && speech.video_url && onToggleVideo && (
+            <button
+              type="button"
+              className={`speech-video-inline-toggle ${isVideoOpen ? "is-active" : ""}`}
+              onClick={onToggleVideo}
+              aria-expanded={isVideoOpen}
+              title={isVideoOpen ? "Sulge video" : "Ava video istungi lehel"}
+            >
+              <Play size={12} fill="currentColor" aria-hidden="true" />
+              <span>Video</span>
+            </button>
+          )}
+
           {publicSpeechId && (
             <Link
               to={`/kone/${publicSpeechId}`}
@@ -153,6 +169,18 @@ export function SpeechCard({
           </a>
         </div>
       </div>
+
+      {mode === "session" && isVideoOpen && speech.video_url && (
+        <div className="speech-card-inline-video">
+          <VideoEmbed
+            videoUrl={speech.video_url}
+            durationSeconds={speech.duration_seconds}
+            speaker={speech.speaker}
+            date={speech.date}
+            showExternalLink={false}
+          />
+        </div>
+      )}
     </div>
   );
 }
