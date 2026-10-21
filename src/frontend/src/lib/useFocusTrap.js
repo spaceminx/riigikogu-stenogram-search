@@ -94,8 +94,20 @@ export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       const prev = previousActiveElementRef.current;
-      if (prev && typeof prev.focus === "function") {
+      const isVisible = (el) => {
+        if (!el || !document.contains(el)) return false;
+        if (el.offsetWidth === 0 && el.offsetHeight === 0) return false;
+        const style = window.getComputedStyle(el);
+        return style.display !== "none" && style.visibility !== "hidden";
+      };
+
+      if (isVisible(prev) && typeof prev.focus === "function") {
         prev.focus();
+      } else {
+        const headerMenuTrigger = document.querySelector(".header-menu-trigger");
+        if (headerMenuTrigger && typeof headerMenuTrigger.focus === "function") {
+          headerMenuTrigger.focus();
+        }
       }
     };
   }, [isOpen, onClose, initialFocusRef]);

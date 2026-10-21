@@ -253,6 +253,7 @@ export function SearchQueryInput({
                     type="text"
                     className="search-input"
                     role="combobox"
+                    aria-label="Otsingusõna"
                     aria-autocomplete="list"
                     aria-expanded={showDropdown}
                     aria-controls={showDropdown ? "search-suggestions-list" : undefined}

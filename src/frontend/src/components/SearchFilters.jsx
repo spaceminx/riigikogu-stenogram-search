@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import useSWR from "swr";
 import { Search } from "lucide-react";
 import DateRangeCalendar from "../DateRangeCalendar";
 import { formatFactionName } from "../lib/formatters";
@@ -24,25 +25,17 @@ export function SearchFilters({
   setSearchExactMatch,
   onResetFilters,
 }) {
-  const [loadedFactions, setLoadedFactions] = useState([]);
-
-  useEffect(() => {
-    if (propFactionsList && propFactionsList.length > 0) return;
-    let isCancelled = false;
-    fetchFactionsList("all")
-      .then((data) => {
-        if (!isCancelled && Array.isArray(data)) {
-          setLoadedFactions(data);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      isCancelled = true;
-    };
-  }, [propFactionsList]);
+  const { data: fetchedFactions = [] } = useSWR(
+    propFactionsList && propFactionsList.length > 0 ? null : ["factions-list", "all"],
+    () => fetchFactionsList("all"),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
 
   const searchFactionsList =
-    propFactionsList && propFactionsList.length > 0 ? propFactionsList : loadedFactions;
+    propFactionsList && propFactionsList.length > 0 ? propFactionsList : fetchedFactions;
   const hasActiveFilters =
     searchMembership !== "all" ||
     searchFaction !== "" ||
