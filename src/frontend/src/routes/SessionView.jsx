@@ -15,6 +15,7 @@ export function SessionView() {
   const navigate = useNavigate();
   const targetElementRef = useRef(null);
   const [showAllVotings, setShowAllVotings] = useState(false);
+  const [openVideoSpeechId, setOpenVideoSpeechId] = useState(null);
 
   const formattedDate = date ? formatDate(date) : "";
   const pageTitle = formattedDate ? `Istung ${formattedDate} — Riigivaade` : "Istung — Riigivaade";
@@ -173,6 +174,7 @@ export function SessionView() {
             const isTarget = Boolean(
               targetSpeechAnchor && publicSpeechId && publicSpeechId === targetSpeechAnchor
             );
+            const isVideoOpen = openVideoSpeechId === speech.id;
             return (
               <SpeechCard
                 key={speech.id}
@@ -180,6 +182,10 @@ export function SessionView() {
                 mode="session"
                 isTarget={isTarget}
                 cardRef={isTarget ? targetElementRef : null}
+                isVideoOpen={isVideoOpen}
+                onToggleVideo={() =>
+                  setOpenVideoSpeechId((current) => (current === speech.id ? null : speech.id))
+                }
               />
             );
           })}

@@ -58,6 +58,9 @@ export function PrivacyView({ onOpenMethodology }) {
               Brauserisse salvestatakse ainult valitud teema (hele või tume). Veebilehte ja API-t
               vahendavad Vercel ja Cloudflare, kes töötlevad turvalisuse ja töökindluse tagamiseks
               tehnilisi logisid (sh IP-aadressi). Saadikute fotod laaditakse Riigikogu serverist.
+              Kõne video vaatamiseks laaditakse alles sinu klõpsu peale Riigikogu YouTube'i kanali
+              video (youtube-nocookie.com); seejärel saab Google sinu IP-aadressi ja võib salvestada
+              andmeid sinu brauserisse.
             </p>
           </section>
 

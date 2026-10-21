@@ -12,6 +12,7 @@ import {
   SPEECH_TYPE_LABELS,
 } from "../lib/formatters";
 import { usePageMeta } from "../lib/usePageMeta";
+import VideoEmbed from "../components/VideoEmbed";
 
 export function SpeechView() {
   const { id } = useParams();
@@ -181,6 +182,18 @@ export function SpeechView() {
               </Link>
             )}
             <span className="agenda-title-text">{speech.agenda_title}</span>
+          </div>
+        )}
+
+        {speech.video_url && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <VideoEmbed
+              videoUrl={speech.video_url}
+              durationSeconds={speech.duration_seconds}
+              speaker={speech.speaker}
+              date={speech.date ? formatDate(speech.date) : ""}
+              showExternalLink={false}
+            />
           </div>
         )}
 
