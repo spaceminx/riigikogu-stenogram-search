@@ -927,6 +927,9 @@ def test_system_status():
     assert "latest_session_status" in data
     assert "last_sync_at" in data
     assert "totals" in data
+    assert "total_persons" in data
+    assert "active_persons" in data
+    assert data["totals"]["active_persons"] == data["active_persons"]
     assert "methodology" in data
     assert "search" in data["methodology"]
     assert "attendance" in data["methodology"]

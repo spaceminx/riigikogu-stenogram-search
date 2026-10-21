@@ -47,7 +47,11 @@ export function DashboardView({
 
   const navigate = useNavigate();
   const totalSpeeches = systemStatus?.total_speeches ?? systemStatus?.totals?.speeches;
-  const totalPersons = systemStatus?.total_persons ?? systemStatus?.totals?.persons;
+  const activePersons =
+    systemStatus?.active_persons ??
+    systemStatus?.totals?.active_persons ??
+    systemStatus?.total_persons ??
+    systemStatus?.totals?.persons;
   const memText =
     memberships && memberships.length > 0
       ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
@@ -57,8 +61,8 @@ export function DashboardView({
   if (totalSpeeches !== undefined && totalSpeeches !== null) {
     statItems.push(`${Number(totalSpeeches).toLocaleString("et-EE")} kõnet`);
   }
-  if (totalPersons !== undefined && totalPersons !== null) {
-    statItems.push(`${totalPersons} saadikut`);
+  if (activePersons !== undefined && activePersons !== null) {
+    statItems.push(`${activePersons} saadikut (XIV–XV)`);
   }
   if (memText) {
     statItems.push(memText);
