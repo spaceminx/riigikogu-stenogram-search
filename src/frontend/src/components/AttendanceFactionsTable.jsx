@@ -84,7 +84,6 @@ export function AttendanceFactionsTable({
                   type="button"
                   className={`att-sort-btn ${factionSortConfig.key === "votes_voted_pct" ? "is-active" : ""}`}
                   onClick={() => requestFactionSort("votes_voted_pct")}
-                  aria-sort={getAriaSort("votes_voted_pct")}
                 >
                   Hääletustel {getSortIndicator("votes_voted_pct")}
                 </button>
@@ -93,7 +92,6 @@ export function AttendanceFactionsTable({
                   type="button"
                   className={`att-sort-btn ${factionSortConfig.key === "registered_pct" ? "is-active" : ""}`}
                   onClick={() => requestFactionSort("registered_pct")}
-                  aria-sort={getAriaSort("registered_pct")}
                 >
                   Kontrollides {getSortIndicator("registered_pct")}
                 </button>

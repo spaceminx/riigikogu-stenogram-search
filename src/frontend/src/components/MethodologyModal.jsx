@@ -1,27 +1,29 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { formatDate } from "../lib/calendarUtils";
 import { formatSyncTime, isSyncStale } from "../lib/formatters";
+import { useFocusTrap } from "../lib/useFocusTrap";
 
 export function MethodologyModal({ isOpen, onClose, systemStatus }) {
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  const containerRef = useFocusTrap({ isOpen, onClose });
 
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop">
+      <button
+        type="button"
+        className="modal-backdrop-dismiss"
+        aria-label="Sulge dialoog"
+        onClick={onClose}
+        tabIndex="-1"
+      />
       <div
+        ref={containerRef}
         className="modal-content glass-panel methodology-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="methodology-modal-title"
-        onClick={(e) => e.stopPropagation()}
+        tabIndex="-1"
       >
         <div className="modal-top-bar">
           <div>

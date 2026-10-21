@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { fetchPlenarySessionDates } from "./lib/api";
 import {
   CALENDAR_MAX_MONTH,
   CALENDAR_MIN_MONTH,
@@ -19,13 +21,23 @@ import {
 
 export default function DateRangeCalendar({
   compact = false,
-  dates = [],
+  dates = null,
   memberships = [],
   value = { startDate: "", endDate: "" },
   onChange,
   onSelectDate,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: plenaryDatesData } = useSWR(
+    isOpen ? "plenary-session-dates" : null,
+    fetchPlenarySessionDates,
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+  const plenaryDatesList = plenaryDatesData?.dates;
+  const effectiveDates = useMemo(() => dates ?? plenaryDatesList ?? [], [dates, plenaryDatesList]);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const start = fromDateKey(value.startDate);
     const now = new Date();
@@ -36,7 +48,7 @@ export default function DateRangeCalendar({
   const rootRef = useRef(null);
   const popoverRef = useRef(null);
   const [popoverPosition, setPopoverPosition] = useState(null);
-  const sessionDates = useMemo(() => new Set(dates), [dates]);
+  const sessionDates = useMemo(() => new Set(effectiveDates), [effectiveDates]);
   const presets = useMemo(() => getQuickPresets(memberships), [memberships]);
   const monthCount = compact ? 1 : 2;
   const months = Array.from({ length: monthCount }, (_, index) => shiftMonth(visibleMonth, index));
@@ -46,7 +58,7 @@ export default function DateRangeCalendar({
   };
 
   const applyPreset = (presetId) => {
-    const nextRange = getPresetRange(presetId, dates, memberships);
+    const nextRange = getPresetRange(presetId, effectiveDates, memberships);
     onChange?.(nextRange);
     setVisibleMonth(clampMonth(fromDateKey(nextRange.startDate)));
   };

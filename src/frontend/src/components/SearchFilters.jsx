@@ -1,7 +1,9 @@
 import React from "react";
+import useSWR from "swr";
 import { Search } from "lucide-react";
 import DateRangeCalendar from "../DateRangeCalendar";
 import { formatFactionName } from "../lib/formatters";
+import { fetchFactionsList } from "../lib/api";
 
 export function SearchFilters({
   searchMembership,
@@ -9,7 +11,7 @@ export function SearchFilters({
   memberships,
   searchFaction,
   setSearchFaction,
-  searchFactionsList,
+  searchFactionsList: propFactionsList,
   plenaryDates,
   searchDateRange,
   setSearchDateRange,
@@ -23,6 +25,17 @@ export function SearchFilters({
   setSearchExactMatch,
   onResetFilters,
 }) {
+  const { data: fetchedFactions = [] } = useSWR(
+    propFactionsList && propFactionsList.length > 0 ? null : ["factions-list", "all"],
+    () => fetchFactionsList("all"),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
+
+  const searchFactionsList =
+    propFactionsList && propFactionsList.length > 0 ? propFactionsList : fetchedFactions;
   const hasActiveFilters =
     searchMembership !== "all" ||
     searchFaction !== "" ||

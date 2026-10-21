@@ -340,3 +340,35 @@ def test_dashboard_overview_topics_tfidf():
             assert noun_idx < verb_idx
     finally:
         session.close()
+
+
+def test_suggest_exclude_ambiguous():
+    session = SessionLocal()
+    try:
+        clear_suggest_cache()
+        for word in ["miski", "miks", "kaasa"]:
+            lem = session.query(Lemma).filter_by(lemma=word).first()
+            if not lem:
+                lem = Lemma(lemma=word, df=10, pos="S")
+                session.add(lem)
+            else:
+                lem.df = 10
+                lem.pos = "S"
+        session.commit()
+
+        res_mis = client.get("/suggest?prefix=mis")
+        assert res_mis.status_code == 200
+        terms_mis = [x["term"] for x in res_mis.json()]
+        assert "miski" not in terms_mis
+
+        res_mik = client.get("/suggest?prefix=mik")
+        assert res_mik.status_code == 200
+        terms_mik = [x["term"] for x in res_mik.json()]
+        assert "miks" not in terms_mik
+
+        res_kaa = client.get("/suggest?prefix=kaa")
+        assert res_kaa.status_code == 200
+        terms_kaa = [x["term"] for x in res_kaa.json()]
+        assert "kaasa" not in terms_kaa
+    finally:
+        session.close()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -10,13 +10,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import useSWR from "swr";
-import {
-  fetchDashboardOverview,
-  fetchFactionsList,
-  fetchMemberships,
-  fetchPlenarySessionDates,
-  fetchSystemStatus,
-} from "./lib/api";
+import { fetchMemberships, fetchSystemStatus } from "./lib/api";
 import { toRoman } from "./lib/formatters";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -128,10 +122,6 @@ function AppContent() {
   const location = useLocation();
   const [theme, setTheme] = useState(getInitialTheme);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
-  const [systemStatus, setSystemStatus] = useState(null);
-  const [searchFactionsList, setSearchFactionsList] = useState([]);
-  const [memberships, setMemberships] = useState([]);
-  const [membershipsLoading, setMembershipsLoading] = useState(true);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -143,42 +133,29 @@ function AppContent() {
   }, [theme]);
 
   const {
-    data: dashboardOverview,
-    error: overviewError,
-    isLoading: overviewLoading,
-  } = useSWR("dashboard-overview", fetchDashboardOverview, {
+    data: systemStatus,
+    error: systemStatusError,
+    isLoading: systemStatusLoading,
+  } = useSWR("system-status", fetchSystemStatus, {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
 
-  const { data: plenaryDatesData } = useSWR("plenary-session-dates", fetchPlenarySessionDates, {
-    revalidateOnFocus: false,
-    shouldRetryOnError: false,
-  });
-  const plenaryDates = plenaryDatesData?.dates || [];
+  const { data: membershipsData, isLoading: membershipsLoading } = useSWR(
+    "parliament-memberships",
+    fetchMemberships,
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
 
-  useEffect(() => {
-    fetchSystemStatus()
-      .then((data) => setSystemStatus(data))
-      .catch(() => {});
-
-    fetchMemberships()
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setMemberships(data.filter((m) => m.number >= 14));
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        setMembershipsLoading(false);
-      });
-
-    fetchFactionsList("all")
-      .then((data) => {
-        if (Array.isArray(data)) setSearchFactionsList(data);
-      })
-      .catch(() => {});
-  }, []);
+  const memberships = useMemo(() => {
+    if (Array.isArray(membershipsData) && membershipsData.length > 0) {
+      return membershipsData.filter((m) => m.number >= 14);
+    }
+    return [];
+  }, [membershipsData]);
 
   return (
     <div className="app-container">
@@ -188,8 +165,8 @@ function AppContent() {
         theme={theme}
         setTheme={setTheme}
         systemStatus={systemStatus}
-        overviewError={overviewError}
-        overviewLoading={overviewLoading}
+        systemStatusError={systemStatusError}
+        systemStatusLoading={systemStatusLoading}
         onOpenMethodology={() => setShowMethodologyModal(true)}
       />
 
@@ -202,27 +179,15 @@ function AppContent() {
               path="/"
               element={
                 <DashboardView
-                  dashboardOverview={dashboardOverview}
-                  overviewError={overviewError}
-                  overviewLoading={overviewLoading}
-                  plenaryDates={plenaryDates}
                   theme={theme}
                   memberships={memberships}
-                  searchFactionsList={searchFactionsList}
                   systemStatus={systemStatus}
                 />
               }
             />
             <Route
               path="/otsing"
-              element={
-                <SearchView
-                  memberships={memberships}
-                  searchFactionsList={searchFactionsList}
-                  plenaryDates={plenaryDates}
-                  theme={theme}
-                />
-              }
+              element={<SearchView memberships={memberships} theme={theme} />}
             />
             <Route path="/istung/:date" element={<SessionView />} />
             <Route
@@ -237,10 +202,7 @@ function AppContent() {
             />
             <Route path="/kone/:id" element={<SpeechView />} />
             <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
-            <Route
-              path="/haaletused"
-              element={<VotingsView plenaryDates={plenaryDates} memberships={memberships} />}
-            />
+            <Route path="/haaletused" element={<VotingsView memberships={memberships} />} />
             <Route path="/haaletus/:uuid" element={<VotingView />} />
             <Route path="/eelnou/:uuid" element={<DraftView />} />
             <Route
