@@ -2259,7 +2259,7 @@ def _generate_sitemap_xml(session) -> str:
         if p_uuid:
             add_url(f"{base_url}/saadik/{p_uuid}")
 
-    # 4. Drafts / eelnou/{uuid} with agenda items or votings
+    # 4. Drafts / eelnou/{uuid} with agenda items or votings (related_document_type = 'DRAFT')
     agenda_drafts = (
         session.query(AgendaItem.draft_uuid, func.max(AgendaItem.sitting_date))
         .filter(AgendaItem.draft_uuid.isnot(None))
@@ -2268,7 +2268,10 @@ def _generate_sitemap_xml(session) -> str:
     )
     voting_drafts = (
         session.query(Voting.related_document_uuid, func.max(Voting.sitting_date))
-        .filter(Voting.related_document_uuid.isnot(None))
+        .filter(
+            Voting.related_document_uuid.isnot(None),
+            Voting.related_document_type == "DRAFT",
+        )
         .group_by(Voting.related_document_uuid)
         .all()
     )

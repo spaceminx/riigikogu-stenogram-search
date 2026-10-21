@@ -1,8 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import {
+import middleware, {
   injectOpenGraphTags,
   isBotUserAgent,
+  isValidSittingDate,
   parseRouteInfo,
   resolveOgMetadata,
 } from "../middleware.js";
@@ -42,6 +43,25 @@ describe("Open Graph middleware helpers", () => {
       );
       assert.strictEqual(isBotUserAgent(""), false);
       assert.strictEqual(isBotUserAgent(null), false);
+    });
+  });
+
+  describe("isValidSittingDate", () => {
+    it("accepts valid YYYY-MM-DD dates", () => {
+      assert.strictEqual(isValidSittingDate("2026-10-14"), true);
+      assert.strictEqual(isValidSittingDate("2024-02-29"), true); // leap year
+      assert.strictEqual(isValidSittingDate("2019-01-01"), true);
+    });
+
+    it("rejects invalid or non-date strings", () => {
+      assert.strictEqual(isValidSittingDate("2023-02-29"), false); // not leap year
+      assert.strictEqual(isValidSittingDate("2026-13-01"), false); // invalid month
+      assert.strictEqual(isValidSittingDate("2026-00-10"), false);
+      assert.strictEqual(isValidSittingDate("2026-05-32"), false);
+      assert.strictEqual(isValidSittingDate("invalid-date"), false);
+      assert.strictEqual(isValidSittingDate("../attack"), false);
+      assert.strictEqual(isValidSittingDate(""), false);
+      assert.strictEqual(isValidSittingDate(null), false);
     });
   });
 
@@ -107,8 +127,9 @@ describe("Open Graph middleware helpers", () => {
       });
       assert.strictEqual(draftMeta.image, null);
 
-      const sessionMeta = resolveOgMetadata("istung", "2024-02-10", {});
+      const sessionMeta = resolveOgMetadata("istung", "2024-02-10", null);
       assert.strictEqual(sessionMeta.image, null);
+      assert.strictEqual(sessionMeta.title, "Istung 10.02.2024 — Riigivaade");
     });
   });
 
@@ -150,6 +171,114 @@ describe("Open Graph middleware helpers", () => {
       assert.ok(out.includes("&quot;Maksuseadus &amp; muudatused&quot; &lt;1&gt;"));
       assert.ok(out.includes("&quot;jutumärkidega&quot;"));
       assert.ok(!out.includes('<meta property="og:image"'));
+    });
+  });
+
+  describe("middleware execution", () => {
+    const originalFetch = globalThis.fetch;
+
+    it("handles /istung/:date without calling any API endpoint", async () => {
+      const fetchCalls = [];
+      globalThis.fetch = async (url) => {
+        const urlStr = String(url);
+        fetchCalls.push(urlStr);
+        if (urlStr.includes("/index.html")) {
+          return new Response("<html><head><title>App</title></head><body></body></html>", {
+            status: 200,
+            headers: { "content-type": "text/html" },
+          });
+        }
+        throw new Error(`Unexpected fetch call: ${urlStr}`);
+      };
+
+      try {
+        const req = new Request("https://www.riigivaade.me/istung/2026-10-14", {
+          headers: { "user-agent": "facebookexternalhit/1.1" },
+        });
+
+        const resp = await middleware(req);
+        assert.ok(resp);
+        assert.strictEqual(resp.status, 200);
+
+        const body = await resp.text();
+        assert.ok(
+          body.includes('<meta property="og:title" content="Istung 14.10.2026 — Riigivaade" />')
+        );
+        assert.ok(!body.includes("sessions/2026-10-14"));
+
+        // Verify only index.html was fetched, zero API calls
+        assert.strictEqual(fetchCalls.length, 1);
+        assert.ok(fetchCalls[0].endsWith("/index.html"));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("returns 404 with 404.html when API returns 404 for saadik", async () => {
+      globalThis.fetch = async (url) => {
+        const urlStr = String(url);
+        if (urlStr.includes("/index.html")) {
+          return new Response("<html><head></head><body></body></html>", { status: 200 });
+        }
+        if (urlStr.includes("/persons/non-existent-uuid")) {
+          return new Response(JSON.stringify({ detail: "Not found" }), { status: 404 });
+        }
+        if (urlStr.includes("/404.html")) {
+          return new Response(
+            "<html><head><title>404</title></head><body>Page not found</body></html>",
+            {
+              status: 200,
+            }
+          );
+        }
+        throw new Error(`Unexpected fetch: ${urlStr}`);
+      };
+
+      try {
+        const req = new Request("https://www.riigivaade.me/saadik/non-existent-uuid", {
+          headers: { "user-agent": "Twitterbot/1.0" },
+        });
+
+        const resp = await middleware(req);
+        assert.ok(resp);
+        assert.strictEqual(resp.status, 404);
+
+        const body = await resp.text();
+        assert.ok(body.includes("Page not found"));
+        // Ensure no OG tags were injected into 404 response
+        assert.ok(!body.includes('property="og:title"'));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("returns 404 with 404.html for invalid sitting date format", async () => {
+      globalThis.fetch = async (url) => {
+        const urlStr = String(url);
+        if (urlStr.includes("/404.html")) {
+          return new Response(
+            "<html><head><title>404</title></head><body>Page not found</body></html>",
+            {
+              status: 200,
+            }
+          );
+        }
+        throw new Error(`Unexpected fetch: ${urlStr}`);
+      };
+
+      try {
+        const req = new Request("https://www.riigivaade.me/istung/invalid-date", {
+          headers: { "user-agent": "Slackbot 1.0" },
+        });
+
+        const resp = await middleware(req);
+        assert.ok(resp);
+        assert.strictEqual(resp.status, 404);
+        const body = await resp.text();
+        assert.ok(body.includes("Page not found"));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
     });
   });
 });

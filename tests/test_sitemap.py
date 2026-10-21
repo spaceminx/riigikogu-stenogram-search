@@ -68,6 +68,46 @@ def test_sitemap_xml_endpoint():
             )
             session.add(agenda_item)
 
+        # Non-draft related document should NOT be included in sitemap
+        non_draft_voting = (
+            session.query(Voting)
+            .filter(Voting.related_document_uuid == "non-draft-other-doc")
+            .first()
+        )
+        if not non_draft_voting:
+            non_draft_voting = Voting(
+                uuid="voting-with-non-draft-doc",
+                date="2024-03-15",
+                description="Muu küsimuse hääletus",
+                sitting_date="2024-03-15",
+                type="AVALIK",
+                in_favor=50,
+                against=5,
+                related_document_uuid="non-draft-other-doc",
+                related_document_type="otherQuestionDocument",
+            )
+            session.add(non_draft_voting)
+
+        # Draft voting with related_document_type = 'DRAFT' should be included
+        draft_voting = (
+            session.query(Voting)
+            .filter(Voting.related_document_uuid == "test-draft-via-voting")
+            .first()
+        )
+        if not draft_voting:
+            draft_voting = Voting(
+                uuid="voting-with-draft-doc",
+                date="2024-03-15",
+                description="Eelnõu hääletus",
+                sitting_date="2024-03-15",
+                type="AVALIK",
+                in_favor=50,
+                against=5,
+                related_document_uuid="test-draft-via-voting",
+                related_document_type="DRAFT",
+            )
+            session.add(draft_voting)
+
         session.commit()
         person_uuid = person.uuid
         speech_date = speech.date
@@ -98,6 +138,8 @@ def test_sitemap_xml_endpoint():
     assert f"<loc>https://www.riigivaade.me/saadik/{person_uuid}</loc>" in content
     assert f"<loc>https://www.riigivaade.me/istung/{speech_date}</loc>" in content
     assert f"<loc>https://www.riigivaade.me/eelnou/{draft_uuid}</loc>" in content
+    assert "<loc>https://www.riigivaade.me/eelnou/test-draft-via-voting</loc>" in content
+    assert "<loc>https://www.riigivaade.me/eelnou/non-draft-other-doc</loc>" not in content
     assert f"<loc>https://www.riigivaade.me/haaletus/{voting_uuid}</loc>" in content
 
     # Crucial rule: no speeches (209k) in sitemap

@@ -2,9 +2,20 @@
 export const KNOWN_BOT_UA_REGEX =
   /(facebookexternalhit|Facebot|Twitterbot|Slackbot|LinkedInBot|Discordbot|TelegramBot|WhatsApp|Pinterest|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot)/i;
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
 export function isBotUserAgent(userAgent) {
   if (!userAgent || typeof userAgent !== "string") return false;
   return KNOWN_BOT_UA_REGEX.test(userAgent);
+}
+
+export function isValidSittingDate(dateStr) {
+  if (!dateStr || typeof dateStr !== "string" || !DATE_REGEX.test(dateStr)) {
+    return false;
+  }
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
 }
 
 function escapeHtml(str) {
@@ -139,7 +150,7 @@ export function getApiPath(routeType, id) {
   if (routeType === "saadik") return `/persons/${id}`;
   if (routeType === "haaletus") return `/votings/${id}`;
   if (routeType === "eelnou") return `/drafts/${id}`;
-  if (routeType === "istung") return `/sessions/${id}`;
+  // istung does not use an API call
   return null;
 }
 
@@ -160,6 +171,49 @@ export default async function middleware(request) {
     return;
   }
 
+  // Special handling for /istung/:date: do NOT call the API (GET /sessions/{date} is heavy).
+  // Validate YYYY-MM-DD date and build OG tags purely from the valid date.
+  if (route.routeType === "istung") {
+    if (!isValidSittingDate(route.id)) {
+      try {
+        const notFoundResp = await fetch(new URL("/404.html", request.url));
+        if (notFoundResp.ok) {
+          const html404 = await notFoundResp.text();
+          return new Response(html404, {
+            status: 404,
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+              "x-robots-tag": "noindex",
+            },
+          });
+        }
+      } catch {
+        // Fall back to 404 status
+        return new Response("Not Found", { status: 404 });
+      }
+      return;
+    }
+
+    try {
+      const indexResp = await fetch(new URL("/index.html", request.url));
+      if (!indexResp.ok) return;
+      const html = await indexResp.text();
+      const ogMeta = resolveOgMetadata("istung", route.id, null);
+      if (!ogMeta) return;
+
+      const modifiedHtml = injectOpenGraphTags(html, ogMeta);
+      return new Response(modifiedHtml, {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "x-robots-tag": "all",
+        },
+      });
+    } catch {
+      return;
+    }
+  }
+
   const apiPath = getApiPath(route.routeType, route.id);
   if (!apiPath) {
     return;
@@ -177,13 +231,30 @@ export default async function middleware(request) {
 
     const [indexResp, dataResp] = await Promise.all([indexPromise, dataPromise]);
 
-    if (!indexResp.ok) return;
+    // If the API answers 404, serve 404.html with status 404 (and no OG tags)
+    if (dataResp.status === 404) {
+      try {
+        const notFoundResp = await fetch(new URL("/404.html", request.url));
+        if (notFoundResp.ok) {
+          const html404 = await notFoundResp.text();
+          return new Response(html404, {
+            status: 404,
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+              "x-robots-tag": "noindex",
+            },
+          });
+        }
+      } catch {
+        return new Response("Not Found", { status: 404 });
+      }
+      return new Response("Not Found", { status: 404 });
+    }
+
+    if (!indexResp.ok || !dataResp.ok) return;
 
     const html = await indexResp.text();
-    let data = null;
-    if (dataResp.ok) {
-      data = await dataResp.json();
-    }
+    const data = await dataResp.json();
 
     const ogMeta = resolveOgMetadata(route.routeType, route.id, data);
     if (!ogMeta) return;
