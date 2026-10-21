@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ArrowLeft, FileText, Info, Search, X } from "lucide-react";
@@ -10,6 +10,7 @@ import {
   formatMajorityPosition,
   formatOvernightTime,
 } from "../lib/votingUtils";
+import { usePageMeta } from "../lib/usePageMeta";
 
 const DECISION_FILTER_OPTIONS = [
   { value: "ALL", label: "Kõik" },
@@ -38,15 +39,13 @@ export function VotingView() {
     shouldRetryOnError: false,
   });
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    if (voting?.description) {
-      document.title = `${voting.description} — Riigivaade`;
-    }
-    return () => {
-      document.title = prevTitle;
-    };
-  }, [voting?.description]);
+  const votingTitle = voting?.description
+    ? `${voting.description} — Riigivaade`
+    : "Hääletus — Riigivaade";
+  const votingDesc = voting?.description
+    ? `Riigikogu hääletuse „${voting.description}“ tulemused, saadikute hääled ja fraktsioonide jaotus.`
+    : "Riigikogu hääletuse tulemused ja saadikute otsused.";
+  usePageMeta(votingTitle, votingDesc);
 
   const handleBack = () => {
     if (window.history.length > 1) {

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ArrowLeft, Calendar, ExternalLink, ListOrdered, Video } from "lucide-react";
 import { fetchSpeech } from "../lib/api";
+import { formatDate } from "../lib/calendarUtils";
 import {
   formatDateTime,
   formatDuration,
@@ -10,6 +11,7 @@ import {
   normalizeSourceUrl,
   SPEECH_TYPE_LABELS,
 } from "../lib/formatters";
+import { usePageMeta } from "../lib/usePageMeta";
 
 export function SpeechView() {
   const { id } = useParams();
@@ -24,6 +26,21 @@ export function SpeechView() {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
+
+  const speakerName = speech?.speaker || "";
+  const formattedDate = speech?.date ? formatDate(speech.date) : "";
+  const pageTitle =
+    speakerName && formattedDate
+      ? `${speakerName}, ${formattedDate} — Riigivaade`
+      : speakerName
+        ? `${speakerName} — Riigivaade`
+        : "Kõne — Riigivaade";
+  const pageDesc =
+    speakerName && formattedDate
+      ? `Riigikogu saadiku ${speakerName} sõnavõtt ${formattedDate} toimunud istungil.`
+      : "Riigikogu istungil peetud kõne stenogramm ja salvestis.";
+
+  usePageMeta(pageTitle, pageDesc);
 
   const publicSpeechId = speech ? (speech.external_id ?? speech.speech_key) : null;
 

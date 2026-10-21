@@ -1,8 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, HelpCircle } from "lucide-react";
+import { usePageMeta } from "../lib/usePageMeta";
 
 export function NotFoundView() {
+  usePageMeta(
+    "Lehekülge ei leitud — Riigivaade",
+    "Otsitud lehekülge ei eksisteeri või on see teisaldatud.",
+    {
+      noindex: true,
+    }
+  );
   return (
     <div
       className="glass-panel"
