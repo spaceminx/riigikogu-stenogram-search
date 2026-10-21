@@ -160,7 +160,7 @@ def test_methodology_text_appended():
     att_methodology = response.json().get("methodology", {}).get("attendance", "")
     expected = (
         "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel "
-        "(andmeallikad: valitsus.ee ja Riigikogu Kantselei); iga hääl ja kohalolekukontroll "
+        "(allikad: valitsus.ee, ERR ja Wikipedia; vt /governments); iga hääl ja kohalolekukontroll "
         "arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. "
         "Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. "
         "Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."

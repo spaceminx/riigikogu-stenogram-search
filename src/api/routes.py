@@ -8,7 +8,7 @@ from datetime import date, datetime, timezone
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from sqlalchemy import and_, case, func, or_, text
+from sqlalchemy import and_, case, exists, func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
@@ -1876,6 +1876,7 @@ def system_status():
             total_sessions = cached["total_sessions"]
             total_speeches = cached["total_speeches"]
             total_persons = cached["total_persons"]
+            active_persons = cached.get("active_persons", total_persons)
             total_attendance = cached["total_attendance"]
             total_votings = cached["total_votings"]
             latest_session_file = cached["latest_session_file"]
@@ -1887,6 +1888,17 @@ def system_status():
             )
             total_speeches = session.query(func.count(Speech.id)).scalar() or 0
             total_persons = session.query(func.count(Person.uuid)).scalar() or 0
+            active_persons = (
+                session.query(Person.uuid)
+                .filter(
+                    or_(
+                        exists().where(Speech.speaker_uuid == Person.uuid),
+                        exists().where(Attendance.member_uuid == Person.uuid),
+                        exists().where(Vote.member_uuid == Person.uuid),
+                    )
+                )
+                .count()
+            )
             total_attendance = session.query(func.count(Attendance.id)).scalar() or 0
             total_votings = session.query(func.count(Voting.uuid)).scalar() or 0
 
@@ -1903,6 +1915,7 @@ def system_status():
                 "total_sessions": total_sessions,
                 "total_speeches": total_speeches,
                 "total_persons": total_persons,
+                "active_persons": active_persons,
                 "total_attendance": total_attendance,
                 "total_votings": total_votings,
                 "latest_session_file": latest_session_file,
@@ -1942,11 +1955,13 @@ def system_status():
             "total_sessions": total_sessions,
             "total_speeches": total_speeches,
             "total_persons": total_persons,
+            "active_persons": active_persons,
             "warning": warning,
             "totals": {
                 "sessions": total_sessions,
                 "speeches": total_speeches,
                 "persons": total_persons,
+                "active_persons": active_persons,
                 "attendance_records": total_attendance,
                 "votings": total_votings,
             },
@@ -1962,7 +1977,7 @@ def system_status():
                 ),
                 "attendance": (
                     "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. "
-                    "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (andmeallikad: valitsus.ee ja Riigikogu Kantselei); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."
+                    "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; vt /governments); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."
                 ),
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
