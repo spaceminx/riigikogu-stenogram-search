@@ -1,32 +1,32 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/robots.txt",
-      "dest": "/robots.txt"
+      "source": "/sitemap.xml",
+      "destination": "https://api.riigivaade.me/sitemap.xml"
     },
     {
-      "src": "/sitemap.xml",
-      "dest": "https://api.riigivaade.me/sitemap.xml"
+      "source": "/",
+      "destination": "/index.html"
     },
     {
-      "src": "^/(otsing|kohalolek|haaletused|andmed)(/.*)?$",
-      "dest": "/index.html"
+      "source": "/otsing",
+      "destination": "/index.html"
     },
     {
-      "src": "^/(haaletus|istung|saadik|kone|eelnou)/[^/]+/?$",
-      "dest": "/index.html"
+      "source": "/kohalolek",
+      "destination": "/index.html"
     },
     {
-      "src": "^/?$",
-      "dest": "/index.html"
+      "source": "/haaletused",
+      "destination": "/index.html"
     },
     {
-      "handle": "filesystem"
+      "source": "/andmed",
+      "destination": "/index.html"
     },
     {
-      "src": "/(.*)",
-      "status": 404,
-      "dest": "/404.html"
+      "source": "/(haaletus|istung|saadik|kone|eelnou)/:id",
+      "destination": "/index.html"
     }
   ]
 }
