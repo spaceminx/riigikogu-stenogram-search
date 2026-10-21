@@ -9,6 +9,7 @@ import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import OUTPUT_DIR_PROCESSED, START_DATE
+from src.load.loader import classify_sitting_type, upsert_attendance_checks_jsonl
 
 
 def append_attendance_atomic(attendance_file: str, new_records: list[dict]) -> None:
@@ -103,10 +104,28 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> bool:
         return False
 
     attendance_votings = []
+    attendance_checks = []
     for v_day in votings:
+        s_uuid = v_day.get("uuid")
+        s_title = v_day.get("title")
+        s_dt = v_day.get("sittingDateTime")
+        s_type = classify_sitting_type(s_title)
         for v in v_day.get("votings", []):
             if v.get("type", {}).get("code") == "KOHALOLEKU_KONTROLL":
-                attendance_votings.append({"uuid": v["uuid"], "date": v["startDateTime"]})
+                check_uuid = v["uuid"]
+                attendance_votings.append({"uuid": check_uuid, "date": v.get("startDateTime")})
+                attendance_checks.append(
+                    {
+                        "voting_uuid": check_uuid,
+                        "sitting_uuid": s_uuid,
+                        "sitting_title": s_title,
+                        "sitting_datetime": s_dt,
+                        "sitting_type": s_type,
+                    }
+                )
+
+    if attendance_checks:
+        upsert_attendance_checks_jsonl(attendance_checks)
 
     print(f"Found {len(attendance_votings)} attendance checks in period.")
     new_checks_count = 0

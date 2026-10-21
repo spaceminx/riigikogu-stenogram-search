@@ -25,6 +25,7 @@ export function AttendanceView({
   const selectedFaction = searchParams.get("att_faction") || "";
   const activeOnly =
     searchParams.get("att_active") === "1" || searchParams.get("att_active") === "true";
+  const noInfotund = searchParams.get("no_infotund") === "1";
 
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
@@ -41,6 +42,7 @@ export function AttendanceView({
   const setAttendanceTab = (tab) => updateParam("att_tab", tab === "members" ? null : tab);
   const setSelectedFaction = (f) => updateParam("att_faction", f || null);
   const setActiveOnly = (a) => updateParam("att_active", a || null);
+  const setNoInfotund = (val) => updateParam("no_infotund", val || null);
 
   const handlePeriodChange = (newPeriod) => {
     const next = new URLSearchParams(searchParams);
@@ -61,17 +63,19 @@ export function AttendanceView({
     error,
     isLoading: loading,
   } = useSWR(
-    ["attendance", reqMembership || "latest", selectedFaction, activeOnly],
+    ["attendance", reqMembership || "latest", selectedFaction, activeOnly, noInfotund],
     () =>
       Promise.all([
         fetchAttendance({
           membership: reqMembership,
           faction: selectedFaction || null,
           activeOnly,
+          excludeInfotund: noInfotund,
         }),
         fetchFactionAttendance({
           membership: reqMembership,
           activeOnly,
+          excludeInfotund: noInfotund,
         }),
         fetchFactionsList(reqMembership),
       ]),
@@ -233,6 +237,15 @@ export function AttendanceView({
               </span>
             </label>
           )}
+
+          <label className="attendance-checkbox-label">
+            <input
+              type="checkbox"
+              checked={noInfotund}
+              onChange={(e) => setNoInfotund(e.target.checked)}
+            />
+            <span>Jäta infotunnid välja</span>
+          </label>
         </div>
       </div>
 

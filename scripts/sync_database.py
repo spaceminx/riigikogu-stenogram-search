@@ -18,6 +18,7 @@ from src.load.loader import (
     apply_capped_durations_to_session_speeches,
     create_tables,
     load_agenda_items_to_database,
+    load_attendance_checks_to_database,
     load_attendance_to_database,
     load_persons_to_database,
     load_votes_to_database,
@@ -282,6 +283,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
     print("\n[6/10] Loading attendance records...")
     try:
         load_attendance_to_database()
+        load_attendance_checks_to_database()
     except Exception as e:
         err_msg = f"Attendance loading failed: {e}"
         print(f"Error: {err_msg}")

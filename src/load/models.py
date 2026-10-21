@@ -92,6 +92,16 @@ class Attendance(Base):
     __table_args__ = (UniqueConstraint("voting_uuid", "member_name", name="uq_attendance"),)
 
 
+class AttendanceCheck(Base):
+    __tablename__ = "attendance_checks"
+
+    voting_uuid = Column(Text, primary_key=True)
+    sitting_uuid = Column(Text, nullable=True)
+    sitting_title = Column(Text, nullable=True)
+    sitting_datetime = Column(Text, nullable=True)
+    sitting_type = Column(Text, nullable=False)
+
+
 class SystemMeta(Base):
     __tablename__ = "system_meta"
 

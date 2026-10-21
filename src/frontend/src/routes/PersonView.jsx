@@ -60,6 +60,7 @@ export function PersonView({ theme = "light" }) {
   // Read role and page from URL parameters
   const currentRole = searchParams.get("roll") || "mp";
   const currentPage = parseInt(searchParams.get("leht") || "1", 10) || 1;
+  const noInfotund = searchParams.get("no_infotund") === "1";
   const offset = (currentPage - 1) * SPEECHES_PER_PAGE;
 
   // 1. Fetch Person Details
@@ -87,10 +88,14 @@ export function PersonView({ theme = "light" }) {
     data: attendance,
     error: attendanceError,
     isLoading: attendanceLoading,
-  } = useSWR(uuid ? `person-attendance-${uuid}` : null, () => fetchPersonAttendance(uuid), {
-    revalidateOnFocus: false,
-    shouldRetryOnError: false,
-  });
+  } = useSWR(
+    uuid ? `person-attendance-${uuid}-${noInfotund ? "no_infotund" : "all"}` : null,
+    () => fetchPersonAttendance(uuid, { excludeInfotund: noInfotund }),
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
 
   // 4. Fetch Speeches for selected role & page
   const {
@@ -221,6 +226,16 @@ export function PersonView({ theme = "light" }) {
     }
     setSearchParams(next);
     window.scrollTo({ top: 600, behavior: "smooth" });
+  };
+
+  const handleNoInfotundChange = (checked) => {
+    const next = new URLSearchParams(searchParams);
+    if (checked) {
+      next.set("no_infotund", "1");
+    } else {
+      next.delete("no_infotund");
+    }
+    setSearchParams(next, { replace: true });
   };
 
   // Search by speaker query submit
@@ -480,11 +495,29 @@ export function PersonView({ theme = "light" }) {
 
       {/* 2. Key Metrics as MP (Totals.mp) */}
       <section className="glass-panel" aria-label="Põhinäitajad saadikuna">
-        <div className="chart-header" style={{ marginBottom: "1.25rem" }}>
+        <div
+          className="chart-header"
+          style={{
+            marginBottom: "1.25rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+          }}
+        >
           <div>
             <span className="section-kicker">PÕHINÄITAJAD SAADIKUNA</span>
             <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Aktiivsus ja osalus Riigikogus</h2>
           </div>
+          <label className="attendance-checkbox-label" style={{ margin: 0 }}>
+            <input
+              type="checkbox"
+              checked={noInfotund}
+              onChange={(e) => handleNoInfotundChange(e.target.checked)}
+            />
+            <span>Jäta infotunnid välja</span>
+          </label>
         </div>
 
         {statsError && (
