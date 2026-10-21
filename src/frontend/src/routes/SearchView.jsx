@@ -67,6 +67,8 @@ export function SearchView({
   const [filterExcludeChair, setFilterExcludeChair] = useState(excludeChairParam);
   const [filterSpeechCategory, setFilterSpeechCategory] = useState(speechCategoryParam);
   const [filterExactMatch, setFilterExactMatch] = useState(exactMatchParam);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showSpeakers, setShowSpeakers] = useState(false);
 
   // Sync draft filters during render if URL changes externally (e.g. Back/Forward)
   const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${speakerUuidParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}|${exactMatchParam}`;
@@ -483,21 +485,63 @@ export function SearchView({
         </div>
       )}
 
-      {hasSearchQuery && (currentActivity.length > 0 || activityLoading || activityError) && (
-        <div className="dashboard-grid" style={{ marginBottom: "1.5rem" }}>
-          <ActivityChart
-            activity={currentActivity}
-            interval={intervalParam}
-            onIntervalChange={handleIntervalChange}
-            scale={scaleParam}
-            onScaleChange={handleScaleChange}
-            loading={activityLoading}
-            error={activityError}
-            theme={theme}
-          />
-          <aside className="dashboard-rail">
-            <SpeakersPanel speakers={currentSpeakers} showingArchiveSpeakers={false} />
-          </aside>
+      {hasSearchQuery && (
+        <div className="search-summary-bar">
+          <button
+            type="button"
+            className={`search-summary-toggle ${showTimeline ? "is-active" : ""}`}
+            aria-pressed={showTimeline}
+            onClick={() => setShowTimeline((prev) => !prev)}
+          >
+            {showTimeline ? "Peida ajajoon" : "Näita ajajoont"}
+          </button>
+          <button
+            type="button"
+            className={`search-summary-toggle ${showSpeakers ? "is-active" : ""}`}
+            aria-pressed={showSpeakers}
+            onClick={() => setShowSpeakers((prev) => !prev)}
+          >
+            {showSpeakers ? "Peida kõnelejad" : "Näita kõnelejaid"}
+          </button>
+        </div>
+      )}
+
+      {hasSearchQuery && (showTimeline || showSpeakers) && (
+        <div className="search-collapsible-panels">
+          {showTimeline && showSpeakers ? (
+            <div className="dashboard-grid" style={{ marginBottom: "1.5rem" }}>
+              <ActivityChart
+                activity={currentActivity}
+                interval={intervalParam}
+                onIntervalChange={handleIntervalChange}
+                scale={scaleParam}
+                onScaleChange={handleScaleChange}
+                loading={activityLoading}
+                error={activityError}
+                theme={theme}
+              />
+              <aside className="dashboard-rail">
+                <SpeakersPanel speakers={currentSpeakers} showingArchiveSpeakers={false} />
+              </aside>
+            </div>
+          ) : showTimeline ? (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <ActivityChart
+                activity={currentActivity}
+                interval={intervalParam}
+                onIntervalChange={handleIntervalChange}
+                scale={scaleParam}
+                onScaleChange={handleScaleChange}
+                loading={activityLoading}
+                error={activityError}
+                theme={theme}
+              />
+            </div>
+          ) : (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <SpeakersPanel speakers={currentSpeakers} showingArchiveSpeakers={false} />
+            </div>
+          )}
         </div>
       )}
 

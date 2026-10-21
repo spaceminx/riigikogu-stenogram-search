@@ -158,6 +158,20 @@ export function SearchQueryInput({
         setIsOpen(false);
         setHighlightedIndex(-1);
       }
+    } else if (e.key === "Backspace" && inputValue === "") {
+      // Backspace in an empty input removes the last pill
+      if (groups.length > 0) {
+        const lastGroupIdx = groups.length - 1;
+        const lastGroup = groups[lastGroupIdx];
+        if (lastGroup.length > 0) {
+          e.preventDefault();
+          removeWord(lastGroupIdx, lastGroup.length - 1);
+        } else if (groups.length > 1) {
+          e.preventDefault();
+          // Remove empty trailing group
+          setGroups(groups.slice(0, lastGroupIdx));
+        }
+      }
     }
   };
 
@@ -197,12 +211,18 @@ export function SearchQueryInput({
         <div
           ref={containerRef}
           className="search-groups-container"
+          role="presentation"
           onClick={(e) => {
             if (
               !e.target.closest("button") &&
               !e.target.closest(".search-suggestions-dropdown") &&
               !e.target.classList.contains("search-input")
             ) {
+              if (inputRef.current) inputRef.current.focus();
+            }
+          }}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && e.target === containerRef.current) {
               if (inputRef.current) inputRef.current.focus();
             }
           }}
@@ -220,6 +240,7 @@ export function SearchQueryInput({
                         type="button"
                         onClick={() => removeWord(gIndex, wIndex)}
                         title={isPhrase ? "Eemalda fraas" : "Eemalda sõna"}
+                        aria-label={`Eemalda „${word}“`}
                       >
                         &times;
                       </button>
@@ -281,6 +302,12 @@ export function SearchQueryInput({
                   }}
                   onClick={() => {
                     handleSelectSuggestion(item.term);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectSuggestion(item.term);
+                    }
                   }}
                   onMouseEnter={() => setHighlightedIndex(idx)}
                 >

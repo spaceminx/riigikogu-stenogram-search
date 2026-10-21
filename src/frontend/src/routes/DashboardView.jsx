@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import useSWR from "swr";
 import { CalendarDays, ExternalLink } from "lucide-react";
 import DateRangeCalendar from "../DateRangeCalendar";
 import ActivityChart from "../components/ActivityChart";
@@ -7,6 +8,7 @@ import SpeakersPanel from "../components/SpeakersPanel";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
 import { usePageMeta } from "../lib/usePageMeta";
+import { fetchDashboardOverview } from "../lib/api";
 import {
   formatDateTime,
   mergeInputToGroups,
@@ -16,9 +18,9 @@ import {
 } from "../lib/formatters";
 
 export function DashboardView({
-  dashboardOverview,
-  overviewError,
-  overviewLoading = false,
+  dashboardOverview: propOverview,
+  overviewError: propOverviewError,
+  overviewLoading: propOverviewLoading,
   plenaryDates = [],
   theme = "light",
   memberships = [],
@@ -29,6 +31,19 @@ export function DashboardView({
     "Riigivaade — Riigikogu kõned, hääletused ja kohalolek",
     "Riigikogu stenogrammid, kõned, hääletused ja kohalolekukontrollid ühes otsitavas vaates."
   );
+
+  const {
+    data: fetchedOverview,
+    error: fetchedError,
+    isLoading: fetchedLoading,
+  } = useSWR(propOverview ? null : "dashboard-overview", fetchDashboardOverview, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
+
+  const dashboardOverview = propOverview ?? fetchedOverview;
+  const overviewError = propOverviewError ?? fetchedError;
+  const overviewLoading = propOverviewLoading ?? fetchedLoading ?? false;
 
   const navigate = useNavigate();
   const totalSpeeches = systemStatus?.total_speeches ?? systemStatus?.totals?.speeches;

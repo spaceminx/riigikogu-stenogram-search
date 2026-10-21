@@ -75,7 +75,6 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                   type="button"
                   className={`att-sort-btn ${sortConfig.key === "votes_voted_pct" ? "is-active" : ""}`}
                   onClick={() => requestSort("votes_voted_pct")}
-                  aria-sort={getAriaSort("votes_voted_pct")}
                 >
                   Hääletustel {getSortIndicator("votes_voted_pct")}
                 </button>
@@ -84,7 +83,6 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                   type="button"
                   className={`att-sort-btn ${sortConfig.key === "registered_pct" ? "is-active" : ""}`}
                   onClick={() => requestSort("registered_pct")}
-                  aria-sort={getAriaSort("registered_pct")}
                 >
                   Kontrollides {getSortIndicator("registered_pct")}
                 </button>

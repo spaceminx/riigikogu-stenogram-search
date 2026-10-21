@@ -9,19 +9,15 @@ import {
   normalizeSourceUrl,
   SPEECH_TYPE_LABELS,
 } from "../lib/formatters";
+import { useFocusTrap } from "../lib/useFocusTrap";
 
 export function ContextModal({ activeSpeechContext, onClose, groups = [[]] }) {
   const [contextSearchTerm, setContextSearchTerm] = useState("");
   const targetSpeechRef = useRef(null);
-
-  useEffect(() => {
-    if (!activeSpeechContext) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeSpeechContext, onClose]);
+  const containerRef = useFocusTrap({
+    isOpen: Boolean(activeSpeechContext),
+    onClose,
+  });
 
   useEffect(() => {
     if (activeSpeechContext && targetSpeechRef.current) {
@@ -45,13 +41,21 @@ export function ContextModal({ activeSpeechContext, onClose, groups = [[]] }) {
   });
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop">
+      <button
+        type="button"
+        className="modal-backdrop-dismiss"
+        aria-label="Sulge dialoog"
+        onClick={onClose}
+        tabIndex="-1"
+      />
       <div
+        ref={containerRef}
         className="modal-content glass-panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="context-modal-title"
-        onClick={(e) => e.stopPropagation()}
+        tabIndex="-1"
       >
         <div className="modal-top-bar">
           <div>

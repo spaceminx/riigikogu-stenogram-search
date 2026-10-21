@@ -10,6 +10,7 @@ from src.transform.lemma_links import get_person_lemmas
 _UNSET = object()
 _CACHE_MAX_SIZE = 2048
 MAX_SUGGESTION_DF_RATIO = 0.20
+SUGGEST_EXCLUDE = {"miski", "miks", "kaasa"}
 
 _SUGGEST_CACHE: dict = {
     "last_sync_at": _UNSET,
@@ -112,7 +113,8 @@ def get_search_suggestions(
     valid_items = []
     stopwords = {w.casefold() for w in STOPWORDS}
     for lemma_text, df, pos in rows:
-        if lemma_text.casefold() in stopwords:
+        lemma_cf = lemma_text.casefold()
+        if lemma_cf in stopwords or lemma_cf in SUGGEST_EXCLUDE:
             continue
         if not any(c.isalpha() for c in lemma_text):
             continue

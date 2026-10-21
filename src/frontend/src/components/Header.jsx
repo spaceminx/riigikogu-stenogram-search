@@ -22,10 +22,14 @@ export function Header({
   theme,
   setTheme,
   systemStatus,
+  systemStatusError,
+  systemStatusLoading,
   overviewError,
   overviewLoading,
   onOpenMethodology,
 }) {
+  const isOffline = Boolean(systemStatusError ?? overviewError);
+  const isLoading = Boolean(systemStatusLoading ?? overviewLoading);
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -128,9 +132,9 @@ export function Header({
           <div className="menu-status-row">
             <Database aria-hidden="true" />
             <span>Arhiiv</span>
-            <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
+            <span className={`menu-status ${isOffline ? "is-offline" : ""}`}>
               <i />
-              {overviewError ? "Pole ühendust" : overviewLoading ? "Ühendun…" : "Valmis"}
+              {isOffline ? "Pole ühendust" : isLoading ? "Ühendun…" : "Valmis"}
             </span>
           </div>
           {systemStatus?.data_as_of && (
@@ -185,9 +189,9 @@ export function Header({
           <div className="menu-status-row">
             <Activity aria-hidden="true" />
             <span>API olek</span>
-            <span className={`menu-status ${overviewError ? "is-offline" : ""}`}>
+            <span className={`menu-status ${isOffline ? "is-offline" : ""}`}>
               <i />
-              {overviewError ? "Pole saadaval" : overviewLoading ? "Kontrollin…" : "Aktiivne"}
+              {isOffline ? "Pole saadaval" : isLoading ? "Kontrollin…" : "Aktiivne"}
             </span>
           </div>
           <button
