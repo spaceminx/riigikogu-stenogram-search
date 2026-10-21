@@ -23,6 +23,11 @@ from src.api.attendance import (
     get_person_attendance,
 )
 from src.api.roles import load_governments
+from src.api.rss import (
+    build_rss_xml,
+    extract_person_snippet,
+    extract_search_snippet,
+)
 from src.api.search import (
     SPEECH_TYPE_CATEGORIES,
     LemmatizerUnavailableError,
@@ -2228,6 +2233,9 @@ def get_draft_speeches(
 
 
 _SITEMAP_CACHE: dict = {"xml": None, "last_sync_at": object()}
+_RSS_CACHE: dict = {}
+_RSS_LAST_SYNC_AT = object()
+_RSS_CACHE_MAX_SIZE = 256
 
 
 def _generate_sitemap_xml(session) -> str:
@@ -2344,6 +2352,259 @@ def get_sitemap():
         return Response(
             content=_SITEMAP_CACHE["xml"],
             media_type="application/xml; charset=utf-8",
+        )
+    finally:
+        session.close()
+
+
+def _get_rss_cached(key: tuple, current_sync: str | None) -> str | None:
+    global _RSS_CACHE, _RSS_LAST_SYNC_AT
+    if _RSS_LAST_SYNC_AT != current_sync:
+        _RSS_CACHE.clear()
+        _RSS_LAST_SYNC_AT = current_sync
+        return None
+    return _RSS_CACHE.get(key)
+
+
+def _set_rss_cached(key: tuple, current_sync: str | None, xml_str: str) -> None:
+    global _RSS_CACHE, _RSS_LAST_SYNC_AT
+    if _RSS_LAST_SYNC_AT != current_sync:
+        _RSS_CACHE.clear()
+        _RSS_LAST_SYNC_AT = current_sync
+    if len(_RSS_CACHE) >= _RSS_CACHE_MAX_SIZE:
+        # Evict oldest entry (dict in Python 3.7+ preserves insertion order)
+        oldest_key = next(iter(_RSS_CACHE))
+        del _RSS_CACHE[oldest_key]
+    _RSS_CACHE[key] = xml_str
+
+
+@router.get("/rss/search", response_class=Response)
+def get_rss_search(
+    q: str = Query(..., min_length=1, max_length=1000),
+    membership: str = Query("all", pattern=r"^(\d+|all)$"),
+    faction: str | None = Query(None),
+    speaker: str | None = Query(None),
+    speaker_uuid: str | None = Query(None),
+    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    exclude_chair: bool = Query(False),
+    speech_category: str | None = Query(
+        None,
+        pattern=r"^(speeches|questions|procedural)$",
+    ),
+    expand: bool = Query(True),
+):
+    """RSS 2.0 feed of the 50 newest speeches matching the search criteria."""
+    q = sanitize_query(q)
+    validate_membership(membership)
+
+    session = SessionLocal()
+    try:
+        last_sync = None
+        try:
+            meta_row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+            if meta_row:
+                last_sync = meta_row.value
+        except Exception:
+            last_sync = None
+
+        cache_key = (
+            "search",
+            q,
+            membership,
+            faction,
+            speaker,
+            speaker_uuid,
+            start_date,
+            end_date,
+            exclude_chair,
+            speech_category,
+            expand,
+        )
+
+        cached_xml = _get_rss_cached(cache_key, last_sync)
+        if cached_xml:
+            return Response(
+                content=cached_xml,
+                media_type="application/rss+xml; charset=utf-8",
+                headers={"Cache-Control": "public, max-age=3600"},
+            )
+
+        try:
+            results, _ = search_by_keyword(
+                query=q,
+                limit=50,
+                offset=0,
+                membership=membership,
+                faction=faction,
+                speaker=speaker,
+                speaker_uuid=speaker_uuid,
+                start_date=start_date,
+                end_date=end_date,
+                sort_by="date_desc",
+                exclude_chair=exclude_chair,
+                speech_category=speech_category,
+                expand=expand,
+            )
+        except LemmatizerUnavailableError as e:
+            raise HTTPException(
+                status_code=503,
+                detail="Otsingu keeletöötlus pole hetkel saadaval.",
+            ) from e
+        except (ValueError, RecursionError) as e:
+            status_code = 422 if str(e) == "Tundmatu koosseis" else 400
+            detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
+            raise HTTPException(
+                status_code=status_code,
+                detail=detail,
+            ) from e
+        except OperationalError as e:
+            raise HTTPException(
+                status_code=503,
+                detail="Andmebaas või otsingutabelid ei ole initsialiseeritud.",
+            ) from e
+        except SQLAlchemyError as e:
+            logger.error("RSS search query failed for %r: %s", q, e, exc_info=True)
+            raise HTTPException(
+                status_code=500,
+                detail="Otsingupäring ebaõnnestus.",
+            ) from e
+
+        # Prepare items for RSS
+        rss_items = []
+        for r in results:
+            rss_items.append(
+                {
+                    "id": r["id"],
+                    "external_id": r.get("external_id"),
+                    "speaker": r.get("speaker"),
+                    "agenda_title": r.get("agenda_title"),
+                    "speaker_faction": r.get("speaker_faction"),
+                    "start_time": r.get("start_time"),
+                    "date": r.get("date"),
+                    "time": r.get("time"),
+                    "snippet": extract_search_snippet(r.get("text"), q),
+                }
+            )
+
+        # Build public URLs preserving filters
+        query_params = [("q", q)]
+        if membership != "all":
+            query_params.append(("membership", membership))
+        if faction:
+            query_params.append(("faction", faction))
+        if speaker:
+            query_params.append(("speaker", speaker))
+        if speaker_uuid:
+            query_params.append(("speaker_uuid", speaker_uuid))
+        if start_date:
+            query_params.append(("start_date", start_date))
+        if end_date:
+            query_params.append(("end_date", end_date))
+        if exclude_chair:
+            query_params.append(("exclude_chair", "true"))
+        if speech_category:
+            query_params.append(("speech_category", speech_category))
+        if not expand:
+            query_params.append(("expand", "false"))
+
+        from urllib.parse import urlencode
+
+        qs = urlencode(query_params)
+        page_link = f"https://www.riigivaade.me/otsing?{qs}"
+        self_link = f"https://www.riigivaade.me/rss/search?{qs}"
+
+        channel_title = f"Riigivaade: otsing „{q}“"
+        channel_desc = f"Riigikogu kõnede ja sõnavõttude otsingutulemused päringule „{q}“."
+
+        xml_output = build_rss_xml(
+            title=channel_title,
+            page_link=page_link,
+            self_link=self_link,
+            description=channel_desc,
+            items=rss_items,
+        )
+
+        _set_rss_cached(cache_key, last_sync, xml_output)
+
+        return Response(
+            content=xml_output,
+            media_type="application/rss+xml; charset=utf-8",
+            headers={"Cache-Control": "public, max-age=3600"},
+        )
+    finally:
+        session.close()
+
+
+@router.get("/rss/saadik/{person_uuid}", response_class=Response)
+def get_rss_saadik(person_uuid: str):
+    """RSS 2.0 feed of the 50 newest speeches by an MP."""
+    session = SessionLocal()
+    try:
+        last_sync = None
+        try:
+            meta_row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+            if meta_row:
+                last_sync = meta_row.value
+        except Exception:
+            last_sync = None
+
+        person = session.query(Person).filter(Person.uuid == person_uuid).first()
+        if not person:
+            raise HTTPException(status_code=404, detail="Saadikut ei leitud.")
+
+        cache_key = ("saadik", person_uuid)
+        cached_xml = _get_rss_cached(cache_key, last_sync)
+        if cached_xml:
+            return Response(
+                content=cached_xml,
+                media_type="application/rss+xml; charset=utf-8",
+                headers={"Cache-Control": "public, max-age=3600"},
+            )
+
+        speeches = (
+            session.query(Speech)
+            .filter(Speech.speaker_uuid == person_uuid)
+            .order_by(Speech.date.desc(), Speech.time.desc(), Speech.id.desc())
+            .limit(50)
+            .all()
+        )
+
+        rss_items = []
+        for s in speeches:
+            rss_items.append(
+                {
+                    "id": s.id,
+                    "external_id": s.external_id,
+                    "speaker": s.speaker or person.full_name,
+                    "agenda_title": s.agenda_title,
+                    "speaker_faction": s.speaker_faction,
+                    "start_time": s.start_time,
+                    "date": s.date,
+                    "time": s.time,
+                    "snippet": extract_person_snippet(s.text),
+                }
+            )
+
+        page_link = f"https://www.riigivaade.me/saadik/{person_uuid}"
+        self_link = f"https://www.riigivaade.me/rss/saadik/{person_uuid}"
+        channel_title = f"Riigivaade: {person.full_name} kõned"
+        channel_desc = f"Riigikogu liikme {person.full_name} viimased kõned ja sõnavõtud."
+
+        xml_output = build_rss_xml(
+            title=channel_title,
+            page_link=page_link,
+            self_link=self_link,
+            description=channel_desc,
+            items=rss_items,
+        )
+
+        _set_rss_cached(cache_key, last_sync, xml_output)
+
+        return Response(
+            content=xml_output,
+            media_type="application/rss+xml; charset=utf-8",
+            headers={"Cache-Control": "public, max-age=3600"},
         )
     finally:
         session.close()
