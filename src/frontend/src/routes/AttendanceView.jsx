@@ -23,6 +23,7 @@ export function AttendanceView({
   const attParam = searchParams.get("att_membership");
   const attendanceMembership = attParam || defaultMembership || "";
   const selectedFaction = searchParams.get("att_faction") || "";
+  const selectedRole = searchParams.get("role") || "";
   const activeOnly =
     searchParams.get("att_active") === "1" || searchParams.get("att_active") === "true";
   const noInfotund = searchParams.get("no_infotund") === "1";
@@ -40,7 +41,19 @@ export function AttendanceView({
   };
 
   const setAttendanceTab = (tab) => updateParam("att_tab", tab === "members" ? null : tab);
-  const setSelectedFaction = (f) => updateParam("att_faction", f || null);
+  const setSelectedFaction = (f) => {
+    const next = new URLSearchParams(searchParams);
+    if (!f) {
+      next.delete("att_faction");
+    } else {
+      next.set("att_faction", f);
+      if (f === "Fraktsiooni mittekuuluvad Riigikogu liikmed") {
+        next.delete("role");
+      }
+    }
+    setSearchParams(next, { replace: true });
+  };
+  const setSelectedRole = (r) => updateParam("role", r || null);
   const setActiveOnly = (a) => updateParam("att_active", a || null);
   const setNoInfotund = (val) => updateParam("no_infotund", val || null);
 
@@ -63,7 +76,14 @@ export function AttendanceView({
     error,
     isLoading: loading,
   } = useSWR(
-    ["attendance", reqMembership || "latest", selectedFaction, activeOnly, noInfotund],
+    [
+      "attendance",
+      reqMembership || "latest",
+      selectedFaction,
+      activeOnly,
+      noInfotund,
+      selectedRole,
+    ],
     () =>
       Promise.all([
         fetchAttendance({
@@ -71,11 +91,13 @@ export function AttendanceView({
           faction: selectedFaction || null,
           activeOnly,
           excludeInfotund: noInfotund,
+          role: selectedRole || null,
         }),
         fetchFactionAttendance({
           membership: reqMembership,
           activeOnly,
           excludeInfotund: noInfotund,
+          role: selectedRole || null,
         }),
         fetchFactionsList(reqMembership),
       ]),
@@ -114,6 +136,9 @@ export function AttendanceView({
   const handleSelectFactionDrilldown = (factionName) => {
     const next = new URLSearchParams(searchParams);
     next.set("att_faction", factionName);
+    if (factionName === "Fraktsiooni mittekuuluvad Riigikogu liikmed") {
+      next.delete("role");
+    }
     next.delete("att_tab");
     setSearchParams(next, { replace: true });
   };
@@ -223,6 +248,24 @@ export function AttendanceView({
             </div>
           )}
 
+          {selectedFaction !== "Fraktsiooni mittekuuluvad Riigikogu liikmed" && (
+            <div className="attendance-select-group">
+              <label htmlFor="role-select" className="attendance-label">
+                Roll:
+              </label>
+              <select
+                id="role-select"
+                className="attendance-select"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+              >
+                <option value="">Kõik</option>
+                <option value="coalition">Koalitsioonis</option>
+                <option value="opposition">Opositsioonis</option>
+              </select>
+            </div>
+          )}
+
           {Boolean(defaultMembership && attendanceMembership === defaultMembership) && (
             <label className="attendance-checkbox-label">
               <input
@@ -274,6 +317,7 @@ export function AttendanceView({
           factionSortConfig={factionSortConfig}
           requestFactionSort={requestFactionSort}
           onSelectFaction={handleSelectFactionDrilldown}
+          role={selectedRole}
         />
       )}
     </div>
