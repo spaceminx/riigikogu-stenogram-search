@@ -8,7 +8,7 @@
       "Sotsiaaldemokraatliku Erakonna fraktsioon",
       "Isamaa fraktsioon"
     ],
-    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/juri-ratase-valitsus-23112016-29042019"
+    "source": "https://valitsus.ee/en/news/government-led-juri-ratas-has-resigned-will-continue-its-activities-until-new-government-0"
   },
   {
     "from": "2019-04-29",
@@ -19,7 +19,10 @@
       "Eesti Konservatiivse Rahvaerakonna fraktsioon",
       "Isamaa fraktsioon"
     ],
-    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/juri-ratase-valitsus-29042019-26012021"
+    "source": [
+      "https://valitsus.ee/en/news/government-led-juri-ratas-has-resigned-will-continue-its-activities-until-new-government-0",
+      "https://www.err.ee/934718/juri-ratase-valitsus-andis-ametivande"
+    ]
   },
   {
     "from": "2021-01-26",
@@ -29,7 +32,7 @@
       "Eesti Reformierakonna fraktsioon",
       "Eesti Keskerakonna fraktsioon"
     ],
-    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/kaja-kallase-valitsus-26012021-14072022"
+    "source": "https://www.err.ee/1608084865/galerii-kallas-ja-ratas-allkirjastasid-koalitsioonileppe"
   },
   {
     "from": "2022-06-03",
@@ -49,7 +52,7 @@
       "Isamaa fraktsioon",
       "Sotsiaaldemokraatliku Erakonna fraktsioon"
     ],
-    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/kaja-kallase-valitsus-18072022-17042023"
+    "source": "https://www.err.ee/1608658435/riigikogu-andis-kallasele-volitused-valitsuse-moodustamiseks"
   },
   {
     "from": "2023-04-17",
@@ -60,7 +63,7 @@
       "Eesti 200 fraktsioon",
       "Sotsiaaldemokraatliku Erakonna fraktsioon"
     ],
-    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/kaja-kallase-valitsus-17042023-23072024"
+    "source": "https://en.wikipedia.org/wiki/Kaja_Kallas%27s_third_cabinet"
   },
   {
     "from": "2024-07-23",
@@ -71,7 +74,7 @@
       "Eesti 200 fraktsioon",
       "Sotsiaaldemokraatliku Erakonna fraktsioon"
     ],
-    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/ametisolev-valitsus"
+    "source": "https://en.wikipedia.org/wiki/Kristen_Michal%27s_cabinet"
   },
   {
     "from": "2025-03-11",
@@ -81,6 +84,9 @@
       "Eesti Reformierakonna fraktsioon",
       "Eesti 200 fraktsioon"
     ],
-    "source": "https://www.err.ee/1609632832/michal-saatis-sotsid-valitsusest-valja"
+    "source": [
+      "https://valitsus.ee/valitsuse-eesmargid-ja-tegevused/valitsemise-alused/koalitsioonilepe-2025-2027",
+      "https://www.err.ee/1609632832/michal-saatis-sotsid-valitsusest-valja"
+    ]
   }
 ]

@@ -24,7 +24,12 @@ def test_governments_json_structure():
         assert "government" in gov
         assert "coalition" in gov
         assert "source" in gov
-        assert gov["source"].startswith("http")
+
+        sources = gov["source"] if isinstance(gov["source"], list) else [gov["source"]]
+        assert len(sources) > 0
+        for src in sources:
+            assert isinstance(src, str)
+            assert src.startswith("https://"), f"Source must be an https URL: {src}"
 
         # All coalition factions must be in known factions
         for fac in gov["coalition"]:

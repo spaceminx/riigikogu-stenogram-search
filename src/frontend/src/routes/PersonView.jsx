@@ -719,7 +719,9 @@ export function PersonView({ theme = "light" }) {
               <tbody>
                 {roleBreakdownRows.map((row) => {
                   const checksTotal = row.total_sessions ?? 0;
+                  const isChecksSmall = checksTotal < 50;
                   const votesTotal = row.votes?.total ?? 0;
+                  const isVotesSmall = votesTotal < 50;
                   const notVotedCount = row.votes?.not_voted ?? 0;
                   const absentCount = row.votes?.absent ?? 0;
                   const notVotedPct = votesTotal > 0 ? (notVotedCount / votesTotal) * 100 : null;
@@ -731,18 +733,28 @@ export function PersonView({ theme = "light" }) {
                         {row.role}
                       </th>
                       <td className="person-stats-col-num">
-                        {checksTotal > 0
-                          ? formatMetricRatio(
+                        {checksTotal > 0 ? (
+                          <>
+                            {formatMetricRatio(
                               row.attendance_percentage,
                               row.present_sessions,
                               checksTotal
-                            )
-                          : "—"}
+                            )}
+                            {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="person-stats-col-num">
-                        {votesTotal > 0
-                          ? formatMetricRatio(row.votes?.voted_pct, row.votes?.voted, votesTotal)
-                          : "—"}
+                        {votesTotal > 0 ? (
+                          <>
+                            {formatMetricRatio(row.votes?.voted_pct, row.votes?.voted, votesTotal)}
+                            {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="person-stats-col-num">
                         {votesTotal > 0 ? `${formatPercent(notVotedPct)} (${notVotedCount})` : "—"}
