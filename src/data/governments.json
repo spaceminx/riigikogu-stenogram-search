@@ -1,0 +1,86 @@
+[
+  {
+    "from": "2016-11-23",
+    "to": "2019-04-29",
+    "government": "Ratas I",
+    "coalition": [
+      "Eesti Keskerakonna fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "Isamaa fraktsioon"
+    ],
+    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/juri-ratase-valitsus-23112016-29042019"
+  },
+  {
+    "from": "2019-04-29",
+    "to": "2021-01-26",
+    "government": "Ratas II",
+    "coalition": [
+      "Eesti Keskerakonna fraktsioon",
+      "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "Isamaa fraktsioon"
+    ],
+    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/juri-ratase-valitsus-29042019-26012021"
+  },
+  {
+    "from": "2021-01-26",
+    "to": "2022-06-03",
+    "government": "Kallas I",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti Keskerakonna fraktsioon"
+    ],
+    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/kaja-kallase-valitsus-26012021-14072022"
+  },
+  {
+    "from": "2022-06-03",
+    "to": "2022-07-18",
+    "government": "Kallas I (vähemusvalitsus)",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon"
+    ],
+    "source": "https://www.err.ee/1608618499/kallas-saatis-keskerakonna-valitsusest-valja"
+  },
+  {
+    "from": "2022-07-18",
+    "to": "2023-04-17",
+    "government": "Kallas II",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Isamaa fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/kaja-kallase-valitsus-18072022-17042023"
+  },
+  {
+    "from": "2023-04-17",
+    "to": "2024-07-23",
+    "government": "Kallas III",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti 200 fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/varasemad-valitsused/kaja-kallase-valitsus-17042023-23072024"
+  },
+  {
+    "from": "2024-07-23",
+    "to": "2025-03-11",
+    "government": "Michal",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti 200 fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://www.valitsus.ee/valitsus-ja-riigikantselei/vabariigi-valitsus/ametisolev-valitsus"
+  },
+  {
+    "from": "2025-03-11",
+    "to": null,
+    "government": "Michal",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Eesti 200 fraktsioon"
+    ],
+    "source": "https://www.err.ee/1609632832/michal-saatis-sotsid-valitsusest-valja"
+  }
+]
