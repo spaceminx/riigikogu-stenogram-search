@@ -2210,3 +2210,122 @@ def get_draft_speeches(
         ) from e
     finally:
         session.close()
+
+
+_SITEMAP_CACHE: dict = {"xml": None, "last_sync_at": object()}
+
+
+def _generate_sitemap_xml(session) -> str:
+    """Generate XML sitemap according to sitemaps.org protocol."""
+    from xml.sax.saxutils import escape
+
+    base_url = "https://www.riigivaade.me"
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+
+    def add_url(loc: str, lastmod: str | None = None) -> None:
+        lines.append("  <url>")
+        lines.append(f"    <loc>{escape(loc)}</loc>")
+        if lastmod:
+            mod_str = str(lastmod)[:10]
+            lines.append(f"    <lastmod>{mod_str}</lastmod>")
+        lines.append("  </url>")
+
+    # 1. Static routes
+    add_url(f"{base_url}/")
+    add_url(f"{base_url}/haaletused")
+    add_url(f"{base_url}/kohalolek")
+    add_url(f"{base_url}/andmed")
+
+    # 2. Sittings / istung/{date}
+    sittings = (
+        session.query(Speech.date)
+        .filter(Speech.date.isnot(None))
+        .distinct()
+        .order_by(Speech.date.desc())
+        .all()
+    )
+    for (d,) in sittings:
+        if d:
+            add_url(f"{base_url}/istung/{d}", lastmod=str(d))
+
+    # 3. Persons / saadik/{uuid}
+    persons = (
+        session.query(Person.uuid).filter(Person.uuid.isnot(None)).order_by(Person.uuid.asc()).all()
+    )
+    for (p_uuid,) in persons:
+        if p_uuid:
+            add_url(f"{base_url}/saadik/{p_uuid}")
+
+    # 4. Drafts / eelnou/{uuid} with agenda items or votings
+    agenda_drafts = (
+        session.query(AgendaItem.draft_uuid, func.max(AgendaItem.sitting_date))
+        .filter(AgendaItem.draft_uuid.isnot(None))
+        .group_by(AgendaItem.draft_uuid)
+        .all()
+    )
+    voting_drafts = (
+        session.query(Voting.related_document_uuid, func.max(Voting.sitting_date))
+        .filter(Voting.related_document_uuid.isnot(None))
+        .group_by(Voting.related_document_uuid)
+        .all()
+    )
+    draft_dates: dict[str, str | None] = {}
+    for d_uuid, d_date in agenda_drafts:
+        if d_uuid:
+            draft_dates[d_uuid] = str(d_date)[:10] if d_date else None
+    for d_uuid, d_date in voting_drafts:
+        if d_uuid:
+            d_str = str(d_date)[:10] if d_date else None
+            if d_uuid not in draft_dates or (
+                d_str and (not draft_dates[d_uuid] or d_str > str(draft_dates[d_uuid]))
+            ):
+                draft_dates[d_uuid] = d_str
+
+    for d_uuid in sorted(draft_dates.keys()):
+        add_url(f"{base_url}/eelnou/{d_uuid}", lastmod=draft_dates[d_uuid])
+
+    # 5. Non-technical votings / haaletus/{uuid}
+    tech_clause = is_technical_voting_clause()
+    votings = (
+        session.query(Voting.uuid, Voting.sitting_date, Voting.date)
+        .filter(~tech_clause)
+        .filter(Voting.uuid.isnot(None))
+        .order_by(Voting.uuid.asc())
+        .all()
+    )
+    for v_uuid, s_date, v_date in votings:
+        if v_uuid:
+            mod_date = str(s_date or v_date)[:10] if (s_date or v_date) else None
+            add_url(f"{base_url}/haaletus/{v_uuid}", lastmod=mod_date)
+
+    lines.append("</urlset>")
+    return "\n".join(lines)
+
+
+@router.get("/sitemap.xml", response_class=Response)
+def get_sitemap():
+    """Return sitemap.xml cached in-memory and invalidated when last_sync_at changes."""
+    session = SessionLocal()
+    try:
+        last_sync = None
+        try:
+            meta_row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
+            if meta_row:
+                last_sync = meta_row.value
+        except Exception:
+            last_sync = None
+
+        if _SITEMAP_CACHE["xml"] is None or _SITEMAP_CACHE["last_sync_at"] != last_sync:
+            xml_content = _generate_sitemap_xml(session)
+            _SITEMAP_CACHE["xml"] = xml_content
+            _SITEMAP_CACHE["last_sync_at"] = last_sync
+
+        return Response(
+            content=_SITEMAP_CACHE["xml"],
+            media_type="application/xml; charset=utf-8",
+        )
+    finally:
+        session.close()

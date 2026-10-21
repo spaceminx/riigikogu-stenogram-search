@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /otsing
+Sitemap: https://www.riigivaade.me/sitemap.xml
