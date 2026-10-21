@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { Search, X } from "lucide-react";
@@ -6,19 +6,17 @@ import { fetchVotings } from "../lib/api";
 import DateRangeCalendar from "../DateRangeCalendar";
 import Pagination from "../components/Pagination";
 import VotingRow from "../components/VotingRow";
+import { usePageMeta } from "../lib/usePageMeta";
 
 const PAGE_SIZE = 50;
 
 export function VotingsView({ plenaryDates = [], memberships = [] }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = "Hääletused — Riigivaade";
-    return () => {
-      document.title = prevTitle;
-    };
-  }, []);
+  usePageMeta(
+    "Hääletused — Riigivaade",
+    "Riigikogu täiskogu hääletuste tulemused, saadikute hääled ja fraktsioonide jaotused."
+  );
 
   const qParam = searchParams.get("q") || "";
   const startDateParam = searchParams.get("start_date") || "";

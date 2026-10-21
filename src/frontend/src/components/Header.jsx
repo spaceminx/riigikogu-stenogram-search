@@ -35,7 +35,7 @@ export function Header({
 
   return (
     <header className="header">
-      <Link to="/" className="brand-lockup" aria-label="Riigikogu andmevaade">
+      <Link to="/" className="brand-lockup" aria-label="Riigivaade">
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32" fill="none">
             <path d="M5 11.5 16 5l11 6.5-11 6.3L5 11.5Z" />
@@ -43,7 +43,7 @@ export function Header({
           </svg>
         </span>
         <span className="brand-copy">
-          <strong>Riigikogu</strong>
+          <strong>Riigivaade</strong>
           <span>Kõned ja andmed</span>
         </span>
       </Link>

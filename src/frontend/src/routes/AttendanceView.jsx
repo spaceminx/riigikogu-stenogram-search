@@ -5,12 +5,18 @@ import { fetchAttendance, fetchFactionAttendance, fetchFactionsList } from "../l
 import { formatFactionName, sortAttendanceItems } from "../lib/formatters";
 import AttendanceMembersTable from "../components/AttendanceMembersTable";
 import AttendanceFactionsTable from "../components/AttendanceFactionsTable";
+import { usePageMeta } from "../lib/usePageMeta";
 
 export function AttendanceView({
   memberships = [],
   membershipsLoading = false,
   onOpenMethodology,
 }) {
+  usePageMeta(
+    "Kohalolek — Riigivaade",
+    "Riigikogu saadikute ja fraktsioonide kohalolekukontrollide ja hääletusel osalemise statistika."
+  );
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const attendanceTab = searchParams.get("att_tab") || "members";

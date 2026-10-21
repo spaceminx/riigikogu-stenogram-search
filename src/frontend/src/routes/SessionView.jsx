@@ -6,6 +6,8 @@ import { fetchPlenarySession, fetchVotings } from "../lib/api";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 import SpeechCard from "../components/SpeechCard";
 import VotingRow from "../components/VotingRow";
+import { formatDate } from "../lib/calendarUtils";
+import { usePageMeta } from "../lib/usePageMeta";
 
 export function SessionView() {
   const { date } = useParams();
@@ -13,6 +15,14 @@ export function SessionView() {
   const navigate = useNavigate();
   const targetElementRef = useRef(null);
   const [showAllVotings, setShowAllVotings] = useState(false);
+
+  const formattedDate = date ? formatDate(date) : "";
+  const pageTitle = formattedDate ? `Istung ${formattedDate} — Riigivaade` : "Istung — Riigivaade";
+  const pageDesc = formattedDate
+    ? `Riigikogu ${formattedDate} täiskogu istungi stenogramm, päevakord ja hääletused.`
+    : "Riigikogu täiskogu istungi stenogramm, päevakord ja hääletused.";
+
+  usePageMeta(pageTitle, pageDesc);
 
   const {
     data: sessionData,

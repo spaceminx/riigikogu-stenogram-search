@@ -18,6 +18,7 @@ import SpeakersPanel from "../components/SpeakersPanel";
 import ContextModal from "../components/ContextModal";
 import SpeechesHeader from "../components/SpeechesHeader";
 import Pagination from "../components/Pagination";
+import { usePageMeta } from "../lib/usePageMeta";
 
 const PAGE_SIZE = 50;
 
@@ -31,6 +32,15 @@ export function SearchView({
 
   // Search parameters from URL
   const queryParam = searchParams.get("q") || "";
+
+  const pageTitle = queryParam.trim()
+    ? `${queryParam.trim()} — otsing — Riigivaade`
+    : "Otsing — Riigivaade";
+  const pageDescription = queryParam.trim()
+    ? `Otsingu „${queryParam.trim()}“ tulemused Riigikogu stenogrammidest ja sõnavõttudest.`
+    : "Otsi Riigikogu stenogrammidest märksõnade, fraktsioonide ja saadikute kaupa.";
+
+  usePageMeta(pageTitle, pageDescription);
   const membershipParam = searchParams.get("membership") || "all";
   const factionParam = searchParams.get("faction") || "";
   const speakerParam = searchParams.get("speaker") || "";

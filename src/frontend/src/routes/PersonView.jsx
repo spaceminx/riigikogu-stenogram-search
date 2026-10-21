@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import {
@@ -25,6 +25,7 @@ import { formatMetricRatio, formatPercent, formatVoteSplit, toRoman } from "../l
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
+import { usePageMeta } from "../lib/usePageMeta";
 
 const SPEECHES_PER_PAGE = 20;
 
@@ -183,16 +184,14 @@ export function PersonView({ theme = "light" }) {
     }
   };
 
-  // Set document.title format: "{nimi} — Riigivaade" with cleanup
-  useEffect(() => {
-    const prevTitle = document.title;
-    if (person?.full_name) {
-      document.title = `${person.full_name} — Riigivaade`;
-    }
-    return () => {
-      document.title = prevTitle;
-    };
-  }, [person?.full_name]);
+  // Set document.title format: "{nimi} — Riigivaade" and description
+  const personTitle = person?.full_name
+    ? `${person.full_name} — Riigivaade`
+    : "Saadik — Riigivaade";
+  const personDesc = person?.full_name
+    ? `Riigikogu saadiku ${person.full_name} kõned, hääletused, kohalolek ja fraktsiooniline kuuluvus.`
+    : "Riigikogu saadiku profiil, kõned, hääletused ja kohalolek.";
+  usePageMeta(personTitle, personDesc);
 
   // Context modal handler
   const handleOpenContext = async (speechId) => {

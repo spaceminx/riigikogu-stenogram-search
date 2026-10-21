@@ -1,16 +1,14 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { CONTROLLER_NAME, CONTACT_EMAIL } from "../lib/siteInfo";
+import { usePageMeta } from "../lib/usePageMeta";
 
 export function PrivacyView({ onOpenMethodology }) {
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = "Andmed ja privaatsus — Riigivaade";
-    return () => {
-      document.title = prevTitle;
-    };
-  }, []);
+  usePageMeta(
+    "Andmed ja privaatsus — Riigivaade",
+    "Teave Riigivaate andmeallikate, privaatsuspõhimõtete ja avaandmete litsentside kohta."
+  );
 
   return (
     <div style={{ maxWidth: "800px", margin: "1rem auto 2rem" }}>

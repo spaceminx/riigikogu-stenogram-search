@@ -1,8 +1,32 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "https://api.riigivaade.me/sitemap.xml"
+    },
+    {
+      "src": "^/(otsing|kohalolek|haaletused|andmed)(/.*)?$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "^/(haaletus|istung|saadik|kone|eelnou)/[^/]+/?$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "^/?$",
+      "dest": "/index.html"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "/404.html"
     }
   ]
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ArrowLeft, Calendar, ExternalLink } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 } from "../lib/draftUtils";
 import VotingRow from "../components/VotingRow";
 import SpeechCard from "../components/SpeechCard";
+import { usePageMeta } from "../lib/usePageMeta";
 
 function ReadingCard({ reading, draftUuid }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -195,13 +196,11 @@ export function DraftView() {
     shouldRetryOnError: false,
   });
 
-  useEffect(() => {
-    if (draft?.title) {
-      document.title = `${draft.title} — Riigivaade`;
-    } else {
-      document.title = "Eelnõu — Riigivaade";
-    }
-  }, [draft]);
+  const draftTitle = draft?.title ? `${draft.title} — Riigivaade` : "Eelnõu — Riigivaade";
+  const draftDesc = draft?.title
+    ? `Riigikogu eelnõu ${draft.mark ? `${draft.mark} ` : ""}„${draft.title}“ lugemised, arutelud ja seotud hääletused.`
+    : "Riigikogu eelnõu käik, lugemised ja seotud hääletused.";
+  usePageMeta(draftTitle, draftDesc);
 
   const handleBack = () => {
     if (location.key === "default" || window.history.length <= 1) {

@@ -6,6 +6,7 @@ import ActivityChart from "../components/ActivityChart";
 import SpeakersPanel from "../components/SpeakersPanel";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
+import { usePageMeta } from "../lib/usePageMeta";
 import {
   formatDateTime,
   mergeInputToGroups,
@@ -24,6 +25,11 @@ export function DashboardView({
   searchFactionsList = [],
   systemStatus = null,
 }) {
+  usePageMeta(
+    "Riigivaade — Riigikogu kõned, hääletused ja kohalolek",
+    "Riigikogu stenogrammid, kõned, hääletused ja kohalolekukontrollid ühes otsitavas vaates."
+  );
+
   const navigate = useNavigate();
   const totalSpeeches = systemStatus?.total_speeches ?? systemStatus?.totals?.speeches;
   const totalPersons = systemStatus?.total_persons ?? systemStatus?.totals?.persons;
