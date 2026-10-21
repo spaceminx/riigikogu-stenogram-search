@@ -2,6 +2,7 @@
 
 from sqlalchemy import and_, case, func
 
+from src.api.roles import role_condition
 from src.load.models import SystemMeta, Vote, Voting
 
 
@@ -118,13 +119,19 @@ def clear_vote_participation_cache() -> None:
     _VOTE_PARTICIPATION_CACHE["factions"].clear()
 
 
-def _normalize_membership_key(membership: str | int | None) -> str:
-    if membership is None or str(membership).lower() == "all":
-        return "all"
-    return str(membership)
+def _normalize_cache_key(
+    membership: str | int | None, role: str | None = None
+) -> tuple[str, str | None]:
+    mem_key = "all" if membership is None or str(membership).lower() == "all" else str(membership)
+    r_key = role if role in ("coalition", "opposition") else None
+    return (mem_key, r_key)
 
 
-def get_member_vote_participation(session, membership: str | int | None = None) -> dict[str, dict]:
+def get_member_vote_participation(
+    session,
+    membership: str | int | None = None,
+    role: str | None = None,
+) -> dict[str, dict]:
     """Calculate vote participation per member on public, non-technical votings.
 
     Returns mapping from member_uuid to:
@@ -136,10 +143,11 @@ def get_member_vote_participation(session, membership: str | int | None = None) 
         _VOTE_PARTICIPATION_CACHE["members"].clear()
         _VOTE_PARTICIPATION_CACHE["factions"].clear()
 
-    cache_key = _normalize_membership_key(membership)
+    cache_key = _normalize_cache_key(membership, role)
     if cache_key in _VOTE_PARTICIPATION_CACHE["members"]:
         return _VOTE_PARTICIPATION_CACHE["members"][cache_key]
 
+    cache_key_mem, role_filter = cache_key
     is_tech_sql = is_technical_voting_clause()
     query = (
         session.query(
@@ -158,12 +166,15 @@ def get_member_vote_participation(session, membership: str | int | None = None) 
         )
     )
 
-    if cache_key != "all":
+    if cache_key_mem != "all":
         try:
-            mem_int = int(cache_key)
+            mem_int = int(cache_key_mem)
             query = query.filter(Voting.membership == mem_int)
         except (ValueError, TypeError):
             pass
+
+    if role_filter:
+        query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
 
     results = query.group_by(Vote.member_uuid).all()
 
@@ -186,7 +197,11 @@ def get_member_vote_participation(session, membership: str | int | None = None) 
     return stats
 
 
-def get_faction_vote_participation(session, membership: str | int | None = None) -> dict[str, dict]:
+def get_faction_vote_participation(
+    session,
+    membership: str | int | None = None,
+    role: str | None = None,
+) -> dict[str, dict]:
     """Calculate vote participation per faction on public, non-technical votings.
 
     Faction is determined by per-ballot Vote.faction.
@@ -199,10 +214,11 @@ def get_faction_vote_participation(session, membership: str | int | None = None)
         _VOTE_PARTICIPATION_CACHE["members"].clear()
         _VOTE_PARTICIPATION_CACHE["factions"].clear()
 
-    cache_key = _normalize_membership_key(membership)
+    cache_key = _normalize_cache_key(membership, role)
     if cache_key in _VOTE_PARTICIPATION_CACHE["factions"]:
         return _VOTE_PARTICIPATION_CACHE["factions"][cache_key]
 
+    cache_key_mem, role_filter = cache_key
     is_tech_sql = is_technical_voting_clause()
     query = (
         session.query(
@@ -223,12 +239,15 @@ def get_faction_vote_participation(session, membership: str | int | None = None)
         )
     )
 
-    if cache_key != "all":
+    if cache_key_mem != "all":
         try:
-            mem_int = int(cache_key)
+            mem_int = int(cache_key_mem)
             query = query.filter(Voting.membership == mem_int)
         except (ValueError, TypeError):
             pass
+
+    if role_filter:
+        query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
 
     results = query.group_by(Vote.faction).all()
 

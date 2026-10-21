@@ -22,6 +22,7 @@ from src.api.attendance import (
     get_factions_list,
     get_person_attendance,
 )
+from src.api.roles import load_governments
 from src.api.search import (
     SPEECH_TYPE_CATEGORIES,
     LemmatizerUnavailableError,
@@ -133,6 +134,12 @@ def list_memberships():
     return results
 
 
+@router.get("/governments")
+def list_governments():
+    """Return verified government periods and coalition memberships."""
+    return load_governments()
+
+
 @router.get("/overview")
 def dashboard_overview():
     try:
@@ -196,6 +203,11 @@ def attendance_stats(
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
     exclude_infotund: bool = Query(False, description="Jäta infotunnid välja"),
+    role: str | None = Query(
+        None,
+        description="Filtreeri valitsuse rolli järgi (coalition või opposition)",
+        pattern=r"^(coalition|opposition)$",
+    ),
 ):
     if membership is None:
         membership = latest_membership()
@@ -206,6 +218,7 @@ def attendance_stats(
             faction=faction,
             active_only=active_only,
             exclude_infotund=exclude_infotund,
+            role=role,
         )
     except OperationalError as e:
         raise HTTPException(
@@ -227,6 +240,11 @@ def attendance_factions(
     ),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
     exclude_infotund: bool = Query(False, description="Jäta infotunnid välja"),
+    role: str | None = Query(
+        None,
+        description="Filtreeri valitsuse rolli järgi (coalition või opposition)",
+        pattern=r"^(coalition|opposition)$",
+    ),
 ):
     if membership is None:
         membership = latest_membership()
@@ -236,6 +254,7 @@ def attendance_factions(
             membership=membership,
             active_only=active_only,
             exclude_infotund=exclude_infotund,
+            role=role,
         )
     except OperationalError as e:
         raise HTTPException(
@@ -1145,10 +1164,15 @@ def get_person_speeches(
 def person_attendance(
     person_uuid: str,
     exclude_infotund: bool = Query(False, description="Jäta infotunnid välja"),
+    role: str | None = Query(
+        None,
+        description="Filtreeri valitsuse rolli järgi (coalition või opposition)",
+        pattern=r"^(coalition|opposition)$",
+    ),
 ):
     """Get MP attendance statistics by UUID, both overall and broken down by parliamentary membership."""
     try:
-        return get_person_attendance(person_uuid, exclude_infotund=exclude_infotund)
+        return get_person_attendance(person_uuid, exclude_infotund=exclude_infotund, role=role)
     except ValueError as e:
         if str(e) == "Isikut ei leitud.":
             raise HTTPException(status_code=404, detail=str(e)) from e
@@ -1936,7 +1960,10 @@ def system_status():
                     "Ajajoonel saab valida absoluutarvu või osakaalu. "
                     "Osakaal näitab, kui suur osa sama perioodi sõnavõttudest (samade filtritega) vastas otsingule; perioodid, kus istungeid ei toimunud, jäetakse tühjaks."
                 ),
-                "attendance": "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest.",
+                "attendance": (
+                    "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. "
+                    "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (andmeallikad: valitsus.ee ja Riigikogu Kantselei); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."
+                ),
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
                 "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
