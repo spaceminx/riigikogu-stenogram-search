@@ -1,7 +1,7 @@
 import gzip
 import json
 import sqlite3
-import urllib.error
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -297,10 +297,16 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
     assert "persons.jsonl.gz" in checksums
     assert "manifest.json" in checksums
 
-    # Check determinism: run build again to another dir and verify identical SHA256SUMS
+    # Check determinism: with fixed created_at time mock, run build again to another dir and verify identical SHA256SUMS
     out_dir_2 = tmp_path / "release_2"
-    build_open_data_release(sample_sqlite_db, out_dir_2, release_date="2026-10-22")
-    checksums_2 = (out_dir_2 / "SHA256SUMS").read_text(encoding="utf-8")
+    fixed_time = "2026-10-22T12:00:00.000000+00:00"
+    with patch("scripts.build_open_data_release.datetime") as mock_dt:
+        mock_dt.now.return_value.isoformat.return_value = fixed_time
+        mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+        build_open_data_release(sample_sqlite_db, out_dir, release_date="2026-10-22")
+        checksums = (out_dir / "SHA256SUMS").read_text(encoding="utf-8")
+        build_open_data_release(sample_sqlite_db, out_dir_2, release_date="2026-10-22")
+        checksums_2 = (out_dir_2 / "SHA256SUMS").read_text(encoding="utf-8")
     assert checksums == checksums_2
 
 
@@ -370,14 +376,11 @@ def test_publish_open_data_release_mock_api(tmp_path: Path):
     (release_dir / "manifest.json").write_text("{}", encoding="utf-8")
     (release_dir / "SHA256SUMS").write_text("hash data.jsonl.gz\n", encoding="utf-8")
 
-    # Mock get_release_by_tag (404), create_release (201), upload_asset (201) x3
-    mock_404_err = urllib.error.HTTPError(
-        url="https://api.github.com/...",
-        code=404,
-        msg="Not Found",
-        hdrs={},
-        fp=MagicMock(read=lambda: b"{}"),
-    )
+    # 1. list_repo_releases -> []
+    mock_list_cm = MagicMock()
+    mock_list_cm.__enter__.return_value.read.return_value = b"[]"
+
+    # 2. create_release (draft=True) -> id 9999
     mock_create_cm = MagicMock()
     mock_create_cm.__enter__.return_value.read.return_value = json.dumps(
         {
@@ -385,23 +388,32 @@ def test_publish_open_data_release_mock_api(tmp_path: Path):
             "tag_name": "data-2026-10-22",
             "upload_url": "https://uploads.github.com/repos/spaceminx/riigikogu-stenogram-search/releases/9999/assets{?name,label}",
             "assets": [],
+            "draft": True,
         }
     ).encode("utf-8")
 
+    # 3..5 upload_asset x3
     mock_upload_cm = MagicMock()
     mock_upload_cm.__enter__.return_value.read.return_value = b"{}"
 
+    # 6. publish_draft_release (PATCH draft=False)
+    mock_patch_cm = MagicMock()
+    mock_patch_cm.__enter__.return_value.read.return_value = json.dumps(
+        {"id": 9999, "draft": False}
+    ).encode("utf-8")
+
     with patch("urllib.request.urlopen") as mock_urlopen:
         mock_urlopen.side_effect = [
-            mock_404_err,
+            mock_list_cm,
             mock_create_cm,
             mock_upload_cm,
             mock_upload_cm,
             mock_upload_cm,
+            mock_patch_cm,
         ]
         publish_release(
             release_dir=release_dir,
             token="ghp_testtoken",
             dry_run=False,
         )
-        assert mock_urlopen.call_count == 5
+        assert mock_urlopen.call_count == 6

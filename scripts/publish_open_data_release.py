@@ -75,6 +75,34 @@ def github_api_request(
         raise RuntimeError(f"GitHub API {method} {url} returned HTTP {e.code}: {err_body}") from e
 
 
+def list_repo_releases(token: str) -> list[dict[str, Any]]:
+    """List all releases in the repository with pagination."""
+    releases: list[dict[str, Any]] = []
+    page = 1
+    per_page = 100
+
+    while True:
+        url = f"{API_BASE}/repos/{REPO}/releases?per_page={per_page}&page={page}"
+        batch = github_api_request(url, token=token)
+        if not batch or not isinstance(batch, list):
+            break
+        releases.extend(batch)
+        if len(batch) < per_page:
+            break
+        page += 1
+
+    return releases
+
+
+def find_release_by_tag(tag: str, token: str) -> dict[str, Any] | None:
+    """Find release by tag name from releases list (includes drafts)."""
+    releases = list_repo_releases(token)
+    for r in releases:
+        if r.get("tag_name") == tag:
+            return r
+    return None
+
+
 def get_release_by_tag(tag: str, token: str) -> dict[str, Any] | None:
     """Fetch existing release by tag name or None if 404."""
     url = f"{API_BASE}/repos/{REPO}/releases/tags/{tag}"
@@ -86,20 +114,36 @@ def get_release_by_tag(tag: str, token: str) -> dict[str, Any] | None:
         raise
 
 
-def create_release(tag: str, name: str, body: str, token: str) -> dict[str, Any]:
-    """Create a new GitHub release."""
+def create_release(
+    tag: str, name: str, body: str, token: str, draft: bool = True
+) -> dict[str, Any]:
+    """Create a new GitHub release (defaults to draft=True)."""
     url = f"{API_BASE}/repos/{REPO}/releases"
     payload = {
         "tag_name": tag,
         "name": name,
         "body": body,
-        "draft": False,
+        "draft": draft,
         "prerelease": False,
     }
     data = json.dumps(payload).encode("utf-8")
     return github_api_request(
         url,
         method="POST",
+        token=token,
+        data=data,
+        headers={"Content-Type": "application/json"},
+    )
+
+
+def publish_draft_release(release_id: int, token: str) -> dict[str, Any]:
+    """Publish a draft release by updating draft=False."""
+    url = f"{API_BASE}/repos/{REPO}/releases/{release_id}"
+    payload = {"draft": False}
+    data = json.dumps(payload).encode("utf-8")
+    return github_api_request(
+        url,
+        method="PATCH",
         token=token,
         data=data,
         headers={"Content-Type": "application/json"},
@@ -185,26 +229,30 @@ def publish_release(
         print("Error: GITHUB_RELEASE_TOKEN is not set.", file=sys.stderr)
         sys.exit(1)
 
-    existing = get_release_by_tag(tag, token)
+    existing = find_release_by_tag(tag, token)
     if existing:
-        if not replace:
+        is_draft = existing.get("draft", False)
+        if not replace and not is_draft:
             print(
                 f"Error: Release tag {tag} already exists. Use --replace to overwrite.",
                 file=sys.stderr,
             )
             sys.exit(1)
-        print(f"Replacing existing release for tag {tag} (ID {existing['id']})...")
+        reason = "incomplete draft" if is_draft and not replace else "replace requested"
+        print(f"Replacing existing release for tag {tag} (ID {existing['id']}, {reason})...")
         delete_release(existing["id"], token)
 
-    print(f"Creating release {tag}...")
-    release = create_release(tag, release_title, body, token)
+    print(f"Creating draft release {tag}...")
+    release = create_release(tag, release_title, body, token, draft=True)
     release_id = release["id"]
 
-    print(f"Release created (ID {release_id}). Uploading {len(files_to_upload)} assets...")
+    print(f"Draft release created (ID {release_id}). Uploading {len(files_to_upload)} assets...")
     for f in files_to_upload:
         print(f"  Uploading {f.name} ({f.stat().st_size} bytes)...")
         upload_asset(release_id, f, token)
 
+    print(f"Publishing release {tag} (updating draft=false)...")
+    publish_draft_release(release_id, token)
     print(f"Successfully published open data release {tag}!")
 
 
