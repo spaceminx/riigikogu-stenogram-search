@@ -22,12 +22,8 @@ from src.transform.lemmatizer import lemmatize_text
 client = TestClient(app)
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_phrase_test_data():
-    create_tables()
-    session = SessionLocal()
-
-    # Clear previous data and lemma links for clean isolation
+def reset_search_state(session) -> None:
+    """Clear database tables and in-memory search caches for hermetic test isolation."""
     session.query(LemmaLink).delete()
     session.query(SpeechTerm).delete()
     session.query(Speech).delete()
@@ -39,6 +35,9 @@ def setup_phrase_test_data():
     clear_activity_denominator_cache()
     clear_suggest_cache()
 
+
+def populate_phrase_speeches(session) -> None:
+    """Populate test speeches, lemmas, and speech terms for phrase search tests."""
     test_speeches = [
         # id=101: adjacent phrase "riigi eelarvest", inflected
         {
@@ -182,6 +181,14 @@ def setup_phrase_test_data():
             session.add(term_row)
 
     session.commit()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup_phrase_test_data():
+    create_tables()
+    session = SessionLocal()
+    reset_search_state(session)
+    populate_phrase_speeches(session)
     session.close()
 
 
@@ -371,25 +378,34 @@ def test_phrase_with_comma_matches_across_comma():
 
 
 def test_regression_dangling_lemma_links_do_not_leak_into_phrase_search():
-    """Ensure that leftover LemmaLink rows or stale expansion caches cannot cause words to alias each other."""
+    """Ensure dangling lemma links leak into phrase search and reset_search_state fixes it."""
     session = SessionLocal()
     try:
         l_riik = session.query(Lemma).filter_by(lemma="riik").first()
         l_eelarve = session.query(Lemma).filter_by(lemma="eelarve").first()
         assert l_riik is not None and l_eelarve is not None
 
-        # Verify that even with clean fixture setup, 'eelarve' and 'riik' are not linked
-        resp = client.get('/search?q="eelarve riigi"')
-        assert resp.status_code == 200
-        ids = {r["id"] for r in resp.json()["results"]}
-        assert ids == {103}
-        assert 101 not in ids
-        assert 107 not in ids
+        # 1. Insert a LemmaLink(alias) between the ids of "riik" and "eelarve"
+        session.add(LemmaLink(lemma_id=l_riik.id, target_lemma_id=l_eelarve.id, kind="alias"))
+        session.add(LemmaLink(lemma_id=l_eelarve.id, target_lemma_id=l_riik.id, kind="alias"))
+        session.commit()
+        clear_expansion_cache()
 
-        resp_phrase = client.get('/search?q="riigi eelarve"')
-        assert resp_phrase.status_code == 200
-        ids_phrase = {r["id"] for r in resp_phrase.json()["results"]}
-        assert ids_phrase == {101, 107}
-        assert 103 not in ids_phrase
+        # 2. Run one search to populate the caches and assert that 103 is returned before the reset (proves leak)
+        resp_before = client.get('/search?q="riigi eelarve"')
+        assert resp_before.status_code == 200
+        ids_before = {r["id"] for r in resp_before.json()["results"]}
+        assert 103 in ids_before
+
+        # 3. Call reset_search_state, re-run fixture data setup and assert '"riigi eelarve"' == {101, 107}
+        reset_search_state(session)
+        session.expunge_all()
+        populate_phrase_speeches(session)
+
+        resp_after = client.get('/search?q="riigi eelarve"')
+        assert resp_after.status_code == 200
+        ids_after = {r["id"] for r in resp_after.json()["results"]}
+        assert ids_after == {101, 107}
+        assert 103 not in ids_after
     finally:
         session.close()
