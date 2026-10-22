@@ -463,6 +463,24 @@ riigikogu-stenogram-search/
 
 ---
 
+## Open Data
+
+The project periodically exports and releases public machine-readable datasets (gzipped JSONL) under CC BY-SA 3.0 on [GitHub Releases](https://github.com/spaceminx/riigikogu-stenogram-search/releases). The release includes speeches, votings, individual votes, attendance records, agenda items, and member details (excluding birth dates and email addresses).
+
+### Building a release
+
+```bash
+python3 scripts/build_open_data_release.py --db /path/to/riigikogu.sqlite --out release/YYYY-MM-DD/
+```
+
+### Publishing a release to GitHub
+
+```bash
+python3 scripts/publish_open_data_release.py --dir release/YYYY-MM-DD/
+```
+
+---
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
