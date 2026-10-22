@@ -1,0 +1,68 @@
+{
+  "total_count": 277,
+  "count": 5,
+  "offset": 0,
+  "limit": 5,
+  "results": [
+    {
+      "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+      "first_name": "Jaak",
+      "last_name": "Aab",
+      "full_name": "Jaak Aab",
+      "gender": "MALE",
+      "birth_year": 1960,
+      "photo_url": "https://api.riigikogu.ee/api/files/628a5440-1825-4a60-9017-4c13069052b8/download",
+      "electoral_district": "Järva- ja Viljandimaa",
+      "seniority_days": 3484,
+      "active": true
+    },
+    {
+      "uuid": "d8909ed8-ac93-4223-a3ec-55e1bb4ec8a9",
+      "first_name": "Merry",
+      "last_name": "Aart",
+      "full_name": "Merry Aart",
+      "gender": "FEMALE",
+      "birth_year": 1953,
+      "photo_url": "https://api.riigikogu.ee/api/files/e53bf6f6-7f64-4b58-b6ba-098c096bb304/download",
+      "electoral_district": "Võru-, Valga- ja Põlvamaa",
+      "seniority_days": 1463,
+      "active": false
+    },
+    {
+      "uuid": "fe748f4d-3f50-4af8-8069-92a460978d2b",
+      "first_name": "Arto",
+      "last_name": "Aas",
+      "full_name": "Arto Aas",
+      "gender": "MALE",
+      "birth_year": 1980,
+      "photo_url": "https://api.riigikogu.ee/api/files/e750f5f9-5c33-40f9-87d7-6adbbc151997/download",
+      "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+      "seniority_days": 2382,
+      "active": false
+    },
+    {
+      "uuid": "9f3d840c-3a49-43de-8c5d-d1990933b692",
+      "first_name": "Taavi",
+      "last_name": "Aas",
+      "full_name": "Taavi Aas",
+      "gender": "MALE",
+      "birth_year": 1966,
+      "photo_url": "https://api.riigikogu.ee/api/files/8e1b4a93-0e70-410e-95d3-510044521cfb/download",
+      "electoral_district": "Tallinna Mustamäe ja Nõmme linnaosa",
+      "seniority_days": 327,
+      "active": false
+    },
+    {
+      "uuid": "13938f95-f891-4607-a67e-d11a65dc79a3",
+      "first_name": "Jaak",
+      "last_name": "Aaviksoo",
+      "full_name": "Jaak Aaviksoo",
+      "gender": "MALE",
+      "birth_year": 1954,
+      "photo_url": "https://api.riigikogu.ee/api/files/f326c1b7-30b8-45f3-97d3-161585afc973/download",
+      "electoral_district": "Jõgeva- ja Tartumaa (v.a Tartu linn)",
+      "seniority_days": 539,
+      "active": false
+    }
+  ]
+}

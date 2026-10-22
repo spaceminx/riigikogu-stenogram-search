@@ -503,6 +503,45 @@ Server cron job (runs on the 1st of every month at 09:00):
 
 ---
 
+## End-to-End Tests
+
+The frontend includes Playwright smoke tests that run against a mock API serving recorded fixtures:
+
+- Intercepts all API calls to `http://api.e2e.test` and responds from fixtures in `src/frontend/e2e/fixtures/`.
+- Verifies that all 10 core routes load without crashing (no ErrorBoundary trigger).
+- Verifies client-side navigation between routes without full page reload.
+- Verifies search pill logic (phrase quoting, `+JA`, `+VÕI`, removing pills, and 390px mobile responsiveness).
+- Verifies responsive layout on mobile viewport (no horizontal scrollbar / overflow).
+- Verifies dark mode toggle persistence in `localStorage` and WCAG AA contrast compliance.
+
+### Running E2E tests locally
+
+```bash
+cd src/frontend
+npx playwright install chromium
+npm run e2e
+```
+
+### Capturing fixtures
+
+To refresh recorded fixtures from the production API:
+
+```bash
+node scripts/capture_e2e_fixtures.mjs
+```
+
+### Weekly live API shape check
+
+A scheduled workflow (`.github/workflows/live_api_check.yml`) runs weekly (every Monday at 10:00 UTC) to verify that the live API at `https://api.riigivaade.me` matches the expected contract in `src/frontend/e2e/fixtures/index.json`.
+
+Run the check manually:
+
+```bash
+python3 scripts/check_live_api.py
+```
+
+---
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).

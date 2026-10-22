@@ -1,0 +1,35 @@
+{
+  "status": "ok",
+  "data_as_of": "2026-10-21",
+  "latest_session_status": "UNEDITED",
+  "last_sync_at": "2026-10-22T04:16:53.019590+00:00",
+  "days_since_latest_session": 1,
+  "latest_session": "2026-10-21_1400.api",
+  "total_sessions": 1103,
+  "total_speeches": 209958,
+  "total_persons": 277,
+  "active_persons": 200,
+  "warning": null,
+  "totals": {
+    "sessions": 1103,
+    "speeches": 209958,
+    "persons": 277,
+    "active_persons": 200,
+    "attendance_records": 121907,
+    "votings": 3647
+  },
+  "methodology": {
+    "search": "Otsing võrdleb sõnade algvorme; väiketähega päringut otsitakse ka suure algustähega kujul (nt \"putin\" leiab ka \"Putin\"); numbrilise lõpuga sidekriipsuga sõnu (nt \"COVID-19\") otsitakse ka ilma numbrita kujul. Üldmõiste otsingul (nt eelarve, maks, pension) leitakse ka liitsõnad (nt riigieelarve, tulumaks), mistõttu on tulemuste arv varasemast suurem. Suure algustähega nimeotsing (nt Seeder, Ratas) leiab ka nime käändevormid (Seederi, Ratase), kuid jätab liitsõnad (nt jalgratas) välja; väiketähega otsing (ratas) kaasab ka liitsõnad. Täpseks otsinguks ilma liitsõnadeta märgi filter „Ainult täpne sõna“. Mitmesõnaline otsinguplokk (API-s jutumärkides fraas) leiab ainult kõned, kus sõnad esinevad järjest (ka käändes). Ajajoonel saab valida absoluutarvu või osakaalu. Osakaal näitab, kui suur osa sama perioodi sõnavõttudest (samade filtritega) vastas otsingule; perioodid, kus istungeid ei toimunud, jäetakse tühjaks.",
+    "attendance": "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; vt /governments); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma.",
+    "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
+    "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
+    "speech_types": "Kategooriad põhinevad Riigikogu stenogrammi sõnavõtu liigil. Juhatamise sõnavõtud (DIRECTOR) arvestatakse juhatamisena ainult juhataja rollis (Esimees, Aseesimees); muudes rollides märgitud DIRECTOR-sõnavõtud loetakse sisulisteks liigitamata sõnavõttudeks vastavas rollis. Kui juhataja juhatamise sõnavõtul pole stenogrammis rolli märgitud, loetakse see liigitamata sõnavõtuks (neid on vähe, alla 0,1% juhatajate sõnavõttudest).",
+    "duration": "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg. Kestus on piiratud järgmise kõne algusega, sest allika lõpuaeg võib ulatuda järgmistesse kõnedesse.",
+    "transcripts": "Toimetamata esialgsed stenogrammid asendatakse andmetorus automaatselt Riigikogu kantselei kinnitatud lõplike stenogrammidega järgmise öise andmetoru käivituse ja andmebaasi sünkroonimisega.",
+    "impartiality": "Riigivaade on erapooletu ja automatiseeritud analüütiline tööriist, mis ei muuda ega hinda algandmete sisu.",
+    "sources": [
+      "Riigikogu avatud API (api.riigikogu.ee)",
+      "Riigikogu stenogrammide portaal (stenogrammid.riigikogu.ee)"
+    ]
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "ids": {
+    "date": "2026-10-21",
+    "personUuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+    "speechId": 211341,
+    "votingUuid": "3943e6d1-4259-4435-bb44-644bc6ce6105",
+    "draftUuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485"
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/system/status",
+      "fixture": "system_status.json"
+    },
+    {
+      "method": "GET",
+      "path": "/memberships",
+      "fixture": "memberships.json"
+    },
+    {
+      "method": "GET",
+      "path": "/overview",
+      "fixture": "overview.json"
+    },
+    {
+      "method": "GET",
+      "path": "/sessions/dates",
+      "fixture": "session_dates.json"
+    },
+    {
+      "method": "GET",
+      "path": "/governments",
+      "fixture": "governments.json"
+    },
+    {
+      "method": "GET",
+      "path": "/attendance/factions/list",
+      "fixture": "factions_list.json"
+    },
+    {
+      "method": "GET",
+      "path": "/attendance/stats",
+      "fixture": "attendance_stats.json"
+    },
+    {
+      "method": "GET",
+      "path": "/attendance/factions",
+      "fixture": "attendance_factions.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons",
+      "fixture": "persons_list.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons/6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+      "fixture": "person_detail.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons/6b45cfb5-8a17-481c-b674-80fc00c6cf5d/stats",
+      "fixture": "person_stats.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons/6b45cfb5-8a17-481c-b674-80fc00c6cf5d/attendance",
+      "fixture": "person_attendance.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons/6b45cfb5-8a17-481c-b674-80fc00c6cf5d/speeches",
+      "fixture": "person_speeches.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons/6b45cfb5-8a17-481c-b674-80fc00c6cf5d/faction-alignment",
+      "fixture": "person_alignment.json"
+    },
+    {
+      "method": "GET",
+      "path": "/persons/6b45cfb5-8a17-481c-b674-80fc00c6cf5d/faction-alignment/differences",
+      "fixture": "person_diffs.json"
+    },
+    {
+      "method": "GET",
+      "path": "/sessions/2026-10-21",
+      "fixture": "session_detail.json"
+    },
+    {
+      "method": "GET",
+      "path": "/votings",
+      "fixture": "session_votings.json",
+      "queryParams": {
+        "sitting_date": "2026-10-21"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/votings",
+      "fixture": "votings_list.json"
+    },
+    {
+      "method": "GET",
+      "path": "/votings/3943e6d1-4259-4435-bb44-644bc6ce6105",
+      "fixture": "voting_detail.json"
+    },
+    {
+      "method": "GET",
+      "path": "/speeches/211341",
+      "fixture": "speech_detail.json"
+    },
+    {
+      "method": "GET",
+      "path": "/speeches/211341/context",
+      "fixture": "speech_context.json"
+    },
+    {
+      "method": "GET",
+      "path": "/drafts/c6ccd71d-8bd6-4400-bf17-830ea1913485",
+      "fixture": "draft_detail.json"
+    },
+    {
+      "method": "GET",
+      "path": "/drafts/c6ccd71d-8bd6-4400-bf17-830ea1913485/speeches",
+      "fixture": "draft_speeches.json"
+    },
+    {
+      "method": "GET",
+      "path": "/suggest",
+      "fixture": "suggest.json",
+      "queryParams": {
+        "prefix": "riigi"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search/activity",
+      "fixture": "search_activity.json",
+      "queryParams": {
+        "q": "riigieelarve"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search/speakers",
+      "fixture": "search_speakers.json",
+      "queryParams": {
+        "q": "riigieelarve"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "fixture": "search_kliima_muutus.json",
+      "queryParams": {
+        "q": "\"kliima muutus\""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "fixture": "search_kliima_ja_mets.json",
+      "queryParams": {
+        "q": "kliima mets"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "fixture": "search_kliima_voi_mets.json",
+      "queryParams": {
+        "q": "kliima, mets"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "fixture": "search_kliima.json",
+      "queryParams": {
+        "q": "kliima"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "fixture": "search_sample.json",
+      "queryParams": {
+        "q": "riigikogu"
+      }
+    }
+  ]
+}

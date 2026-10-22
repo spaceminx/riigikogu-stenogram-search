@@ -1,0 +1,167 @@
+{
+  "total": 176,
+  "limit": 10,
+  "offset": 0,
+  "results": [
+    {
+      "voting_uuid": "27751b2d-e11e-4bdc-889d-ddd0dcc327ce",
+      "voting_number": 12757,
+      "sitting_date": "2023-12-20",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Riigikogu otsus „Riigikogu uurimiskomisjoni moodustamine peaministri abikaasa osalusega äriühingu Venemaaga seotud äritegevuse asjaolude uurimiseks“",
+      "related_document": {
+        "title": "Riigikogu otsus „Riigikogu uurimiskomisjoni moodustamine peaministri abikaasa osalusega äriühingu Venemaaga seotud äritegevuse asjaolude uurimiseks“"
+      },
+      "member_decision": "EI_HAALETANUD",
+      "decision": "EI_HAALETANUD",
+      "faction_position": "VASTU",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-20_1400.api"
+    },
+    {
+      "voting_uuid": "2e80aa66-e6fd-4405-a915-2318f6677376",
+      "voting_number": 12756,
+      "sitting_date": "2023-12-20",
+      "description": "Lõpphääletus",
+      "related_document_title": "Riigikogu otsus „Riigigarantii andmine Euroopa Investeerimispangale Ukraina ülesehitamise toetamiseks\"",
+      "related_document": {
+        "title": "Riigikogu otsus „Riigigarantii andmine Euroopa Investeerimispangale Ukraina ülesehitamise toetamiseks\""
+      },
+      "member_decision": "EI_HAALETANUD",
+      "decision": "EI_HAALETANUD",
+      "faction_position": "POOLT",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-20_1400.api"
+    },
+    {
+      "voting_uuid": "69881212-76f4-49ce-82e2-a9cc27537e67",
+      "voting_number": 12755,
+      "sitting_date": "2023-12-20",
+      "description": "Lõpphääletus",
+      "related_document_title": "Riigikogu otsus „Eesti Vabariigi osaluse suurendamine Euroopa Nõukogu Arengupangas\"",
+      "related_document": {
+        "title": "Riigikogu otsus „Eesti Vabariigi osaluse suurendamine Euroopa Nõukogu Arengupangas\""
+      },
+      "member_decision": "EI_HAALETANUD",
+      "decision": "EI_HAALETANUD",
+      "faction_position": "POOLT",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-20_1400.api"
+    },
+    {
+      "voting_uuid": "2eeb979e-4f69-4643-ac92-d76e9a4e0a3b",
+      "voting_number": 12744,
+      "sitting_date": "2023-12-14",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Tulumaksuseaduse muutmise seadus",
+      "related_document": {
+        "title": "Tulumaksuseaduse muutmise seadus"
+      },
+      "member_decision": "EI_HAALETANUD",
+      "decision": "EI_HAALETANUD",
+      "faction_position": "VASTU",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-14_1000.api"
+    },
+    {
+      "voting_uuid": "d192de79-6909-4983-b6ac-7b80ef69555f",
+      "voting_number": 12743,
+      "sitting_date": "2023-12-14",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Alkoholi-, tubaka-, kütuse- ja elektriaktsiisi seaduse muutmise seadus",
+      "related_document": {
+        "title": "Alkoholi-, tubaka-, kütuse- ja elektriaktsiisi seaduse muutmise seadus"
+      },
+      "member_decision": "EI_HAALETANUD",
+      "decision": "EI_HAALETANUD",
+      "faction_position": "VASTU",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-14_1000.api"
+    },
+    {
+      "voting_uuid": "f220663c-a6ee-45c3-8a92-d54bc18d5780",
+      "voting_number": 12738,
+      "sitting_date": "2023-12-13",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Tsiviilkohtumenetluse seadustiku ja teiste seaduste muutmise seadus (kollektiivse esindushagi menetluse loomine)",
+      "related_document": {
+        "title": "Tsiviilkohtumenetluse seadustiku ja teiste seaduste muutmise seadus (kollektiivse esindushagi menetluse loomine)"
+      },
+      "member_decision": "VASTU",
+      "decision": "VASTU",
+      "faction_position": "EI_HAALETANUD",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-13_1400.api"
+    },
+    {
+      "voting_uuid": "a46a870b-1a00-48cc-a3ce-a7129709b1a0",
+      "voting_number": 12735,
+      "sitting_date": "2023-12-13",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Ehitusseadustiku ja teiste seaduste muutmise seadus (taastuvenergia kasutuselevõtu kiirendamine)",
+      "related_document": {
+        "title": "Ehitusseadustiku ja teiste seaduste muutmise seadus (taastuvenergia kasutuselevõtu kiirendamine)"
+      },
+      "member_decision": "VASTU",
+      "decision": "VASTU",
+      "faction_position": "EI_HAALETANUD",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-13_1400.api"
+    },
+    {
+      "voting_uuid": "3daa6f8e-9c8c-472e-af9c-2843a7a7f23b",
+      "voting_number": 12734,
+      "sitting_date": "2023-12-13",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Infoühiskonna teenuse seaduse ja karistusseadustiku muutmise seadus",
+      "related_document": {
+        "title": "Infoühiskonna teenuse seaduse ja karistusseadustiku muutmise seadus"
+      },
+      "member_decision": "VASTU",
+      "decision": "VASTU",
+      "faction_position": "EI_HAALETANUD",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-13_1400.api"
+    },
+    {
+      "voting_uuid": "66d14678-9fc1-4723-9c96-9ef4d3cf8c4e",
+      "voting_number": 12732,
+      "sitting_date": "2023-12-13",
+      "description": "Tagasi lükkamine",
+      "related_document_title": "Karistusseadustiku täiendamise seadus",
+      "related_document": {
+        "title": "Karistusseadustiku täiendamise seadus"
+      },
+      "member_decision": "POOLT",
+      "decision": "POOLT",
+      "faction_position": "EI_HAALETANUD",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-13_1400.api"
+    },
+    {
+      "voting_uuid": "91b8c9b5-9a4b-4a66-9858-25a05bfe9980",
+      "voting_number": 12715,
+      "sitting_date": "2023-12-08",
+      "description": "Lõpphääletus",
+      "related_document_title": "Riigikogu otsus „Kaitseväe kasutamise tähtaja pikendamine Eesti riigi rahvusvaheliste kohustuste täitmisel ÜRO rahuvalveoperatsioonil Liibanonis\"",
+      "related_document": {
+        "title": "Riigikogu otsus „Kaitseväe kasutamise tähtaja pikendamine Eesti riigi rahvusvaheliste kohustuste täitmisel ÜRO rahuvalveoperatsioonil Liibanonis\""
+      },
+      "member_decision": "EI_HAALETANUD",
+      "decision": "EI_HAALETANUD",
+      "faction_position": "POOLT",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "faction_name": "Eesti Keskerakonna fraktsioon",
+      "session_source_file": "2023-12-08_1100.api"
+    }
+  ]
+}

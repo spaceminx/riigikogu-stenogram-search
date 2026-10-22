@@ -1,0 +1,50 @@
+{
+  "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
+  "mark": "980",
+  "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+  "readings": [
+    {
+      "agenda_item_uuid": "34149feb-a62c-4381-9921-894a5cbed030",
+      "sitting_date": "2026-10-21",
+      "source_file": "2026-10-21_1400.api",
+      "steno_title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seaduse (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine) eelnõu (980 SE) esimene lugemine",
+      "stage": "ESIMENE_LUGEMINE",
+      "decision_value": "Esimene lugemine lõpetatud",
+      "speech_count": 34,
+      "voting_uuids": ["3943e6d1-4259-4435-bb44-644bc6ce6105"]
+    }
+  ],
+  "votings": [
+    {
+      "uuid": "3943e6d1-4259-4435-bb44-644bc6ce6105",
+      "voting_number": 104346,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Tagasi lükkamine",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T23:01:51.823",
+      "end_time": "2026-10-21T23:02:11.817",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
+        "reference": "980",
+        "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 0,
+        "against": 18,
+        "neutral": 0,
+        "abstained": 83
+      }
+    }
+  ]
+}
