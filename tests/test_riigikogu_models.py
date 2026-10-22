@@ -14,11 +14,16 @@ from scripts.fetch_stenograms_api import parse_meeting_speeches
 from scripts.fetch_votes import parse_and_validate_voting
 from src.fetch_models import (
     AgendaPlenary,
+    MeetingSpeech,
+    MemberPhoto,
     MembershipItem,
     PlenaryMember,
     RichMeeting,
     UpstreamSchemaError,
+    VerbatimAgendaItem,
+    VerbatimEvent,
     VerbatimSitting,
+    Voter,
     VotingDetail,
     VotingsSitting,
     validate_response,
@@ -97,6 +102,246 @@ def test_nested_missing_required_field_raises():
         )
     msg = str(exc_info.value)
     assert "0.votings.0.uuid" in msg
+    assert "api.riigikogu.ee response shape changed" in msg
+
+
+def test_member_photo_invalid_links_raises():
+    with pytest.raises(UpstreamSchemaError) as exc_info:
+        validate_response(
+            MemberPhoto,
+            {"uuid": "photo-uuid", "_links": "invalid_links_type"},
+            endpoint="/api/plenary-members",
+            ref="test_photo_links",
+        )
+    msg = str(exc_info.value)
+    assert "_links" in msg
+    assert "api.riigikogu.ee response shape changed" in msg
+
+
+@pytest.mark.parametrize(
+    ("model", "base_payload", "field_name"),
+    [
+        # PlenaryMember: uuid, firstName, lastName, fullName, factions
+        (
+            PlenaryMember,
+            {
+                "uuid": "u1",
+                "firstName": "Jaan",
+                "lastName": "Tamm",
+                "fullName": "Jaan Tamm",
+                "factions": [],
+            },
+            "uuid",
+        ),
+        (
+            PlenaryMember,
+            {
+                "uuid": "u1",
+                "firstName": "Jaan",
+                "lastName": "Tamm",
+                "fullName": "Jaan Tamm",
+                "factions": [],
+            },
+            "firstName",
+        ),
+        (
+            PlenaryMember,
+            {
+                "uuid": "u1",
+                "firstName": "Jaan",
+                "lastName": "Tamm",
+                "fullName": "Jaan Tamm",
+                "factions": [],
+            },
+            "lastName",
+        ),
+        (
+            PlenaryMember,
+            {
+                "uuid": "u1",
+                "firstName": "Jaan",
+                "lastName": "Tamm",
+                "fullName": "Jaan Tamm",
+                "factions": [],
+            },
+            "fullName",
+        ),
+        (
+            PlenaryMember,
+            {
+                "uuid": "u1",
+                "firstName": "Jaan",
+                "lastName": "Tamm",
+                "fullName": "Jaan Tamm",
+                "factions": [],
+            },
+            "factions",
+        ),
+        # VotingDetail: uuid, votingNumber, startDateTime, type, voters
+        (
+            VotingDetail,
+            {
+                "uuid": "v1",
+                "votingNumber": 1,
+                "startDateTime": "2026-10-01T10:00:00",
+                "type": {"code": "AVALIK"},
+                "voters": [],
+            },
+            "uuid",
+        ),
+        (
+            VotingDetail,
+            {
+                "uuid": "v1",
+                "votingNumber": 1,
+                "startDateTime": "2026-10-01T10:00:00",
+                "type": {"code": "AVALIK"},
+                "voters": [],
+            },
+            "votingNumber",
+        ),
+        (
+            VotingDetail,
+            {
+                "uuid": "v1",
+                "votingNumber": 1,
+                "startDateTime": "2026-10-01T10:00:00",
+                "type": {"code": "AVALIK"},
+                "voters": [],
+            },
+            "startDateTime",
+        ),
+        (
+            VotingDetail,
+            {
+                "uuid": "v1",
+                "votingNumber": 1,
+                "startDateTime": "2026-10-01T10:00:00",
+                "type": {"code": "AVALIK"},
+                "voters": [],
+            },
+            "type",
+        ),
+        (
+            VotingDetail,
+            {
+                "uuid": "v1",
+                "votingNumber": 1,
+                "startDateTime": "2026-10-01T10:00:00",
+                "type": {"code": "AVALIK"},
+                "voters": [],
+            },
+            "voters",
+        ),
+        # Voter: uuid, fullName, decision, faction
+        (
+            Voter,
+            {
+                "uuid": "m1",
+                "fullName": "Jaan Tamm",
+                "decision": {"code": "POOLT"},
+                "faction": {"name": "Fraktsioon"},
+            },
+            "uuid",
+        ),
+        (
+            Voter,
+            {
+                "uuid": "m1",
+                "fullName": "Jaan Tamm",
+                "decision": {"code": "POOLT"},
+                "faction": {"name": "Fraktsioon"},
+            },
+            "fullName",
+        ),
+        (
+            Voter,
+            {
+                "uuid": "m1",
+                "fullName": "Jaan Tamm",
+                "decision": {"code": "POOLT"},
+                "faction": {"name": "Fraktsioon"},
+            },
+            "decision",
+        ),
+        # VerbatimSitting: date, link, edited, agendaItems
+        (
+            VerbatimSitting,
+            {
+                "date": "2026-10-01",
+                "link": "https://stenogrammid.riigikogu.ee/et/202610011000",
+                "edited": False,
+                "agendaItems": [],
+            },
+            "date",
+        ),
+        (
+            VerbatimSitting,
+            {
+                "date": "2026-10-01",
+                "link": "https://stenogrammid.riigikogu.ee/et/202610011000",
+                "edited": False,
+                "agendaItems": [],
+            },
+            "link",
+        ),
+        (
+            VerbatimSitting,
+            {
+                "date": "2026-10-01",
+                "link": "https://stenogrammid.riigikogu.ee/et/202610011000",
+                "edited": False,
+                "agendaItems": [],
+            },
+            "edited",
+        ),
+        (
+            VerbatimSitting,
+            {
+                "date": "2026-10-01",
+                "link": "https://stenogrammid.riigikogu.ee/et/202610011000",
+                "edited": False,
+                "agendaItems": [],
+            },
+            "agendaItems",
+        ),
+        # VerbatimAgendaItem: events
+        (
+            VerbatimAgendaItem,
+            {"events": []},
+            "events",
+        ),
+        # VerbatimEvent: type
+        (
+            VerbatimEvent,
+            {"type": "SPEECH"},
+            "type",
+        ),
+        # MeetingSpeech: content, speechType
+        (
+            MeetingSpeech,
+            {"content": "<p>Tere</p>", "speechType": "SPEECH"},
+            "content",
+        ),
+        (
+            MeetingSpeech,
+            {"content": "<p>Tere</p>", "speechType": "SPEECH"},
+            "speechType",
+        ),
+    ],
+)
+def test_newly_required_fields_raise_on_missing(model, base_payload, field_name):
+    payload = dict(base_payload)
+    del payload[field_name]
+    with pytest.raises(UpstreamSchemaError) as exc_info:
+        validate_response(
+            model,
+            payload,
+            endpoint=f"/test/{model.__name__}",
+            ref=f"missing_{field_name}",
+        )
+    msg = str(exc_info.value)
+    assert field_name in msg
     assert "api.riigikogu.ee response shape changed" in msg
 
 

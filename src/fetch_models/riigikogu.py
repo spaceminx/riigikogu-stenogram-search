@@ -1,13 +1,17 @@
 """Pydantic models for api.riigikogu.ee and stenogrammid.riigikogu.ee API responses.
 
 Validation layer only - fetchers continue using raw dicts downstream.
+
+Field presence rule:
+required = always present in real data (verified on a 2019–2026 sample);
+optional = legitimately missing.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 
 class UpstreamSchemaError(Exception):
@@ -20,7 +24,7 @@ class UpstreamSchemaError(Exception):
 # Base model allowing extra fields
 # ---------------------------------------------------------------------------
 class RiigikoguBaseModel(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow", populate_by_name=True)
 
 
 # ---------------------------------------------------------------------------
@@ -47,7 +51,7 @@ class PhotoLinks(RiigikoguBaseModel):
 
 class MemberPhoto(RiigikoguBaseModel):
     uuid: str | None = None
-    _links: PhotoLinks | None = None
+    links: PhotoLinks | None = Field(default=None, alias="_links")
 
 
 class FactionMembershipInterval(RiigikoguBaseModel):
@@ -74,16 +78,16 @@ class PlenaryMembershipObj(RiigikoguBaseModel):
 
 
 class PlenaryMember(RiigikoguBaseModel):
-    uuid: str | None = None
-    firstName: str | None = None
-    lastName: str | None = None
-    fullName: str | None = None
+    uuid: str
+    firstName: str
+    lastName: str
+    fullName: str
     gender: str | None = None
     dateOfBirth: str | None = None
     email: str | None = None
     parliamentSeniority: int | str | None = None
     active: bool | None = None
-    factions: list[MemberFaction] | None = None
+    factions: list[MemberFaction]
     photo: MemberPhoto | None = None
     electoralDistrict: str | ElectoralDistrictObj | None = None
     electoralDistrictHistory: list[ElectoralDistrictHistoryItem] | None = None
@@ -126,9 +130,9 @@ class VoterFaction(RiigikoguBaseModel):
 
 
 class Voter(RiigikoguBaseModel):
-    uuid: str | None = None
-    fullName: str | None = None
-    decision: str | VoterDecision | None = None
+    uuid: str
+    fullName: str
+    decision: str | VoterDecision
     faction: str | VoterFaction | None = None
 
 
@@ -159,17 +163,17 @@ class RelatedDraft(RiigikoguBaseModel):
 
 
 class VotingDetail(RiigikoguBaseModel):
-    uuid: str | None = None
-    votingNumber: int | str | None = None
-    type: str | VotingTypeCode | None = None
+    uuid: str
+    votingNumber: int | str
+    type: str | VotingTypeCode
     description: str | None = None
-    startDateTime: str | None = None
+    startDateTime: str
     endDateTime: str | None = None
     sitting: VotingSittingRef | None = None
     chairman: VotingChairmanRef | None = None
     relatedDocument: RelatedDocument | None = None
     relatedDraft: RelatedDraft | None = None
-    voters: list[Voter] | None = None
+    voters: list[Voter]
     inFavor: int | None = None
     against: int | None = None
     neutral: int | None = None
@@ -182,7 +186,7 @@ class VotingDetail(RiigikoguBaseModel):
 # 5. api.riigikogu.ee/api/steno/verbatims
 # ---------------------------------------------------------------------------
 class VerbatimEvent(RiigikoguBaseModel):
-    type: str | None = None
+    type: str
     text: str | None = None
     speaker: str | None = None
     emsId: str | int | None = None
@@ -191,17 +195,17 @@ class VerbatimEvent(RiigikoguBaseModel):
 class VerbatimAgendaItem(RiigikoguBaseModel):
     title: str | None = None
     agendaItemUuid: str | None = None
-    events: list[VerbatimEvent] | None = None
+    events: list[VerbatimEvent]
 
 
 class VerbatimSitting(RiigikoguBaseModel):
-    date: str | None = None
+    date: str
     startTime: str | None = None
     sittingDateTime: str | None = None
-    link: str | None = None
+    link: str
     title: str | None = None
-    edited: bool | None = None
-    agendaItems: list[VerbatimAgendaItem] | None = None
+    edited: bool
+    agendaItems: list[VerbatimAgendaItem]
 
 
 # ---------------------------------------------------------------------------
@@ -209,8 +213,8 @@ class VerbatimSitting(RiigikoguBaseModel):
 # ---------------------------------------------------------------------------
 class MeetingSpeech(RiigikoguBaseModel):
     name: str | None = None
-    content: str | None = None
-    speechType: str | None = None
+    content: str
+    speechType: str
     startTime: str | None = None
     endTime: str | None = None
     emsId: str | int | None = None

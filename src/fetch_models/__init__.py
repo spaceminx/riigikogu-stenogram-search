@@ -2,11 +2,16 @@
 
 from src.fetch_models.riigikogu import (
     AgendaPlenary,
+    MeetingSpeech,
+    MemberPhoto,
     MembershipItem,
     PlenaryMember,
     RichMeeting,
     UpstreamSchemaError,
+    VerbatimAgendaItem,
+    VerbatimEvent,
     VerbatimSitting,
+    Voter,
     VotingDetail,
     VotingsSitting,
     validate_response,
@@ -14,11 +19,16 @@ from src.fetch_models.riigikogu import (
 
 __all__ = [
     "AgendaPlenary",
+    "MeetingSpeech",
+    "MemberPhoto",
     "MembershipItem",
     "PlenaryMember",
     "RichMeeting",
     "UpstreamSchemaError",
+    "VerbatimAgendaItem",
+    "VerbatimEvent",
     "VerbatimSitting",
+    "Voter",
     "VotingDetail",
     "VotingsSitting",
     "validate_response",
