@@ -38,11 +38,14 @@ async def request_validation_exception_handler(request: Request, exc: RequestVal
         msg = "Vigane päring."
         if errors:
             first_err = errors[0]
+            err_type = first_err.get("type", "")
             field = first_err.get("loc", [""])[-1]
-            if first_err.get("type") == "missing":
+            if err_type == "missing":
                 msg = f"Puuduv väli: {field}."
             elif field == "q":
                 msg = "Otsingupäring ei tohi olla tühi."
+            elif "pattern" in err_type:
+                msg = f"Vigane väärtus: {field}."
             elif "msg" in first_err:
                 msg = first_err["msg"]
         return PlainTextResponse(content=msg, status_code=422)

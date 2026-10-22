@@ -32,6 +32,20 @@ export function SearchView({
 
   // Search parameters from URL
   const queryParam = searchParams.get("q") || "";
+  const membershipParam = searchParams.get("membership") || "all";
+  const factionParam = searchParams.get("faction") || "";
+  const speakerParam = searchParams.get("speaker") || "";
+  const speakerUuidParam = searchParams.get("speaker_uuid") || "";
+  const startDateParam = searchParams.get("start_date") || "";
+  const endDateParam = searchParams.get("end_date") || "";
+  const sortParam = searchParams.get("sort") || "date_desc";
+  const intervalParam = searchParams.get("interval") || "monthly";
+  const scaleParam = parseScaleParam(searchParams.get("scale"));
+  const pageParam = parseInt(searchParams.get("page") || "1", 10) || 1;
+  const excludeChairParam =
+    searchParams.get("exclude_chair") === "true" || searchParams.get("exclude_chair") === "1";
+  const speechCategoryParam = searchParams.get("speech_category") || "";
+  const exactMatchParam = searchParams.get("expand") === "false";
 
   const pageTitle = queryParam.trim()
     ? `${queryParam.trim()} — otsing — Riigivaade`
@@ -69,20 +83,6 @@ export function SearchView({
         }
       : {}
   );
-  const membershipParam = searchParams.get("membership") || "all";
-  const factionParam = searchParams.get("faction") || "";
-  const speakerParam = searchParams.get("speaker") || "";
-  const speakerUuidParam = searchParams.get("speaker_uuid") || "";
-  const startDateParam = searchParams.get("start_date") || "";
-  const endDateParam = searchParams.get("end_date") || "";
-  const sortParam = searchParams.get("sort") || "date_desc";
-  const intervalParam = searchParams.get("interval") || "monthly";
-  const scaleParam = parseScaleParam(searchParams.get("scale"));
-  const pageParam = parseInt(searchParams.get("page") || "1", 10) || 1;
-  const excludeChairParam =
-    searchParams.get("exclude_chair") === "true" || searchParams.get("exclude_chair") === "1";
-  const speechCategoryParam = searchParams.get("speech_category") || "";
-  const exactMatchParam = searchParams.get("expand") === "false";
 
   // Local state for filter form - only written to URL upon search submit
   const [filterMembership, setFilterMembership] = useState(membershipParam);

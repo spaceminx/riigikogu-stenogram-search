@@ -138,6 +138,12 @@ def test_rss_search_validation_errors_plain_text():
     assert "text/plain" in res_mem.headers["content-type"]
     assert "Tundmatu koosseis" in res_mem.text
 
+    # Pattern error (invalid date format) -> 422 plain text with Estonian message
+    res_pattern = client.get("/rss/search?q=eelarve&start_date=2026-1-1")
+    assert res_pattern.status_code == 422
+    assert "text/plain" in res_pattern.headers["content-type"]
+    assert res_pattern.text == "Vigane väärtus: start_date."
+
 
 def test_rss_saadik_xml_and_404():
     """Verify /rss/saadik/{uuid} produces valid RSS or 404 for unknown person."""
