@@ -98,6 +98,38 @@ export function PrivacyView({ onOpenMethodology }) {
           </section>
 
           <section>
+            <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Avaandmed</h2>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+              Kogu Riigivaate andmestik (kõned, hääletused, kohalolek, päevakorrapunktid ja
+              saadikute põhiandmed) avaldatakse perioodiliselt masinloetaval kujul (tihendatud JSONL
+              failidena) vabaks taaskasutuseks litsentsi{" "}
+              <a
+                href="https://creativecommons.org/licenses/by-sa/3.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--accent-primary)", textDecoration: "underline" }}
+              >
+                CC BY-SA 3.0
+              </a>{" "}
+              alusel. Väljalasked ei sisalda saadikute sünniaegu ega e-posti aadresse.
+            </p>
+            <div style={{ marginTop: "0.75rem" }}>
+              <a
+                href="https://github.com/spaceminx/riigikogu-stenogram-search/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "var(--accent-primary)",
+                  textDecoration: "underline",
+                  fontWeight: 500,
+                }}
+              >
+                Laadi alla andmestik (GitHub Releases)
+              </a>
+            </div>
+          </section>
+
+          <section>
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Erapooletus</h2>
             <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Kuidas andmeid arvutatakse, vaata{" "}
