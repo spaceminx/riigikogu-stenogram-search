@@ -756,8 +756,11 @@ def list_persons(
                     "last_name": p.last_name,
                     "full_name": p.full_name,
                     "gender": p.gender,
-                    "date_of_birth": p.date_of_birth,
-                    "email": p.email,
+                    "birth_year": int(p.date_of_birth[:4])
+                    if p.date_of_birth
+                    and len(p.date_of_birth) >= 4
+                    and p.date_of_birth[:4].isdigit()
+                    else None,
                     "photo_url": p.photo_url,
                     "electoral_district": p.electoral_district,
                     "seniority_days": p.seniority_days,
@@ -861,8 +864,11 @@ def get_person(person_uuid: str):
             "last_name": person.last_name,
             "full_name": person.full_name,
             "gender": person.gender,
-            "date_of_birth": person.date_of_birth,
-            "email": person.email,
+            "birth_year": int(person.date_of_birth[:4])
+            if person.date_of_birth
+            and len(person.date_of_birth) >= 4
+            and person.date_of_birth[:4].isdigit()
+            else None,
             "photo_url": person.photo_url,
             "electoral_district": person.electoral_district,
             "seniority_days": person.seniority_days,

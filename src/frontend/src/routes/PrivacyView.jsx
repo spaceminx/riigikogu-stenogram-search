@@ -70,9 +70,9 @@ export function PrivacyView({ onOpenMethodology }) {
             </h2>
             <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Riigivaade avaldab Riigikogu liikmete kohta avalikest allikatest pärit andmeid (nimi,
-              foto, fraktsioon, valimisringkond, kõned, hääletused ja kohalolek). Andmeid
-              töödeldakse parlamendi töö läbipaistvuse ja avalikkuse teavitamise eesmärgil. Kui
-              leiate vea või soovite esitada vastuväite, kirjutage{" "}
+              sünniaasta, foto, fraktsioon, valimisringkond, kõned, hääletused ja kohalolek).
+              Andmeid töödeldakse parlamendi töö läbipaistvuse ja avalikkuse teavitamise eesmärgil.
+              Kui leiate vea või soovite esitada vastuväite, kirjutage{" "}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 style={{ color: "var(--accent-primary)", textDecoration: "underline" }}
@@ -111,7 +111,8 @@ export function PrivacyView({ onOpenMethodology }) {
               >
                 CC BY-SA 3.0
               </a>{" "}
-              alusel. Väljalasked ei sisalda saadikute sünniaegu ega e-posti aadresse.
+              alusel. Väljalasked sisaldavad saadikute sünniaastaid, kuid ei sisalda täpseid
+              sünnikuupäevi ega e-posti aadresse.
             </p>
             <div style={{ marginTop: "0.75rem" }}>
               <a
