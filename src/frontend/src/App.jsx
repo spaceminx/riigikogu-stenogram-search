@@ -16,7 +16,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MethodologyModal from "./components/MethodologyModal";
-import "./App.css";
+import "./styles/index.css";
 
 const DashboardView = lazy(() => import("./routes/DashboardView"));
 const SearchView = lazy(() => import("./routes/SearchView"));

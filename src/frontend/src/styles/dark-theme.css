@@ -1,0 +1,763 @@
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-color: #0f172a;
+  --panel-bg: #172235;
+  --panel-border: #29364a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-primary: #60a5fa;
+  --accent-secondary: #93c5fd;
+  --accent-gradient: #60a5fa;
+}
+
+html[data-theme="dark"] body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .brand-copy strong,
+html[data-theme="dark"] .page-titlebar h1,
+html[data-theme="dark"] .summary-card strong,
+html[data-theme="dark"] .chart-header h2,
+html[data-theme="dark"] .voting-card h2,
+html[data-theme="dark"] .session-content > strong,
+html[data-theme="dark"] .profile-details .speaker-name {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .search-section,
+html[data-theme="dark"] .summary-card,
+html[data-theme="dark"] .glass-panel,
+html[data-theme="dark"] .header-menu-trigger,
+html[data-theme="dark"] .header-menu-panel,
+html[data-theme="dark"] .reset-filters-btn {
+  border-color: #29364a;
+  background: #172235;
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .header-menu-trigger:hover,
+html[data-theme="dark"] .header-menu[open] .header-menu-trigger,
+html[data-theme="dark"] .menu-action:hover,
+html[data-theme="dark"] .menu-link:hover {
+  border-color: #40536c;
+  background: #223149;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .menu-action,
+html[data-theme="dark"] .menu-link,
+html[data-theme="dark"] .menu-status-row,
+html[data-theme="dark"] .filter-label,
+html[data-theme="dark"] .summary-caption,
+html[data-theme="dark"] .speaker-count-caption,
+html[data-theme="dark"] .sidebar-empty-state,
+html[data-theme="dark"] .search-hint {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .filter-text-input,
+html[data-theme="dark"] .search-select {
+  border-color: #35445b;
+  background-color: #111c2d;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .search-query-row .logic-btn,
+html[data-theme="dark"] .session-topic,
+html[data-theme="dark"] .profile-details .faction-badge {
+  border-color: #35445b;
+  background: #202d41;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .session-item,
+html[data-theme="dark"] .sidebar-empty-state,
+html[data-theme="dark"] .menu-divider {
+  border-color: #29364a;
+}
+
+html[data-theme="dark"] .session-marker {
+  box-shadow: 0 0 0 3px #25344a;
+}
+
+html[data-theme="dark"] .speech-text,
+html[data-theme="dark"] .transcript-row-text {
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .speaker-name-highlight {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .speaker-name-link {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .speaker-name-link:hover,
+html[data-theme="dark"] .speaker-name-link:focus-visible {
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .speech-meta,
+html[data-theme="dark"] .speaker-header-info,
+html[data-theme="dark"] .speech-datetime {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .speech-anchor-link {
+  color: #a8b5c6;
+}
+
+html[data-theme="dark"] .speech-anchor-link:hover {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .speaker-role-tag,
+html[data-theme="dark"] .speech-type-badge,
+html[data-theme="dark"] .speech-duration-badge,
+html[data-theme="dark"] .faction-badge,
+html[data-theme="dark"] .speech-card .faction-badge,
+html[data-theme="dark"] .modal-content .faction-badge,
+html[data-theme="dark"] .transcript-agenda-badge,
+html[data-theme="dark"] .results-badge {
+  border-color: #35445b;
+  background: #202d41;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .speech-agenda-tag {
+  border-left-color: #60a5fa;
+  background: #202d41;
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .agenda-kicker {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .agenda-title-text {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .agenda-draft-link {
+  background: rgba(119, 226, 194, 0.15);
+  border-color: rgba(119, 226, 194, 0.35);
+  color: #77e2c2;
+}
+
+html[data-theme="dark"] .agenda-draft-link:hover {
+  background: rgba(119, 226, 194, 0.25);
+}
+
+html[data-theme="dark"] .context-btn,
+html[data-theme="dark"] .pagination-btn,
+html[data-theme="dark"] .search-sort-select,
+html[data-theme="dark"] .back-nav-btn,
+html[data-theme="dark"] .export-btn-link {
+  border-color: #35445b;
+  background: #202d41;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .context-btn:hover,
+html[data-theme="dark"] .pagination-btn:hover:not(:disabled),
+html[data-theme="dark"] .search-sort-select:hover,
+html[data-theme="dark"] .back-nav-btn:hover,
+html[data-theme="dark"] .export-btn-link:hover {
+  border-color: #4b5f7d;
+  background: #273750;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .pagination-btn:disabled {
+  border-color: #29364a;
+  background: #172235;
+  color: #64748b;
+}
+
+html[data-theme="dark"] .search-sort-select option {
+  background: #111c2d;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .speech-link {
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .speech-link:hover {
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .speech-video-link {
+  color: #f87171;
+}
+
+html[data-theme="dark"] .speech-video-link:hover {
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .speech-card-actions {
+  border-top-color: #29364a;
+}
+
+html[data-theme="dark"] .speech-card:hover {
+  border-color: #40536c;
+}
+
+html[data-theme="dark"] .target-speech-highlight {
+  background: #1c2a3f;
+  border-color: #3b5070;
+}
+
+html[data-theme="dark"] .modal-content.glass-panel {
+  border-color: #29364a;
+  background: #172235;
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .modal-heading,
+html[data-theme="dark"] .transcript-row-speaker {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .modal-search-input {
+  border-color: #35445b;
+  background-color: #111c2d;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .transcript-row:hover {
+  background: #202d41;
+}
+
+html[data-theme="dark"] .transcript-row.active {
+  background: #253752;
+}
+
+html[data-theme="dark"] .person-metric-value-primary {
+  color: #93c5fd;
+}
+
+.archive-stats-row {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: -2px 0 14px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.archive-stat {
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.archive-stat-separator {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+html[data-theme="dark"] .archive-stat {
+  border-color: #35445b;
+  background: #172235;
+  color: #cbd5e1;
+}
+
+.timeline-header-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.interval-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f1f5f9;
+}
+
+.interval-segment {
+  min-width: 48px;
+  min-height: 29px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 550;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.interval-segment:hover:not(.is-active) {
+  color: #334155;
+}
+
+.interval-segment.is-active {
+  background: #fff;
+  color: #1e3a5f;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="dark"] .interval-segmented {
+  border-color: #35445b;
+  background: #111c2d;
+}
+
+html[data-theme="dark"] .interval-segment {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .interval-segment:hover:not(.is-active) {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .interval-segment.is-active {
+  background: #2b3b52;
+  color: #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 600px) {
+  .timeline-header-controls {
+    gap: 7px;
+  }
+
+  .interval-segment {
+    min-width: 42px;
+    padding: 0 7px;
+  }
+}
+
+html[data-theme="dark"] .search-heading h2,
+html[data-theme="dark"] .summary-label,
+html[data-theme="dark"] .topic-suggestions-label,
+html[data-theme="dark"] .section-kicker,
+html[data-theme="dark"] .chart-footer,
+html[data-theme="dark"] .sample-preview-header strong,
+html[data-theme="dark"] .sample-preview > p {
+  color: #9eafc3;
+}
+
+html[data-theme="dark"] .search-groups-container,
+html[data-theme="dark"] .search-query-row .search-groups-container {
+  border-color: #35445b;
+  background: #111c2d;
+}
+
+html[data-theme="dark"] .search-groups-container:focus-within {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+html[data-theme="dark"] .search-input,
+html[data-theme="dark"] input.search-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .search-input:focus,
+html[data-theme="dark"] .search-input:focus-visible,
+html[data-theme="dark"] input.search-input:focus,
+html[data-theme="dark"] input.search-input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .token-pill {
+  border-color: #35445b;
+  background: #25334a;
+  color: #dbe4ef;
+}
+
+html[data-theme="dark"] .topic-pill {
+  border-color: #35445b;
+  background: #172235;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .sample-preview {
+  border-color: #35445b;
+  background: #111c2d;
+}
+
+html[data-theme="dark"] .sample-chart {
+  background: #111c2d;
+}
+
+@media (max-width: 720px) {
+  .header-menu {
+    margin-left: auto;
+  }
+
+  .search-query-row {
+    flex-wrap: wrap;
+  }
+
+  .search-query-row .search-groups-container {
+    flex-basis: 100%;
+  }
+
+  .search-query-row .logic-buttons {
+    margin-left: auto;
+  }
+
+  .search-filters-row {
+    grid-template-columns: 1fr;
+  }
+
+  .reset-filters-btn {
+    grid-column: auto;
+    justify-self: start;
+  }
+}
+
+.speeches-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  margin: 0;
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.speeches-header-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.speeches-header-heading .back-nav-btn {
+  flex: 0 0 auto;
+  color: #315b84;
+  white-space: nowrap;
+}
+
+.speeches-view-title {
+  min-width: 0;
+  padding-left: 14px;
+  border-left-color: #dbe3ec;
+  color: #1e293b;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.results-badge {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.speeches-header-controls {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.speeches-list {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 16px;
+}
+
+.speech-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.speech-card:hover {
+  transform: none;
+  border-color: #cbd5e1;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.08);
+}
+
+.speech-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 14px;
+}
+
+.speaker-header-info {
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 7px;
+}
+
+.speaker-name-highlight {
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.speech-datetime {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #64748b;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.speech-anchor-link {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.speech-anchor-link:hover {
+  color: #315b84;
+}
+
+.speech-text {
+  margin: 0;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.speech-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #edf1f5;
+}
+
+.speech-card-actions .context-btn {
+  max-width: 100%;
+  border: 1px solid #dbe3ec;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #315b84;
+  text-align: left;
+}
+
+.speech-card-actions .context-btn:hover {
+  border-color: #b9c9d9;
+  background: #f1f5f9;
+  color: #1e3a5f;
+}
+
+.speech-card-actions .speech-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  margin-top: 0;
+  color: #315b84;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.speech-card-actions .speech-link:hover {
+  color: #1e3a5f;
+  text-decoration: underline;
+}
+
+.speech-card-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.speech-video-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.speech-video-link:hover {
+  color: #991b1b;
+  text-decoration: underline;
+}
+
+.speech-agenda-tag {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  background: #f1f5f9;
+  border-left: 3px solid #315b84;
+  border-radius: 0 4px 4px 0;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.agenda-kicker {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.agenda-title-text {
+  color: #334155;
+  font-weight: 500;
+}
+
+.agenda-draft-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(49, 91, 132, 0.1);
+  border: 1px solid rgba(49, 91, 132, 0.25);
+  color: #1e3a5f;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.3;
+  margin-right: 4px;
+  transition: background 0.15s ease;
+}
+
+.agenda-draft-link:hover {
+  background: rgba(49, 91, 132, 0.18);
+  text-decoration: none;
+}
+
+.transcript-agenda-badge {
+  display: inline-block;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.transcript-video-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #b91c1c;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 2px 6px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.transcript-video-btn:hover {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 720px) {
+  .speeches-header-bar {
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .speeches-header-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .speeches-view-title {
+    padding-left: 0;
+    border-left: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .speeches-header-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .speeches-list {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .speech-card {
+    padding: 15px;
+  }
+
+  .speech-meta {
+    align-items: flex-start;
+    gap: 8px 12px;
+  }
+
+  .speech-datetime {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 420px) {
+  .speeches-header-controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .speech-card-actions {
+    align-items: flex-start;
+  }
+}
