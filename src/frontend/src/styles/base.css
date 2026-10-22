@@ -331,14 +331,6 @@
   margin-bottom: 0.75rem;
 }
 
-.speech-text {
-  color: #cbd5e1;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0 0 1rem 0;
-  flex: 1;
-}
-
 .speech-link {
   color: #8b5cf6;
   text-decoration: none;

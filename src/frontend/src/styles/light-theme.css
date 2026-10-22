@@ -25,12 +25,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-select {
-  font: inherit;
-}
-
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -758,10 +752,6 @@ select:focus-visible {
     font-size: 12px;
   }
 
-  .brand-copy > span {
-    font-size: 9px;
-  }
-
   .nav-btn {
     min-height: 33px;
     padding: 7px 8px;
@@ -808,20 +798,6 @@ select:focus-visible {
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
-  }
-
-  .filter-group-item.speaker-filter-item {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
-
-  .filter-select,
-  .filter-input-wrap {
-    width: 100%;
-  }
-
-  .reset-filters-btn {
-    margin-left: 0;
   }
 
   .summary-grid {

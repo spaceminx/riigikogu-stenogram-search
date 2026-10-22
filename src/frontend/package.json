@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --test",
+    "check:css-vars": "node scripts/check_css_vars.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

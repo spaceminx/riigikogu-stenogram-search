@@ -8,7 +8,7 @@
 .speaker-name-link:hover,
 .speaker-name-link:focus-visible {
   text-decoration: underline;
-  color: var(--color-primary, #315b84);
+  color: var(--accent-primary, #315b84);
 }
 
 /* Speaker filter pill in SearchView */
@@ -70,7 +70,7 @@
   border: 1px solid var(--panel-border);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-primary, #315b84);
+  color: var(--accent-primary, #315b84);
 }
 
 .person-details {
@@ -113,7 +113,7 @@
 }
 
 .person-district {
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   font-size: 0.95rem;
 }
 
@@ -123,7 +123,7 @@
 
 .person-factions-label {
   font-size: 0.85rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   display: block;
   margin-bottom: 0.35rem;
 }
@@ -146,7 +146,7 @@
 }
 
 .person-faction-period {
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   font-size: 0.8rem;
 }
 
@@ -176,7 +176,7 @@
 }
 
 .person-metric-label {
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   font-size: 0.85rem;
   text-align: left;
 }
@@ -190,19 +190,19 @@
 }
 
 .person-metric-value-primary {
-  color: var(--color-primary, #315b84);
+  color: var(--accent-primary, #315b84);
 }
 
 .person-metric-desc {
   font-size: 0.8rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   text-align: left;
 }
 
 .person-metric-subline {
   display: block;
   font-size: 0.75rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   margin-top: 0.2rem;
   line-height: 1.2;
 }
@@ -216,7 +216,7 @@
 .person-other-roles-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -235,13 +235,13 @@
 .person-other-roles-desc {
   margin: 0.5rem 0 0;
   font-size: 0.8rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
 }
 
 .person-director-note {
   margin-top: 0.75rem;
   font-size: 0.85rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
 }
 
 .person-chart-container {
@@ -267,7 +267,7 @@
 
 .segmented-btn.active .person-tab-count,
 .segmented-btn[aria-pressed="true"] .person-tab-count {
-  background: var(--color-primary, #315b84);
+  background: var(--accent-primary, #315b84);
   color: #ffffff;
 }
 
@@ -286,7 +286,7 @@
 .person-stats-table caption {
   text-align: left;
   padding-bottom: 0.5rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   font-weight: 600;
 }
 
@@ -298,7 +298,7 @@
 
 .person-stats-table thead th {
   background: rgba(0, 0, 0, 0.03);
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   font-weight: 600;
 }
 
@@ -335,7 +335,7 @@ html[data-theme="dark"] .person-stats-table tbody tr:hover {
 }
 
 .person-not-found-desc {
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   margin-bottom: 1.5rem;
 }
 
@@ -418,14 +418,14 @@ html[data-theme="dark"] .alignment-diff-card {
 .alignment-diff-date {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .alignment-session-link {
   font-size: 0.8rem;
-  color: var(--color-primary, #315b84);
+  color: var(--accent-primary, #315b84);
   text-decoration: none;
   font-weight: 500;
 }
@@ -451,7 +451,7 @@ html[data-theme="dark"] .alignment-session-link:hover {
 
 .alignment-diff-doc {
   font-size: 0.85rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   margin-bottom: 0.5rem;
 }
 
@@ -465,7 +465,7 @@ html[data-theme="dark"] .alignment-session-link:hover {
 }
 
 .alignment-diff-separator {
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
 }
 
 .alignment-decision {

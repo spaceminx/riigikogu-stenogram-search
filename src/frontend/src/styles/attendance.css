@@ -102,7 +102,7 @@
 }
 
 .attendance-checkbox-label input[type="checkbox"] {
-  accent-color: var(--color-primary, #315b84);
+  accent-color: var(--accent-primary, #315b84);
   width: 17px;
   height: 17px;
   cursor: pointer;
@@ -193,7 +193,7 @@
 }
 
 .att-sort-btn:focus-visible {
-  outline: 2px solid var(--color-primary, #315b84);
+  outline: 2px solid var(--accent-primary, #315b84);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -213,7 +213,7 @@
 }
 
 .faction-drilldown-btn:focus-visible {
-  outline: 2px solid var(--color-primary, #315b84);
+  outline: 2px solid var(--accent-primary, #315b84);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -335,7 +335,7 @@
   font-size: 0.72rem;
   font-weight: 400;
   font-style: italic;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   white-space: nowrap;
 }
 
@@ -344,7 +344,7 @@
 }
 
 .att-metric-small-sample .att-metric-main {
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   font-weight: 500;
 }
 
@@ -355,14 +355,14 @@
 .attendance-page-intro {
   margin: 0 0 1.25rem 0;
   font-size: 0.9rem;
-  color: var(--color-text-muted, #64748b);
+  color: var(--text-secondary, #64748b);
   line-height: 1.5;
 }
 
 .attendance-intro-link {
   background: none;
   border: none;
-  color: var(--color-primary, #315b84);
+  color: var(--accent-primary, #315b84);
   text-decoration: underline;
   cursor: pointer;
   font: inherit;
@@ -682,7 +682,7 @@ html[data-theme="dark"] .faction-badge {
   }
 
   .att-mobile-sort-sep {
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--text-secondary, #94a3b8);
     font-size: 0.75rem;
     opacity: 0.6;
   }
@@ -715,7 +715,7 @@ html[data-theme="dark"] .faction-badge {
 
   .att-mobile-metric-label {
     font-size: 0.7rem;
-    color: var(--color-text-muted, #64748b);
+    color: var(--text-secondary, #64748b);
     white-space: normal !important;
   }
 
@@ -728,7 +728,7 @@ html[data-theme="dark"] .faction-badge {
 
   .att-mobile-subtext {
     font-size: 0.66rem;
-    color: var(--color-text-muted, #64748b);
+    color: var(--text-secondary, #64748b);
     text-align: right;
     margin-top: -0.05rem;
     margin-bottom: 0.05rem;

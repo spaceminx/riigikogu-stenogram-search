@@ -70,6 +70,9 @@ jobs:
       - name: Run Prettier Format Check
         run: npm run format:check
 
+      - name: Check CSS Variables
+        run: npm run check:css-vars
+
       - name: Build Frontend
         run: npm run build
 

@@ -26,16 +26,14 @@ export function NotFoundView() {
           display: "inline-flex",
           padding: "1rem",
           borderRadius: "50%",
-          background: "var(--color-bg-subtle, #f1f5f9)",
+          background: "var(--panel-bg, #f1f5f9)",
           marginBottom: "1rem",
         }}
       >
-        <HelpCircle size={48} color="var(--color-primary, #315b84)" />
+        <HelpCircle size={48} color="var(--accent-primary, #315b84)" />
       </div>
       <h2 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>404 – Lehekülge ei leitud</h2>
-      <p
-        style={{ color: "var(--color-text-muted, #64748b)", marginBottom: "2rem", lineHeight: 1.6 }}
-      >
+      <p style={{ color: "var(--text-secondary, #64748b)", marginBottom: "2rem", lineHeight: 1.6 }}>
         Otsitud aadressi ei eksisteeri või on see teisaldatud.
       </p>
       <Link

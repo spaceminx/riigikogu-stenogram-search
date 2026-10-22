@@ -220,12 +220,6 @@ select:focus-visible {
   letter-spacing: -0.025em;
 }
 
-.search-hint {
-  grid-column: 1 / -1;
-  color: #80958c;
-  font-size: 11px;
-}
-
 .search-groups-container {
   min-height: 54px;
   padding: 8px;

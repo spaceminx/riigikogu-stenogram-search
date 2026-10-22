@@ -1058,7 +1058,7 @@ export function PersonView({ theme = "light" }) {
               style={{
                 fontSize: "1rem",
                 margin: "0 0 0.75rem 0",
-                color: "var(--color-text-muted)",
+                color: "var(--text-secondary)",
               }}
             >
               Erinevad hääletused {totalDifferences > 0 ? `(${totalDifferences})` : ""}
