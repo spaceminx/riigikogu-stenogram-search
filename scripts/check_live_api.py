@@ -19,6 +19,8 @@ LIVE_BASE_URL = "https://api.riigivaade.me"
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "src" / "frontend" / "e2e" / "fixtures"
 INDEX_PATH = FIXTURES_DIR / "index.json"
 TIMEOUT_SECONDS = 10.0
+SLEEP_BETWEEN_REQUESTS_SECONDS = 1.0
+RETRY_DELAY_SECONDS = 5.0
 
 
 def compare_shapes(live: object, fixture: object, path: str = "$") -> list[str]:
@@ -57,31 +59,107 @@ def compare_shapes(live: object, fixture: object, path: str = "$") -> list[str]:
     return diffs
 
 
-def main() -> int:
-    if not INDEX_PATH.exists():
-        print(f"Error: Fixtures index not found at {INDEX_PATH}", file=sys.stderr)
+def check_endpoint(
+    url: str,
+    fixture_json: object,
+    timeout: float = TIMEOUT_SECONDS,
+    retry_delay: float = RETRY_DELAY_SECONDS,
+) -> tuple[str, int, str | None]:
+    """Check a single endpoint against fixture_json, retrying once on network/timeout error.
+
+    Returns:
+        tuple of (status_str, duration_ms, failure_message or None)
+    """
+    req = Request(url, headers={"User-Agent": "Riigivaade-LiveApiCheck/1.0"})
+
+    for attempt in range(2):
+        start_time = time.monotonic()
+        try:
+            with urlopen(req, timeout=timeout) as resp:
+                elapsed = time.monotonic() - start_time
+                duration_ms = int(elapsed * 1000)
+                status_code = resp.status
+                if status_code != 200:
+                    return f"HTTP {status_code}", duration_ms, f"{url}: returned HTTP {status_code}"
+
+                body = resp.read()
+                try:
+                    live_json = json.loads(body.decode("utf-8"))
+                    diffs = compare_shapes(live_json, fixture_json)
+                    if diffs:
+                        return (
+                            "DIFF",
+                            duration_ms,
+                            f"{url}: schema diffs:\n  " + "\n  ".join(diffs[:5]),
+                        )
+                    return "OK", duration_ms, None
+                except Exception as err:
+                    return (
+                        "JSON",
+                        duration_ms,
+                        f"{url}: invalid JSON response ({type(err).__name__}: {err})",
+                    )
+
+        except HTTPError as err:
+            elapsed = time.monotonic() - start_time
+            duration_ms = int(elapsed * 1000)
+            return (
+                f"HTTP {err.code}",
+                duration_ms,
+                f"{url}: HTTP error {err.code} ({type(err).__name__}: {err})",
+            )
+
+        except (URLError, TimeoutError) as err:
+            elapsed = time.monotonic() - start_time
+            duration_ms = int(elapsed * 1000)
+            if attempt == 0:
+                time.sleep(retry_delay)
+                continue
+
+            status_str = "TIMEOUT" if "timed out" in str(err).lower() else "NET_ERR"
+            return status_str, duration_ms, f"{url}: {type(err).__name__}: {err}"
+
+        except Exception as err:
+            elapsed = time.monotonic() - start_time
+            duration_ms = int(elapsed * 1000)
+            return "ERR", duration_ms, f"{url}: {type(err).__name__}: {err}"
+
+    return "ERR", 0, f"{url}: unexpected check state"
+
+
+def run_checks(
+    index_path: Path = INDEX_PATH,
+    fixtures_dir: Path = FIXTURES_DIR,
+    live_base_url: str = LIVE_BASE_URL,
+    sleep_between: float = SLEEP_BETWEEN_REQUESTS_SECONDS,
+) -> int:
+    if not index_path.exists():
+        print(f"Error: Fixtures index not found at {index_path}", file=sys.stderr)
         return 1
 
-    with open(INDEX_PATH, encoding="utf-8") as f:
+    with open(index_path, encoding="utf-8") as f:
         index_data = json.load(f)
 
     endpoints = index_data.get("endpoints", [])
-    print(f"Checking {len(endpoints)} endpoints against live API: {LIVE_BASE_URL}\n")
+    print(f"Checking {len(endpoints)} endpoints against live API: {live_base_url}\n")
     print(f"{'Status':<8} {'Time':<8} {'Path & Query':<60}")
     print("-" * 80)
 
     failures: list[str] = []
 
-    for entry in endpoints:
+    for i, entry in enumerate(endpoints):
+        if i > 0 and sleep_between > 0:
+            time.sleep(sleep_between)
+
         path = entry["path"]
         fixture_file = entry["fixture"]
         query_params = entry.get("queryParams")
 
-        url = f"{LIVE_BASE_URL}{path}"
+        url = f"{live_base_url}{path}"
         if query_params:
             url += f"?{urlencode(query_params)}"
 
-        fixture_path = FIXTURES_DIR / fixture_file
+        fixture_path = fixtures_dir / fixture_file
         if not fixture_path.exists():
             failures.append(f"Fixture file missing: {fixture_file}")
             print(f"{'MISS':<8} {'-':<8} {url:<60}")
@@ -90,46 +168,9 @@ def main() -> int:
         with open(fixture_path, encoding="utf-8") as f:
             fixture_json = json.load(f)
 
-        req = Request(url, headers={"User-Agent": "Riigivaade-LiveApiCheck/1.0"})
-        start_time = time.monotonic()
-        status_str = "OK"
-        duration_ms = 0
-
-        try:
-            with urlopen(req, timeout=TIMEOUT_SECONDS) as resp:
-                elapsed = time.monotonic() - start_time
-                duration_ms = int(elapsed * 1000)
-                status_code = resp.status
-                if status_code != 200:
-                    status_str = f"HTTP {status_code}"
-                    failures.append(f"{url}: returned HTTP {status_code}")
-                else:
-                    body = resp.read()
-                    try:
-                        live_json = json.loads(body.decode("utf-8"))
-                        diffs = compare_shapes(live_json, fixture_json)
-                        if diffs:
-                            status_str = "DIFF"
-                            failures.append(f"{url}: schema diffs:\n  " + "\n  ".join(diffs[:5]))
-                    except Exception as err:
-                        status_str = "JSON"
-                        failures.append(f"{url}: invalid JSON response ({err})")
-
-        except HTTPError as err:
-            elapsed = time.monotonic() - start_time
-            duration_ms = int(elapsed * 1000)
-            status_str = f"HTTP {err.code}"
-            failures.append(f"{url}: HTTP error {err.code}")
-        except URLError as err:
-            elapsed = time.monotonic() - start_time
-            duration_ms = int(elapsed * 1000)
-            status_str = "TIMEOUT" if "timed out" in str(err) else "NET_ERR"
-            failures.append(f"{url}: network error ({err})")
-        except Exception as err:
-            elapsed = time.monotonic() - start_time
-            duration_ms = int(elapsed * 1000)
-            status_str = "ERR"
-            failures.append(f"{url}: error ({err})")
+        status_str, duration_ms, failure_msg = check_endpoint(url, fixture_json)
+        if failure_msg:
+            failures.append(failure_msg)
 
         print(f"{status_str:<8} {f'{duration_ms}ms':<8} {url:<60}")
 
@@ -142,6 +183,10 @@ def main() -> int:
 
     print("SUCCESS: All live API endpoint responses match expected shapes.")
     return 0
+
+
+def main() -> int:
+    return run_checks()
 
 
 if __name__ == "__main__":
