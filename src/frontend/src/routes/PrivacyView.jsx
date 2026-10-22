@@ -91,7 +91,9 @@ export function PrivacyView({ onOpenMethodology }) {
               Stenogrammid, hääletused, kohalolek ja saadikute andmed: Riigikogu avaandmed
               (api.riigikogu.ee), litsents CC BY-SA 3.0. Saadikute fotod: Riigikogu. Videod:
               Riigikogu YouTube&apos;i kanal, litsents CC BY-SA. Riigivaate töödeldud andmed, sh
-              otsingutulemuste eksport, on samuti CC BY-SA litsentsi all.
+              otsingutulemuste eksport, on samuti CC BY-SA litsentsi all. Otsingu ja saadiku kõnede
+              kohta saab tellida RSS-voo; voo lugemiseks pole kontot vaja ja Riigivaade ei salvesta
+              tellijate andmeid.
             </p>
           </section>
 

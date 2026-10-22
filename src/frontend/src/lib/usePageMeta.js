@@ -5,15 +5,17 @@ const DEFAULT_DESCRIPTION =
   "Riigikogu stenogrammid, kõned, hääletused ja kohalolekukontrollid ühes otsitavas vaates.";
 
 /**
- * Update document.title, <meta name="description">, and optional robots meta with cleanup on unmount.
+ * Update document.title, <meta name="description">, optional robots meta, and optional RSS <link> with cleanup on unmount.
  *
  * @param {string} [title] - Full page title (e.g. "<page> — Riigivaade")
  * @param {string} [description] - Factual Estonian description sentence
  * @param {Object} [options]
  * @param {boolean} [options.noindex] - If true, adds/sets <meta name="robots" content="noindex">
+ * @param {{ href: string, title: string }} [options.rss] - If provided, adds <link rel="alternate" type="application/rss+xml">
  */
 export function usePageMeta(title, description, options = {}) {
   const noindex = Boolean(options?.noindex);
+  const rss = options?.rss;
 
   useEffect(() => {
     const prevTitle = document.title;
@@ -47,6 +49,23 @@ export function usePageMeta(title, description, options = {}) {
       robotsTag.setAttribute("content", "noindex");
     }
 
+    let rssTag = null;
+    let createdRssTag = false;
+    if (rss?.href) {
+      rssTag = document.querySelector('link[type="application/rss+xml"]');
+      if (!rssTag) {
+        rssTag = document.createElement("link");
+        rssTag.rel = "alternate";
+        rssTag.type = "application/rss+xml";
+        document.head.appendChild(rssTag);
+        createdRssTag = true;
+      }
+      rssTag.setAttribute("href", rss.href);
+      if (rss.title) {
+        rssTag.setAttribute("title", rss.title);
+      }
+    }
+
     return () => {
       document.title = prevTitle || DEFAULT_TITLE;
       if (createdDescTag && descTag.parentNode) {
@@ -66,6 +85,10 @@ export function usePageMeta(title, description, options = {}) {
           }
         }
       }
+
+      if (createdRssTag && rssTag && rssTag.parentNode) {
+        rssTag.parentNode.removeChild(rssTag);
+      }
     };
-  }, [title, description, noindex]);
+  }, [title, description, noindex, rss?.href, rss?.title]);
 }

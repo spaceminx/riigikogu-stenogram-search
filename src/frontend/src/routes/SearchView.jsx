@@ -32,15 +32,6 @@ export function SearchView({
 
   // Search parameters from URL
   const queryParam = searchParams.get("q") || "";
-
-  const pageTitle = queryParam.trim()
-    ? `${queryParam.trim()} — otsing — Riigivaade`
-    : "Otsing — Riigivaade";
-  const pageDescription = queryParam.trim()
-    ? `Otsingu „${queryParam.trim()}“ tulemused Riigikogu stenogrammidest ja sõnavõttudest.`
-    : "Otsi Riigikogu stenogrammidest märksõnade, fraktsioonide ja saadikute kaupa.";
-
-  usePageMeta(pageTitle, pageDescription);
   const membershipParam = searchParams.get("membership") || "all";
   const factionParam = searchParams.get("faction") || "";
   const speakerParam = searchParams.get("speaker") || "";
@@ -55,6 +46,43 @@ export function SearchView({
     searchParams.get("exclude_chair") === "true" || searchParams.get("exclude_chair") === "1";
   const speechCategoryParam = searchParams.get("speech_category") || "";
   const exactMatchParam = searchParams.get("expand") === "false";
+
+  const pageTitle = queryParam.trim()
+    ? `${queryParam.trim()} — otsing — Riigivaade`
+    : "Otsing — Riigivaade";
+  const pageDescription = queryParam.trim()
+    ? `Otsingu „${queryParam.trim()}“ tulemused Riigikogu stenogrammidest ja sõnavõttudest.`
+    : "Otsi Riigikogu stenogrammidest märksõnade, fraktsioonide ja saadikute kaupa.";
+
+  const rssUrl = queryParam.trim()
+    ? `/rss/search?${new URLSearchParams(
+        Object.entries({
+          q: queryParam.trim(),
+          ...(membershipParam !== "all" ? { membership: membershipParam } : {}),
+          ...(factionParam ? { faction: factionParam } : {}),
+          ...(speakerParam ? { speaker: speakerParam } : {}),
+          ...(speakerUuidParam ? { speaker_uuid: speakerUuidParam } : {}),
+          ...(startDateParam ? { start_date: startDateParam } : {}),
+          ...(endDateParam ? { end_date: endDateParam } : {}),
+          ...(excludeChairParam ? { exclude_chair: "true" } : {}),
+          ...(speechCategoryParam ? { speech_category: speechCategoryParam } : {}),
+          ...(exactMatchParam ? { expand: "false" } : {}),
+        })
+      ).toString()}`
+    : null;
+
+  usePageMeta(
+    pageTitle,
+    pageDescription,
+    rssUrl
+      ? {
+          rss: {
+            href: `https://www.riigivaade.me${rssUrl}`,
+            title: `Riigivaade: otsing „${queryParam.trim()}“`,
+          },
+        }
+      : {}
+  );
 
   // Local state for filter form - only written to URL upon search submit
   const [filterMembership, setFilterMembership] = useState(membershipParam);
@@ -551,6 +579,7 @@ export function SearchView({
           sortParam={sortParam}
           onSortChange={handleSortChange}
           exportParams={exportParams}
+          rssUrl={rssUrl}
         />
 
         {!hasSearchQuery ? (
