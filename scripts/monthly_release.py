@@ -22,7 +22,6 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 # Ensure project root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -31,8 +30,9 @@ from scripts.build_open_data_release import build_open_data_release
 from scripts.publish_open_data_release import (
     API_BASE,
     REPO,
-    get_release_by_tag,
+    find_release_by_tag,
     github_api_request,
+    list_repo_releases,
     load_env_pipeline,
     publish_release,
 )
@@ -123,25 +123,6 @@ def acquire_backup_with_retry(
             time.sleep(retry_interval_seconds)
 
 
-def list_repo_releases(token: str) -> list[dict[str, Any]]:
-    """List all releases in the repository with pagination."""
-    releases: list[dict[str, Any]] = []
-    page = 1
-    per_page = 100
-
-    while True:
-        url = f"{API_BASE}/repos/{REPO}/releases?per_page={per_page}&page={page}"
-        batch = github_api_request(url, token=token)
-        if not batch or not isinstance(batch, list):
-            break
-        releases.extend(batch)
-        if len(batch) < per_page:
-            break
-        page += 1
-
-    return releases
-
-
 def delete_tag_ref(tag: str, token: str) -> None:
     """Delete git tag reference from GitHub."""
     url = f"{API_BASE}/repos/{REPO}/git/refs/tags/{tag}"
@@ -182,17 +163,24 @@ def run_monthly_release(
     release_dir = PROJECT_ROOT / "data" / "release" / today_str
 
     # 1. Check if release already exists on GitHub
+    should_replace = force
     if not dry_run:
         if not token:
             print("Error: GITHUB_RELEASE_TOKEN is not set.", file=sys.stderr)
             return 1
 
-        existing = get_release_by_tag(tag, token)
-        if existing and not force:
-            print(
-                f"Notice: Release {tag} already exists on GitHub. Skipping build (use --force to overwrite)."
-            )
-            return 0
+        existing = find_release_by_tag(tag, token)
+        if existing:
+            if existing.get("draft", False):
+                print(
+                    f"Notice: Release {tag} exists as an incomplete draft. Rebuilding and replacing..."
+                )
+                should_replace = True
+            elif not force:
+                print(
+                    f"Notice: Release {tag} already exists on GitHub. Skipping build (use --force to overwrite)."
+                )
+                return 0
 
     try:
         # 2. Acquire lock & backup DB
@@ -211,7 +199,7 @@ def run_monthly_release(
         print(f"Publishing release {tag}...")
         publish_release(
             release_dir=release_dir,
-            replace=force,
+            replace=should_replace,
             dry_run=dry_run,
             token=token,
         )

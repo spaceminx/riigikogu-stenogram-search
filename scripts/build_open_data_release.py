@@ -820,8 +820,6 @@ def build_open_data_release(
     finally:
         conn.close()
 
-    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
     # 9. README.md & DATA_DICTIONARY.md
     readme_text = generate_readme(date_str)
     readme_size, readme_sha256 = write_text_file(out_dir / "README.md", readme_text)
@@ -841,9 +839,7 @@ def build_open_data_release(
     manifest_data = {
         "version": date_str,
         "git_commit": get_git_commit(commit_override),
-        "created_at": f"{date_str}T00:00:00Z"
-        if release_date
-        else datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "date_range": {
             "speeches": {
                 "start": min_speech_date,

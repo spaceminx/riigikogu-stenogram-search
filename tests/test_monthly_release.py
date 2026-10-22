@@ -274,7 +274,7 @@ def test_safety_guard_aborts_on_excessive_deletions(
     # Total 17 tags -> 4 would be deleted (2024-02, 2024-03, 2024-04, 2024-05)
 
     with (
-        patch("scripts.monthly_release.get_release_by_tag", return_value=None),
+        patch("scripts.monthly_release.find_release_by_tag", return_value=None),
         patch("scripts.monthly_release.list_repo_releases", return_value=mock_releases),
         patch("scripts.monthly_release.publish_release"),
         patch("scripts.monthly_release.PROJECT_ROOT", tmp_path),
@@ -290,10 +290,10 @@ def test_safety_guard_aborts_on_excessive_deletions(
 
 def test_existing_tag_skips_without_force(sample_sqlite_db: Path, monkeypatch):
     monkeypatch.setenv("GITHUB_RELEASE_TOKEN", "mock-token")
-    mock_existing = {"id": 123, "tag_name": "data-2026-10-22"}
+    mock_existing = {"id": 123, "tag_name": "data-2026-10-22", "draft": False}
 
     with (
-        patch("scripts.monthly_release.get_release_by_tag", return_value=mock_existing),
+        patch("scripts.monthly_release.find_release_by_tag", return_value=mock_existing),
         patch("scripts.monthly_release.acquire_backup_with_retry") as mock_backup,
     ):
         code = run_monthly_release(
@@ -306,12 +306,40 @@ def test_existing_tag_skips_without_force(sample_sqlite_db: Path, monkeypatch):
         mock_backup.assert_not_called()
 
 
+def test_existing_draft_release_triggers_rebuild_and_replace(
+    sample_sqlite_db: Path, tmp_path: Path, monkeypatch
+):
+    monkeypatch.setenv("GITHUB_RELEASE_TOKEN", "mock-token")
+    mock_draft_existing = {"id": 456, "tag_name": "data-2026-10-22", "draft": True}
+
+    with (
+        patch("scripts.monthly_release.find_release_by_tag", return_value=mock_draft_existing),
+        patch("scripts.monthly_release.acquire_backup_with_retry") as mock_backup,
+        patch("scripts.monthly_release.build_open_data_release") as mock_build,
+        patch("scripts.monthly_release.publish_release") as mock_publish,
+        patch("scripts.monthly_release.list_repo_releases", return_value=[]),
+    ):
+        code = run_monthly_release(
+            dry_run=False,
+            force=False,  # Note: force is False, but draft triggers replace!
+            release_date="2026-10-22",
+            source_db=sample_sqlite_db,
+        )
+        assert code == 0
+        assert mock_backup.called
+        assert mock_build.called
+        assert mock_publish.called
+        # Check that replace was passed as True to publish_release
+        _, kwargs = mock_publish.call_args
+        assert kwargs["replace"] is True
+
+
 def test_db_copy_removed_on_exception(sample_sqlite_db: Path, tmp_path: Path, monkeypatch):
     monkeypatch.setenv("GITHUB_RELEASE_TOKEN", "mock-token")
     backup_db = sample_sqlite_db.parent / "release_copy.sqlite"
 
     with (
-        patch("scripts.monthly_release.get_release_by_tag", return_value=None),
+        patch("scripts.monthly_release.find_release_by_tag", return_value=None),
         patch(
             "scripts.monthly_release.build_open_data_release",
             side_effect=ValueError("Build failed"),
@@ -403,3 +431,32 @@ def test_cleanup_local_releases(tmp_path: Path):
     assert not d1.exists()
     assert not d2.exists()
     assert d3.exists()
+
+
+def test_build_with_custom_date_sets_version_and_readme_and_publish_tag(
+    sample_sqlite_db: Path, tmp_path: Path, monkeypatch
+):
+    # build with release_date="2026-11-01" -> manifest version, README version and publish dry-run tag are 2026-11-01
+    out_dir = tmp_path / "data" / "release" / "2026-11-01"
+    manifest = build_open_data_release(sample_sqlite_db, out_dir, release_date="2026-11-01")
+
+    # 1. Manifest version
+    assert manifest["version"] == "2026-11-01"
+
+    # 2. Manifest created_at is real time (not midnight f"{date_str}T00:00:00Z")
+    created_at = manifest["created_at"]
+    assert not created_at.endswith("T00:00:00Z")
+    assert "T" in created_at
+
+    # 3. README version
+    readme_content = (out_dir / "README.md").read_text(encoding="utf-8")
+    assert "**Versioon / kuupäev:** 2026-11-01" in readme_content
+
+    # 4. Publish dry-run derives tag data-2026-11-01
+    with patch("builtins.print") as mock_print:
+        from scripts.publish_open_data_release import publish_release
+
+        publish_release(release_dir=out_dir, dry_run=True)
+        # Check printed tag
+        printed_lines = [call[0][0] for call in mock_print.call_args_list if call[0]]
+        assert any("[DRY-RUN] Release tag: data-2026-11-01" in line for line in printed_lines)
