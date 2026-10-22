@@ -1,0 +1,1963 @@
+{
+  "id": 196394,
+  "startTime": "2026-10-19T14:58:01.744",
+  "endTime": "2026-10-19T23:18:28.502",
+  "stenograph": {
+    "id": 196394,
+    "agendaItems": [
+      {
+        "id": 1340249,
+        "name": "Istungi rakendamine",
+        "nameParts": [
+          {
+            "text": "Istungi rakendamine",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2026-10-19T14:58:01.786",
+        "speeches": [
+          {
+            "id": 45605356,
+            "startTime": "2026-10-19T15:00:08.036",
+            "endTime": "2026-10-19T15:00:55",
+            "content": " Tere päevast, austatud Riigikogu! Me alustame Riigikogu täiskogu VIII istungjärgu 5. töönädala esmaspäevast istungit. Head kolleegid, kõigepealt ma palun teil teha kohaloleku kontroll. Kohaloleku kontroll, palun!  ",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": " Tere päevast, austatud Riigikogu! Me alustame Riigikogu täiskogu VIII istungjärgu 5. töönädala esmaspäevast istungit. Head kolleegid, kõigepealt ma palun teil teha kohaloleku kontroll. Kohaloleku kontroll, palun!  ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 0,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=0",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605388,
+            "startTime": "2026-10-19T15:00:23.764",
+            "endTime": "2026-10-19T15:00:54.63",
+            "content": "http://www.riigikogu.ee/tegevus/tooulevaade/haaletused/haaletustulemused-kohalolekukontroll/45b182db-2993-47d9-abb0-e41b24f1d6ae/",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "http://www.riigikogu.ee/tegevus/tooulevaade/haaletused/haaletustulemused-kohalolekukontroll/45b182db-2993-47d9-abb0-e41b24f1d6ae/",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Kohaloleku kontroll",
+            "emsId": null,
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 16,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=16",
+            "speechType": "PRESENCE_CHECK"
+          },
+          {
+            "id": 45605360,
+            "startTime": "2026-10-19T15:00:55",
+            "endTime": "2026-10-19T15:01:29.246",
+            "content": "<p>Kohalolijaks on end registreerinud 87 Riigikogu liiget, puudub 14.&nbsp;</p><p>Järgnevalt päevakorra täpsustamine ja kinnitamine. Teatavaks tehtud päevakorras on toimunud muudatus. Arupärijad paluvad tänase istungi päevakorrast välja võtta seitsmes päevakorrapunkt, milleks on justiits- ja digiminister Liisa-Ly Pakostale esitatud arupärimine nr 1063.&nbsp;</p><p>Nüüd ettepanekud päevakorra projektiga seoses. Lauri Laats, palun!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Kohalolijaks on end registreerinud 87 Riigikogu liiget, puudub 14. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Järgnevalt päevakorra täpsustamine ja kinnitamine. Teatavaks tehtud päevakorras on toimunud muudatus. Arupärijad paluvad tänase istungi päevakorrast välja võtta seitsmes päevakorrapunkt, milleks on justiits- ja digiminister Liisa-Ly Pakostale esitatud arupärimine nr 1063. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Nüüd ettepanekud päevakorra projektiga seoses. Lauri Laats, palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 47,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=47",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605387,
+            "startTime": "2026-10-19T15:01:28.94",
+            "endTime": "2026-10-19T15:03:21.658",
+            "content": "<p>Aitäh, lugupeetud Riigikogu esimees! Mul on selle päevakorra kohta mitu küsimust. Esimene küsimus puudutab esmaspäevast päeva, tänast esimest päevakorrapunkti. Miskipärast ei ole siia kirja pandud need Riigikogu liikmed, kes on avaldanud umbusaldust ehk siis allkirjastanud umbusalduse avaldust. Ma arvan, et see on väga suur möödapanek, sest eelmistel kordadel oli alati olemas kogu loetelu nendest Riigikogu liikmetest.&nbsp;</p><p>Mis puudutab päevakorra punkti 2 ja punkti 3, siis peab kahjuks nentima, et meie arupärimised on tulnud siia Riigikogu saali miskipärast kuus kuud hiljem sellest ajast, kui me selle arupärimise sisse andsime. Kas see on nii-öelda tavaline protsess, mida te hakkate ka edaspidi juurutama, või milles see probleem on? Kokku võttes on ju see, et te ei pea kinni meie töö- ja kodukorrast. Te olete mitmeid-mitmeid kordi tegelikult seda töö- ja kodukorda rikkunud sellega, et te toote need arupärimised väga hilja. Sellele on juhtinud tähelepanu mitte ainult meie fraktsioon, vaid, ma mäletan, ka sotsiaaldemokraadid esinesid eelmine nädal sama sõnavõtuga. Ehk siis tegelikult, mis toimub? Miks Riigikogu juhatus eirab meie eeskirju, meie töökorda ja lihtsalt toob materjalid Riigikogu saali kuus kuud juba hiljem meie puhul, mis ei ole tegelikult ju arupärimised rohkem ju aktuaalsed selleks ajaks.</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, lugupeetud Riigikogu esimees! Mul on selle päevakorra kohta mitu küsimust. Esimene küsimus puudutab esmaspäevast päeva, tänast esimest päevakorrapunkti. Miskipärast ei ole siia kirja pandud need Riigikogu liikmed, kes on avaldanud umbusaldust ehk siis allkirjastanud umbusalduse avaldust. Ma arvan, et see on väga suur möödapanek, sest eelmistel kordadel oli alati olemas kogu loetelu nendest Riigikogu liikmetest. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Mis puudutab päevakorra punkti 2 ja punkti 3, siis peab kahjuks nentima, et meie arupärimised on tulnud siia Riigikogu saali miskipärast kuus kuud hiljem sellest ajast, kui me selle arupärimise sisse andsime. Kas see on nii-öelda tavaline protsess, mida te hakkate ka edaspidi juurutama, või milles see probleem on? Kokku võttes on ju see, et te ei pea kinni meie töö- ja kodukorrast. Te olete mitmeid-mitmeid kordi tegelikult seda töö- ja kodukorda rikkunud sellega, et te toote need arupärimised väga hilja. Sellele on juhtinud tähelepanu mitte ainult meie fraktsioon, vaid, ma mäletan, ka sotsiaaldemokraadid esinesid eelmine nädal sama sõnavõtuga. Ehk siis tegelikult, mis toimub? Miks Riigikogu juhatus eirab meie eeskirju, meie töökorda ja lihtsalt toob materjalid Riigikogu saali kuus kuud juba hiljem meie puhul, mis ei ole tegelikult ju arupärimised rohkem ju aktuaalsed selleks ajaks.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Lauri Laats",
+            "emsId": "1839253a-aec0-4019-995a-1c031db8fd10",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 81,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/1839253a-aec0-4019-995a-1c031db8fd10/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=81",
+            "speechType": "SMALL_SPEECH"
+          },
+          {
+            "id": 45605389,
+            "startTime": "2026-10-19T15:03:22.686",
+            "endTime": "2026-10-19T15:04:37.196",
+            "content": "<p>Aitäh, hea kolleeg! Antud juhul – arupärimistega seoses – on see arupärijate ja arupäritava omavaheline kokkulepe ka, millal täpselt need kokkulepped on sõlmitud. Me oleme ka päevakordade koostamisel olnud silmitsi sellega, et väga palju arupärimisi võetakse päevakorrast välja. Väga palju arupärimisi võetakse päevakorrast välja ja seega on arupärimistele vastamine olnud oluliselt keerulisem, sellepärast et me peame need jälle uute esmaspäevade päevakordadesse planeerima. Riigikogu juhatus on kirjutanud ka märgukirju, sealhulgas on Riigikogu juhatus kirjutanud märgukirja ka vabariigi peaministrile sellega seoses, et vastavalt seadusele tuleb siia Riigikogu ette tulla. Nii et Riigikogu juhatus on kindlasti selle teemaga kursis ja üritab lahendada olukorda ka selliselt, et Riigikogu saaks oma küsimustele vastused. Martin Helme, teil on ettepanek päevakorra kohta, aga ... (Saalist räägitakse vahele.) Nimed. Te saate materjalidest lugeda ja siis, kui me alustame päevakorrapunktiga, ma loen kõik nimed, sealhulgas ka teie nime, selle konkreetse päevakorrapunkti juures ette. Nii et kindlasti kõik nimed siin saalis täna selle istungi jooksul ka kõlavad.&nbsp;</p><p>Aga Martin Helme, ettepanek päevakorraprojektiga seoses.</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, hea kolleeg! Antud juhul – arupärimistega seoses – on see arupärijate ja arupäritava omavaheline kokkulepe ka, millal täpselt need kokkulepped on sõlmitud. Me oleme ka päevakordade koostamisel olnud silmitsi sellega, et väga palju arupärimisi võetakse päevakorrast välja. Väga palju arupärimisi võetakse päevakorrast välja ja seega on arupärimistele vastamine olnud oluliselt keerulisem, sellepärast et me peame need jälle uute esmaspäevade päevakordadesse planeerima. Riigikogu juhatus on kirjutanud ka märgukirju, sealhulgas on Riigikogu juhatus kirjutanud märgukirja ka vabariigi peaministrile sellega seoses, et vastavalt seadusele tuleb siia Riigikogu ette tulla. Nii et Riigikogu juhatus on kindlasti selle teemaga kursis ja üritab lahendada olukorda ka selliselt, et Riigikogu saaks oma küsimustele vastused. Martin Helme, teil on ettepanek päevakorra kohta, aga ... (Saalist räägitakse vahele.) Nimed. Te saate materjalidest lugeda ja siis, kui me alustame päevakorrapunktiga, ma loen kõik nimed, sealhulgas ka teie nime, selle konkreetse päevakorrapunkti juures ette. Nii et kindlasti kõik nimed siin saalis täna selle istungi jooksul ka kõlavad. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Aga Martin Helme, ettepanek päevakorraprojektiga seoses.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 195,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=195",
+            "speechType": "SPEECH"
+          }
+        ],
+        "videoLinkVideoLink": null,
+        "videoLinkVideoStart": null,
+        "videoLinkVideoLinkPublished": true,
+        "index": null,
+        "parsedVideoLink": null,
+        "emsId": "Istungi rakendamine"
+      },
+      {
+        "id": 1340252,
+        "name": "34 Riigikogu liikme kirjalik nõue umbusalduse avaldamiseks Vabariigi Valitsusele",
+        "nameParts": [
+          {
+            "text": "34 Riigikogu liikme kirjalik nõue umbusalduse avaldamiseks Vabariigi Valitsusele",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2026-10-19T15:32:02",
+        "speeches": [
+          {
+            "id": 45605566,
+            "startTime": "2026-10-19T15:32:02",
+            "endTime": "2026-10-19T15:33:51.847",
+            "content": "<p>Liigume edasi tänase päevakorra juurde. Tänane esimene päevakorrapunkt on 34 Riigikogu liikme kirjalik nõue umbusalduse avaldamiseks Vabariigi Valitsusele. Head kolleegid, ma nüüd vaatasin üle, et ka varasematel kordadel ei ole umbusaldajate nimesid ette loetud ja ei ole ka umbusaldajate nimesid lisatud sellele päevakorra projektile. Nii et see ei ole ka varem olnud tavaks. Aga, head kolleegid, ma näen teie nägudest, et te tahate väga, et teie nimesid mainitakse sellega seoses. Riigikogu istungi juhatajana ma teen selle erandi ja ma loen ette kõik, kes on kirjutanud umbusalduse avaldusele alla, et te kuuleksite oma nime mainitavalt. Nimelt, umbusalduse avaldusele on alla kirjutanud Lauri Laats, Martin Helme, Helir-Valdor Seeder, Vladimir Arhipov, Andrei Korobeinik, Aleksei Jevgrafov, Vadim Belobrovtsev, Meelis Kiili, Leo Kunnas, Anti Poolamets, Arvo Aller, Evelin Poolamets, Rain Epler, Siim Pohlak, Mart Helme, Helle-Moonika Helme, Rene Kokk, Mart Maastik, Priit Sibul, Lea Danilson-Järg, Tõnis Lukas, Aivar Kokk, Jaanus Karilaid, Andres Metsoja, Aleksandr Tšaplõgin, Kalle Grünthal, Varro Vooglaid, Peeter Ernits, Ants Frosch, Henn Põlluaas, Anastassia Kovalenko-Kõlvart, Jaak Valge, Kalev Stoicescu ja Urmas Reinsalu. See on meie esimene päevakorrapunkt ehk 34 Riigikogu liikme kirjalik nõue umbusalduse avaldamiseks Vabariigi Valitsusele. Palun umbusaldusavalduse teksti siia Riigikogu kõnepulti tutvustama Riigikogu liikme Urmas Reinsalu. Palun!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Liigume edasi tänase päevakorra juurde. Tänane esimene päevakorrapunkt on 34 Riigikogu liikme kirjalik nõue umbusalduse avaldamiseks Vabariigi Valitsusele. Head kolleegid, ma nüüd vaatasin üle, et ka varasematel kordadel ei ole umbusaldajate nimesid ette loetud ja ei ole ka umbusaldajate nimesid lisatud sellele päevakorra projektile. Nii et see ei ole ka varem olnud tavaks. Aga, head kolleegid, ma näen teie nägudest, et te tahate väga, et teie nimesid mainitakse sellega seoses. Riigikogu istungi juhatajana ma teen selle erandi ja ma loen ette kõik, kes on kirjutanud umbusalduse avaldusele alla, et te kuuleksite oma nime mainitavalt. Nimelt, umbusalduse avaldusele on alla kirjutanud Lauri Laats, Martin Helme, Helir-Valdor Seeder, Vladimir Arhipov, Andrei Korobeinik, Aleksei Jevgrafov, Vadim Belobrovtsev, Meelis Kiili, Leo Kunnas, Anti Poolamets, Arvo Aller, Evelin Poolamets, Rain Epler, Siim Pohlak, Mart Helme, Helle-Moonika Helme, Rene Kokk, Mart Maastik, Priit Sibul, Lea Danilson-Järg, Tõnis Lukas, Aivar Kokk, Jaanus Karilaid, Andres Metsoja, Aleksandr Tšaplõgin, Kalle Grünthal, Varro Vooglaid, Peeter Ernits, Ants Frosch, Henn Põlluaas, Anastassia Kovalenko-Kõlvart, Jaak Valge, Kalev Stoicescu ja Urmas Reinsalu. See on meie esimene päevakorrapunkt ehk 34 Riigikogu liikme kirjalik nõue umbusalduse avaldamiseks Vabariigi Valitsusele. Palun umbusaldusavalduse teksti siia Riigikogu kõnepulti tutvustama Riigikogu liikme Urmas Reinsalu. Palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 1914,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=1914",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605591,
+            "startTime": "2026-10-19T15:34:01.508",
+            "endTime": "2026-10-19T15:51:03.668",
+            "content": "<p>Riigikogu esimees! Peaminister Kristen Michal! Head Eesti inimesed! Parlamendi liikmed! Täna arutame me seda, kas Kristen Michali peaministriks oleku ajal on valitsus oma ametis läbi kukkunud või mitte. Umbusaldusavalduse esitajate vastus on ühemõtteline: jah, on. Mitte ainult valesti tehtud otsuste tõttu, vaid seetõttu, et ta on kaotanud usaldusväärsuse, tegelikkuse taju ja ühiskonna laiema toetuse. Ei ole mõtet salata, et tänase umbusaldusavalduse tulemus on teada. Taktikaliselt hea uudis Kristen Michalile: sotside toetuse tõttu jääb ta ametisse ja saab lähemas tulevikus oma agendaga jätkuda. Halb uudis valdavale enamikule Eesti inimestele: see valitsus jääb veel lähiajal ametisse.&nbsp;</p><p>Selle umbusaldusavalduse mõte on esitada süüdistuskokkuvõte Kristen Michali valitsuse tegevuse ja tegevusetuse kohta. Me kuulame ära süüdistuse ja seejärel peaministri kaitsekõne ning siis toimub hääletus ja Eesti kodanikud saavad selguse, kes toetab siin saalis Kristen Michali valitsust. Tänasel päeval on hääletamata jätmine poliitiline kaasvastutus kõige sellega kaasuvaga selle valitsuse poliitilise agenda eest. Ja aralt käituvad need, kes ütlevad, otsekui peaks umbusaldusavalduse esitamine sisaldama mingisugust plaani edasiseks tegevuseks. Ei! Umbusaldusavalduse definitsioon ongi küsimus, kas usaldatakse või ei usaldata. Ja meie ei usalda!&nbsp;</p><p>Kui mingi ime läbi peaks Kristen Michali valitsus täna kukkuma, siis see tähendab seda, et Kristen Michal lähemas tulevikus ei ole peaminister ja vastavalt Eesti põhiseadusele peab ametis olev president esitama uue kandidaadi. Täna on süüdistuskokkuvõtte aeg ja kohtuotsuse aeg saabub – mitte siin saalis, mitte poliitilise juhtkonna käte ja tahte läbi, vaid Eesti meeste ja naiste valiku läbi otsusena märtsis 2027.&nbsp;</p><p>Olukord on rahvusvaheliselt ja objektiivsete asjaolude tõttu keeruline. Seda me tajume kõik, kogu rahvas. Me vajame just sellistes oludes valitsust, kes on aus ja suuteline inimesi liitma, mitte vastandama ja hirmutama – valitsust, mis ei rajane valedel. Kristen Michal on valeliku poliitika jätkamisel olnud Kaja Kallase valitsuse, kuhu kuulusid Reformierakond, Eesti 200 ja sotsiaaldemokraadid, jätkaja. \"Lugege mu huultelt, maksud ei tõuse,\" teatas Kaja Kallas enne valimisi.&nbsp;</p><p>Millised on olnud valed Kristen Michali juhitud valitsuse poolt? Peaministri jutt, et tema majandusplaan töötab, on vale. Peaminister rääkis alles laupäeval, et Eesti majandus kasvab Euroopa Liidu keskmisest kaks korda kiiremini. Kuid vaadakem olukorda aastate lõikes: 2023 – peaaegu 3%-line langus, 2024 – stagnatsioon, 2025 – vaid 1,3%-line kasv ning need numbrid on saavutatud tagasiulatuva inflatsiooni korrigeerimisega. Alles 2026 on näha nõrka taastumist, mis rajaneb laenurahal. Inimeste reaalne ostujõud on viie aastaga peaaegu paigal seisnud. Inflatsioon on olnud pikka aega Euroopa Liidu kõrgeim ja tõstab uuesti pead. Erainvesteeringud on nõrgad ja kõik see toimub hiiglasliku riigivõla kasvu taustal. Võlg kasvab kiiresti ja eelarvepuudujääk on suur. Intressikulud seovad järjest rohkem raha, mida võiks suunata haridusse, tervishoidu või peredele. Peaminister räägib kindlast suunast tulevikku. Tegelikkus on teine: inimesed tunnevad end majanduslikult ebakindlalt. 85% meie inimestest muretseb igapäevaste kulude pärast. See ei ole töötav plaan, see on läbikukkumine.&nbsp;</p><p>Teine vale on see, et riigirahandus on korda tehtud. Eesti riigivõlg on kasvanud muret tekitava kiirusega. Riigieelarve seadust lubati läbipaistvana, ka see on osutunud valeks. Tegelikku kulude kokkutõmbamist pole toimunud. Veel mõni aasta tagasi oli võlg oluliselt väiksem, täna on see juba üle 11 miljardi ja kasvab edasi. 2030. aastaks prognoositakse peaaegu kahekordistumist. Me ei laena enam peamiselt investeeringuteks, vaid jooksvate kulude katteks. Peaminister vastutab kogu eelarvepoliitika eest. Tema all on võlakoormus tõusnud, tema all on intressikulu muutumas ühe koormamaks, tema all on eelarvepuudujääk kasvav, mitte kahanev.&nbsp;</p><p>Kolmas vale on see, et tegeldakse demograafilise kriisi lahendamisega. Eesti sündimus on kriitiliselt madal. Perepoliitika on jäänud pealiskaudseks. Valitsus räägib palju tulevikust, aga ei paku ühtegi tõsist pikaajalist lahendust, mis annaks peredele kindlustunnet lastele isa saada. Demograafia ei ole üks teema teiste seas, see on Eesti püsimise küsimus. Sellel ajal on peaministri valitsus läbi kukkunud, sest vastupidiselt sõnadele on perede kindlustunnet reaalsete poliitiliste sammudega ja süstemaatiliselt lõhutud.&nbsp;</p><p>Neljas vale on see, et tagatakse õpetajate ja haridusrahva kindlustunne. Tegelikult on lubadusi õpetajatele murtud. Haridusvaldkonnas valitseb pidev reformitõmblemine, õpetajad on üle koormatud bürokraatiaga, järelkasvuprobleemid süvenevad ja süsteem on viidud juhtimiskriisi. Haridusminister tegutseb peaministri, härra Michal, teie vastutuse all. Kui haridussüsteem on kaoses, vastutab peaminister.&nbsp;</p><p>Viies vale on see, et suudetakse tegeleda poliitilise juhtimise tasemel tõhusalt riigikaitsega. Tegelikult on riigikaitse arenenud mitte valitsuse tõttu, vaid vaatamata valitsusele. Kaitsekulud on tõstetud 5%-ni SKP-st. Seda me oleme ühiselt toetanud ja see on õige. Aga see ei vabasta vastutusest hangete skandaalide eest. Mürsu- ja moonahangete juhtumid on õõnestanud usaldust. On olnud valesid, otseseid näkku valetamisi, vastuolulisi selgitusi, dokumentide kadumist ja vastutuse vältimist. Peaminister on väitnud, et ta ei teadnud või sai teada alles hiljem, kogu Eesti rahvaga koos. See on vastutuse eest põgenemine. Riigikaitse on liiga tõsine valdkond, et peaminister saaks end distantsile mugavalt seada. Kui kaitsehangetes valitseb segadus ja usaldamatus meie elulises kriitilises küsimuses, siis vastutab peaminister.&nbsp;</p><p>Ja lisaks hangete segadusele tuletan meelde seda puterdamist poliitilise juhtimise tasemel, mis puudutas täiendavat moonahanget, mis oli Kaitseväe juhataja taotlus ja mida lükati ja lükati edasi, ning samuti võimetust Kaitseväe taotlusel reageerida sellele, mis puudutab droonivõime loomist ja ülesehitamist.&nbsp;</p><p>Kuues vale. Energeetikas lubati töötavat plaani. Mäletate, millal eelmine kord Kristen Michali valitsusele toimus umbusaldusavaldus? 2025. aasta veebruarikuus. See oli selle peale, kui Kristen Michal tuli lagedale ideega, milles ta oli kokku leppinud Lauri Läänemetsaga ja Kristina Kallasega seoses miljardite eurode dotatsiooniskeemiga meretuuleparkidele. Siis see umbusaldusavaldus ei läinud läbi, kuid valitsus taganes – vähemasti taktikaliselt – sellest plaanist. Sellel umbusaldusavaldusel oli distsiplineeriv meeleolu, sest see peegeldas ühiskonnas ekspertide ja ettevõtjate avalikkuse nõutust ja meelepaha ebaadekvaatsele energiapoliitikale.&nbsp;</p><p>Töötavat plaani energeetikas ei ole, tegelikkus on lahenduste puudumine. Eesti energiajulgeoleku ja hinnataseme küsimus on jäänud lahendamata. Tööstus kannatab, inimesed maksavad kõrgeid arveid. Täna arutasime eelarve kontrolli komisjonis küsimust, mis puudutas mootorikütuste hinnatõusu probleemi. Eesti Kaubandus-Tööstuskoda, erialaliidud ja transpordikütuste liit on saatnud meie valitsusele kirja, kus nad paluvad sarnaselt teiste Euroopa Liidu riikidega tähtajalist diisliaktsiisi langetamist. Ma küsisin, härra peaminister, nende organisatsioonide esindajate käest, mida on valitsus vastanud. Aga vastus oli, et mitte midagi. Mitte ühtegi vastust, mitte silpigi kirjalikul kujul ei ole valitsuselt laekunud. Me vajame energeetikas usaldusväärset pikaajalist plaani, mis ühendaks varustuskindluse ja hinnastabiilsuse investeeringuid, kuid seda ei ole. Energeetikas kindlustunnet ei ole.&nbsp;</p><p>Seitsmes vale: maksud ei tõuse. Tegelikkus on kaasa toonud nende viimaste aastate jooksul Eesti lähiajaloo pretsedenditult suurima maksutõmblemise. Kaudsete maksude koormuselt on Eesti Euroopa Liidu riikide seas tipus ja see lööb kõige valusamalt just väiksema sissetulekuga inimesi, maapiirkondade elanikke, lastega peresid ja eakaid. Ees ootavad uued maksutõusud, mille valitsus on kehtestanud juba valimistejärgsesse aega.&nbsp;</p><p>Kaheksas vale. Lubati mõistlikku keskkonnapoliitikat. Tegelikkuses saime ideoloogilise rohepöörde, mille sümboliks on tõmblemine kliimaseaduse ümber, mida härra Michal – tõsi, siis veel kliimaministri ametis – nimetas pidulikuks uueks Eesti põhiseaduseks keskkonnavaldkonnas. Tegelikkus on täielik kaos kliimapoliitika ümber, mida see valitsus on püüdnud korraldada. Ja valitsus ei ole suutnud meie majanduse konkurentsivõime huvisid Euroopa Liidu tasemel tõhusalt kaitsta, vaatamata lubadustele Eestis. Eestis räägitakse ühte juttu ja paraku otsused, mis tulevad Euroopa Liidu tasemel, ei ole sellega sugugi kooskõlas.</p><p>Üheksas vale, otsekui Eesti ei nõudnud pretsedendina senises sanktsioonipoliitikas Solikamski strateegilise ressursitehase kõrvaldamist sanktsiooninimekirjast. Täna me teame, et tegelikkuses see toimus. See tähendab muutust meie senises liinis, mis on olnud põhimõtteline selles osas, et ükskõik millised majanduslikud või ärilised kaalutlused ei tohi olla argumendiks väljavabandatavad ühegi liikmesriigi poolt süsteemse sanktsioonipoliitika kestmisel. Mida ütles meile peaminister? Sarnaselt moonaskandaaliga, mürsuskandaaliga, et tema ei tea midagi, tema ei tööta Välisministeeriumis, tema ei ole Välisministeeriumi ametnik, seetõttu teda ei peetud vajalikuks informeerida ja tal puudub igasugune adekvaatne ülevaade niisugusest strateegilisest küsimusest. Peaminister, kes mugavalt jälgib oluliste otsuste langetamist nii rahvusvaheliselt kui ka riigisiseselt tagapingist, sest nii otsekui on ohutum.</p><p>Kümnes vale on kindlustunde pakkumine juhtimises. Tegelikkus on teine. Peaminister Michal on korduvalt esitanud fakte, mis ei vasta tõele, ja taganenud vastutusest ning külvab ühiskonnas lõhesid valede ja hirmutamise abil. Selle asemel, et otsida ühist keelt, ta vastandub. Näib sageli, justkui ta ei teaks, mis riigis tegelikult toimub, mis on Eesti inimeste arusaamine ja hoiak sellest, kas riigi poliitiline kurss liigub inimeste õiglustunde ja arusaamade kohaselt või mitte, milline on kodanike hoiak ja ootused. See ei ole peaministri tase, härra Michal.&nbsp;</p><p>Kokkuvõte. Kristen Michali valitsus peab ametist lahkuma, sest majanduspoliitika on ebaõnnestunud, riigi rahandus on viidud võlakoormuse kiire kasvu teele, demograafia, haridus ja energeetika probleemid sisulise pikaajalise vaatega on jäetud lahendamata. Kaitsehangetes on usaldus õõnestatud ja ei ole oldud suuteline astuma adekvaatseid samme ka selle usalduse taastamiseks. Peaminister ise on kaotanud usaldusväärsuse – valetamise, ülbuse ja tegelikkusest eemaldumise tõttu.&nbsp;</p><p>Head parlamendi liikmed! Kui te hakkate hääletama, siis te olete silmitsi sellega, et te annate oma, rahvaesindaja vaates hinnangu sellele, milline on teie arusaamine konkreetsetest, ka siin esile toodud skandaalidest, mida umbusaldusavalduse esitajad on välja toonud – seesama Solikamski juhtum, moonahangete juhtum –, ja viimastele skandaalidele ja valedele. Kuid te annate ka hinnangu selle valitsuse poliitilisele agendale tervikuna, mida on tehtud ja mida tegemata jäetud.&nbsp;</p><p>Head Eesti inimesed! Täna te ei saa siin saalis nuppu vajutada. Siin saalis on 101 parlamendi liiget ja osa parlamendi liikmeid, kes on umbusaldusavalduse esitanud, hääletab selle umbusaldusavalduse poolt. Suur osa parlamendiliikmeid jääb kõrvale. Nad ei hääleta, nad ei julge toetada oma hääletusel Kristen Michalit, kuid valivad mugavama tee ega hääleta üldse. Aga mitte hääletamine tähendab seda, et tegelikult võetakse täielik poliitiline kasvavastutus selle eest, mida Michali valitsus on poliitiliste otsustena kujundanud.&nbsp;</p><p>Täna, armsad Eesti inimesed, te ei saa siin saalis hääletada. Siin hääletavad teie esindajad, kellele te olete heauskselt 2023. aastal andnud mandaadi teid esindada. Aga teil on rohkem võimu 2027. aasta märtsis kui ükskõik millisel Michali valitsuse ministril sellel päeval hääletuskastide juures. Siis te annate oma hinnangu, siis on kohtuotsuse päev Reformierakonna poliitikale ning tema poliitika erinevatel etappidel kaasosalistele, Eesti 200-le, aga ka osa Michali valitsuse poliitilist agendat katnud ja praegu eeldatavasti ka tänasel hääletusel seda tegevale sotsiaaldemokraatlikule parteile.&nbsp;</p><p>Selleks, et Eesti saaks minna edasi, peab Michali valitsus astuma tagasi. Selleks, et Eesti saaks minna edasi, peab Michali valitsus langema. Kui see ei juhtu eeldatavasti täna, siis minu sõnum siit kõnetoolist on, et see võtab aega vaid loetud kuud ja see sõltub Eesti meeste ja naiste tahtest. Siis juhtub see 2027. aasta märtsikuus.&nbsp;</p><p>Ja nüüd tuleb kõnetooli peaminister Kristen Michal, et esitada süüdistuskõnele oma kaitsekõne, ja ta hakkab rääkima sellest, kuidas kõik on kenasti, kui talle ja tema parteile anda uuesti võim 2027. aastal, siis tulevikus lähevad asjad veel paremaks. Head Eesti inimesed! Ärge uskuge sõnu, uskuge tegusid! Nii tuletas meile meelde Lennart Meri. Hoiame seda meeles. Sõna on peaminister Kristen Michalil. Aitäh!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Riigikogu esimees! Peaminister Kristen Michal! Head Eesti inimesed! Parlamendi liikmed! Täna arutame me seda, kas Kristen Michali peaministriks oleku ajal on valitsus oma ametis läbi kukkunud või mitte. Umbusaldusavalduse esitajate vastus on ühemõtteline: jah, on. Mitte ainult valesti tehtud otsuste tõttu, vaid seetõttu, et ta on kaotanud usaldusväärsuse, tegelikkuse taju ja ühiskonna laiema toetuse. Ei ole mõtet salata, et tänase umbusaldusavalduse tulemus on teada. Taktikaliselt hea uudis Kristen Michalile: sotside toetuse tõttu jääb ta ametisse ja saab lähemas tulevikus oma agendaga jätkuda. Halb uudis valdavale enamikule Eesti inimestele: see valitsus jääb veel lähiajal ametisse. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Selle umbusaldusavalduse mõte on esitada süüdistuskokkuvõte Kristen Michali valitsuse tegevuse ja tegevusetuse kohta. Me kuulame ära süüdistuse ja seejärel peaministri kaitsekõne ning siis toimub hääletus ja Eesti kodanikud saavad selguse, kes toetab siin saalis Kristen Michali valitsust. Tänasel päeval on hääletamata jätmine poliitiline kaasvastutus kõige sellega kaasuvaga selle valitsuse poliitilise agenda eest. Ja aralt käituvad need, kes ütlevad, otsekui peaks umbusaldusavalduse esitamine sisaldama mingisugust plaani edasiseks tegevuseks. Ei! Umbusaldusavalduse definitsioon ongi küsimus, kas usaldatakse või ei usaldata. Ja meie ei usalda! ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kui mingi ime läbi peaks Kristen Michali valitsus täna kukkuma, siis see tähendab seda, et Kristen Michal lähemas tulevikus ei ole peaminister ja vastavalt Eesti põhiseadusele peab ametis olev president esitama uue kandidaadi. Täna on süüdistuskokkuvõtte aeg ja kohtuotsuse aeg saabub – mitte siin saalis, mitte poliitilise juhtkonna käte ja tahte läbi, vaid Eesti meeste ja naiste valiku läbi otsusena märtsis 2027. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Olukord on rahvusvaheliselt ja objektiivsete asjaolude tõttu keeruline. Seda me tajume kõik, kogu rahvas. Me vajame just sellistes oludes valitsust, kes on aus ja suuteline inimesi liitma, mitte vastandama ja hirmutama – valitsust, mis ei rajane valedel. Kristen Michal on valeliku poliitika jätkamisel olnud Kaja Kallase valitsuse, kuhu kuulusid Reformierakond, Eesti 200 ja sotsiaaldemokraadid, jätkaja. \"Lugege mu huultelt, maksud ei tõuse,\" teatas Kaja Kallas enne valimisi. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Millised on olnud valed Kristen Michali juhitud valitsuse poolt? Peaministri jutt, et tema majandusplaan töötab, on vale. Peaminister rääkis alles laupäeval, et Eesti majandus kasvab Euroopa Liidu keskmisest kaks korda kiiremini. Kuid vaadakem olukorda aastate lõikes: 2023 – peaaegu 3%-line langus, 2024 – stagnatsioon, 2025 – vaid 1,3%-line kasv ning need numbrid on saavutatud tagasiulatuva inflatsiooni korrigeerimisega. Alles 2026 on näha nõrka taastumist, mis rajaneb laenurahal. Inimeste reaalne ostujõud on viie aastaga peaaegu paigal seisnud. Inflatsioon on olnud pikka aega Euroopa Liidu kõrgeim ja tõstab uuesti pead. Erainvesteeringud on nõrgad ja kõik see toimub hiiglasliku riigivõla kasvu taustal. Võlg kasvab kiiresti ja eelarvepuudujääk on suur. Intressikulud seovad järjest rohkem raha, mida võiks suunata haridusse, tervishoidu või peredele. Peaminister räägib kindlast suunast tulevikku. Tegelikkus on teine: inimesed tunnevad end majanduslikult ebakindlalt. 85% meie inimestest muretseb igapäevaste kulude pärast. See ei ole töötav plaan, see on läbikukkumine. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Teine vale on see, et riigirahandus on korda tehtud. Eesti riigivõlg on kasvanud muret tekitava kiirusega. Riigieelarve seadust lubati läbipaistvana, ka see on osutunud valeks. Tegelikku kulude kokkutõmbamist pole toimunud. Veel mõni aasta tagasi oli võlg oluliselt väiksem, täna on see juba üle 11 miljardi ja kasvab edasi. 2030. aastaks prognoositakse peaaegu kahekordistumist. Me ei laena enam peamiselt investeeringuteks, vaid jooksvate kulude katteks. Peaminister vastutab kogu eelarvepoliitika eest. Tema all on võlakoormus tõusnud, tema all on intressikulu muutumas ühe koormamaks, tema all on eelarvepuudujääk kasvav, mitte kahanev. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kolmas vale on see, et tegeldakse demograafilise kriisi lahendamisega. Eesti sündimus on kriitiliselt madal. Perepoliitika on jäänud pealiskaudseks. Valitsus räägib palju tulevikust, aga ei paku ühtegi tõsist pikaajalist lahendust, mis annaks peredele kindlustunnet lastele isa saada. Demograafia ei ole üks teema teiste seas, see on Eesti püsimise küsimus. Sellel ajal on peaministri valitsus läbi kukkunud, sest vastupidiselt sõnadele on perede kindlustunnet reaalsete poliitiliste sammudega ja süstemaatiliselt lõhutud. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Neljas vale on see, et tagatakse õpetajate ja haridusrahva kindlustunne. Tegelikult on lubadusi õpetajatele murtud. Haridusvaldkonnas valitseb pidev reformitõmblemine, õpetajad on üle koormatud bürokraatiaga, järelkasvuprobleemid süvenevad ja süsteem on viidud juhtimiskriisi. Haridusminister tegutseb peaministri, härra Michal, teie vastutuse all. Kui haridussüsteem on kaoses, vastutab peaminister. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Viies vale on see, et suudetakse tegeleda poliitilise juhtimise tasemel tõhusalt riigikaitsega. Tegelikult on riigikaitse arenenud mitte valitsuse tõttu, vaid vaatamata valitsusele. Kaitsekulud on tõstetud 5%-ni SKP-st. Seda me oleme ühiselt toetanud ja see on õige. Aga see ei vabasta vastutusest hangete skandaalide eest. Mürsu- ja moonahangete juhtumid on õõnestanud usaldust. On olnud valesid, otseseid näkku valetamisi, vastuolulisi selgitusi, dokumentide kadumist ja vastutuse vältimist. Peaminister on väitnud, et ta ei teadnud või sai teada alles hiljem, kogu Eesti rahvaga koos. See on vastutuse eest põgenemine. Riigikaitse on liiga tõsine valdkond, et peaminister saaks end distantsile mugavalt seada. Kui kaitsehangetes valitseb segadus ja usaldamatus meie elulises kriitilises küsimuses, siis vastutab peaminister. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ja lisaks hangete segadusele tuletan meelde seda puterdamist poliitilise juhtimise tasemel, mis puudutas täiendavat moonahanget, mis oli Kaitseväe juhataja taotlus ja mida lükati ja lükati edasi, ning samuti võimetust Kaitseväe taotlusel reageerida sellele, mis puudutab droonivõime loomist ja ülesehitamist. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kuues vale. Energeetikas lubati töötavat plaani. Mäletate, millal eelmine kord Kristen Michali valitsusele toimus umbusaldusavaldus? 2025. aasta veebruarikuus. See oli selle peale, kui Kristen Michal tuli lagedale ideega, milles ta oli kokku leppinud Lauri Läänemetsaga ja Kristina Kallasega seoses miljardite eurode dotatsiooniskeemiga meretuuleparkidele. Siis see umbusaldusavaldus ei läinud läbi, kuid valitsus taganes – vähemasti taktikaliselt – sellest plaanist. Sellel umbusaldusavaldusel oli distsiplineeriv meeleolu, sest see peegeldas ühiskonnas ekspertide ja ettevõtjate avalikkuse nõutust ja meelepaha ebaadekvaatsele energiapoliitikale. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Töötavat plaani energeetikas ei ole, tegelikkus on lahenduste puudumine. Eesti energiajulgeoleku ja hinnataseme küsimus on jäänud lahendamata. Tööstus kannatab, inimesed maksavad kõrgeid arveid. Täna arutasime eelarve kontrolli komisjonis küsimust, mis puudutas mootorikütuste hinnatõusu probleemi. Eesti Kaubandus-Tööstuskoda, erialaliidud ja transpordikütuste liit on saatnud meie valitsusele kirja, kus nad paluvad sarnaselt teiste Euroopa Liidu riikidega tähtajalist diisliaktsiisi langetamist. Ma küsisin, härra peaminister, nende organisatsioonide esindajate käest, mida on valitsus vastanud. Aga vastus oli, et mitte midagi. Mitte ühtegi vastust, mitte silpigi kirjalikul kujul ei ole valitsuselt laekunud. Me vajame energeetikas usaldusväärset pikaajalist plaani, mis ühendaks varustuskindluse ja hinnastabiilsuse investeeringuid, kuid seda ei ole. Energeetikas kindlustunnet ei ole. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Seitsmes vale: maksud ei tõuse. Tegelikkus on kaasa toonud nende viimaste aastate jooksul Eesti lähiajaloo pretsedenditult suurima maksutõmblemise. Kaudsete maksude koormuselt on Eesti Euroopa Liidu riikide seas tipus ja see lööb kõige valusamalt just väiksema sissetulekuga inimesi, maapiirkondade elanikke, lastega peresid ja eakaid. Ees ootavad uued maksutõusud, mille valitsus on kehtestanud juba valimistejärgsesse aega. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kaheksas vale. Lubati mõistlikku keskkonnapoliitikat. Tegelikkuses saime ideoloogilise rohepöörde, mille sümboliks on tõmblemine kliimaseaduse ümber, mida härra Michal – tõsi, siis veel kliimaministri ametis – nimetas pidulikuks uueks Eesti põhiseaduseks keskkonnavaldkonnas. Tegelikkus on täielik kaos kliimapoliitika ümber, mida see valitsus on püüdnud korraldada. Ja valitsus ei ole suutnud meie majanduse konkurentsivõime huvisid Euroopa Liidu tasemel tõhusalt kaitsta, vaatamata lubadustele Eestis. Eestis räägitakse ühte juttu ja paraku otsused, mis tulevad Euroopa Liidu tasemel, ei ole sellega sugugi kooskõlas.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Üheksas vale, otsekui Eesti ei nõudnud pretsedendina senises sanktsioonipoliitikas Solikamski strateegilise ressursitehase kõrvaldamist sanktsiooninimekirjast. Täna me teame, et tegelikkuses see toimus. See tähendab muutust meie senises liinis, mis on olnud põhimõtteline selles osas, et ükskõik millised majanduslikud või ärilised kaalutlused ei tohi olla argumendiks väljavabandatavad ühegi liikmesriigi poolt süsteemse sanktsioonipoliitika kestmisel. Mida ütles meile peaminister? Sarnaselt moonaskandaaliga, mürsuskandaaliga, et tema ei tea midagi, tema ei tööta Välisministeeriumis, tema ei ole Välisministeeriumi ametnik, seetõttu teda ei peetud vajalikuks informeerida ja tal puudub igasugune adekvaatne ülevaade niisugusest strateegilisest küsimusest. Peaminister, kes mugavalt jälgib oluliste otsuste langetamist nii rahvusvaheliselt kui ka riigisiseselt tagapingist, sest nii otsekui on ohutum.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kümnes vale on kindlustunde pakkumine juhtimises. Tegelikkus on teine. Peaminister Michal on korduvalt esitanud fakte, mis ei vasta tõele, ja taganenud vastutusest ning külvab ühiskonnas lõhesid valede ja hirmutamise abil. Selle asemel, et otsida ühist keelt, ta vastandub. Näib sageli, justkui ta ei teaks, mis riigis tegelikult toimub, mis on Eesti inimeste arusaamine ja hoiak sellest, kas riigi poliitiline kurss liigub inimeste õiglustunde ja arusaamade kohaselt või mitte, milline on kodanike hoiak ja ootused. See ei ole peaministri tase, härra Michal. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kokkuvõte. Kristen Michali valitsus peab ametist lahkuma, sest majanduspoliitika on ebaõnnestunud, riigi rahandus on viidud võlakoormuse kiire kasvu teele, demograafia, haridus ja energeetika probleemid sisulise pikaajalise vaatega on jäetud lahendamata. Kaitsehangetes on usaldus õõnestatud ja ei ole oldud suuteline astuma adekvaatseid samme ka selle usalduse taastamiseks. Peaminister ise on kaotanud usaldusväärsuse – valetamise, ülbuse ja tegelikkusest eemaldumise tõttu. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Head parlamendi liikmed! Kui te hakkate hääletama, siis te olete silmitsi sellega, et te annate oma, rahvaesindaja vaates hinnangu sellele, milline on teie arusaamine konkreetsetest, ka siin esile toodud skandaalidest, mida umbusaldusavalduse esitajad on välja toonud – seesama Solikamski juhtum, moonahangete juhtum –, ja viimastele skandaalidele ja valedele. Kuid te annate ka hinnangu selle valitsuse poliitilisele agendale tervikuna, mida on tehtud ja mida tegemata jäetud. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Head Eesti inimesed! Täna te ei saa siin saalis nuppu vajutada. Siin saalis on 101 parlamendi liiget ja osa parlamendi liikmeid, kes on umbusaldusavalduse esitanud, hääletab selle umbusaldusavalduse poolt. Suur osa parlamendiliikmeid jääb kõrvale. Nad ei hääleta, nad ei julge toetada oma hääletusel Kristen Michalit, kuid valivad mugavama tee ega hääleta üldse. Aga mitte hääletamine tähendab seda, et tegelikult võetakse täielik poliitiline kasvavastutus selle eest, mida Michali valitsus on poliitiliste otsustena kujundanud. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Täna, armsad Eesti inimesed, te ei saa siin saalis hääletada. Siin hääletavad teie esindajad, kellele te olete heauskselt 2023. aastal andnud mandaadi teid esindada. Aga teil on rohkem võimu 2027. aasta märtsis kui ükskõik millisel Michali valitsuse ministril sellel päeval hääletuskastide juures. Siis te annate oma hinnangu, siis on kohtuotsuse päev Reformierakonna poliitikale ning tema poliitika erinevatel etappidel kaasosalistele, Eesti 200-le, aga ka osa Michali valitsuse poliitilist agendat katnud ja praegu eeldatavasti ka tänasel hääletusel seda tegevale sotsiaaldemokraatlikule parteile. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Selleks, et Eesti saaks minna edasi, peab Michali valitsus astuma tagasi. Selleks, et Eesti saaks minna edasi, peab Michali valitsus langema. Kui see ei juhtu eeldatavasti täna, siis minu sõnum siit kõnetoolist on, et see võtab aega vaid loetud kuud ja see sõltub Eesti meeste ja naiste tahtest. Siis juhtub see 2027. aasta märtsikuus. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ja nüüd tuleb kõnetooli peaminister Kristen Michal, et esitada süüdistuskõnele oma kaitsekõne, ja ta hakkab rääkima sellest, kuidas kõik on kenasti, kui talle ja tema parteile anda uuesti võim 2027. aastal, siis tulevikus lähevad asjad veel paremaks. Head Eesti inimesed! Ärge uskuge sõnu, uskuge tegusid! Nii tuletas meile meelde Lennart Meri. Hoiame seda meeles. Sõna on peaminister Kristen Michalil. Aitäh!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Urmas Reinsalu",
+            "emsId": "a78027e5-2480-49f2-a340-ee88daf92d53",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 2033,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/a78027e5-2480-49f2-a340-ee88daf92d53/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=2033",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605514,
+            "startTime": "2026-10-19T15:51:04.938",
+            "endTime": "2026-10-19T15:51:27.388",
+            "content": "Aitäh! Aga sõna annab siin saalis ikkagi istungi juhataja, antud juhul Riigikogu esimees. Ja ma palun nüüd Riigikogu kõnetooli peaminister Kristen Michali. Peaminister palus oma ettekande puhul ka kolm minutit lisaaega, mistõttu palun, härra peaminister, kolm minutit lisaaega veel täiendavalt.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh! Aga sõna annab siin saalis ikkagi istungi juhataja, antud juhul Riigikogu esimees. Ja ma palun nüüd Riigikogu kõnetooli peaminister Kristen Michali. Peaminister palus oma ettekande puhul ka kolm minutit lisaaega, mistõttu palun, härra peaminister, kolm minutit lisaaega veel täiendavalt.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 3057,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=3057",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605584,
+            "startTime": "2026-10-19T15:51:27.668",
+            "endTime": "2026-10-19T16:10:05.588",
+            "content": "<p>Aitäh, austatud Riigikogu esimees! Head Riigikogu liikmed! See on tavaliselt alati nii, et enne kui tuleb põhiesineja, on soojendusesineja. Ma vaatan, kuidas publikut õnnestus üles kütta – inimesed läksid saalist ära, nii et see vist väga edukas ei olnud. Aga teeme oma parima.&nbsp;</p><p>Valitsuse plaan töötab. Eesti majandus kasvab Euroopa Liidu keskmisest kaks korda kiiremini. Inimeste kontodele on tänavu laekunud keskmiselt kümnendiku võrra rohkem raha. Kasvanud on tarbimine ning rekordiliselt on puhatud ja reisitud nii Eestis kui ka välismaal. Tarbijate kindlustunne ja jaekaubanduse maht on kasvamas. Maksulangetus toetab ettevõtteid, kasvavad nii tootmine, eksport kui ka lisandväärtuse loomine. Lisandub töökohti. Tööpuudus Eestis on langenud koroonaeelsele, 2020. aasta alguse tasemele. Inflatsioon on taandunud ja langeb veelgi. Iga viimane kui üks Eesti majandusülevaade ja -prognoos rõhutab tulumaksuvaba miinimumi tõstmise otsustavat mõju majanduskasvu, inimeste kindlustunde ja elujärje kiirele tõusule, olgu need Eesti Panga, kommertspankade, Euroopa Komisjoni või IMF-i majandusanalüüsid.&nbsp;</p><p>Veel uudiseid. IMF-i värske prognoosi kohaselt on Eesti majanduskasv tuleval aastal Balti riikide seas suurim, inflatsioon aga samal ajal väikseim. Kas see ongi läbikukkumine? Parafraseerides Andrus Ansipit: kui see majanduse kasvamine on kriis, siis selles kriisis tahaks rohkem elada. Palgad ja pensionid kasvavad hindadest kiiremini, hoiused on rekordtasemel, inimesed reisivad rohkem kui kunagi varem.&nbsp;</p><p>Opositsiooni loogika on lihtne. Mida halvem on Eesti inimestel, seda parem on neil. Kas me tõesti tahame, et EKRE, Keskerakond ja Isamaa õnnestuks ja meil oleks päriselt ka halvasti, et me saaks põhjusega öelda, kui halvasti ikka kõik Eestis on? Iga kuulaja saab vaadata oma südamesse ja küsida, kuidas tal tegelikult läheb. Kas me Eestis oleme tublid ja usume, et meie paremad päevad on minevikus? Seda ju EKRE, Keskerakond ja Isamaa meile ütlevad, et parim aeg ongi minevik.&nbsp;</p><p>Head Eesti inimesed! Me ei pea sellega nõustuma. Me oleme tulevikurahvas, tipus hariduses, tehnoloogias, loodushoius, isikuvabadustes, ühiskonna arengus ja turvalisuses. Me kuulume maailma parimatesse ühendustesse, Euroopa Liitu, NATO-sse, ja juhime NB8 ja Balti riikide eesistumist sel aastal. Ja me oleme kaitstud.&nbsp;</p><p>Valitsuse plaan Eesti kaitseks töötab. Meie valitsus tõstis kaitsekulud 5%-ni SKP-st, tugevdades riigikaitset nii iseseisvalt kui ka koos liitlastega. Kaitstud Eesti annab peredele kindluse tulevikuplaanideks ja ettevõtetele julguse pikaajalisteks investeeringuteks. Kiiresti areneb Eestis kaitsetööstus, üle Eesti kerkib uusi ettevõtteid, spaasid ja ostukohti. Ettevõtjad arvestavad, et inimeste jõukus kasvab kaitstult. Mahukad investeeringud toiduainetööstusesse, energeetikasse ja andmekeskustesse kinnitavad usku Eesti turvalisusesse ja arengusse.&nbsp;</p><p>Head kuulajad! Siin me siis oleme. Eesti inimesed tunnevad, et valitsuse plaan töötab. See on pärale jõudnud ka osale siin saalis viibijatele, neile, kes on ihu ja hingega püüdnud Eestis kõike mustaks võõbata, levitada valedel põhinevaid hirmujutte omaenda kodumaa kohta. Nende poolt maalitud pilti Eestist ei tunta päriselus ära. Rahvas ei tunne ära seda katastroofi, mida EKREIKE meile iga meedia kaudu maalib. Seetõttu valitseb nende ridades peataolek. Oma kasvuplaani puudumist varjatakse mitte väga osava poliittehnoloogiaga.&nbsp;</p><p>Umbusaldusavaldus valitsuse vastu on järjekordne näide vastutustundetust mängust, mida katsetati ebaõnnestunult juba presidendivalimiste ajal, ning infomõjutustega erakorralistest valimistest. Presidendivalimistel üritati lõhestada Riigikogu ja rahvast. See ei õnnestunud. Majanduse katastroofi narratiiv kukkus kokku koos teadmisega, et oleme enda majandust kehvemaks hinnanud. Nüüd siis taas uus mäng. Kõik need katsed on seni liiva jooksnud, rahvas nägi enda hanitamise läbi. Opositsioon kaotas initsiatiivi, mida üritatakse valitsuse valedega ründamise kaudu tagasi saada.&nbsp;</p><p>Nüüdnegi umbusaldusavaldus anti vargsi hiilides sisse, kui olin äsja Tallinnas vastu võtnud NATO peasekretäri ja lahkumas Euroopa Ülemkogule Brüsselis. Kontrast on taas tugev. Samal ajal seisin mina valitsusjuhina Euroopa Ülemkogul Ukraina toetamise, majanduskasvu ja soodsate energiahindade eest. Me lõime käed mitte üksnes Läti ja Leedu kolleegiga, vaid ka Poola peaministri Donald Tuskiga, et üheskoos töötada Rail Balticu rahastamise nimel.&nbsp;</p><p>Tegin tööd Eesti tuleviku ja julgeoleku nimel, aga opositsioon tarvitas paberit ja parlamendi mandaati mänguks. Juba umbusaldust sisse andes anti ajakirjanduse ja üldsuse poolt hinnang, et need paberilehed ise on rohkem väärt kui neile pandud sõnad ja allkirjad. Peatselt jõuan ka umbusaldusavalduse tekstini. Avalduse kirjutajad pole faktidega vähimalgi määral kursis, mida on tegelikult raske uskuda või on nad lihtsalt pahatahtlikud Eesti elu suhtes.&nbsp;</p><p>Austatud saalisviibijad! Valitsuse plaan töötab, kaitse püsib ja majandus kasvab üha kiiremini. Meil on plaan ka edasiseks, mida teha, et asjad oleksid korras, riik kaitstud ja majandus kasvaks. Kaitsekulud on püsivalt üle 5% SKP-st. Suurendame riigi julgeolekut, et Eesti inimesed saaksid elada rahus. Samal ajal kasvatame siseturvalisust. Idapiiri valmisehitamine on julgeoleku lahutamatu osa. Koos laiemate kuludega panustame julgeolekusse üle 7% SKP-st.&nbsp;</p><p>Tugeva ja kestliku rahanduse nimel vähendame eelarvepuudujääki 4%-ni SKP-st. See tähendab umbes 235 miljoni euro suurust lisakokkuhoidu juba kolmel aastal 10% kokkuhoiule ja ka ametikohtade vähendamisele lisaks.&nbsp;</p><p>Majanduskasvu soodustamiseks tagab eelarve Euroopa Liidu keskmisest ligi kaks korda suuremad avaliku sektori investeeringud. Ehitame taristut, mis tugevdab majandust ja julgeolekut. 2025. aastal olid Eesti avaliku sektori investeeringud suhtena SKP-sse suurimad Euroopa Liidus ja ületavad seda taset nii sel kui ka järgmisel aastal.&nbsp;</p><p>Investeerime tehisintellekti arengusse ja anname Eesti inimestele praktilised oskused, et uusi tehnoloogiaid päriselt enda kasuks tööle panna, muidugi majanduses, kuid ka julgeolekus. Suuname raha tugevasse ühiskonda, haridusse, teadusesse, kultuuri, tervishoidu, aga ka energiatõhususse.&nbsp;</p><p>Ja pensionide kasv on raudkindel. Hoiame oma inimeste tervist, nii vaimset kui ka füüsilist. Tagame palgatõusud tugeva ühiskonna sammastele: päästjatele, politseinikele, õpetajatele ja kultuuritöötajatele.&nbsp;</p><p>Tänan neid Riigikogu liikmeid ja poliitilisi jõude, kes on väljendanud soovi Eesti tuleviku jaoks sisuliselt kaasa mõelda. Olen öelnud, et valitsus on valmis arvestama kõiki vastutustundlikke ettepanekuid, mida saab teha tasakaalu säilitades. Me peame antud sõna ja otsime ühisosa, sest vastutus on mõlemal, nii vähemusel kui ka enamusel. Teisel pool asuvad EKRE, Keskerakond ja Isamaa, kes elavad faktivabas paralleelmaailmas. Kuidas on võimalik arutada etteheiteid, mis on väljamõeldised, fakte, mida pole olemas? Aga vaatame siis ka tekstis esitatud väiteid.&nbsp;</p><p>Esiteks, te väidate, et erasektor on paigalseisus. Kaupade eksport kasvas selle aasta esimese kaheksa kuuga 7%, teenuste eksport esimesel poolaastal 5,5%. 2026. aasta suvel külastas Eestit ligi 775&nbsp;000 välisturisti – 6% rohkem kui varem. Tallinna Lennujaam on püstitanud rekordeid. Kasvavad tööstus, ehitus, jaekaubandus, majutus ja toitlustus.&nbsp;</p><p>Avaliku taristu investeeringud annavad tööd erasektorile. 2027. aasta eelarves on investeeringuteks ligikaudu 1,2 miljardit eurot. Riigi investeeringud on järgneva nelja aasta jooksul 7,3% SKP-st ehk Euroopa Liidu keskmisest peaaegu kaks korda kõrgemad. Minu peaministriks oleku ajal on majandus kasvanud ja kasv jätkub tõusvas tempos.&nbsp;</p><p>Majandus kasvab valitsuse elluviidud tulumaksureformi toel kaks korda kiiremini Euroopa Liidu keskmisest ja kaks korda kiiremini mullusest. IMF-i värskema prognoosi järgi toetavad 2027. aasta Eesti kasvu eratarbimine, maksureform ja investeeringute taastumine. Seesama IMF-i värske prognoos ütleb, et Eesti on 2027. aastal Balti riikide seas kiireima kasvuga ning inflatsioon langeb. Kas see ongi paigaseis? Kasvame naabritest kiiremini, aga seisame kogu aeg paigal?&nbsp;</p><p>Te väidate, et toimub riigivõla kontrollimatu kasv. Järgmise aasta eelarves vähendatakse puudujääki pool protsenti SKP-st, et jõuda 4% tasemele. Eelarve puudujääk väheneb 2026. aastal 4,2%-lt 2030. aastaks 3,4%-ni SKP-st. Võlakoormuse aastane kasv aeglustub 4 protsendipunktilt 1,9-le. Eesti võlakoormus jääb Euroopa kõige väiksemate sekka. Suurim riigivõla kasv oli Eestis aastal 2020, kui see kasvas 10 protsendipunkti, ja seda auku lapime me tänaseni, head selle augu teinud EKRE, Isamaa ja Keskerakond.&nbsp;</p><p>Sõja tõttu on kasvanud kaitsekulutused, kõike muud oleme kolm aastat kärpinud. Nüüd vähendame defitsiiti pool protsenti lisaks ning nii jätkates on riigivõlg kontrolli all. Kontrollimatu on vaid see, kui edasised eelarved ei tee sama ehk sedasama, mida meie, ehk ei vähenda defitsiiti pool protsenti aastas. Head umbusaldajad, seda te ju ometi öelda ei taha? Kui tahate, öelge siis ausalt välja.&nbsp;</p><p>Te väidate, et valitsus on kahandanud Eesti mõjuvõimu maailmas. Isegi teie umbusalduse vargsi sissehiilimise ajal tegeles valitsus maailmaga, võõrustas NATO peasekretäri, seisis Eesti ja tugeva Euroopa eest ülemkogul. Valitsus on tõstnud kaitsekulud 7%-ni, meie toetus Ukrainale on vankumatu, meie veetud on Vene võitlejate sanktsioneerimine, varilaevastike piirangud, energiatulude vähendamine, samuti äsjane Venemaa viljatransiidi keeld. Juhtisin isiklikult Põhja- ja Baltimaade valitsusjuhtide visiiti Ukrainasse. Ukraina president Volodõmõr Zelenskõi käis siin Tallinnas. Ootame teda ka Ukraina ülesehituse konverentsile. Mõjuvõimuta Eesti seda kahtlemata ei tee.&nbsp;</p><p>Eesti tehisintellekti programm on maailmas väga suurt huvi avaldanud ja kultuuris samamoodi. Eesti lastekirjandusel läheb hästi. Meie eestvedamisel on loodud Euroopa Komisjoni juurde digiteeritud kultuuripärandi säilitamise töörühm. Oleme tähistanud Arvo Pärdi 90. sünnipäeva üle maailma ja panustame suurtesse üritustesse Eestis, muu hulgas näiteks Rally Estoniasse, mis toob siia palju inimesi ja palju tulu eraettevõtlusele. Eestit hinnatakse ja meie arvamusega arvestatakse.&nbsp;</p><p>Te väidate oma kirjas, et valitsus üritas aktiivselt edasi lükata Eesti poolt NATO ees võetud kohustust – 1,6 miljardi suurust moonahanget. Taas vale! Juba 2024. aastal otsisid tolleaegse kolmikliidu osapooled vajamineva rahastuse riigieelarve protsessis. Aktiivselt otsiti raha kaitsele juurde, mitte kaitsest võtmiseks. Ja kaitsekulutused on minu juhtimisel kindlalt kasvanud. 2024. aastal 3,35%-st üle 5%-ni SKP-st. 5% SKP-st tagab, et saame hankida need võimed Eesti kaitseks, mida vajame. Me oleme NATO-s üks enim oma kaitsesse investeeriv riik.&nbsp;</p><p>Te väidate, et valitsus on jätnud arvestamata Kaitseväe juhataja sõjalise nõuandega. Kaitseväe juhataja kindral Merilo ütles ERR-is, et seni on kõik Kaitseväe sõjalised nõuanded, mis mina olen andnud, valitsus kuulda võtnud ja otsinud ka lahendusi nende täitmiseks.&nbsp;</p><p>See umbusaldusavaldus ei seisa kuidagi tõsiasjadel, vaid kuulujuttudel. Ja on kaks võimalust. Kas te ei tea fakte, pole kursis – ja siis ma küsiksin, kuidas on võimalik oma tööd teha selle kõrge palga eest siin istudes – või te olete pahatahtlikud ja teete Eestit viletsamaks? Majandust alla rääkides said ebakindlusega pihta kõik Eesti inimesed. See on küsimus, mille puhul tuleb teil vastata Eesti rahvale, sest enne pole võimalik saada üle usalduskriisist opositsiooni vastu.&nbsp;</p><p>Kui käesolev umbusalduskatse kannab ühte selget sõnumit, siis selleks on: EKREIKE bänd tagasi. Isamaa ja Keskerakond on end järgmiseks koalitsiooniks laulatanud ja võimalusel kaasatakse EKRE. Nende valitsemist nägime EKREIKE ajal ja mineviku taastamist näeme praegu Tallinnas. Ilmekateks näideteks on eestikeelsele õppele ülemineku aeglustamine, linnale kuuluvate äriühingute nõukogudesse poliitikute taasnimetamine, linnaosalehtede taaspolitiseerimine ja kuni Liivalaia trammitee rajamisest loobumiseni välja. Loomulikult on praegune valitsus ja minu liberaalne erakond põhivaenlane. Eesti jõukuse kasvu saab ärandada ikka ainult meieta.&nbsp;</p><p>Mõni meenutus. Isamaa ja Keskerakond tahavad taastada sellesama maksuküüru ehk astmelise tulumaksu, millega nuheldi õpetajaid, politseinikke ja päästjaid, mille me kaotasime. Isamaa tahab panna käe teise samba riiklike sissemaksete juurde, suunata raha jooksvateks kulutusteks. Umbusaldusega ühinenud Parempoolsed – neil on plaan pensionid külmutada, et pensionärid vaesuksid ja pensioni kasv sõltuks poliitikute lahkusest või armust. EKRE näeb ohtu naiste iseseisvas toimetulekus ja selle rahvusvahelises kaitses. Naistel on meeles Martin Helme sõjahüüd: naisi kaitsku mehed, mitte konventsioonid. Suur osa Keskerakonda ja Isamaad ei leidnud samuti Riigikogu nuppu – ilmselt on see keeruline –, et kaitsta Istanbuli konventsiooni EKRE vastu. Naiste väärikuse pisendamine on ka nende sissetulekute kasvu pidurdamine, suure palgalõhe taastamine. Isamaa, Keskerakond ja EKRE tahavad ehitada mitte Auvere kahte, vaid kahte Auveret – kallist ja mittetöötavat, et me sõltuksime fossiilidest ja jätaksime lastele saastatuma ja vaesema Eesti. EKREIKE paneks taristu rajamise seisma, Rail Balticu ehitamise.&nbsp;</p><p>Ja viimaseks ja mitte vähem tähtsamalt: kui seni leidsid iga päev võimaluse Euroopat mustata EKRE ja Keskerakond, siis on nüüd selle ree peal kahjuks ka Isamaa. Ei aita, et sõbralik meediakanal kustutab loo, millega võrdsustati Euroopa ja Nõukogude Liit. Internet nimelt mäletab kõike. Viimaseski ollakse nüüd ühele meelele jõudnud, ring on täis. EKREIKE tahab liitlasteta ja üksi jäänud Eestit. Sellises Eestis ei ole kasvu ega jõukust, on ebakindlus ja langus.&nbsp;</p><p>Ainus, millega saab teie avalduses nõustuda, on tõdemus, et elame ebakindlas ja ebastabiilses maailmas, mille sarnast pole kogetud enam kui inimpõlve vältel. Mõtelgem siis sellele korra. Me elame maailmas, mille sarnast ebakindlust pole nähtud inimpõlve ajal. Nii te ütlete. Ja siis te tulete ütlema, et riik, mis on kaitstud, mille majandus kasvab kaks korda Euroopa Liidu keskmisest kiiremini ja mis on maailma vabamate hulgas, on halvasti juhitud. Kas te ise saate ka aru, kui äraspidiselt see kõlab? Või mis on selle liberaalse plaani alternatiiv? Vabastada ehk veidi majanduse loovenergiat, lõhkuda pensionisüsteeme, et saada taas kõrge inflatsioon, nagu Isamaa tegi? Meie heade naabrite juures Leedus, võite reaalajas vaadata, kuidas samamoodi tehes saab ka sama kehva tulemuse, toimiv majandus aetakse kuumaks ja hinnakasv suureks. Või veidi vähem vabadust ja rohkem sundi?&nbsp;</p><p>Eesti on juhitud läbi selle ränga katsumuse kindlale kasvurajale, sest valitsuse plaan töötab. Liberaalne plaan ei pruugi konservatiividele, isegi headele sotsiaaldemokraatidele meeldida. See on aus tõdemus, sest sotsiaaldemokraadid ja konservatiivid pole kunagi liberaalid, nagu liberaalid pole sotsiaaldemokraadid ja konservatiivid. Nende maailmavaate hinnangul saab ja tuleb riigil rohkem inimeste ja ettevõtete eest ära otsustada, rohkem makse riigile, rohkem otsuseid riigile. Liberaalne maailmavaade lubab igaühel ise otsustada koos vastutusega oma elu ja otsuste eest. See pole kõigile, aga Eestile on see edu toonud.&nbsp;</p><p>Iga aus maailmavaade on omal kohal, kuid populism pole maailmavaade. Keerulistel aegadel on võimalik jääda kindlaks vabaduse majakale või usaldada teisi tulukesi. EKRE, Keskerakonna ja Isamaa rünnak minu ja valitsuse vastu annab jõudu, energiat ja otsusekindlust edasiminekuks. Töötav plaan tõestab end tulemustega. Me oleme kaitstud ja kasvame. Eesti ees on paremad ajad. Aitäh!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, austatud Riigikogu esimees! Head Riigikogu liikmed! See on tavaliselt alati nii, et enne kui tuleb põhiesineja, on soojendusesineja. Ma vaatan, kuidas publikut õnnestus üles kütta – inimesed läksid saalist ära, nii et see vist väga edukas ei olnud. Aga teeme oma parima. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Valitsuse plaan töötab. Eesti majandus kasvab Euroopa Liidu keskmisest kaks korda kiiremini. Inimeste kontodele on tänavu laekunud keskmiselt kümnendiku võrra rohkem raha. Kasvanud on tarbimine ning rekordiliselt on puhatud ja reisitud nii Eestis kui ka välismaal. Tarbijate kindlustunne ja jaekaubanduse maht on kasvamas. Maksulangetus toetab ettevõtteid, kasvavad nii tootmine, eksport kui ka lisandväärtuse loomine. Lisandub töökohti. Tööpuudus Eestis on langenud koroonaeelsele, 2020. aasta alguse tasemele. Inflatsioon on taandunud ja langeb veelgi. Iga viimane kui üks Eesti majandusülevaade ja -prognoos rõhutab tulumaksuvaba miinimumi tõstmise otsustavat mõju majanduskasvu, inimeste kindlustunde ja elujärje kiirele tõusule, olgu need Eesti Panga, kommertspankade, Euroopa Komisjoni või IMF-i majandusanalüüsid. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Veel uudiseid. IMF-i värske prognoosi kohaselt on Eesti majanduskasv tuleval aastal Balti riikide seas suurim, inflatsioon aga samal ajal väikseim. Kas see ongi läbikukkumine? Parafraseerides Andrus Ansipit: kui see majanduse kasvamine on kriis, siis selles kriisis tahaks rohkem elada. Palgad ja pensionid kasvavad hindadest kiiremini, hoiused on rekordtasemel, inimesed reisivad rohkem kui kunagi varem. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Opositsiooni loogika on lihtne. Mida halvem on Eesti inimestel, seda parem on neil. Kas me tõesti tahame, et EKRE, Keskerakond ja Isamaa õnnestuks ja meil oleks päriselt ka halvasti, et me saaks põhjusega öelda, kui halvasti ikka kõik Eestis on? Iga kuulaja saab vaadata oma südamesse ja küsida, kuidas tal tegelikult läheb. Kas me Eestis oleme tublid ja usume, et meie paremad päevad on minevikus? Seda ju EKRE, Keskerakond ja Isamaa meile ütlevad, et parim aeg ongi minevik. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Head Eesti inimesed! Me ei pea sellega nõustuma. Me oleme tulevikurahvas, tipus hariduses, tehnoloogias, loodushoius, isikuvabadustes, ühiskonna arengus ja turvalisuses. Me kuulume maailma parimatesse ühendustesse, Euroopa Liitu, NATO-sse, ja juhime NB8 ja Balti riikide eesistumist sel aastal. Ja me oleme kaitstud. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Valitsuse plaan Eesti kaitseks töötab. Meie valitsus tõstis kaitsekulud 5%-ni SKP-st, tugevdades riigikaitset nii iseseisvalt kui ka koos liitlastega. Kaitstud Eesti annab peredele kindluse tulevikuplaanideks ja ettevõtetele julguse pikaajalisteks investeeringuteks. Kiiresti areneb Eestis kaitsetööstus, üle Eesti kerkib uusi ettevõtteid, spaasid ja ostukohti. Ettevõtjad arvestavad, et inimeste jõukus kasvab kaitstult. Mahukad investeeringud toiduainetööstusesse, energeetikasse ja andmekeskustesse kinnitavad usku Eesti turvalisusesse ja arengusse. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Head kuulajad! Siin me siis oleme. Eesti inimesed tunnevad, et valitsuse plaan töötab. See on pärale jõudnud ka osale siin saalis viibijatele, neile, kes on ihu ja hingega püüdnud Eestis kõike mustaks võõbata, levitada valedel põhinevaid hirmujutte omaenda kodumaa kohta. Nende poolt maalitud pilti Eestist ei tunta päriselus ära. Rahvas ei tunne ära seda katastroofi, mida EKREIKE meile iga meedia kaudu maalib. Seetõttu valitseb nende ridades peataolek. Oma kasvuplaani puudumist varjatakse mitte väga osava poliittehnoloogiaga. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Umbusaldusavaldus valitsuse vastu on järjekordne näide vastutustundetust mängust, mida katsetati ebaõnnestunult juba presidendivalimiste ajal, ning infomõjutustega erakorralistest valimistest. Presidendivalimistel üritati lõhestada Riigikogu ja rahvast. See ei õnnestunud. Majanduse katastroofi narratiiv kukkus kokku koos teadmisega, et oleme enda majandust kehvemaks hinnanud. Nüüd siis taas uus mäng. Kõik need katsed on seni liiva jooksnud, rahvas nägi enda hanitamise läbi. Opositsioon kaotas initsiatiivi, mida üritatakse valitsuse valedega ründamise kaudu tagasi saada. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Nüüdnegi umbusaldusavaldus anti vargsi hiilides sisse, kui olin äsja Tallinnas vastu võtnud NATO peasekretäri ja lahkumas Euroopa Ülemkogule Brüsselis. Kontrast on taas tugev. Samal ajal seisin mina valitsusjuhina Euroopa Ülemkogul Ukraina toetamise, majanduskasvu ja soodsate energiahindade eest. Me lõime käed mitte üksnes Läti ja Leedu kolleegiga, vaid ka Poola peaministri Donald Tuskiga, et üheskoos töötada Rail Balticu rahastamise nimel. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Tegin tööd Eesti tuleviku ja julgeoleku nimel, aga opositsioon tarvitas paberit ja parlamendi mandaati mänguks. Juba umbusaldust sisse andes anti ajakirjanduse ja üldsuse poolt hinnang, et need paberilehed ise on rohkem väärt kui neile pandud sõnad ja allkirjad. Peatselt jõuan ka umbusaldusavalduse tekstini. Avalduse kirjutajad pole faktidega vähimalgi määral kursis, mida on tegelikult raske uskuda või on nad lihtsalt pahatahtlikud Eesti elu suhtes. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Austatud saalisviibijad! Valitsuse plaan töötab, kaitse püsib ja majandus kasvab üha kiiremini. Meil on plaan ka edasiseks, mida teha, et asjad oleksid korras, riik kaitstud ja majandus kasvaks. Kaitsekulud on püsivalt üle 5% SKP-st. Suurendame riigi julgeolekut, et Eesti inimesed saaksid elada rahus. Samal ajal kasvatame siseturvalisust. Idapiiri valmisehitamine on julgeoleku lahutamatu osa. Koos laiemate kuludega panustame julgeolekusse üle 7% SKP-st. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Tugeva ja kestliku rahanduse nimel vähendame eelarvepuudujääki 4%-ni SKP-st. See tähendab umbes 235 miljoni euro suurust lisakokkuhoidu juba kolmel aastal 10% kokkuhoiule ja ka ametikohtade vähendamisele lisaks. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Majanduskasvu soodustamiseks tagab eelarve Euroopa Liidu keskmisest ligi kaks korda suuremad avaliku sektori investeeringud. Ehitame taristut, mis tugevdab majandust ja julgeolekut. 2025. aastal olid Eesti avaliku sektori investeeringud suhtena SKP-sse suurimad Euroopa Liidus ja ületavad seda taset nii sel kui ka järgmisel aastal. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Investeerime tehisintellekti arengusse ja anname Eesti inimestele praktilised oskused, et uusi tehnoloogiaid päriselt enda kasuks tööle panna, muidugi majanduses, kuid ka julgeolekus. Suuname raha tugevasse ühiskonda, haridusse, teadusesse, kultuuri, tervishoidu, aga ka energiatõhususse. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ja pensionide kasv on raudkindel. Hoiame oma inimeste tervist, nii vaimset kui ka füüsilist. Tagame palgatõusud tugeva ühiskonna sammastele: päästjatele, politseinikele, õpetajatele ja kultuuritöötajatele. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Tänan neid Riigikogu liikmeid ja poliitilisi jõude, kes on väljendanud soovi Eesti tuleviku jaoks sisuliselt kaasa mõelda. Olen öelnud, et valitsus on valmis arvestama kõiki vastutustundlikke ettepanekuid, mida saab teha tasakaalu säilitades. Me peame antud sõna ja otsime ühisosa, sest vastutus on mõlemal, nii vähemusel kui ka enamusel. Teisel pool asuvad EKRE, Keskerakond ja Isamaa, kes elavad faktivabas paralleelmaailmas. Kuidas on võimalik arutada etteheiteid, mis on väljamõeldised, fakte, mida pole olemas? Aga vaatame siis ka tekstis esitatud väiteid. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Esiteks, te väidate, et erasektor on paigalseisus. Kaupade eksport kasvas selle aasta esimese kaheksa kuuga 7%, teenuste eksport esimesel poolaastal 5,5%. 2026. aasta suvel külastas Eestit ligi 775 000 välisturisti – 6% rohkem kui varem. Tallinna Lennujaam on püstitanud rekordeid. Kasvavad tööstus, ehitus, jaekaubandus, majutus ja toitlustus. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Avaliku taristu investeeringud annavad tööd erasektorile. 2027. aasta eelarves on investeeringuteks ligikaudu 1,2 miljardit eurot. Riigi investeeringud on järgneva nelja aasta jooksul 7,3% SKP-st ehk Euroopa Liidu keskmisest peaaegu kaks korda kõrgemad. Minu peaministriks oleku ajal on majandus kasvanud ja kasv jätkub tõusvas tempos. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Majandus kasvab valitsuse elluviidud tulumaksureformi toel kaks korda kiiremini Euroopa Liidu keskmisest ja kaks korda kiiremini mullusest. IMF-i värskema prognoosi järgi toetavad 2027. aasta Eesti kasvu eratarbimine, maksureform ja investeeringute taastumine. Seesama IMF-i värske prognoos ütleb, et Eesti on 2027. aastal Balti riikide seas kiireima kasvuga ning inflatsioon langeb. Kas see ongi paigaseis? Kasvame naabritest kiiremini, aga seisame kogu aeg paigal? ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Te väidate, et toimub riigivõla kontrollimatu kasv. Järgmise aasta eelarves vähendatakse puudujääki pool protsenti SKP-st, et jõuda 4% tasemele. Eelarve puudujääk väheneb 2026. aastal 4,2%-lt 2030. aastaks 3,4%-ni SKP-st. Võlakoormuse aastane kasv aeglustub 4 protsendipunktilt 1,9-le. Eesti võlakoormus jääb Euroopa kõige väiksemate sekka. Suurim riigivõla kasv oli Eestis aastal 2020, kui see kasvas 10 protsendipunkti, ja seda auku lapime me tänaseni, head selle augu teinud EKRE, Isamaa ja Keskerakond. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Sõja tõttu on kasvanud kaitsekulutused, kõike muud oleme kolm aastat kärpinud. Nüüd vähendame defitsiiti pool protsenti lisaks ning nii jätkates on riigivõlg kontrolli all. Kontrollimatu on vaid see, kui edasised eelarved ei tee sama ehk sedasama, mida meie, ehk ei vähenda defitsiiti pool protsenti aastas. Head umbusaldajad, seda te ju ometi öelda ei taha? Kui tahate, öelge siis ausalt välja. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Te väidate, et valitsus on kahandanud Eesti mõjuvõimu maailmas. Isegi teie umbusalduse vargsi sissehiilimise ajal tegeles valitsus maailmaga, võõrustas NATO peasekretäri, seisis Eesti ja tugeva Euroopa eest ülemkogul. Valitsus on tõstnud kaitsekulud 7%-ni, meie toetus Ukrainale on vankumatu, meie veetud on Vene võitlejate sanktsioneerimine, varilaevastike piirangud, energiatulude vähendamine, samuti äsjane Venemaa viljatransiidi keeld. Juhtisin isiklikult Põhja- ja Baltimaade valitsusjuhtide visiiti Ukrainasse. Ukraina president Volodõmõr Zelenskõi käis siin Tallinnas. Ootame teda ka Ukraina ülesehituse konverentsile. Mõjuvõimuta Eesti seda kahtlemata ei tee. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Eesti tehisintellekti programm on maailmas väga suurt huvi avaldanud ja kultuuris samamoodi. Eesti lastekirjandusel läheb hästi. Meie eestvedamisel on loodud Euroopa Komisjoni juurde digiteeritud kultuuripärandi säilitamise töörühm. Oleme tähistanud Arvo Pärdi 90. sünnipäeva üle maailma ja panustame suurtesse üritustesse Eestis, muu hulgas näiteks Rally Estoniasse, mis toob siia palju inimesi ja palju tulu eraettevõtlusele. Eestit hinnatakse ja meie arvamusega arvestatakse. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Te väidate oma kirjas, et valitsus üritas aktiivselt edasi lükata Eesti poolt NATO ees võetud kohustust – 1,6 miljardi suurust moonahanget. Taas vale! Juba 2024. aastal otsisid tolleaegse kolmikliidu osapooled vajamineva rahastuse riigieelarve protsessis. Aktiivselt otsiti raha kaitsele juurde, mitte kaitsest võtmiseks. Ja kaitsekulutused on minu juhtimisel kindlalt kasvanud. 2024. aastal 3,35%-st üle 5%-ni SKP-st. 5% SKP-st tagab, et saame hankida need võimed Eesti kaitseks, mida vajame. Me oleme NATO-s üks enim oma kaitsesse investeeriv riik. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Te väidate, et valitsus on jätnud arvestamata Kaitseväe juhataja sõjalise nõuandega. Kaitseväe juhataja kindral Merilo ütles ERR-is, et seni on kõik Kaitseväe sõjalised nõuanded, mis mina olen andnud, valitsus kuulda võtnud ja otsinud ka lahendusi nende täitmiseks. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "See umbusaldusavaldus ei seisa kuidagi tõsiasjadel, vaid kuulujuttudel. Ja on kaks võimalust. Kas te ei tea fakte, pole kursis – ja siis ma küsiksin, kuidas on võimalik oma tööd teha selle kõrge palga eest siin istudes – või te olete pahatahtlikud ja teete Eestit viletsamaks? Majandust alla rääkides said ebakindlusega pihta kõik Eesti inimesed. See on küsimus, mille puhul tuleb teil vastata Eesti rahvale, sest enne pole võimalik saada üle usalduskriisist opositsiooni vastu. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kui käesolev umbusalduskatse kannab ühte selget sõnumit, siis selleks on: EKREIKE bänd tagasi. Isamaa ja Keskerakond on end järgmiseks koalitsiooniks laulatanud ja võimalusel kaasatakse EKRE. Nende valitsemist nägime EKREIKE ajal ja mineviku taastamist näeme praegu Tallinnas. Ilmekateks näideteks on eestikeelsele õppele ülemineku aeglustamine, linnale kuuluvate äriühingute nõukogudesse poliitikute taasnimetamine, linnaosalehtede taaspolitiseerimine ja kuni Liivalaia trammitee rajamisest loobumiseni välja. Loomulikult on praegune valitsus ja minu liberaalne erakond põhivaenlane. Eesti jõukuse kasvu saab ärandada ikka ainult meieta. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Mõni meenutus. Isamaa ja Keskerakond tahavad taastada sellesama maksuküüru ehk astmelise tulumaksu, millega nuheldi õpetajaid, politseinikke ja päästjaid, mille me kaotasime. Isamaa tahab panna käe teise samba riiklike sissemaksete juurde, suunata raha jooksvateks kulutusteks. Umbusaldusega ühinenud Parempoolsed – neil on plaan pensionid külmutada, et pensionärid vaesuksid ja pensioni kasv sõltuks poliitikute lahkusest või armust. EKRE näeb ohtu naiste iseseisvas toimetulekus ja selle rahvusvahelises kaitses. Naistel on meeles Martin Helme sõjahüüd: naisi kaitsku mehed, mitte konventsioonid. Suur osa Keskerakonda ja Isamaad ei leidnud samuti Riigikogu nuppu – ilmselt on see keeruline –, et kaitsta Istanbuli konventsiooni EKRE vastu. Naiste väärikuse pisendamine on ka nende sissetulekute kasvu pidurdamine, suure palgalõhe taastamine. Isamaa, Keskerakond ja EKRE tahavad ehitada mitte Auvere kahte, vaid kahte Auveret – kallist ja mittetöötavat, et me sõltuksime fossiilidest ja jätaksime lastele saastatuma ja vaesema Eesti. EKREIKE paneks taristu rajamise seisma, Rail Balticu ehitamise. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ja viimaseks ja mitte vähem tähtsamalt: kui seni leidsid iga päev võimaluse Euroopat mustata EKRE ja Keskerakond, siis on nüüd selle ree peal kahjuks ka Isamaa. Ei aita, et sõbralik meediakanal kustutab loo, millega võrdsustati Euroopa ja Nõukogude Liit. Internet nimelt mäletab kõike. Viimaseski ollakse nüüd ühele meelele jõudnud, ring on täis. EKREIKE tahab liitlasteta ja üksi jäänud Eestit. Sellises Eestis ei ole kasvu ega jõukust, on ebakindlus ja langus. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ainus, millega saab teie avalduses nõustuda, on tõdemus, et elame ebakindlas ja ebastabiilses maailmas, mille sarnast pole kogetud enam kui inimpõlve vältel. Mõtelgem siis sellele korra. Me elame maailmas, mille sarnast ebakindlust pole nähtud inimpõlve ajal. Nii te ütlete. Ja siis te tulete ütlema, et riik, mis on kaitstud, mille majandus kasvab kaks korda Euroopa Liidu keskmisest kiiremini ja mis on maailma vabamate hulgas, on halvasti juhitud. Kas te ise saate ka aru, kui äraspidiselt see kõlab? Või mis on selle liberaalse plaani alternatiiv? Vabastada ehk veidi majanduse loovenergiat, lõhkuda pensionisüsteeme, et saada taas kõrge inflatsioon, nagu Isamaa tegi? Meie heade naabrite juures Leedus, võite reaalajas vaadata, kuidas samamoodi tehes saab ka sama kehva tulemuse, toimiv majandus aetakse kuumaks ja hinnakasv suureks. Või veidi vähem vabadust ja rohkem sundi? ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Eesti on juhitud läbi selle ränga katsumuse kindlale kasvurajale, sest valitsuse plaan töötab. Liberaalne plaan ei pruugi konservatiividele, isegi headele sotsiaaldemokraatidele meeldida. See on aus tõdemus, sest sotsiaaldemokraadid ja konservatiivid pole kunagi liberaalid, nagu liberaalid pole sotsiaaldemokraadid ja konservatiivid. Nende maailmavaate hinnangul saab ja tuleb riigil rohkem inimeste ja ettevõtete eest ära otsustada, rohkem makse riigile, rohkem otsuseid riigile. Liberaalne maailmavaade lubab igaühel ise otsustada koos vastutusega oma elu ja otsuste eest. See pole kõigile, aga Eestile on see edu toonud. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Iga aus maailmavaade on omal kohal, kuid populism pole maailmavaade. Keerulistel aegadel on võimalik jääda kindlaks vabaduse majakale või usaldada teisi tulukesi. EKRE, Keskerakonna ja Isamaa rünnak minu ja valitsuse vastu annab jõudu, energiat ja otsusekindlust edasiminekuks. Töötav plaan tõestab end tulemustega. Me oleme kaitstud ja kasvame. Eesti ees on paremad ajad. Aitäh!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Peaminister Kristen Michal",
+            "emsId": "374bd0f6-7e0b-404d-a486-0f35787c862a",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 3080,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=3080",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605535,
+            "startTime": "2026-10-19T16:10:06.028",
+            "endTime": "2026-10-19T16:10:11.02",
+            "content": "Suur tänu, lugupeetud peaminister! Teile on ka küsimusi. Andre Hanimägi, palun!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Suur tänu, lugupeetud peaminister! Teile on ka küsimusi. Andre Hanimägi, palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 4198,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=4198",
+            "speechType": "SPEECH"
+          }
+        ],
+        "videoLinkVideoLink": "BUmekl1nLyA",
+        "videoLinkVideoStart": 1914,
+        "videoLinkVideoLinkPublished": true,
+        "index": 1,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=1914",
+        "emsId": "cd998635-ae0f-41d2-a10f-5c649551e9bc"
+      },
+      {
+        "id": 1340250,
+        "name": "<p>Arupärimine ekspordi vähenemise ja selle mõjude kohta majandusele (nr 994)</p>",
+        "nameParts": [
+          {
+            "text": "Arupärimine ekspordi vähenemise ja selle mõjude kohta majandusele (nr 994)",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2026-10-19T20:30:33.114",
+        "speeches": [
+          {
+            "id": 45605411,
+            "startTime": "2026-10-19T20:30:33.114",
+            "endTime": "2026-10-19T20:31:02.454",
+            "content": "<p>Läheme edasi tänase teise päevakorrapunkti juurde. Riigikogu liikmete Lauri Laatsi, Aleksandr Tšaplõgini, Peeter Ernitsa, Anastassia Kovalenko-Kõlvarti, Aleksei Jevgrafovi, Andrei Korobeiniku, Vladimir Arhipovi ja Vadim Belobrovtsevi poolt peaminister Kristen Michalile esitatud arupärimine ekspordi vähenemise ja selle mõjude kohta majandusele nr 994. Ettekandjaks palun Riigikogu liikme Lauri Laatsi.</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Läheme edasi tänase teise päevakorrapunkti juurde. Riigikogu liikmete Lauri Laatsi, Aleksandr Tšaplõgini, Peeter Ernitsa, Anastassia Kovalenko-Kõlvarti, Aleksei Jevgrafovi, Andrei Korobeiniku, Vladimir Arhipovi ja Vadim Belobrovtsevi poolt peaminister Kristen Michalile esitatud arupärimine ekspordi vähenemise ja selle mõjude kohta majandusele nr 994. Ettekandjaks palun Riigikogu liikme Lauri Laatsi.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Aseesimees Arvo Aller",
+            "emsId": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 19825,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/a39c4392-bbc8-4036-b923-0f5f2b3d9766/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=19825",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605397,
+            "startTime": "2026-10-19T20:31:08.945",
+            "endTime": "2026-10-19T20:32:57.994",
+            "content": "<p>Aitäh, lugupeetud istungi juhataja! Head kolleegid! Hea peaminister ja inimesed, kes jälgivad meid interneti vahendusel! Kahju, et see umbusaldusavaldus läbi ei läinud, aga nii nagu me kõik siin tunnistasime, üheks suureks põhjuseks on sotsiaaldemokraadid, kelle taha see asi jäi.</p><p>Aga alustame arupärimisega, mis puudutab ekspordi vähenemist ja selle mõju majandusele. Nii nagu me siin juba ennist rääkisime, see arupärimine oli edastatud 15. aprillil ehk tegelikult rohkem kui pool aastat tagasi. Nüüd, pool aastat hiljem me saame oma arupärimisele, mis aprillikuus oli hästi aktuaalne, alles loodetavasti mingisuguseid vastuseid. Teema puudutas 2026. aasta veebruari, kus me juhtisime tähelepanu, et kaupade eksport aastates võrdluses on 8% langenud, samas on import kasvanud 6% ja kaubavahetuse puudujääk ulatus 426 miljoni euroni. Noh, see tähendab teisisõnu, et meie tootjad vähem müüsid välja, rohkem ostsid sisse ja majandusele see just nii-öelda kõige parem ei ole. Sellest lähtuvalt me soovisimegi peaministrilt aru pärida ja kuulata ära tema nägemuse, kuidas siis saaks parandada seda olukorda. Aitäh!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, lugupeetud istungi juhataja! Head kolleegid! Hea peaminister ja inimesed, kes jälgivad meid interneti vahendusel! Kahju, et see umbusaldusavaldus läbi ei läinud, aga nii nagu me kõik siin tunnistasime, üheks suureks põhjuseks on sotsiaaldemokraadid, kelle taha see asi jäi.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Aga alustame arupärimisega, mis puudutab ekspordi vähenemist ja selle mõju majandusele. Nii nagu me siin juba ennist rääkisime, see arupärimine oli edastatud 15. aprillil ehk tegelikult rohkem kui pool aastat tagasi. Nüüd, pool aastat hiljem me saame oma arupärimisele, mis aprillikuus oli hästi aktuaalne, alles loodetavasti mingisuguseid vastuseid. Teema puudutas 2026. aasta veebruari, kus me juhtisime tähelepanu, et kaupade eksport aastates võrdluses on 8% langenud, samas on import kasvanud 6% ja kaubavahetuse puudujääk ulatus 426 miljoni euroni. Noh, see tähendab teisisõnu, et meie tootjad vähem müüsid välja, rohkem ostsid sisse ja majandusele see just nii-öelda kõige parem ei ole. Sellest lähtuvalt me soovisimegi peaministrilt aru pärida ja kuulata ära tema nägemuse, kuidas siis saaks parandada seda olukorda. Aitäh!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Lauri Laats",
+            "emsId": "1839253a-aec0-4019-995a-1c031db8fd10",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 19861,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/1839253a-aec0-4019-995a-1c031db8fd10/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=19861",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605410,
+            "startTime": "2026-10-19T20:32:58.614",
+            "endTime": null,
+            "content": "Aitäh! Ja nüüd palun arupärimisele vastama peaminister Kristen Michali.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh! Ja nüüd palun arupärimisele vastama peaminister Kristen Michali.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Aseesimees Arvo Aller",
+            "emsId": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 19971,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/a39c4392-bbc8-4036-b923-0f5f2b3d9766/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=19971",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605400,
+            "startTime": "2026-10-19T20:33:10.794",
+            "endTime": "2026-10-19T20:40:34",
+            "content": "<p>Aitäh, austatud juhataja! Austatud Riigikogu liikmed! Vastan arupärimisele pealkirjaga eksporditeema ja mõjud majandusele, nr 994. Loen küsimuse ette selguse jaoks ja siis vastan küsimusele ja siis saan kõigele muule ka vastata.&nbsp;</p><p>Esimene küsimus: \"Millised on valitsuse hinnangul peamised põhjused Eesti päritolu kaupade ekspordi kaheksa protsendilisele langusele?\" Vastus. Ühe kuu statistika põhjal ei saa teha järeldusi Eesti ekspordi üldise käekäigu kohta. Nagu arupärijad ka ütlesid, nad tegid selle küsimuse ühe kuu põhjal. 2026. aasta esimese kaheksa kuuga – see on nüüd pikem periood – kasvas Eesti eksport aastases võrdluses 7%. Eesti eksport sõltub välisturgude nõudlusest, sest ligi 80% ekspordist läheb Euroopa Liidu turgudele. Ettevõtete konkurentsivõimet toetavad Euroopa keskmisest madalam maksukoormus, tugev digitaliseeritus ja Eesti konkurentsivõimeline maksusüsteem. Täna avaldatud uudise kohaselt on Eesti maksusüsteem OECD riikide seas 13. aastat järjest konkurentsivõimelisim.&nbsp;</p><p>Kaks: \"Kas valitsusel on olemas terviklik analüüs, millised majandussektorid on suurimas ohus ning millised vajavad kiiret sekkumist?\" Vastus. Valitsus jälgib pidevalt majandussektorite olukorda. Eesti majanduse konkurentsivõimet ja kitsaskohti analüüsis ka 2024. aastal Riigikogule esitatud eksperdikogu raport, mis tõi esile eelkõige töötleva tööstuse probleemid. Ettevõtete konkurentsivõime tugevdamiseks on valitsus koostanud tööstuspoliitika 2035 ja eksporditegevuste kava 2025–2028. Keskendume ettevõtete ekspordivõimekuse suurendamisele, uute turgude leidmisele ning riigi ja ettevõtjate koostööle. Prioriteetsed valdkonnad on puidu-, toidu-, masina- ja metallitööstus, kaitsetööstus, merendus ning IT-, rohe- ja tervisetehnoloogiad. Nendes sektorites keskendume ekspordi kasvatamisele ja suurema lisandväärtuse loomisele.&nbsp;</p><p>Kolmas küsimus: \"Milliseid meetmeid kavandab valitsus Eesti tööstuse, eriti energiamahuka tootmise (nt põlevkivisektor) konkurentsivõime taastamiseks?\" Vastus. Eesti tööstuse konkurentsivõime tugevdamiseks keskendub valitsus maksukoormuse vähendamisele, taskukohasele energiale, investeeringute suurendamisele, bürokraatia vähendamisele ja ekspordi toetamisele. Kahe aastaga, 2027. aastaks langeb maksukoormus 36,2%-lt 35,2%-le. Energiakulude vähendamiseks kiirendame taastuvenergia arendamist ja elektrivõrgu tugevdamist. Majanduskasvu kava näeb ette suurinvesteeringute kiirmenetluse, ettevõtete halduskoormuse vähendamise ning teadus- ja arendustegevuse ja digitaliseerimise toetamise. Eesmärk on suurendada ettevõtete tootlikkust ja liikuda suurema lisandväärtusega tootmise poole. Eesti ettevõtete konkurentsivõimet toetab ka Euroopa keskmisest madalam maksukoormus. Eurostati andmetel on Eesti maksukoormus 35,5% SKP-st võrreldes Euroopa Liidu keskmisega, mis on 40,4%. Lisaks on Tax Foundation hinnanud Eesti maksusüsteemi 13. aastat järjest maailma konkurentsivõimelisemaks.&nbsp;</p><p>Neljas küsimus: \"Milline on valitsuse strateegia uute eksporditurgude leidmiseks olukorras, kus eksport traditsioonilistele sihtturgudele väheneb?\" Vastus. Valitsuse eesmärk on mitmekesistada Eesti eksporditurge ja vähendada sõltuvust traditsioonilistest sihtturgudest. Ettevõtted on juba leidnud uusi kasvuvõimalusi Kesk-Euroopas. Näiteks kasvas Eesti päritolu kaupade eksport Poolasse 2025. aastal 28% ehk 120 miljoni euro võrra. Eesti rahvusvahelist ettevõtluskeskkonda tugevdab e-residentsuse programm. See programm on 12 aastaga toonud Eesti riigile kokku 471 miljonit eurot tööjõu- ja dividendimaksudena ning riigilõivudena. Uute turgude leidmiseks eraldasime täiendavaid eelarvevahendeid äridiplomaatia arendamiseks. Sellega toetame ettevõtete välisturgudele sisenemist ja laiendame rahvusvahelisi koostöövõrgustikke. Avame viis ettevõtluskeskust – Riias, Londonis, Pariisis, Berliinis ja Kopenhaagenis – ning koostame kaheksa riigi- ja piirkonnastrateegiat.&nbsp;</p><p>Viies küsimus: \"Kas ja kuidas mõjutavad valitsuse maksupoliitika ning energiapoliitika Eestit eksportivate ettevõtete rahvusvahelist konkurentsivõimet?\" Vastus. Valitsuse maksu- ja energiapoliitika toetavad Eesti eksportivate ettevõtete rahvusvahelist konkurentsivõimet. 2027. aastaks langeb maksukoormus 35,2%-ni SKP-st ja Tax Foundationi hinnangul on Eesti maksusüsteem olnud 13 aastat järjest maailma konkurentsivõimelisim. Eesti 2027. aasta prognoositav maksukoormus on 35,2% SKP-st võrreldes Euroopa Liidu keskmisega, mis on 40,4%. Eesti ettevõtete elektri hind on Euroopa keskmisest madalam. 2025. aasta teisel poolel maksid Eesti ettevõtted elektri eest keskmiselt 14,1 senti kilovati kohta, mis on 23% vähem kui Euroopa Liidu keskmine. Samas on elektri hind Eestis kõrgem kui Soomes ja Rootsis. Konkurentsivõime tugevdamiseks suurendame kodumaist elektritootmist, arendame elektrivõrku ja soodustame energiasalvestust. Eesmärk on tagada ettevõtetele kindlam ja taskukohasem energiavarustus.&nbsp;</p><p>Kuus: \"Milliseid samme astub valitsus, et vähendada kaubavahetuse puudujääki ja parandada Eesti väliskaubanduse tasakaalu?\" Vastus. Väliskaubanduse tasakaalu parandamiseks keskendub valitsus ekspordi kasvatamisele ja ettevõtete konkurentsivõime tugevdamisele. Selleks toetame uutele eksporditurgudele sisenemist, eraldame täiendavaid eelarvevahendeid äridiplomaatiale, soodustame investeeringuid ning suurendame ettevõtete tootlikkust ja digitaliseeritust. Eesti väliskaubanduse hindamisel tuleb arvestada nii kaupade kui ka teenuste eksporti. Kaupade ja kaubavahetuse puudujääki tasakaalustab teenuste ekspordi ülejääk. Viimasel kolmel aastal on kaupade ja teenuste koondbilanss olnud positiivne, ulatudes 2025. aastal 1%-ni SKP-st. Aitäh!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, austatud juhataja! Austatud Riigikogu liikmed! Vastan arupärimisele pealkirjaga eksporditeema ja mõjud majandusele, nr 994. Loen küsimuse ette selguse jaoks ja siis vastan küsimusele ja siis saan kõigele muule ka vastata. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Esimene küsimus: \"Millised on valitsuse hinnangul peamised põhjused Eesti päritolu kaupade ekspordi kaheksa protsendilisele langusele?\" Vastus. Ühe kuu statistika põhjal ei saa teha järeldusi Eesti ekspordi üldise käekäigu kohta. Nagu arupärijad ka ütlesid, nad tegid selle küsimuse ühe kuu põhjal. 2026. aasta esimese kaheksa kuuga – see on nüüd pikem periood – kasvas Eesti eksport aastases võrdluses 7%. Eesti eksport sõltub välisturgude nõudlusest, sest ligi 80% ekspordist läheb Euroopa Liidu turgudele. Ettevõtete konkurentsivõimet toetavad Euroopa keskmisest madalam maksukoormus, tugev digitaliseeritus ja Eesti konkurentsivõimeline maksusüsteem. Täna avaldatud uudise kohaselt on Eesti maksusüsteem OECD riikide seas 13. aastat järjest konkurentsivõimelisim. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kaks: \"Kas valitsusel on olemas terviklik analüüs, millised majandussektorid on suurimas ohus ning millised vajavad kiiret sekkumist?\" Vastus. Valitsus jälgib pidevalt majandussektorite olukorda. Eesti majanduse konkurentsivõimet ja kitsaskohti analüüsis ka 2024. aastal Riigikogule esitatud eksperdikogu raport, mis tõi esile eelkõige töötleva tööstuse probleemid. Ettevõtete konkurentsivõime tugevdamiseks on valitsus koostanud tööstuspoliitika 2035 ja eksporditegevuste kava 2025–2028. Keskendume ettevõtete ekspordivõimekuse suurendamisele, uute turgude leidmisele ning riigi ja ettevõtjate koostööle. Prioriteetsed valdkonnad on puidu-, toidu-, masina- ja metallitööstus, kaitsetööstus, merendus ning IT-, rohe- ja tervisetehnoloogiad. Nendes sektorites keskendume ekspordi kasvatamisele ja suurema lisandväärtuse loomisele. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kolmas küsimus: \"Milliseid meetmeid kavandab valitsus Eesti tööstuse, eriti energiamahuka tootmise (nt põlevkivisektor) konkurentsivõime taastamiseks?\" Vastus. Eesti tööstuse konkurentsivõime tugevdamiseks keskendub valitsus maksukoormuse vähendamisele, taskukohasele energiale, investeeringute suurendamisele, bürokraatia vähendamisele ja ekspordi toetamisele. Kahe aastaga, 2027. aastaks langeb maksukoormus 36,2%-lt 35,2%-le. Energiakulude vähendamiseks kiirendame taastuvenergia arendamist ja elektrivõrgu tugevdamist. Majanduskasvu kava näeb ette suurinvesteeringute kiirmenetluse, ettevõtete halduskoormuse vähendamise ning teadus- ja arendustegevuse ja digitaliseerimise toetamise. Eesmärk on suurendada ettevõtete tootlikkust ja liikuda suurema lisandväärtusega tootmise poole. Eesti ettevõtete konkurentsivõimet toetab ka Euroopa keskmisest madalam maksukoormus. Eurostati andmetel on Eesti maksukoormus 35,5% SKP-st võrreldes Euroopa Liidu keskmisega, mis on 40,4%. Lisaks on Tax Foundation hinnanud Eesti maksusüsteemi 13. aastat järjest maailma konkurentsivõimelisemaks. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Neljas küsimus: \"Milline on valitsuse strateegia uute eksporditurgude leidmiseks olukorras, kus eksport traditsioonilistele sihtturgudele väheneb?\" Vastus. Valitsuse eesmärk on mitmekesistada Eesti eksporditurge ja vähendada sõltuvust traditsioonilistest sihtturgudest. Ettevõtted on juba leidnud uusi kasvuvõimalusi Kesk-Euroopas. Näiteks kasvas Eesti päritolu kaupade eksport Poolasse 2025. aastal 28% ehk 120 miljoni euro võrra. Eesti rahvusvahelist ettevõtluskeskkonda tugevdab e-residentsuse programm. See programm on 12 aastaga toonud Eesti riigile kokku 471 miljonit eurot tööjõu- ja dividendimaksudena ning riigilõivudena. Uute turgude leidmiseks eraldasime täiendavaid eelarvevahendeid äridiplomaatia arendamiseks. Sellega toetame ettevõtete välisturgudele sisenemist ja laiendame rahvusvahelisi koostöövõrgustikke. Avame viis ettevõtluskeskust – Riias, Londonis, Pariisis, Berliinis ja Kopenhaagenis – ning koostame kaheksa riigi- ja piirkonnastrateegiat. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Viies küsimus: \"Kas ja kuidas mõjutavad valitsuse maksupoliitika ning energiapoliitika Eestit eksportivate ettevõtete rahvusvahelist konkurentsivõimet?\" Vastus. Valitsuse maksu- ja energiapoliitika toetavad Eesti eksportivate ettevõtete rahvusvahelist konkurentsivõimet. 2027. aastaks langeb maksukoormus 35,2%-ni SKP-st ja Tax Foundationi hinnangul on Eesti maksusüsteem olnud 13 aastat järjest maailma konkurentsivõimelisim. Eesti 2027. aasta prognoositav maksukoormus on 35,2% SKP-st võrreldes Euroopa Liidu keskmisega, mis on 40,4%. Eesti ettevõtete elektri hind on Euroopa keskmisest madalam. 2025. aasta teisel poolel maksid Eesti ettevõtted elektri eest keskmiselt 14,1 senti kilovati kohta, mis on 23% vähem kui Euroopa Liidu keskmine. Samas on elektri hind Eestis kõrgem kui Soomes ja Rootsis. Konkurentsivõime tugevdamiseks suurendame kodumaist elektritootmist, arendame elektrivõrku ja soodustame energiasalvestust. Eesmärk on tagada ettevõtetele kindlam ja taskukohasem energiavarustus. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kuus: \"Milliseid samme astub valitsus, et vähendada kaubavahetuse puudujääki ja parandada Eesti väliskaubanduse tasakaalu?\" Vastus. Väliskaubanduse tasakaalu parandamiseks keskendub valitsus ekspordi kasvatamisele ja ettevõtete konkurentsivõime tugevdamisele. Selleks toetame uutele eksporditurgudele sisenemist, eraldame täiendavaid eelarvevahendeid äridiplomaatiale, soodustame investeeringuid ning suurendame ettevõtete tootlikkust ja digitaliseeritust. Eesti väliskaubanduse hindamisel tuleb arvestada nii kaupade kui ka teenuste eksporti. Kaupade ja kaubavahetuse puudujääki tasakaalustab teenuste ekspordi ülejääk. Viimasel kolmel aastal on kaupade ja teenuste koondbilanss olnud positiivne, ulatudes 2025. aastal 1%-ni SKP-st. Aitäh!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Peaminister Kristen Michal",
+            "emsId": "374bd0f6-7e0b-404d-a486-0f35787c862a",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 19983,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=19983",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605427,
+            "startTime": "2026-10-19T20:40:34",
+            "endTime": "2026-10-19T20:40:37.203",
+            "content": "<p>Aitäh! Teile on ka mõned küsimused. Anastassia Kovalenko-Kõlvart, palun!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh! Teile on ka mõned küsimused. Anastassia Kovalenko-Kõlvart, palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Aseesimees Arvo Aller",
+            "emsId": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 20426,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/a39c4392-bbc8-4036-b923-0f5f2b3d9766/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=20426",
+            "speechType": "SPEECH"
+          }
+        ],
+        "videoLinkVideoLink": "BUmekl1nLyA",
+        "videoLinkVideoStart": 19825,
+        "videoLinkVideoLinkPublished": true,
+        "index": 2,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=19825",
+        "emsId": "1ece48ab-2cbe-4d49-ae1e-70ce3afec6cd"
+      },
+      {
+        "id": 1340248,
+        "name": "<p>Arupärimine Eesti elanike turvatunde vähenemise ja riigi julgeolekupoliitika kohta (nr 995)</p>",
+        "nameParts": [
+          {
+            "text": "Arupärimine Eesti elanike turvatunde vähenemise ja riigi julgeolekupoliitika kohta (nr 995)",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2026-10-19T21:10:16",
+        "speeches": [
+          {
+            "id": 45605339,
+            "startTime": "2026-10-19T21:10:16",
+            "endTime": "2026-10-19T21:10:42.815",
+            "content": "Liigume edasi. Tänane kolmas päevakorrapunkt on Riigikogu liikmete Lauri Laatsi, Aleksandr Tšaplõgini, Peeter Ernitsa, Anastassia Kovalenko-Kõlvarti, Aleksei Jevgrafovi, Andrei Korobeiniku, Vladimir Arhipovi ja Vadim Belobrovtsevi poolt peaminister Kristen Michalile esitatud arupärimine Eesti elanike turvatunde vähenemise ja riigi julgeolekupoliitika kohta. Arupärimist tutvustama palun siia Riigikogu liikme Lauri Laatsi. Palun!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Liigume edasi. Tänane kolmas päevakorrapunkt on Riigikogu liikmete Lauri Laatsi, Aleksandr Tšaplõgini, Peeter Ernitsa, Anastassia Kovalenko-Kõlvarti, Aleksei Jevgrafovi, Andrei Korobeiniku, Vladimir Arhipovi ja Vadim Belobrovtsevi poolt peaminister Kristen Michalile esitatud arupärimine Eesti elanike turvatunde vähenemise ja riigi julgeolekupoliitika kohta. Arupärimist tutvustama palun siia Riigikogu liikme Lauri Laatsi. Palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 22208,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=22208",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605333,
+            "startTime": "2026-10-19T21:10:50.891",
+            "endTime": "2026-10-19T21:13:08.645",
+            "content": "<p>Aitäh, lugupeetud Riigikogu esimees! Head kolleegid ja inimesed, kes jälgivad meid interneti vahendusel! No jällegi, pool aastat tagasi esitasime arupärimise. Ei läinudki rohkem aega kui kuus kuud ja natuke peale ja peaminister tuli ja soostus meie arupärimisele vastama. Loodetavasti. Ei tea, kas need vastused meile ka sobivad, aga eks see näeb, aeg näitab.&nbsp;</p><p>Nii, aga arupärimise teema on Eesti elanike turvatunde vähenemine ja riigi julgeolekupoliitika. Nimelt, Riigikantselei tellis 2026. aasta märtsis läbiviidud uuringu kohaselt on Eesti elanike turvatunne märgatavalt vähenenud. Vaid 38% vastanutest leiab, et Eesti riigis võib end turvaliselt tunda, mis on viimase kolme aasta madalaim näitaja. Samal ajal on kasvanud inimeste ärevus 34%-lt 39%-le ning mure energiavarustuse kindluse pärast 58%-lt 71%-le.&nbsp;</p><p>Ja sellest lähtuvalt, kuigi usaldus mitmete institutsioonide, sealhulgas presidendi, Euroopa Liidu ja meedia vastu on kasvanud ning toetus NATO-le püsib kõrgel tasemel, viitab turvatunde langus sügavatele probleemidele ühiskonnas. Lisaks väärib märkimist, et uuring viidi läbi enne hiljutisi drooniintsidente, mis võivad elanike turvatunnet veelgi halvendada. Tekkinud olukord viitab vajadusele hinnata nii riigi julgeolekupoliitikat kui ka kriisikommunikatsiooni, energiajulgeolekut ning elanikkonna psühholoogilist vastupanuvõimet. Ja pool aastat tagasi, kui see uuring ilmus, me küsisime peaministrilt seitse küsimust, et kas valitsusel on mingi plaan ja kas ta näeb ja kuidas ta näeb kogu seda olukorda ja mis võiks nagu ette võtta. Aga eks me nüüd pool aastat hiljem saame teada, mis need meetmed on.</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, lugupeetud Riigikogu esimees! Head kolleegid ja inimesed, kes jälgivad meid interneti vahendusel! No jällegi, pool aastat tagasi esitasime arupärimise. Ei läinudki rohkem aega kui kuus kuud ja natuke peale ja peaminister tuli ja soostus meie arupärimisele vastama. Loodetavasti. Ei tea, kas need vastused meile ka sobivad, aga eks see näeb, aeg näitab. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Nii, aga arupärimise teema on Eesti elanike turvatunde vähenemine ja riigi julgeolekupoliitika. Nimelt, Riigikantselei tellis 2026. aasta märtsis läbiviidud uuringu kohaselt on Eesti elanike turvatunne märgatavalt vähenenud. Vaid 38% vastanutest leiab, et Eesti riigis võib end turvaliselt tunda, mis on viimase kolme aasta madalaim näitaja. Samal ajal on kasvanud inimeste ärevus 34%-lt 39%-le ning mure energiavarustuse kindluse pärast 58%-lt 71%-le. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ja sellest lähtuvalt, kuigi usaldus mitmete institutsioonide, sealhulgas presidendi, Euroopa Liidu ja meedia vastu on kasvanud ning toetus NATO-le püsib kõrgel tasemel, viitab turvatunde langus sügavatele probleemidele ühiskonnas. Lisaks väärib märkimist, et uuring viidi läbi enne hiljutisi drooniintsidente, mis võivad elanike turvatunnet veelgi halvendada. Tekkinud olukord viitab vajadusele hinnata nii riigi julgeolekupoliitikat kui ka kriisikommunikatsiooni, energiajulgeolekut ning elanikkonna psühholoogilist vastupanuvõimet. Ja pool aastat tagasi, kui see uuring ilmus, me küsisime peaministrilt seitse küsimust, et kas valitsusel on mingi plaan ja kas ta näeb ja kuidas ta näeb kogu seda olukorda ja mis võiks nagu ette võtta. Aga eks me nüüd pool aastat hiljem saame teada, mis need meetmed on.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Lauri Laats",
+            "emsId": "1839253a-aec0-4019-995a-1c031db8fd10",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 22243,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/1839253a-aec0-4019-995a-1c031db8fd10/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=22243",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605335,
+            "startTime": "2026-10-19T21:13:08.495",
+            "endTime": "2026-10-19T21:13:26.574",
+            "content": "<p>Aitäh! Arupärimisele vastamiseks palun Riigikogu kõnepulti tagasi peaminister Kristen Michali.</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh! Arupärimisele vastamiseks palun Riigikogu kõnepulti tagasi peaminister Kristen Michali.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 22380,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=22380",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605351,
+            "startTime": "2026-10-19T21:13:26.574",
+            "endTime": "2026-10-19T21:19:51.075",
+            "content": "<p>No nii, austatud juhataja, hea Riigikogu esimees! Head Riigikogu liikmed! Ma loodan, et te jaksate veel. Te veidi väsite nägudega, aga püüame ikka koos hakkama saada.&nbsp;</p><p>Nüüd arupärimine Eesti elanike turvatunde vähenemise ja riigi julgeolekupoliitika kohta, arupärimine nr 995. Ma loen küsimused ette ja vastused, siis on parem jälgida.&nbsp;</p><p>Kõigepealt, millised on valitsuse hinnangul peamised põhjused Eesti elanike turvatunde märkimisväärsele langusele? Vastus. Eesti elanike turvatunnet mõjutavad eelkõige Venemaa jätkuv sõda Ukraina vastu, hübriidohud ning majanduslik ebakindlus. Elanike turvatunne on viimastel kuudel paranenud. Septembris tundis end Eestis elades turvaliselt 61% elanikest. Elanike julgeolekualase turvatunde suurendamiseks hoiame kaitsekulud üle 5% SKP-st. Majandusliku kindlustunde suurendamiseks viisime ellu tulumaksureformi, mille tulemusena kasvasid netosissetulekud. Keskmise palga saajale ehk õpetajale, päästjale ja politseile laekub 13. palk lisaks. Talviseks väga suureks energiahinna kõikumiseks valmistame ette leevendusmeetmeid. Otsuste tegemisel arvestame mõju majanduskasvule, tarbijakindlusele ja piirikaubandusele.&nbsp;</p><p>Teine küsimus. Kas valitsusel on olemas ajakohane tervikanalüüs elanike turvatunnet mõjutavatest teguritest? Vastus. Valitsusel on olemas regulaarsed seireuuringud ja valdkondlikud analüüsid, mis annavad ülevaate elanike turvatunnet mõjutavatest teguritest. Turvatunnet mõjutavad eelkõige julgeolekuolukord, majanduslik toimetulek ja energiajulgeolek. Julgeoleku tugevdamiseks hoiame kaitsekulud vähemalt 5% SKP-st. Seda suunda toetab 69% elanikest. Majanduslikku kindlustunnet toetab majanduskasv ja tulumaksureform, mis suurendab töötavate inimeste netosissetulekuid. Lisaks annab Riigikantselei koostatud üleriigiline riskianalüüs ülevaate Eesti ees seisvatest riskidest ning aitab riigil ja inimestel kriisideks paremini valmistuda.&nbsp;</p><p>Kolmas küsimus. Milliseid konkreetseid samme plaanib valitsus elanike turvatunde suurendamiseks lähiajal? Vastus. Elanike turvatunde suurendamiseks keskendub valitsus julgeoleku tugevdamisele, majandusliku toimetuleku parandamisele ja energiahindade stabiilsusele. Julgeoleku tugevdamiseks hoiame kaitsekulud üle 5% SKP-st. Majandusliku kindlustunde suurendamiseks oleme ellu viinud tulumaksureformi, mis kasvatab töötavate inimeste netosissetulekuid. Eesti majandus on kasvamas. Talviste energiahindade võimalike kõikumiste leevendamiseks töötab valitsus välja meetmeid elektri- ja gaasivõrgutasude ning kaugküttes kasutatava kütteõli erandite kohta. Lisaks jälgime energiaturu arengut, tarbijakindlust ja piirikaubandust ning arvestame otsuste mõju majanduskasvule.&nbsp;</p><p>Neljandaks, kuidas hindab valitsus hiljutiste julgeolekuintsidentide, sealhulgas droonijuhtumite mõju Eesti siseturvalisusele ja avalikule tajule? Vastus. Droonijuhtumid on Venemaa Ukraina-vastase agressioonisõja tagajärg. Eesti julgeolekut tagame koostöös NATO-liitlastega ja piirkondlike koostööformaatidega JEF-NB8 ehk ühendekspeditsioonivägi ja Põhjala-Balti 8. Tugevdame Eesti kaitsevõimet ja toetame Ukrainat. Seda kinnitas ka 19. mai drooniintsident, mille lahendas NATO-Balti õhuturbemissioon. Venemaa levitab droonijuhtumitega seoses valeinfot ja ähvardusi. Me ei lase end provotseerida ning vastame valeväidetele selgelt.&nbsp;</p><p>Viiendaks, kas valitsus on analüüsinud viimase aja maksutõusude mõju Eesti elanike turvatundele ning kui jah, siis millised on peamised järeldused ja milliseid meetmeid kavandatakse võimaliku negatiivse mõju leevendamiseks? Vastus. Maksukoormus oli 2025. aastal 36,2%. 2026. aastal langes maksukoormus 35,3%-ni ja 2027. aastal jätkub langus 35,2%-ni. Kahe aastaga on maksukoormus langenud 1% võrra. Valitsus jälgib elanike majanduslikku kindlustunnet regulaarsete seireuuringute ja majandusanalüüside kaudu.&nbsp;</p><p>Kuuendaks, milliseid meetmeid kavandatakse energia varustuskindluse parandamiseks, arvestades elanike kasvavat muret selles valdkonnas? Vastus. Energia varustuskindluse parandamiseks suurendame kodumaist elektritootmist ja vähendame sõltuvust imporditud fossiilkütustest. Oleme heaks kiitnud taastuvenergia vähempakkumise, mis aitab lisada kuni 2 teravatt-tunni jagu elektritootmist aastas. Kiirendame planeeringuid ja loamenetlusi ning toetame energiasalvestuse rajamist. Valmistame ette tuumaenergia õigusraamistikku, et tulevikus saaks Eestisse rajada täiendavat juhitavat tootmisvõimsust. Talviste hinnakõikumiste leevendamiseks töötab energeetika- ja kliimaminister välja meetmeid elektri ja gaasi võrgutasude ning kaugküttes kasutatava kütteõli jaoks. Jälgime kütuseturgu, tarbijakindlust ja piirikaubandust.&nbsp;</p><p>Seitsmes: kuidas plaanib valitsus tugevdada kriisikommunikatsiooni, et vähendada ühiskonnas levivat ärevust ja ebakindlust? Vastus. Vähendame inimeste ärevust kiire ja selge ohuteavitusega ning parandame kriisivalmidust. 2027. aastal võtame kasutusele uue ohuteavitussüsteemi, mis saadab hoiatused nutitelefonidesse sekunditega ka ülekoormatud mobiilsidevõrgu korral. Päästeamet testib ohuteavituskanaleid kolm korda aastas ja korraldab teavituskampaaniad. Koolitame kohalikke omavalitsusi ja korraldame kriisiõppusi, et inimesed saaksid ohu korral kiiresti selget teavet. Aitäh!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "No nii, austatud juhataja, hea Riigikogu esimees! Head Riigikogu liikmed! Ma loodan, et te jaksate veel. Te veidi väsite nägudega, aga püüame ikka koos hakkama saada. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Nüüd arupärimine Eesti elanike turvatunde vähenemise ja riigi julgeolekupoliitika kohta, arupärimine nr 995. Ma loen küsimused ette ja vastused, siis on parem jälgida. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kõigepealt, millised on valitsuse hinnangul peamised põhjused Eesti elanike turvatunde märkimisväärsele langusele? Vastus. Eesti elanike turvatunnet mõjutavad eelkõige Venemaa jätkuv sõda Ukraina vastu, hübriidohud ning majanduslik ebakindlus. Elanike turvatunne on viimastel kuudel paranenud. Septembris tundis end Eestis elades turvaliselt 61% elanikest. Elanike julgeolekualase turvatunde suurendamiseks hoiame kaitsekulud üle 5% SKP-st. Majandusliku kindlustunde suurendamiseks viisime ellu tulumaksureformi, mille tulemusena kasvasid netosissetulekud. Keskmise palga saajale ehk õpetajale, päästjale ja politseile laekub 13. palk lisaks. Talviseks väga suureks energiahinna kõikumiseks valmistame ette leevendusmeetmeid. Otsuste tegemisel arvestame mõju majanduskasvule, tarbijakindlusele ja piirikaubandusele. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Teine küsimus. Kas valitsusel on olemas ajakohane tervikanalüüs elanike turvatunnet mõjutavatest teguritest? Vastus. Valitsusel on olemas regulaarsed seireuuringud ja valdkondlikud analüüsid, mis annavad ülevaate elanike turvatunnet mõjutavatest teguritest. Turvatunnet mõjutavad eelkõige julgeolekuolukord, majanduslik toimetulek ja energiajulgeolek. Julgeoleku tugevdamiseks hoiame kaitsekulud vähemalt 5% SKP-st. Seda suunda toetab 69% elanikest. Majanduslikku kindlustunnet toetab majanduskasv ja tulumaksureform, mis suurendab töötavate inimeste netosissetulekuid. Lisaks annab Riigikantselei koostatud üleriigiline riskianalüüs ülevaate Eesti ees seisvatest riskidest ning aitab riigil ja inimestel kriisideks paremini valmistuda. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kolmas küsimus. Milliseid konkreetseid samme plaanib valitsus elanike turvatunde suurendamiseks lähiajal? Vastus. Elanike turvatunde suurendamiseks keskendub valitsus julgeoleku tugevdamisele, majandusliku toimetuleku parandamisele ja energiahindade stabiilsusele. Julgeoleku tugevdamiseks hoiame kaitsekulud üle 5% SKP-st. Majandusliku kindlustunde suurendamiseks oleme ellu viinud tulumaksureformi, mis kasvatab töötavate inimeste netosissetulekuid. Eesti majandus on kasvamas. Talviste energiahindade võimalike kõikumiste leevendamiseks töötab valitsus välja meetmeid elektri- ja gaasivõrgutasude ning kaugküttes kasutatava kütteõli erandite kohta. Lisaks jälgime energiaturu arengut, tarbijakindlust ja piirikaubandust ning arvestame otsuste mõju majanduskasvule. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Neljandaks, kuidas hindab valitsus hiljutiste julgeolekuintsidentide, sealhulgas droonijuhtumite mõju Eesti siseturvalisusele ja avalikule tajule? Vastus. Droonijuhtumid on Venemaa Ukraina-vastase agressioonisõja tagajärg. Eesti julgeolekut tagame koostöös NATO-liitlastega ja piirkondlike koostööformaatidega JEF-NB8 ehk ühendekspeditsioonivägi ja Põhjala-Balti 8. Tugevdame Eesti kaitsevõimet ja toetame Ukrainat. Seda kinnitas ka 19. mai drooniintsident, mille lahendas NATO-Balti õhuturbemissioon. Venemaa levitab droonijuhtumitega seoses valeinfot ja ähvardusi. Me ei lase end provotseerida ning vastame valeväidetele selgelt. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Viiendaks, kas valitsus on analüüsinud viimase aja maksutõusude mõju Eesti elanike turvatundele ning kui jah, siis millised on peamised järeldused ja milliseid meetmeid kavandatakse võimaliku negatiivse mõju leevendamiseks? Vastus. Maksukoormus oli 2025. aastal 36,2%. 2026. aastal langes maksukoormus 35,3%-ni ja 2027. aastal jätkub langus 35,2%-ni. Kahe aastaga on maksukoormus langenud 1% võrra. Valitsus jälgib elanike majanduslikku kindlustunnet regulaarsete seireuuringute ja majandusanalüüside kaudu. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Kuuendaks, milliseid meetmeid kavandatakse energia varustuskindluse parandamiseks, arvestades elanike kasvavat muret selles valdkonnas? Vastus. Energia varustuskindluse parandamiseks suurendame kodumaist elektritootmist ja vähendame sõltuvust imporditud fossiilkütustest. Oleme heaks kiitnud taastuvenergia vähempakkumise, mis aitab lisada kuni 2 teravatt-tunni jagu elektritootmist aastas. Kiirendame planeeringuid ja loamenetlusi ning toetame energiasalvestuse rajamist. Valmistame ette tuumaenergia õigusraamistikku, et tulevikus saaks Eestisse rajada täiendavat juhitavat tootmisvõimsust. Talviste hinnakõikumiste leevendamiseks töötab energeetika- ja kliimaminister välja meetmeid elektri ja gaasi võrgutasude ning kaugküttes kasutatava kütteõli jaoks. Jälgime kütuseturgu, tarbijakindlust ja piirikaubandust. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Seitsmes: kuidas plaanib valitsus tugevdada kriisikommunikatsiooni, et vähendada ühiskonnas levivat ärevust ja ebakindlust? Vastus. Vähendame inimeste ärevust kiire ja selge ohuteavitusega ning parandame kriisivalmidust. 2027. aastal võtame kasutusele uue ohuteavitussüsteemi, mis saadab hoiatused nutitelefonidesse sekunditega ka ülekoormatud mobiilsidevõrgu korral. Päästeamet testib ohuteavituskanaleid kolm korda aastas ja korraldab teavituskampaaniad. Koolitame kohalikke omavalitsusi ja korraldame kriisiõppusi, et inimesed saaksid ohu korral kiiresti selget teavet. Aitäh!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Peaminister Kristen Michal",
+            "emsId": null,
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 22399,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=22399",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605338,
+            "startTime": "2026-10-19T21:19:51.395",
+            "endTime": "2026-10-19T21:19:54.846",
+            "content": "<p>Suur tänu! Teile on ka küsimusi. Anastassia Kovalenko-Kõlvart, palun!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Suur tänu! Teile on ka küsimusi. Anastassia Kovalenko-Kõlvart, palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 22783,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=22783",
+            "speechType": "SPEECH"
+          }
+        ],
+        "videoLinkVideoLink": "BUmekl1nLyA",
+        "videoLinkVideoStart": 22208,
+        "videoLinkVideoLinkPublished": true,
+        "index": 3,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=22208",
+        "emsId": "9a090a32-b9f0-4a3e-bb68-b542fcedf723"
+      },
+      {
+        "id": 1340253,
+        "name": "<p>Arupärimine \"Varitseva õhuründemoona raamlepingu\" kohta (nr 1046)</p>",
+        "nameParts": [
+          {
+            "text": "Arupärimine \"Varitseva õhuründemoona raamlepingu\" kohta (nr 1046)",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2026-10-19T21:33:23",
+        "speeches": [
+          {
+            "id": 45605770,
+            "startTime": "2026-10-19T21:33:23",
+            "endTime": "2026-10-19T21:33:58.505",
+            "content": "<p>Liigume edasi. Meil on neljas päevakorrapunkt ja selleks on Riigikogu liikmete Henn Põlluaasa, Ants Froschi, Jaanus Karilaiu, Tõnis Lukase, Helir-Valdor Seedri, Urmas Reinsalu, Priit Sibula, Peeter Tali, Tarmo Tamme, Meelis Kiili, Leo Kunnase, Juku-Kalle Raidi, Andres Metsoja, Mart Maastiku, Lea Danilson-Järgi, Jaak Valge, Vladimir Arhipovi, Peeter Ernitsa, Anastassia Kovalenko-Kõlvarti, Aleksei Jevgrafovi, Rene Koka ja Anti Poolametsa poolt kaitseminister Martin Heremile esitatud arupärimine varitseva õhuründemoona raamlepingu kohta. Palun arupärimist tutvustama siia Riigikogu liikme Henn Põlluaasa. Palun!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Liigume edasi. Meil on neljas päevakorrapunkt ja selleks on Riigikogu liikmete Henn Põlluaasa, Ants Froschi, Jaanus Karilaiu, Tõnis Lukase, Helir-Valdor Seedri, Urmas Reinsalu, Priit Sibula, Peeter Tali, Tarmo Tamme, Meelis Kiili, Leo Kunnase, Juku-Kalle Raidi, Andres Metsoja, Mart Maastiku, Lea Danilson-Järgi, Jaak Valge, Vladimir Arhipovi, Peeter Ernitsa, Anastassia Kovalenko-Kõlvarti, Aleksei Jevgrafovi, Rene Koka ja Anti Poolametsa poolt kaitseminister Martin Heremile esitatud arupärimine varitseva õhuründemoona raamlepingu kohta. Palun arupärimist tutvustama siia Riigikogu liikme Henn Põlluaasa. Palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 23595,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=23595",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605774,
+            "startTime": "2026-10-19T21:34:13.137",
+            "endTime": "2026-10-19T21:39:31",
+            "content": "<p>Austatud esimees! Head kolleegid! Mul on au esitada peaaegu veerandi Riigikogu liikmete nimel arupärimine varitseva õhuründemoona raamlepingu kohta. Me esitasime selle tegelikult juba kevadel eelmisel istungjärgul kaitseminister Hanno Pevkurile. See oli oluliselt mahukam ja pikem, aga Riigikogu juhatus leidis, et seda tuleb lüüa nagu kahte lehte, et üks osa oleks kirjalik küsimus ja teine arupärimine. Kirjalikule küsimusele me saime kirjaliku vastuse. Kahjuks sisulisi vastuseid me oma küsimustele ei saanud selle hanke kohta. Põhiliselt lihtsalt sellised kirjeldavad vastused oli. Aga kuna praegu on uus kaitseminister, siis küsimused on siin küll samad, aga kõiki ei saa loomulikult tänane kaitseminister vastata, kas või seda, kas ta selle raamlepingu eest ka poliitilist vastutust kannab. Sellele vaatamata siiski ma usun, et kaitseminister saab hakkama nendele küsimustele vastamisega, kuigi see ei toimunud tema ajal. Aga kindlasti on ta sellega kursis.&nbsp;</p><p>Ühesõnaga, Riigi Kaitseinvesteeringute Keskus korraldas hanke varitseva õhuründemoona raamlepingu, mille põhjal raamleping sõlmiti ettevõttega Meeruse Technologies OÜ ja mille maht on 400 miljonit eurot. See puudutab droonide müüki, nende varuosasid, remonti, nende juhtimisseadmeid ja süsteeme ning kogu vajalikku väljaõpet. Loomulikult, niivõrd suuremahuline hange peab olema ikkagi täiesti selgelt läbipaistev, aga ometigi seda see ei olnud. Kõige tõsisemaid küsimusi tekitas asjaolu, et raamlepingu osapooleks olev ettevõte Meeruse Technologies OÜ on avalike registriandmete põhjal, või oli, hiljuti asutatud ja majandustegevuseta ettevõte. Tema osakapital oli 1000 eurot. Põhitegevusalaks oli märgitud muude masinate ja seadmete hulgimüük. Ettevõttel puuduvad avalike registriandmete põhjal majandusaasta aruanded, käive ja töötajad. Nüüd on mõnetuhandeline käive siiski tekkinud vahepeal.&nbsp;</p><p>Aga 400-miljonilise hanke juures riiulifirma kvalifitseerimine ja heakskiitmine tekitab ikkagi väga suuri küsimusi, kui puuduvad töötajad ja nii edasi. Samuti ei nähtu avalikes registrites strateegilise kauba käitlemiseks või relvade või laskemoona vahendamiseks vajalikke tegevuslubasid ja litsentse. Mittetoimival ettevõttel ei saagi neid olla. Ometi deklareeris RKIK lepingus, et eeldab heas usus müüja professionaalsust ja võimekust lepingut nõuetekohaselt täita. Kusjuures üks nõue oli veel see, et peab olema terve rida eelnevaid lepinguid juba olemas. Ja nagu hiljem on selgunud, ei olnud Meeruse Technologies ainus raamlepingus kvalifitseeritud riiulifirma, sarnaseid oli nende hulgas veelgi, kes kiideti heaks ja kellelt RKIK võib tellida ükskõik millises summas selle 400 miljoni euro sees erinevaid droone ja nii edasi, kõike, mis sellega kaasas käib.&nbsp;</p><p>Lähtudes sellest kummalisest leppest, on meil terve rida küsimusi kaitseministrile. Ma ei hakka neid siin ette lugema, küllap minister ise siis vastates loeb selle küsimuse, millele ta just hetkel vastab.</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Austatud esimees! Head kolleegid! Mul on au esitada peaaegu veerandi Riigikogu liikmete nimel arupärimine varitseva õhuründemoona raamlepingu kohta. Me esitasime selle tegelikult juba kevadel eelmisel istungjärgul kaitseminister Hanno Pevkurile. See oli oluliselt mahukam ja pikem, aga Riigikogu juhatus leidis, et seda tuleb lüüa nagu kahte lehte, et üks osa oleks kirjalik küsimus ja teine arupärimine. Kirjalikule küsimusele me saime kirjaliku vastuse. Kahjuks sisulisi vastuseid me oma küsimustele ei saanud selle hanke kohta. Põhiliselt lihtsalt sellised kirjeldavad vastused oli. Aga kuna praegu on uus kaitseminister, siis küsimused on siin küll samad, aga kõiki ei saa loomulikult tänane kaitseminister vastata, kas või seda, kas ta selle raamlepingu eest ka poliitilist vastutust kannab. Sellele vaatamata siiski ma usun, et kaitseminister saab hakkama nendele küsimustele vastamisega, kuigi see ei toimunud tema ajal. Aga kindlasti on ta sellega kursis. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Ühesõnaga, Riigi Kaitseinvesteeringute Keskus korraldas hanke varitseva õhuründemoona raamlepingu, mille põhjal raamleping sõlmiti ettevõttega Meeruse Technologies OÜ ja mille maht on 400 miljonit eurot. See puudutab droonide müüki, nende varuosasid, remonti, nende juhtimisseadmeid ja süsteeme ning kogu vajalikku väljaõpet. Loomulikult, niivõrd suuremahuline hange peab olema ikkagi täiesti selgelt läbipaistev, aga ometigi seda see ei olnud. Kõige tõsisemaid küsimusi tekitas asjaolu, et raamlepingu osapooleks olev ettevõte Meeruse Technologies OÜ on avalike registriandmete põhjal, või oli, hiljuti asutatud ja majandustegevuseta ettevõte. Tema osakapital oli 1000 eurot. Põhitegevusalaks oli märgitud muude masinate ja seadmete hulgimüük. Ettevõttel puuduvad avalike registriandmete põhjal majandusaasta aruanded, käive ja töötajad. Nüüd on mõnetuhandeline käive siiski tekkinud vahepeal. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Aga 400-miljonilise hanke juures riiulifirma kvalifitseerimine ja heakskiitmine tekitab ikkagi väga suuri küsimusi, kui puuduvad töötajad ja nii edasi. Samuti ei nähtu avalikes registrites strateegilise kauba käitlemiseks või relvade või laskemoona vahendamiseks vajalikke tegevuslubasid ja litsentse. Mittetoimival ettevõttel ei saagi neid olla. Ometi deklareeris RKIK lepingus, et eeldab heas usus müüja professionaalsust ja võimekust lepingut nõuetekohaselt täita. Kusjuures üks nõue oli veel see, et peab olema terve rida eelnevaid lepinguid juba olemas. Ja nagu hiljem on selgunud, ei olnud Meeruse Technologies ainus raamlepingus kvalifitseeritud riiulifirma, sarnaseid oli nende hulgas veelgi, kes kiideti heaks ja kellelt RKIK võib tellida ükskõik millises summas selle 400 miljoni euro sees erinevaid droone ja nii edasi, kõike, mis sellega kaasas käib. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              },
+              {
+                "parts": [
+                  {
+                    "text": "Lähtudes sellest kummalisest leppest, on meil terve rida küsimusi kaitseministrile. Ma ei hakka neid siin ette lugema, küllap minister ise siis vastates loeb selle küsimuse, millele ta just hetkel vastab.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Henn Põlluaas",
+            "emsId": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 23645,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/65b1d8bb-7f45-48f5-b4aa-7ba4ca459824/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=23645",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605772,
+            "startTime": "2026-10-19T21:39:31",
+            "endTime": "2026-10-19T21:39:33",
+            "content": " Ma usun ka, et minister loeb ette. Aitäh!  ",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": " Ma usun ka, et minister loeb ette. Aitäh!  ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 23963,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=23963",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605762,
+            "startTime": "2026-10-19T21:39:33",
+            "endTime": "2026-10-19T21:39:34.196",
+            "content": "Just, aitäh!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Just, aitäh!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Henn Põlluaas",
+            "emsId": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 23965,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/65b1d8bb-7f45-48f5-b4aa-7ba4ca459824/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=23965",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 45605771,
+            "startTime": "2026-10-19T21:39:34.196",
+            "endTime": null,
+            "content": "<p>Ja nüüd palun arupärimisele vastama Riigikogu kõnetooli, kaitseminister Martin Herem. Esimene arupärimine, ma saan aru. Meedias tehakse juba reklaami ka, tähelepanu on suur. Aga palun, härra minister!</p>",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Ja nüüd palun arupärimisele vastama Riigikogu kõnetooli, kaitseminister Martin Herem. Esimene arupärimine, ma saan aru. Meedias tehakse juba reklaami ka, tähelepanu on suur. Aga palun, härra minister!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Lauri Hussar",
+            "emsId": "64c0141f-371b-4520-8a50-09e65231f775",
+            "videoLinkVideoLink": "BUmekl1nLyA",
+            "videoLinkVideoStart": 23966,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": "https://www.riigikogu.ee/riigikogu/koosseis/riigikogu-liikmed/saadik/64c0141f-371b-4520-8a50-09e65231f775/",
+            "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=23966",
+            "speechType": "SPEECH"
+          }
+        ],
+        "videoLinkVideoLink": "BUmekl1nLyA",
+        "videoLinkVideoStart": 23595,
+        "videoLinkVideoLinkPublished": true,
+        "index": 4,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=23595",
+        "emsId": "260f85a4-6950-4a86-bee7-b773f89b5f9f"
+      }
+    ],
+    "type": "LANGUAGE_EDITOR_COPY"
+  },
+  "titleEst": "XV Riigikogu, VIII istungjärk, täiskogu istung",
+  "titleEng": "XV Riigikogu, VIII session, sitting of the plenary assembly",
+  "titleRus": "XV Рийгикогу, VIII cессия, пленарное заседание",
+  "parsedVideoLink": "https://www.youtube.com/watch?v=BUmekl1nLyA&t=0",
+  "parliamentMembershipNumber": 15,
+  "plenarySessionNumber": 8,
+  "sessionEventType": "KORRALINE",
+  "plannedStartTime": "2026-10-19T15:00:00",
+  "videoLinkPublished": true,
+  "meetingStatus": "UNEDITED",
+  "correspondingHansId": 5834,
+  "commission": null,
+  "meetingType": "PARLIAMENT_MEETING"
+}

@@ -1,0 +1,118 @@
+{
+  "uuid": "6e0f93c6-1cfc-4fcd-b825-a27b542c0e4f",
+  "votingNumber": 8415,
+  "type": {
+    "code": "KOHALOLEKU_KONTROLL",
+    "value": "Kohaloleku kontroll"
+  },
+  "description": "Kohaloleku kontroll",
+  "startDateTime": "2019-04-04T11:25:15",
+  "endDateTime": "2019-04-04T11:25:44.997",
+  "present": 100,
+  "absent": 1,
+  "sitting": {
+    "uuid": "f1b7a276-c78e-4689-909d-a3c7863b4d73",
+    "title": "Täiskogu korraline istung neljapäev, 4.04.2019 11:00",
+    "volumeType": "plenarySittingVolume",
+    "created": "2019-04-03T11:20:31.58",
+    "copyOrOriginal": "ORIGINAL",
+    "draft": false,
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/volumes/f1b7a276-c78e-4689-909d-a3c7863b4d73"
+      }
+    }
+  },
+  "voters": [
+    {
+      "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+      "fullName": "Jaak Aab",
+      "lastName": "Aab",
+      "firstName": "Jaak",
+      "active": true,
+      "faction": null,
+      "decision": {
+        "code": "KOHAL",
+        "value": "kohal"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d"
+        }
+      }
+    },
+    {
+      "uuid": "d8909ed8-ac93-4223-a3ec-55e1bb4ec8a9",
+      "fullName": "Merry Aart",
+      "lastName": "Aart",
+      "firstName": "Merry",
+      "active": false,
+      "faction": null,
+      "decision": {
+        "code": "KOHAL",
+        "value": "kohal"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/d8909ed8-ac93-4223-a3ec-55e1bb4ec8a9"
+        }
+      }
+    },
+    {
+      "uuid": "9f3d840c-3a49-43de-8c5d-d1990933b692",
+      "fullName": "Taavi Aas",
+      "lastName": "Aas",
+      "firstName": "Taavi",
+      "active": false,
+      "faction": null,
+      "decision": {
+        "code": "KOHAL",
+        "value": "kohal"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/9f3d840c-3a49-43de-8c5d-d1990933b692"
+        }
+      }
+    },
+    {
+      "uuid": "fe748f4d-3f50-4af8-8069-92a460978d2b",
+      "fullName": "Arto Aas",
+      "lastName": "Aas",
+      "firstName": "Arto",
+      "active": false,
+      "faction": null,
+      "decision": {
+        "code": "KOHAL",
+        "value": "kohal"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/fe748f4d-3f50-4af8-8069-92a460978d2b"
+        }
+      }
+    },
+    {
+      "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+      "fullName": "Annely Akkermann",
+      "lastName": "Akkermann",
+      "firstName": "Annely",
+      "active": true,
+      "faction": null,
+      "decision": {
+        "code": "KOHAL",
+        "value": "kohal"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/7655e8d3-b658-49f0-8e09-f6cbc4a2c714"
+        }
+      }
+    }
+  ]
+}

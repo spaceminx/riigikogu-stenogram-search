@@ -1,0 +1,1339 @@
+{
+  "id": 3500,
+  "startTime": "2019-04-04T11:00:00",
+  "endTime": "2019-04-04T14:32:08",
+  "stenograph": {
+    "id": 3500,
+    "agendaItems": [
+      {
+        "id": 24494,
+        "name": " Avaistung",
+        "nameParts": [
+          {
+            "text": " Avaistung",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2019-04-04T11:00:11.741",
+        "speeches": [
+          {
+            "id": 550404,
+            "startTime": null,
+            "endTime": "2019-04-04T11:04:02",
+            "content": "Lauldakse Eesti Vabariigi hümni.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Lauldakse Eesti Vabariigi hümni.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 0,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=0",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550405,
+            "startTime": null,
+            "endTime": null,
+            "content": "Austatud Eesti Vabariigi president Kersti Kaljulaid! Lugupeetud president Rüütel! Lugupeetud Riigikogu liikmed! Vabariigi Valitsuse liikmed! Põhiseaduslikud ametikandjad! Teie ekstsellentsid! Daamid ja härrad! Alustame Riigikogu XIV koosseisu I istungjärgu esimest istungit. Mina olen Vabariigi Valimiskomisjoni esimees Meelis Eerik ning tulenevalt Riigikogu kodu- ja töökorra seaduse § 2 lõikest 2 juhatan tänast istungit kuni Riigikogu esimehe valimiseni.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Austatud Eesti Vabariigi president Kersti Kaljulaid! Lugupeetud president Rüütel! Lugupeetud Riigikogu liikmed! Vabariigi Valitsuse liikmed! Põhiseaduslikud ametikandjad! Teie ekstsellentsid! Daamid ja härrad! Alustame Riigikogu XIV koosseisu I istungjärgu esimest istungit. Mina olen Vabariigi Valimiskomisjoni esimees Meelis Eerik ning tulenevalt Riigikogu kodu- ja töökorra seaduse § 2 lõikest 2 juhatan tänast istungit kuni Riigikogu esimehe valimiseni.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 133,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=133",
+            "speechType": "DIRECTOR"
+          }
+        ],
+        "videoLinkVideoLink": null,
+        "videoLinkVideoStart": 0,
+        "videoLinkVideoLinkPublished": false,
+        "index": null,
+        "parsedVideoLink": null,
+        "emsId": "0"
+      },
+      {
+        "id": 24496,
+        "name": " Vabariigi Presidendi avakõne",
+        "nameParts": [
+          {
+            "text": " Vabariigi Presidendi avakõne",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2019-04-04T11:04:16.494",
+        "speeches": [
+          {
+            "id": 550411,
+            "startTime": null,
+            "endTime": "2019-04-04T11:04:32",
+            "content": "Istungi avamiseks on sõna Eesti Vabariigi presidendil Kersti Kaljulaidil. Palun!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Istungi avamiseks on sõna Eesti Vabariigi presidendil Kersti Kaljulaidil. Palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 158,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=158",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550412,
+            "startTime": null,
+            "endTime": "2019-04-04T11:20:49",
+            "content": "Austatud president Rüütel! Kallid Riigikogu XIV koosseisu liikmed! Hea Eesti rahvas! Ekstsellentsid! Kohalviibijad! Ei ole mõtet keerutada, me seisame keeruliste aegade lävel. Nagu muide enamasti meie riigi ajaloo vältel. Meie asukoht maakaardil ja meie rahvaarv on paratamatult need tegurid, mis meie asjad enamasti igal ajal ikka keerulisena hoiavad. Eksida on kerge ja ühe Euroopa väikseima riigina ei ole meil lihtsalt mitte kunagi nii palju strateegilist sügavust, et olla kindel: eksimused ei too kaasa ohtu meie kestmajäämisele. Sellepärast peame olema siirad oma olukorrahinnangutes ja kõik koos ausalt otsima Eestile parimat tulevikku. Kõik koos, kõikide Eesti inimeste jaoks, kõikide eestlaste jaoks, kõikide teiste jaoks, kes ka Eestit kalliks peavad.<br/> Ma olen väga nõus nendega, kes ütlevad, et see maja, mille me 30 aastaga oleme kiiresti-kiiresti suutnud valmis ehitada, on oma katusekorruselt ilusa vaatega ja võrdlemisi kenasti sisustatud. Aga igasse tuppa päike ei paista. Ma mõistan neid, kes tahaksid selle ehitise maani maha lõhkuda ja otsast alata, lootes, et uues ehitises leidub neile mõni päikselisem nurk.<br/> Meie ühiskonna areng viimase 30 aasta jooksul, mil oleme suutnud oma okupatsioonist tingitud 50-aastasest majanduslikust mahajäämusest tagasi võtta umbes poole, on olnud kahtlemata edulugu. Kuid tootlikkuse ja sissetulekute kiire kasvu kõrval on sel edul ka teine külg – kaasnevad ühiskondlikud muutused on olnud valusad kanda. Nagu ma olen korduvalt ja korduvalt öelnud, oleme ühiskonna tasakaalustamisel – eriti sotsiaalpoliitika meetmete abil – olnud üsna saamatud.<br/> Eesti muutumine on ühelt poolt paratamatu: linnastumine, töökohtade kadu maamajanduses, sissetulekute ebavõrdsuse suurenemine. Nii on see olnud kõikides arenenud riikides. Ainult et meil on need protsessid olnud eriti kiired. Järelevõtukiirus on olnud ju suur, aga eks selle võrra keerulisemad ole olnud ka negatiivsed kõrvalmõjud.<br/> Juba tehtut maha lammutada ja täiesti otsast peale hakata ei ole ju ilmselgelt praktiline, kuigi see võiks kaasa tuua ressursside olulise ümberjaotumise ühiskonnas, nagu äkiliste muudatuste puhul ikka ju juhtub. Aga me teame – ja mis seal salata, me ka näeme seda praegugi vähemalt ühes suures Euroopa Liidu riigis –, et see toob kaasa segaduse ja ka majandusliku kaose.<br/> Nagu juba mainisin, meil tõenäoliselt ei ole oma asukoha ega rahvaarvu tõttu piisavat strateegilist sügavust, et lammutustöö meie riigi jaoks ohtlikuks ei saaks. Me oleme ka majanduslikus mõttes alles Euroopa keskmike hulgas, niisiis oleks lammutustööga kaasnev tagasilangus meile oluliselt suurem probleem kui mõnele päris rikkale riigile.<br/> Niisiis – ei revolutsioonidele! Jah, olgem konservatiivsed! Tõeline konservatiiv on see, kes oskab piisavalt hästi hinnata ühiskonnas toimuvaid ja ühiskonda ees ootavaid muutusi ning tasakaalustada neid nii, et meil ei oleks kunagi revolutsiooni tarvis. Selline konservatiivsus on tarviline. Hoidkem tehtut ja rääkigem ausalt, mida edaspidi paremini teha – ehitades, mitte lammutades. Tunnustagem oma edu kas või e-riigina. Olgem uhked oma rolli üle Euroopa Liidus ja NATO-s, seejuures mitte lihtsalt liikmena, vaid asjaliku ja kohusetundliku kaasarääkijana. Ma tahan tunnustada ja tänada kõiki neid Eesti poliitikuid, tänu kellele oleme nii kaugele jõudnud. Aga räägime ausalt ka sellest, kuidas ühiskonna toimimist parandada.<br/> Õnn ei jõua igale Eestimaa õuele niisama ja iseenesest. Elu maal ei paku tänase tootlikkuse tõttu enam nii palju töökohti kui 30 aastat tagasi. Ja ausalt öeldes, ega meist keegi ei tahakski neid kolhoosiaja töökohti, sest madala tootlikkusega töö eest ei saaks ju kuidagi mõistlikku palka. Samas on ideid, millega regionaalse arengu erinevusi tasandada. Näiteks on lihtne mõista, et ükski sent vähenevatest eurotoetustest ei tohi kuluda pealinnas, vaid see raha peaks korda tegema kaugeid külateid. Kindlasti aitaks see, kui ettevõtete tulumaksu jagada nii, et ka omavalitsusel oleks piirkonna ettevõtlusest rohkem tulu. Me peame jõuliselt seisma selle eest, et meie maakonnakeskused püsiks tugevate keskustena (ja mõnes kohas ka uuesti nendeks muutuks), kus on olemas kõik igapäevane, mida inimene üle oma elukaare vajab.<br/> Olen endiselt väga veendunud, et kohalikel omavalitsustel on ikka veel liiga pikk tee minna, selleks et pakkuda oma inimestele sotsiaalseid tagatisi määral, mida meie riigi elujärg juba tegelikult võimaldaks. Jah, oma kohustuste mõistmine on omavalitsustel võtnud kauem aega, kui ma tahaksin, aga suutmatus ei ole ka ainult nende süü – ahistav ja valdkondade vahel koordineerimata ministeeriumibürokraatia mängib siin ka tihti oma rolli.<br/> Sotsiaalset tõrjutust esineb muidugi ka pealinnas ja mujal suuremates keskustes. Kesine keeleoskus – meil ei ole ikka veel ainult eesti keeles toimivate lasteaedade ja koolide võrku – on siin üks põhitegureid. Pole mingi privileeg jääda keeletuks maal, kus töötatakse, olgu ajutiselt või alaliselt. Ei ole privileeg kasvada siin keeletuna. Kakskeelse koolisüsteemi tähtajatu jätkumine on oht eesti keele ja kultuuri kestmisele ning see ei suurenda kuidagi Eesti riigi sidusust. Meil on üks riigikeel. Meie vastutame selle eest, et seda oskaks kõik lasteaiast kooli minejad, saati siis koolilõpetajad.<br/> Näete, teha on teil palju. Aga õnneks lasevad need majanduslikud võimalused, mis 30 aastaga on loodud, meil tegelikult teenida kogu Eesti rahvast. Teenida ka neid, keda mure on viinud sinnani, et nad tahaksid pigem lammutada ja otsast alata. Kui me koos ja ausalt tegutseme, siis me võime oma ühiskonna uuesti kokku liita. Aga see eeldab tõepoolest ausust ja siirast tahet igaüht mõista ning omaenda poliitiliste otsuste heade külgede nägemise kõrval alati ka negatiivse kõrvalmõju tunnistamist ja sellele leevenduse otsimist.<br/> Meile ei ole praegu soodne ka suur geopoliitika. Nimelt on tänase maailma suurimad riskid meie suurima, globaalse jõuga liitlase Ameerika Ühendriikide jaoks hoopis mujal – need on seotud Hiinaga ja Kagu-Aasiaga laiemalt. Ainus põhjus, miks Ühendriigid võiksid tahta oma ressurssi kulutada just meie piirkonnas meie julgeoleku tagamiseks, on ühised väärtused. Meie ühised väärtused. Needsamad väärtused, mis on Washingtonis Jeffersoni monumendil ja Ühendriikide iseseisvusdeklaratsioonis. Väärtused, mis on meie iseseisvusdeklaratsioonis ja meie põhiseaduses. Eesti põhiseaduse 12. paragrahv ütleb: \"Kõik on seaduse ees võrdsed. Kedagi ei tohi diskrimineerida rahvuse, rassi, nahavärvuse, soo, keele, päritolu, usutunnistuse, poliitiliste või muude veendumuste, samuti varalise ja sotsiaalse seisundi või muude asjaolude tõttu. Rahvusliku, rassilise, usulise või poliitilise vihkamise, vägivalla ja diskrimineerimise õhutamine on seadusega keelatud ja karistatav. Samuti on seadusega keelatud ja karistatav õhutada vihkamist, vägivalda ja diskrimineerimist ühiskonnakihtide vahel.\"<br/> Ja edasi. Kogu põhiseaduse II. peatükk kirjeldab meie inimestele põhiseadusega tagatud vabadusi kogu nende mitmekülgsuses, sõnastades muu hulgas, et tsensuuri ei ole, et teadus ja kunst ning nende õpetused on vabad, et igaühel on õigus jääda truuks oma arvamustele ja veendumustele.<br/> Loomulikult, iga sõnastatud vabaduse teine külg on alati vastutus – vastutus selle eest, kuidas me oma vabadust kasutame. Sõnavabadus ei õigusta ju valetamist. Riskidele põhjendatud tähelepanu juhtimine ei ole hirmutamine. Mittenõustumine ei ole reetmine. Teise seisukohtadega mittenõustumine ei anna kuidagi õigust teda rumalaks ja maailmast mitte aru saavaks tembeldada. Ajakirjaniku ebamugavale küsimusele ei pea vastama, kui ei oska või ei taha, aga ei saa keelata küsimast. Teisiti ei oleks Eesti enam vaba meedia tšempionide hulgas. Uudisnupus muidugi ei peaks kajastuma arvamus, fakt ja kommentaar olgu selgelt lahus. See on ka ajakirjanike vastutustunne, mis hoiab meid vaba ajakirjanduse tšempionide hulgas.<br/> Eesti põhiseaduse II. peatükk on eriti selgelt pühendatud demokraatlikele väärtustele. See on side, mis hoiab meid kõigi meie liitlastega ühises väärtusruumis. See on Eesti riigi tüvitekst, mis tõestab kogu maailmale meie kuulumist vabasse Euroopasse. See on tekst, mis on püha kõigile, kes teenivad Eesti riiki ametnikuna, poliitikuna, kaitseväelasena, politseinikuna, õpetajana, arstina, ajakirjanikuna, kunstnikuna. See on tekst, milleta meie riik ei oleks vaba. See on tekst, milleta meie inimesed meie riigis ei oleks vabad. Ja see tekst on üksiti ka meie julgeolekugarantii.<br/> Meie põhiseaduse mõte elab, kui me Eesti kodanike ja patriootidena demokraatlikke väärtusi kasutame ja laseme neid ka teistel kasutada. Põhiseaduse ees on kõik maailmavaated võrdsed, seni kuni nad ei lähe vastuollu põhiseaduses toodud üldiste õiguste ja vabadustega. Iga maailmavaate kandjad on teretulnud osalema poliitilises protsessis ja võistlema kohtade eest Riigikogus. Siia jõudnuna on iga Riigikogu liige oma mandaadis vaba ning saab lähtuda põhiseadusest ja omaenda väärtuskompassist. Muide, vastuolu korral kahe viimase vahel kehtib põhiseadus.<br/> See, mis meie Eesti riigis täna toimub, on toimiv demokraatlik protsess. Demokraatiaga ei ole Eestis midagi valesti. Oli valija vastutus panna kokku uus Riigikogu ja valija on seda teinud. Valimised toimusid, võitja on selgunud, erakonnad on vabad arutlema võimaliku valitsuskoostöö üle ja Riigikogu iga liige on vaba hindama peaministrikandidaate. Presidendina ei ole minul õigust hinnata, milline võiks olla Riigikogu liikmete toetus ühele või teisele peaministrikandidaadile. Ainuke tee välja selgitada, kellel on Riigikogus toetus, viib läbi selle saali. On loomulik, et toetuse otsimisega siin saalis saab alustada valimised võitnud erakond.<br/> Täna alustab tööd Riigikogu XIV koosseis. Kõik siia jõudnud, nagu ütlesin, on siin demokraatlike protsesside tulemusena. Eesti demokraatia toimib. Aga võib-olla peaksime siiski mõtlema, miks on nii, et kuu pärast valimisi tunneb suur osa inimesi, nagu oleks midagi meie ühiskonnas katki tehtud. Mingid justkui kokku lepitud piirid ei kehtiks enam. Ja küsimus ei ole maailmavaatelistes seisukohtades, vaid tihtipeale viisakuses ja lugupidamises. Lugupidamises üksteise vastu ja kogu meie rahva vastu.<br/> Jah, ma arvan, et meil ei ole demokraatia kriisi – valimised ja neile järgnev on protseduurilises vastavuses põhiseaduse ja demokraatlike väärtustega –, aga meil on siiski väärtuste kriis. Põhiseaduses kirjeldatud vabadusi ja väärtusi, aga ka nende vabaduste ja väärtuste kaitsjaid rünnatakse erinevatel ettekäänetel. Rünnatakse neid, kes töö tõttu seisavad väärtuste ja vabaduste kaitsel, aga naeruvääristatakse neidki, kes kodanikuna sõna võtavad, et hoida meie vabadusi ja väärtusi. Sekka muidugi narritakse ja naeruvääristatakse neidki, kes tunnevad, et senised suundumused nende vajadustele ei vasta, ja kes on seepärast skeptilised ka vabaduste ja väärtuste endi suhtes. Kui me sellel laseme süveneda, siis on peagi kriisis ka meie demokraatia. Aga siis on juba hilja.<br/> Mida teha? See on alati kõige tähtsam: mida teha? Tuleb olla eeskujuks. Ja et oleks kergem eeskujuks olla, lubage mulle lõpetuseks üks väike isiklik mälupilt. See mälupilt on mind ennast alati toetanud, kui ma olen kõnelenud siit puldist, mõne Riigikogu komisjoni või ka fraktsiooni ees Vabariigi Presidendina või mõnes muus rollis. See oli aastal 1999. Üks minister tuli Riigikogu ette plaaniga, millesse ta ise siiralt uskus ja mis oli tema arvates vajalik, et Eestis asjad paremini läheksid. Arutelu siin saalis ei kujunenud, võiks öelda, ülearu konstruktiivseks. Võib-olla oli plaan ka halb – kes seda enam mäletab –, aga minister ei olnud kurb üldse selle pärast, et see plaan ei lennanud. Tema tundis, et see saal oli rünnanud teda, inimest, mitte tema plaani, ning seadnud küsimuse alla tema mõistuse, ja kui ma õigesti mäletan, siis isegi välimuse. Asja arutades ütles toonane sotsiaalminister Eiki Nestor: \"Vaata, sõber, jäta nüüd üks asi endale meelde igaveseks ajaks või vähemalt senikauaks, kuni sa Eesti Vabariigis minister oled, sest see on väga tähtis, üldse kõige tähtsam asi. Ja nimelt, Riigikogu puldist kõneled sa oma rahvaga. Mitte kunagi ainult selle saaliga siin. Mitte kunagi selle inimesega, kes on sulle küsimuse esitanud. Mitte kunagi ainult selle inimesega, kes siin saalis küsides on sind pilganud või isegi solvanud. Siit puldist kõneldakse oma rahvaga ja ainult oma rahvaga.\" Vana hipit täna siin ei ole, tervisi talle Hiiumaale. Aga aitäh sulle, Eiki! Ma olen kindel, et siin saalis on paljudel meeles mõni sinu antud, esindusdemokraatia valu ja vaevaga seotud õppetund, mis aitab Riigikogus olles kogu rahvast esindada ja siit kõnepuldist kogu rahvaga rääkida.<br/> Jõudu tööle, austust üksteise ja me rahva vastu! ",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Austatud president Rüütel! Kallid Riigikogu XIV koosseisu liikmed! Hea Eesti rahvas! Ekstsellentsid! Kohalviibijad! Ei ole mõtet keerutada, me seisame keeruliste aegade lävel. Nagu muide enamasti meie riigi ajaloo vältel. Meie asukoht maakaardil ja meie rahvaarv on paratamatult need tegurid, mis meie asjad enamasti igal ajal ikka keerulisena hoiavad. Eksida on kerge ja ühe Euroopa väikseima riigina ei ole meil lihtsalt mitte kunagi nii palju strateegilist sügavust, et olla kindel: eksimused ei too kaasa ohtu meie kestmajäämisele. Sellepärast peame olema siirad oma olukorrahinnangutes ja kõik koos ausalt otsima Eestile parimat tulevikku. Kõik koos, kõikide Eesti inimeste jaoks, kõikide eestlaste jaoks, kõikide teiste jaoks, kes ka Eestit kalliks peavad.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Ma olen väga nõus nendega, kes ütlevad, et see maja, mille me 30 aastaga oleme kiiresti-kiiresti suutnud valmis ehitada, on oma katusekorruselt ilusa vaatega ja võrdlemisi kenasti sisustatud. Aga igasse tuppa päike ei paista. Ma mõistan neid, kes tahaksid selle ehitise maani maha lõhkuda ja otsast alata, lootes, et uues ehitises leidub neile mõni päikselisem nurk.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Meie ühiskonna areng viimase 30 aasta jooksul, mil oleme suutnud oma okupatsioonist tingitud 50-aastasest majanduslikust mahajäämusest tagasi võtta umbes poole, on olnud kahtlemata edulugu. Kuid tootlikkuse ja sissetulekute kiire kasvu kõrval on sel edul ka teine külg – kaasnevad ühiskondlikud muutused on olnud valusad kanda. Nagu ma olen korduvalt ja korduvalt öelnud, oleme ühiskonna tasakaalustamisel – eriti sotsiaalpoliitika meetmete abil – olnud üsna saamatud.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Eesti muutumine on ühelt poolt paratamatu: linnastumine, töökohtade kadu maamajanduses, sissetulekute ebavõrdsuse suurenemine. Nii on see olnud kõikides arenenud riikides. Ainult et meil on need protsessid olnud eriti kiired. Järelevõtukiirus on olnud ju suur, aga eks selle võrra keerulisemad ole olnud ka negatiivsed kõrvalmõjud.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Juba tehtut maha lammutada ja täiesti otsast peale hakata ei ole ju ilmselgelt praktiline, kuigi see võiks kaasa tuua ressursside olulise ümberjaotumise ühiskonnas, nagu äkiliste muudatuste puhul ikka ju juhtub. Aga me teame – ja mis seal salata, me ka näeme seda praegugi vähemalt ühes suures Euroopa Liidu riigis –, et see toob kaasa segaduse ja ka majandusliku kaose.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Nagu juba mainisin, meil tõenäoliselt ei ole oma asukoha ega rahvaarvu tõttu piisavat strateegilist sügavust, et lammutustöö meie riigi jaoks ohtlikuks ei saaks. Me oleme ka majanduslikus mõttes alles Euroopa keskmike hulgas, niisiis oleks lammutustööga kaasnev tagasilangus meile oluliselt suurem probleem kui mõnele päris rikkale riigile.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Niisiis – ei revolutsioonidele! Jah, olgem konservatiivsed! Tõeline konservatiiv on see, kes oskab piisavalt hästi hinnata ühiskonnas toimuvaid ja ühiskonda ees ootavaid muutusi ning tasakaalustada neid nii, et meil ei oleks kunagi revolutsiooni tarvis. Selline konservatiivsus on tarviline. Hoidkem tehtut ja rääkigem ausalt, mida edaspidi paremini teha – ehitades, mitte lammutades. Tunnustagem oma edu kas või e-riigina. Olgem uhked oma rolli üle Euroopa Liidus ja NATO-s, seejuures mitte lihtsalt liikmena, vaid asjaliku ja kohusetundliku kaasarääkijana. Ma tahan tunnustada ja tänada kõiki neid Eesti poliitikuid, tänu kellele oleme nii kaugele jõudnud. Aga räägime ausalt ka sellest, kuidas ühiskonna toimimist parandada.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Õnn ei jõua igale Eestimaa õuele niisama ja iseenesest. Elu maal ei paku tänase tootlikkuse tõttu enam nii palju töökohti kui 30 aastat tagasi. Ja ausalt öeldes, ega meist keegi ei tahakski neid kolhoosiaja töökohti, sest madala tootlikkusega töö eest ei saaks ju kuidagi mõistlikku palka. Samas on ideid, millega regionaalse arengu erinevusi tasandada. Näiteks on lihtne mõista, et ükski sent vähenevatest eurotoetustest ei tohi kuluda pealinnas, vaid see raha peaks korda tegema kaugeid külateid. Kindlasti aitaks see, kui ettevõtete tulumaksu jagada nii, et ka omavalitsusel oleks piirkonna ettevõtlusest rohkem tulu. Me peame jõuliselt seisma selle eest, et meie maakonnakeskused püsiks tugevate keskustena (ja mõnes kohas ka uuesti nendeks muutuks), kus on olemas kõik igapäevane, mida inimene üle oma elukaare vajab.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Olen endiselt väga veendunud, et kohalikel omavalitsustel on ikka veel liiga pikk tee minna, selleks et pakkuda oma inimestele sotsiaalseid tagatisi määral, mida meie riigi elujärg juba tegelikult võimaldaks. Jah, oma kohustuste mõistmine on omavalitsustel võtnud kauem aega, kui ma tahaksin, aga suutmatus ei ole ka ainult nende süü – ahistav ja valdkondade vahel koordineerimata ministeeriumibürokraatia mängib siin ka tihti oma rolli.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Sotsiaalset tõrjutust esineb muidugi ka pealinnas ja mujal suuremates keskustes. Kesine keeleoskus – meil ei ole ikka veel ainult eesti keeles toimivate lasteaedade ja koolide võrku – on siin üks põhitegureid. Pole mingi privileeg jääda keeletuks maal, kus töötatakse, olgu ajutiselt või alaliselt. Ei ole privileeg kasvada siin keeletuna. Kakskeelse koolisüsteemi tähtajatu jätkumine on oht eesti keele ja kultuuri kestmisele ning see ei suurenda kuidagi Eesti riigi sidusust. Meil on üks riigikeel. Meie vastutame selle eest, et seda oskaks kõik lasteaiast kooli minejad, saati siis koolilõpetajad.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Näete, teha on teil palju. Aga õnneks lasevad need majanduslikud võimalused, mis 30 aastaga on loodud, meil tegelikult teenida kogu Eesti rahvast. Teenida ka neid, keda mure on viinud sinnani, et nad tahaksid pigem lammutada ja otsast alata. Kui me koos ja ausalt tegutseme, siis me võime oma ühiskonna uuesti kokku liita. Aga see eeldab tõepoolest ausust ja siirast tahet igaüht mõista ning omaenda poliitiliste otsuste heade külgede nägemise kõrval alati ka negatiivse kõrvalmõju tunnistamist ja sellele leevenduse otsimist.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Meile ei ole praegu soodne ka suur geopoliitika. Nimelt on tänase maailma suurimad riskid meie suurima, globaalse jõuga liitlase Ameerika Ühendriikide jaoks hoopis mujal – need on seotud Hiinaga ja Kagu-Aasiaga laiemalt. Ainus põhjus, miks Ühendriigid võiksid tahta oma ressurssi kulutada just meie piirkonnas meie julgeoleku tagamiseks, on ühised väärtused. Meie ühised väärtused. Needsamad väärtused, mis on Washingtonis Jeffersoni monumendil ja Ühendriikide iseseisvusdeklaratsioonis. Väärtused, mis on meie iseseisvusdeklaratsioonis ja meie põhiseaduses. Eesti põhiseaduse 12. paragrahv ütleb: \"Kõik on seaduse ees võrdsed. Kedagi ei tohi diskrimineerida rahvuse, rassi, nahavärvuse, soo, keele, päritolu, usutunnistuse, poliitiliste või muude veendumuste, samuti varalise ja sotsiaalse seisundi või muude asjaolude tõttu. Rahvusliku, rassilise, usulise või poliitilise vihkamise, vägivalla ja diskrimineerimise õhutamine on seadusega keelatud ja karistatav. Samuti on seadusega keelatud ja karistatav õhutada vihkamist, vägivalda ja diskrimineerimist ühiskonnakihtide vahel.\"",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Ja edasi. Kogu põhiseaduse II. peatükk kirjeldab meie inimestele põhiseadusega tagatud vabadusi kogu nende mitmekülgsuses, sõnastades muu hulgas, et tsensuuri ei ole, et teadus ja kunst ning nende õpetused on vabad, et igaühel on õigus jääda truuks oma arvamustele ja veendumustele.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Loomulikult, iga sõnastatud vabaduse teine külg on alati vastutus – vastutus selle eest, kuidas me oma vabadust kasutame. Sõnavabadus ei õigusta ju valetamist. Riskidele põhjendatud tähelepanu juhtimine ei ole hirmutamine. Mittenõustumine ei ole reetmine. Teise seisukohtadega mittenõustumine ei anna kuidagi õigust teda rumalaks ja maailmast mitte aru saavaks tembeldada. Ajakirjaniku ebamugavale küsimusele ei pea vastama, kui ei oska või ei taha, aga ei saa keelata küsimast. Teisiti ei oleks Eesti enam vaba meedia tšempionide hulgas. Uudisnupus muidugi ei peaks kajastuma arvamus, fakt ja kommentaar olgu selgelt lahus. See on ka ajakirjanike vastutustunne, mis hoiab meid vaba ajakirjanduse tšempionide hulgas.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Eesti põhiseaduse II. peatükk on eriti selgelt pühendatud demokraatlikele väärtustele. See on side, mis hoiab meid kõigi meie liitlastega ühises väärtusruumis. See on Eesti riigi tüvitekst, mis tõestab kogu maailmale meie kuulumist vabasse Euroopasse. See on tekst, mis on püha kõigile, kes teenivad Eesti riiki ametnikuna, poliitikuna, kaitseväelasena, politseinikuna, õpetajana, arstina, ajakirjanikuna, kunstnikuna. See on tekst, milleta meie riik ei oleks vaba. See on tekst, milleta meie inimesed meie riigis ei oleks vabad. Ja see tekst on üksiti ka meie julgeolekugarantii.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Meie põhiseaduse mõte elab, kui me Eesti kodanike ja patriootidena demokraatlikke väärtusi kasutame ja laseme neid ka teistel kasutada. Põhiseaduse ees on kõik maailmavaated võrdsed, seni kuni nad ei lähe vastuollu põhiseaduses toodud üldiste õiguste ja vabadustega. Iga maailmavaate kandjad on teretulnud osalema poliitilises protsessis ja võistlema kohtade eest Riigikogus. Siia jõudnuna on iga Riigikogu liige oma mandaadis vaba ning saab lähtuda põhiseadusest ja omaenda väärtuskompassist. Muide, vastuolu korral kahe viimase vahel kehtib põhiseadus.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " See, mis meie Eesti riigis täna toimub, on toimiv demokraatlik protsess. Demokraatiaga ei ole Eestis midagi valesti. Oli valija vastutus panna kokku uus Riigikogu ja valija on seda teinud. Valimised toimusid, võitja on selgunud, erakonnad on vabad arutlema võimaliku valitsuskoostöö üle ja Riigikogu iga liige on vaba hindama peaministrikandidaate. Presidendina ei ole minul õigust hinnata, milline võiks olla Riigikogu liikmete toetus ühele või teisele peaministrikandidaadile. Ainuke tee välja selgitada, kellel on Riigikogus toetus, viib läbi selle saali. On loomulik, et toetuse otsimisega siin saalis saab alustada valimised võitnud erakond.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Täna alustab tööd Riigikogu XIV koosseis. Kõik siia jõudnud, nagu ütlesin, on siin demokraatlike protsesside tulemusena. Eesti demokraatia toimib. Aga võib-olla peaksime siiski mõtlema, miks on nii, et kuu pärast valimisi tunneb suur osa inimesi, nagu oleks midagi meie ühiskonnas katki tehtud. Mingid justkui kokku lepitud piirid ei kehtiks enam. Ja küsimus ei ole maailmavaatelistes seisukohtades, vaid tihtipeale viisakuses ja lugupidamises. Lugupidamises üksteise vastu ja kogu meie rahva vastu.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Jah, ma arvan, et meil ei ole demokraatia kriisi – valimised ja neile järgnev on protseduurilises vastavuses põhiseaduse ja demokraatlike väärtustega –, aga meil on siiski väärtuste kriis. Põhiseaduses kirjeldatud vabadusi ja väärtusi, aga ka nende vabaduste ja väärtuste kaitsjaid rünnatakse erinevatel ettekäänetel. Rünnatakse neid, kes töö tõttu seisavad väärtuste ja vabaduste kaitsel, aga naeruvääristatakse neidki, kes kodanikuna sõna võtavad, et hoida meie vabadusi ja väärtusi. Sekka muidugi narritakse ja naeruvääristatakse neidki, kes tunnevad, et senised suundumused nende vajadustele ei vasta, ja kes on seepärast skeptilised ka vabaduste ja väärtuste endi suhtes. Kui me sellel laseme süveneda, siis on peagi kriisis ka meie demokraatia. Aga siis on juba hilja.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Mida teha? See on alati kõige tähtsam: mida teha? Tuleb olla eeskujuks. Ja et oleks kergem eeskujuks olla, lubage mulle lõpetuseks üks väike isiklik mälupilt. See mälupilt on mind ennast alati toetanud, kui ma olen kõnelenud siit puldist, mõne Riigikogu komisjoni või ka fraktsiooni ees Vabariigi Presidendina või mõnes muus rollis. See oli aastal 1999. Üks minister tuli Riigikogu ette plaaniga, millesse ta ise siiralt uskus ja mis oli tema arvates vajalik, et Eestis asjad paremini läheksid. Arutelu siin saalis ei kujunenud, võiks öelda, ülearu konstruktiivseks. Võib-olla oli plaan ka halb – kes seda enam mäletab –, aga minister ei olnud kurb üldse selle pärast, et see plaan ei lennanud. Tema tundis, et see saal oli rünnanud teda, inimest, mitte tema plaani, ning seadnud küsimuse alla tema mõistuse, ja kui ma õigesti mäletan, siis isegi välimuse. Asja arutades ütles toonane sotsiaalminister Eiki Nestor: \"Vaata, sõber, jäta nüüd üks asi endale meelde igaveseks ajaks või vähemalt senikauaks, kuni sa Eesti Vabariigis minister oled, sest see on väga tähtis, üldse kõige tähtsam asi. Ja nimelt, Riigikogu puldist kõneled sa oma rahvaga. Mitte kunagi ainult selle saaliga siin. Mitte kunagi selle inimesega, kes on sulle küsimuse esitanud. Mitte kunagi ainult selle inimesega, kes siin saalis küsides on sind pilganud või isegi solvanud. Siit puldist kõneldakse oma rahvaga ja ainult oma rahvaga.\" Vana hipit täna siin ei ole, tervisi talle Hiiumaale. Aga aitäh sulle, Eiki! Ma olen kindel, et siin saalis on paljudel meeles mõni sinu antud, esindusdemokraatia valu ja vaevaga seotud õppetund, mis aitab Riigikogus olles kogu rahvast esindada ja siit kõnepuldist kogu rahvaga rääkida.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Jõudu tööle, austust üksteise ja me rahva vastu! ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Eesti Vabariigi president Kersti Kaljulaid",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 197,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=197",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 550413,
+            "startTime": null,
+            "endTime": null,
+            "content": "Suur tänu, Vabariigi President! Austatud Riigikogu, viime läbi kohaloleku kontrolli. Kohaloleku kontroll. Katkestan kohaloleku kontrolli tehnilistel põhjustel.<br/>Kas me võime kohaloleku kontrolli uuesti läbi viia? Ei tööta. Me selgitame asjaolusid.<br/>Nii, viimane katse. Küsimus, kas võib läbi viia kohaloleku kontrolli? Kas on keegi, kelle pult ei tööta? Ikka on. <br/>Nii. Me viime kohaloleku kontrolli läbi järgmiselt. Ärge oma kaarti liigutage, vaid vajutage nuppu. Selline katse. Kohaloleku kontroll.<br/> Kohaloleku kontroll on lõppenud. Kohal on ... Nii, selge. Tulemus on järgmine: elektroonilisel teel tehtud kohaloleku kontroll ebaõnnestus, aga ma hindan silma järgi, et kohal on 101 Riigikogu liiget. (Aplaus.)<br/>Me läheme nüüd oma toimingutega edasi. Selleks, et Riigikogu liige saaks realiseerida oma volitusi, peab ta andma ametivande.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Suur tänu, Vabariigi President! Austatud Riigikogu, viime läbi kohaloleku kontrolli. Kohaloleku kontroll. Katkestan kohaloleku kontrolli tehnilistel põhjustel.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Kas me võime kohaloleku kontrolli uuesti läbi viia? Ei tööta. Me selgitame asjaolusid.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Nii, viimane katse. Küsimus, kas võib läbi viia kohaloleku kontrolli? Kas on keegi, kelle pult ei tööta? Ikka on. ",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Nii. Me viime kohaloleku kontrolli läbi järgmiselt. Ärge oma kaarti liigutage, vaid vajutage nuppu. Selline katse. Kohaloleku kontroll.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Kohaloleku kontroll on lõppenud. Kohal on ... Nii, selge. Tulemus on järgmine: elektroonilisel teel tehtud kohaloleku kontroll ebaõnnestus, aga ma hindan silma järgi, et kohal on 101 Riigikogu liiget. (Aplaus.)",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Me läheme nüüd oma toimingutega edasi. Selleks, et Riigikogu liige saaks realiseerida oma volitusi, peab ta andma ametivande.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 1174,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1174",
+            "speechType": "DIRECTOR"
+          }
+        ],
+        "videoLinkVideoLink": "Z5U3uEXFBC8",
+        "videoLinkVideoStart": 149,
+        "videoLinkVideoLinkPublished": true,
+        "index": 1,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=149",
+        "emsId": "dd205c77-d2ae-4b94-89e7-6492407ae393"
+      },
+      {
+        "id": 24495,
+        "name": " Riigikogu liikmete ametivanne",
+        "nameParts": [
+          {
+            "text": " Riigikogu liikmete ametivanne",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2019-04-04T11:26:55.931",
+        "speeches": [
+          {
+            "id": 550406,
+            "startTime": null,
+            "endTime": "2019-04-04T11:27:09",
+            "content": "Järgmine päevakorrapunkt on ametivande andmine, aga enne seda on protseduuriline küsimus. Helir-Valdor Seeder. Palun vajutage ka sõnavõtunuppu, kui teil see töötab. Palun!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Järgmine päevakorrapunkt on ametivande andmine, aga enne seda on protseduuriline küsimus. Helir-Valdor Seeder. Palun vajutage ka sõnavõtunuppu, kui teil see töötab. Palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 1543,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1543",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550407,
+            "startTime": null,
+            "endTime": "2019-04-04T11:27:52",
+            "content": "Aitäh, austatud juhataja! Minu hinnang kohalolekule on veidi teistsugune kui teie hinnang, minu silm haarab praegu 100 liiget, mitte 101 liiget. Me peame siin vist olema täpsed.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Aitäh, austatud juhataja! Minu hinnang kohalolekule on veidi teistsugune kui teie hinnang, minu silm haarab praegu 100 liiget, mitte 101 liiget. Me peame siin vist olema täpsed.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Helir-Valdor Seeder",
+            "emsId": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 1557,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1557",
+            "speechType": "SMALL_SPEECH"
+          },
+          {
+            "id": 550408,
+            "startTime": null,
+            "endTime": "2019-04-04T11:28:23",
+            "content": "Küsimuse lahendame järgmiselt. Nimelt, iga Riigikogu liige peab andma ametivande ja seetõttu me näeme täpselt, kes on ja kes ei ole kohal. Me liigume nüüd ametivande andmise juurde. Ma palun ametivande teksti ettelugemiseks kõnetooli selle koosseisu vanima liikme Enn Eesmaa. Palun!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Küsimuse lahendame järgmiselt. Nimelt, iga Riigikogu liige peab andma ametivande ja seetõttu me näeme täpselt, kes on ja kes ei ole kohal. Me liigume nüüd ametivande andmise juurde. Ma palun ametivande teksti ettelugemiseks kõnetooli selle koosseisu vanima liikme Enn Eesmaa. Palun!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 1600,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1600",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550409,
+            "startTime": null,
+            "endTime": "2019-04-04T11:29:12",
+            "content": "Asudes täitma oma kohustusi Riigikogu liikmena Riigikogu XIV koosseisus, annan vande jääda ustavaks Eesti Vabariigile ja tema põhiseaduslikule korrale. (Aplaus.)",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Asudes täitma oma kohustusi Riigikogu liikmena Riigikogu XIV koosseisus, annan vande jääda ustavaks Eesti Vabariigile ja tema põhiseaduslikule korrale. (Aplaus.)",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Enn Eesmaa",
+            "emsId": "07132cc4-5afc-4edb-9537-7c721ec39b2d",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 1631,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1631",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 550410,
+            "startTime": null,
+            "endTime": null,
+            "content": "Kutsun nüüd Riigikogu liikmed tähestikulises järjekorras ametivande tekstile alla kirjutama:<br/> Jaak Aab, Merry Aart, Arto Aas, Taavi Aas, Annely Akkermann, Yoko Alender, Riho Breivel, Dmitri Dmitrijev, Peeter Ernits, Hele Everaus, Helle-Moonika Helme, Mart Helme, Martin Helme,  Kaido Höövelson, Jüri Jaanson, Maria Jufereva-Skuratovski, Marek Jürgenson, Ruuben Kaalep, Raimond Kaljulaid, Marina Kaljurand, Kaja Kallas, Siim Kallas, Kalev Kallo, Jaanus Karilaid, Uno Kaskpeit,  Erkki Keldo,  Liina Kersna,  Johannes Kert, Kert Kingo, Signe Kivi, Toomas Kivimägi, Aivar Kokk, Rene Kokk, Mihhail Korb, Siret Kotka-Repinski, Heiki Kranich, Igor Kravtšenko, Eerik-Niiles Kross,  Urmas Kruuse, Tarmo Kruusimäe, Leo Kunnas,  Kalvi Kõva, Helmen Kütt, Ants Laaneots, Kalle Laanet,  Viktoria Ladõnskaja-Kubits, Alar Laneman, Maris Lauri, Jürgen Ligi, Mihhail Lotman (ei ole kohal), Jüri Luik,  Jaak Madison, Andres Metsoja, Kristen Michal, Marko Mihkelson, Sven Mikser,  Madis Milling,  Aadu Must, Tõnis Mölder,  Jevgeni Ossinovski, Anneli Ott, Ivari Padar, Kalle Palling, Keit Pentus-Rosimannus, Hanno Pevkur, Heljo Pikhof, Siim Pohlak, Anti Poolamets, Heidy Purga, Paul Puustusmaa, Henn Põlluaas, Katri Raik,  Valdo Randpere, Jüri Ratas, Urmas Reinsalu, Urmas Reitelmann, Martin Repinski, Mailis Reps, Taavi Rõivas, Indrek Saar, Üllar Saaremäe, Kersti Sarapuu, Erki Savisaar, Helir-Valdor Seeder, Andrus Seeme, Sven Sester, Priit Sibul, Riina Sikkut, Kadri Simson, Mihhail Stalnuhhin, Andres Sutt, Aivar Sõerd, Kristina Šmigun-Vähi, Raivo Tamm, Tarmo Tamm, Urve Tiidus, Vilja Toomast, Marika Tuus-Laul, Jaak Valge, Viktor Vassiljev.<br/>Suur tänu, Riigikohtu esimees! Ametivande andmise tulemusena hindan ma ümber oma varasema seisukoha kohalviibivate Riigikogu liikmete arvu suhtes: kohalviibijaid on 100. Härra Helir-Valdor Seeder, teil on teravam silm kui minul.<br/> Austatud Riigikogu, Vabariigi Valimiskomisjoni nimel õnnitlen teid ametikohustuste täitmisele asumise puhul!<br/> (Laulab tütarlastekoor Ellerhein. Aplaus.)<br/>Kullo tütarlastekoori Ellerhein esituses kõlas Pärt Uusbergi laul \"Muusikale\". Täname lauljaid ja dirigent Ingrid Kõrvitsat.  (Aplaus.)",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Kutsun nüüd Riigikogu liikmed tähestikulises järjekorras ametivande tekstile alla kirjutama:",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Jaak Aab, Merry Aart, Arto Aas, Taavi Aas, Annely Akkermann, Yoko Alender, Riho Breivel, Dmitri Dmitrijev, Peeter Ernits, Hele Everaus, Helle-Moonika Helme, Mart Helme, Martin Helme, Kaido Höövelson, Jüri Jaanson, Maria Jufereva-Skuratovski, Marek Jürgenson, Ruuben Kaalep, Raimond Kaljulaid, Marina Kaljurand, Kaja Kallas, Siim Kallas, Kalev Kallo, Jaanus Karilaid, Uno Kaskpeit, Erkki Keldo, Liina Kersna, Johannes Kert, Kert Kingo, Signe Kivi, Toomas Kivimägi, Aivar Kokk, Rene Kokk, Mihhail Korb, Siret Kotka-Repinski, Heiki Kranich, Igor Kravtšenko, Eerik-Niiles Kross, Urmas Kruuse, Tarmo Kruusimäe, Leo Kunnas, Kalvi Kõva, Helmen Kütt, Ants Laaneots, Kalle Laanet, Viktoria Ladõnskaja-Kubits, Alar Laneman, Maris Lauri, Jürgen Ligi, Mihhail Lotman (ei ole kohal), Jüri Luik, Jaak Madison, Andres Metsoja, Kristen Michal, Marko Mihkelson, Sven Mikser, Madis Milling, Aadu Must, Tõnis Mölder, Jevgeni Ossinovski, Anneli Ott, Ivari Padar, Kalle Palling, Keit Pentus-Rosimannus, Hanno Pevkur, Heljo Pikhof, Siim Pohlak, Anti Poolamets, Heidy Purga, Paul Puustusmaa, Henn Põlluaas, Katri Raik, Valdo Randpere, Jüri Ratas, Urmas Reinsalu, Urmas Reitelmann, Martin Repinski, Mailis Reps, Taavi Rõivas, Indrek Saar, Üllar Saaremäe, Kersti Sarapuu, Erki Savisaar, Helir-Valdor Seeder, Andrus Seeme, Sven Sester, Priit Sibul, Riina Sikkut, Kadri Simson, Mihhail Stalnuhhin, Andres Sutt, Aivar Sõerd, Kristina Šmigun-Vähi, Raivo Tamm, Tarmo Tamm, Urve Tiidus, Vilja Toomast, Marika Tuus-Laul, Jaak Valge, Viktor Vassiljev.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Suur tänu, Riigikohtu esimees! Ametivande andmise tulemusena hindan ma ümber oma varasema seisukoha kohalviibivate Riigikogu liikmete arvu suhtes: kohalviibijaid on 100. Härra Helir-Valdor Seeder, teil on teravam silm kui minul.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Austatud Riigikogu, Vabariigi Valimiskomisjoni nimel õnnitlen teid ametikohustuste täitmisele asumise puhul!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " (Laulab tütarlastekoor Ellerhein. Aplaus.)",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Kullo tütarlastekoori Ellerhein esituses kõlas Pärt Uusbergi laul \"Muusikale\". Täname lauljaid ja dirigent Ingrid Kõrvitsat. (Aplaus.)",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 1680,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1680",
+            "speechType": "DIRECTOR"
+          }
+        ],
+        "videoLinkVideoLink": "Z5U3uEXFBC8",
+        "videoLinkVideoStart": 1542,
+        "videoLinkVideoLinkPublished": true,
+        "index": 2,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=1542",
+        "emsId": "1ba68720-6191-4fc9-9221-5106e1bf1040"
+      },
+      {
+        "id": 24497,
+        "name": " Riigikogu esimehe ja aseesimeeste valimine",
+        "nameParts": [
+          {
+            "text": " Riigikogu esimehe ja aseesimeeste valimine",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2019-04-04T12:19:09.753",
+        "speeches": [
+          {
+            "id": 550414,
+            "startTime": null,
+            "endTime": "2019-04-04T12:21:29",
+            "content": "Austatud Riigikogu! Vastavalt põhiseaduse §-le 69 valib Riigikogu oma liikmete hulgast Riigikogu esimehe ja kaks aseesimeest. Valimiste korraldamisel lähtub Vabariigi Valimiskomisjon Riigikogu kodu- ja töökorra seadusest. Enne, kui me läheme valimistoimingute juurde, lubage mul lühidalt teile tutvustada Riigikogu juhatuse valimisega seonduvat. Esmalt valitakse Riigikogu esimees. Pärast Riigikogu esimehe valimist valitakse samaaegselt aseesimehed. Kandidaadi võib üles seada iga Riigikogu liige. Pärast Riigikogu esimehe valimist seatakse üles aseesimeeste kandidaadid ja ülesseatu peab andma kandideerimiseks nõusoleku. Hääletamine on salajane, see toimub hääletamissedeli täitmise teel. Igal Riigikogu liikmel on üks hääl nii esimehe kui ka aseesimeeste valimisel. Hääled loetakse avalikult kohe pärast hääletamise lõppemist. Protest hääletamise korraldamise kohta esitatakse valimiskomisjonile kohe pärast hääletamise lõppemist ja protest hääletamistulemuste kohta kohe pärast hääletamistulemuste teatavaks tegemist. Valimistulemused kuulutatakse välja pärast protestide läbivaatamist. Riigikogu esimeheks valituks osutub kandidaat, kes saab üle poole kehtivatest häältest. Kui ükski kandidaat ei saa üle poole kehtivatest häältest, korraldatakse kahe enim hääli saanud kandidaadi vahel valimise lisavoor. Võrdse häältearvu puhul heidetakse liisku. Kui Riigikogu esimehe kandidaatide nimekirjas on ainult üks kandidaat, osutub ta valituks, kui ta saab rohkem poolt- kui vastuhääli. Hääletamise korda tutvustan teile enne hääletamise väljakuulutamist. Kas Riigikogu liikmetel on küsimusi seni kõneldu kohta? Kas on küsimusi? Martin Helme.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Austatud Riigikogu! Vastavalt põhiseaduse §-le 69 valib Riigikogu oma liikmete hulgast Riigikogu esimehe ja kaks aseesimeest. Valimiste korraldamisel lähtub Vabariigi Valimiskomisjon Riigikogu kodu- ja töökorra seadusest. Enne, kui me läheme valimistoimingute juurde, lubage mul lühidalt teile tutvustada Riigikogu juhatuse valimisega seonduvat. Esmalt valitakse Riigikogu esimees. Pärast Riigikogu esimehe valimist valitakse samaaegselt aseesimehed. Kandidaadi võib üles seada iga Riigikogu liige. Pärast Riigikogu esimehe valimist seatakse üles aseesimeeste kandidaadid ja ülesseatu peab andma kandideerimiseks nõusoleku. Hääletamine on salajane, see toimub hääletamissedeli täitmise teel. Igal Riigikogu liikmel on üks hääl nii esimehe kui ka aseesimeeste valimisel. Hääled loetakse avalikult kohe pärast hääletamise lõppemist. Protest hääletamise korraldamise kohta esitatakse valimiskomisjonile kohe pärast hääletamise lõppemist ja protest hääletamistulemuste kohta kohe pärast hääletamistulemuste teatavaks tegemist. Valimistulemused kuulutatakse välja pärast protestide läbivaatamist. Riigikogu esimeheks valituks osutub kandidaat, kes saab üle poole kehtivatest häältest. Kui ükski kandidaat ei saa üle poole kehtivatest häältest, korraldatakse kahe enim hääli saanud kandidaadi vahel valimise lisavoor. Võrdse häältearvu puhul heidetakse liisku. Kui Riigikogu esimehe kandidaatide nimekirjas on ainult üks kandidaat, osutub ta valituks, kui ta saab rohkem poolt- kui vastuhääli. Hääletamise korda tutvustan teile enne hääletamise väljakuulutamist. Kas Riigikogu liikmetel on küsimusi seni kõneldu kohta? Kas on küsimusi? Martin Helme.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 4679,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=4679",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550415,
+            "startTime": null,
+            "endTime": "2019-04-04T12:21:35",
+            "content": "Ei, mul ei olnud küsimus, ma soovisin esitada kandidaati.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Ei, mul ei olnud küsimus, ma soovisin esitada kandidaati.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Martin Helme",
+            "emsId": "98008392-64a2-4429-8a41-fb051823e402",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 4817,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=4817",
+            "speechType": "SMALL_SPEECH"
+          },
+          {
+            "id": 550416,
+            "startTime": null,
+            "endTime": "2019-04-04T12:22:02",
+            "content": "Kohe jõuame selleni. Küsimusi ei ole. Nüüd ma küsin, kas keegi Riigikogu liikmetest soovib esitada Riigikogu esimehe kandidaati. Martin Helme, palun tulla kõnepulti!",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Kohe jõuame selleni. Küsimusi ei ole. Nüüd ma küsin, kas keegi Riigikogu liikmetest soovib esitada Riigikogu esimehe kandidaati. Martin Helme, palun tulla kõnepulti!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 4823,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=4823",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550417,
+            "startTime": null,
+            "endTime": "2019-04-04T12:22:16",
+            "content": "Lugupeetud istungi juhataja! Lugupeetud kolleegid! Lugupeetud härra president Rüütel! Esitan Riigikogu esimehe kandidaadiks Henn Põlluaasa.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Lugupeetud istungi juhataja! Lugupeetud kolleegid! Lugupeetud härra president Rüütel! Esitan Riigikogu esimehe kandidaadiks Henn Põlluaasa.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Martin Helme",
+            "emsId": "98008392-64a2-4429-8a41-fb051823e402",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 4850,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=4850",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 550418,
+            "startTime": null,
+            "endTime": "2019-04-04T12:22:40",
+            "content": "Jevgeni Ossinovski.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Jevgeni Ossinovski.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "emsId": "0",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 4864,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=4864",
+            "speechType": "DIRECTOR"
+          }
+        ],
+        "videoLinkVideoLink": "Z5U3uEXFBC8",
+        "videoLinkVideoStart": 4679,
+        "videoLinkVideoLinkPublished": true,
+        "index": 3,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=4679",
+        "emsId": "6a73fb5c-3352-4dd3-a20c-7628c7131eb9"
+      },
+      {
+        "id": 24498,
+        "name": " Vabariigi Valitsuse tagasiastumine",
+        "nameParts": [
+          {
+            "text": " Vabariigi Valitsuse tagasiastumine",
+            "marks": [],
+            "href": null,
+            "title": null,
+            "target": null,
+            "rel": null,
+            "className": null,
+            "lineBreak": false
+          }
+        ],
+        "startTime": "2019-04-04T14:31:02.299",
+        "speeches": [
+          {
+            "id": 550446,
+            "startTime": null,
+            "endTime": "2019-04-04T14:31:25",
+            "content": "Läheme oma istungiga edasi. Järgmine päevakorrapunkt on Vabariigi Valitsuse tagasiastumine. Austatud Riigikogu, palun avalduse tegemiseks kõnepulti peaminister Jüri Ratase.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Läheme oma istungiga edasi. Järgmine päevakorrapunkt on Vabariigi Valitsuse tagasiastumine. Austatud Riigikogu, palun avalduse tegemiseks kõnepulti peaminister Jüri Ratase.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Henn Põlluaas",
+            "emsId": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 12592,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=12592",
+            "speechType": "DIRECTOR"
+          },
+          {
+            "id": 550447,
+            "startTime": null,
+            "endTime": "2019-04-04T14:32:10",
+            "content": "Austatud Riigikogu esimees! Austatud Riigikogu juhatus! Väga auväärt Riigikogu! Ametist lahkuva valitsuse nimel õnnitlen Riigikogu XIV koosseisu liikmeid. Ma tänan ametist lahkuva valitsuse ministreid Eesti rahva teenimise eest. Vabariigi Valitsuse seaduse § 10 lõike 1 punkti 1 kohaselt  teatan minu juhitava Vabariigi Valitsuse tagasiastumisest Eesti Vabariigi põhiseaduse § 92 punkti 1 alusel. Ma tänan! (Aplaus.)",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Austatud Riigikogu esimees! Austatud Riigikogu juhatus! Väga auväärt Riigikogu! Ametist lahkuva valitsuse nimel õnnitlen Riigikogu XIV koosseisu liikmeid. Ma tänan ametist lahkuva valitsuse ministreid Eesti rahva teenimise eest. Vabariigi Valitsuse seaduse § 10 lõike 1 punkti 1 kohaselt teatan minu juhitava Vabariigi Valitsuse tagasiastumisest Eesti Vabariigi põhiseaduse § 92 punkti 1 alusel. Ma tänan! (Aplaus.)",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Peaminister Jüri Ratas",
+            "emsId": "a30290b2-aacb-4041-b21f-8d8c0a1df9ec",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 12613,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=12613",
+            "speechType": "SPEECH"
+          },
+          {
+            "id": 550448,
+            "startTime": null,
+            "endTime": null,
+            "content": "Ma tänan, härra peaminister! Vabariigi Valitsuse seaduse § 11 kohaselt jätkab valitsus oma tegevust kuni uue valitsuse ametisse astumiseni. Riigikogu XIV koosseisu esimene istung on lõppenud.<br/> Üks teade, head kolleegid. Palun kõikidel Riigikogu liikmetel koguneda Riigikogu hoone esimese korruse fuajeesse pildistamisele!<br/><br/>Istungi lõpp kell 14.33.",
+            "contentParagraphs": [
+              {
+                "parts": [
+                  {
+                    "text": "Ma tänan, härra peaminister! Vabariigi Valitsuse seaduse § 11 kohaselt jätkab valitsus oma tegevust kuni uue valitsuse ametisse astumiseni. Riigikogu XIV koosseisu esimene istung on lõppenud.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": " Üks teade, head kolleegid. Palun kõikidel Riigikogu liikmetel koguneda Riigikogu hoone esimese korruse fuajeesse pildistamisele!",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": true
+                  },
+                  {
+                    "text": "Istungi lõpp kell 14.33.",
+                    "marks": [],
+                    "href": null,
+                    "title": null,
+                    "target": null,
+                    "rel": null,
+                    "className": null,
+                    "lineBreak": false
+                  }
+                ]
+              }
+            ],
+            "name": "Esimees Henn Põlluaas",
+            "emsId": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "videoLinkVideoLink": "Z5U3uEXFBC8",
+            "videoLinkVideoStart": 12658,
+            "videoLinkVideoLinkPublished": true,
+            "personLink": null,
+            "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=12658",
+            "speechType": "DIRECTOR"
+          }
+        ],
+        "videoLinkVideoLink": "Z5U3uEXFBC8",
+        "videoLinkVideoStart": 12592,
+        "videoLinkVideoLinkPublished": true,
+        "index": 4,
+        "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=12592",
+        "emsId": "baf1bd52-fdc4-4ae8-8a57-75e735cd5c66"
+      }
+    ],
+    "type": "CONTENT_EDITOR_COPY"
+  },
+  "titleEst": "XIV Riigikogu, I Istungjärk,  täiskogu korraline istung",
+  "titleEng": "XIV Riigikogu, I Istungjärk,  Täiskogu korraline istung",
+  "titleRus": "XIV Рийгикогу, I Сессия,  Очередное пленарное заседание",
+  "parsedVideoLink": "https://www.youtube.com/watch?v=Z5U3uEXFBC8&t=0",
+  "parliamentMembershipNumber": 14,
+  "plenarySessionNumber": 1,
+  "sessionEventType": null,
+  "plannedStartTime": "2019-04-04T11:00:00",
+  "videoLinkPublished": true,
+  "meetingStatus": "EDITED",
+  "correspondingHansId": null,
+  "commission": null,
+  "meetingType": "PARLIAMENT_MEETING"
+}

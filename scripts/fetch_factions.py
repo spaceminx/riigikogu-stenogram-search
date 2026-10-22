@@ -8,6 +8,7 @@ import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import OUTPUT_DIR_PROCESSED
+from src.fetch_models import PlenaryMember, UpstreamSchemaError, validate_response
 
 
 def extract_electoral_district(member: dict) -> str | None:
@@ -86,7 +87,14 @@ def fetch_factions() -> bool:
                 resp = requests.get(url, timeout=(5, 25))
                 last_status = resp.status_code
                 if resp.status_code == 200:
-                    members = resp.json()
+                    raw_data = resp.json()
+                    validate_response(
+                        PlenaryMember,
+                        raw_data,
+                        endpoint="/api/plenary-members",
+                        ref=f"memberships={target_memberships}",
+                    )
+                    members = raw_data
                     success_for_url = True
                     break
                 elif (
@@ -102,6 +110,8 @@ def fetch_factions() -> bool:
                 print(
                     f"Warning: HTTP {resp.status_code} fetching members (attempt {attempt}/{max_retries})"
                 )
+            except UpstreamSchemaError:
+                raise
             except requests.exceptions.Timeout:
                 print(
                     f"Warning: Connection timed out to api.riigikogu.ee (attempt {attempt}/{max_retries})"
@@ -250,5 +260,9 @@ def fetch_factions() -> bool:
 
 
 if __name__ == "__main__":
-    success = fetch_factions()
+    try:
+        success = fetch_factions()
+    except UpstreamSchemaError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
     sys.exit(0 if success else 1)

@@ -1,0 +1,286 @@
+[
+  {
+    "uuid": "be750209-c86d-4265-a16e-6ea4318f6152",
+    "title": "Täiskogu korraline istung neljapäev, 1.10.2026 10:00",
+    "membership": 15,
+    "sittingDateTime": "2026-10-01T10:00:00",
+    "votings": [
+      {
+        "uuid": "19f7b9a3-363c-4636-8ec4-6e08ce7b5bb2",
+        "votingNumber": 104310,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2026-10-01T10:00:20.767",
+        "endDateTime": "2026-10-01T10:00:50.763",
+        "present": 49,
+        "absent": 52,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/19f7b9a3-363c-4636-8ec4-6e08ce7b5bb2"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "d1d8f7f1-df9e-457e-8f5a-24a82cd6096d",
+    "title": "Täiskogu korraline istung esmaspäev, 12.10.2026 15:00",
+    "membership": 15,
+    "sittingDateTime": "2026-10-12T15:00:00",
+    "votings": [
+      {
+        "uuid": "396f88ce-b389-4592-b9d8-f2e9ac06d7bd",
+        "votingNumber": 104311,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2026-10-12T16:06:05.15",
+        "endDateTime": "2026-10-12T16:06:35.147",
+        "present": 75,
+        "absent": 26,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/396f88ce-b389-4592-b9d8-f2e9ac06d7bd"
+          }
+        }
+      },
+      {
+        "uuid": "7195fba0-1bba-4bfe-a6a4-4e5443993bc4",
+        "votingNumber": 104312,
+        "type": {
+          "code": "AVALIK",
+          "value": "Avalik"
+        },
+        "description": "Päevakorra kinnitamine",
+        "startDateTime": "2026-10-12T16:17:49.373",
+        "endDateTime": "2026-10-12T16:18:09.367",
+        "present": 86,
+        "absent": 15,
+        "inFavor": 64,
+        "against": 14,
+        "neutral": 1,
+        "abstained": 22,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/7195fba0-1bba-4bfe-a6a4-4e5443993bc4"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "166d9eed-d217-4f0a-8060-576408696144",
+    "title": "Täiskogu korraline istung teisipäev, 13.10.2026 10:00",
+    "membership": 15,
+    "sittingDateTime": "2026-10-13T10:00:00",
+    "votings": [
+      {
+        "uuid": "414e3be9-cd54-40f9-bcfd-63148420374e",
+        "votingNumber": 104313,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2026-10-13T10:00:13.62",
+        "endDateTime": "2026-10-13T10:00:43.617",
+        "present": 72,
+        "absent": 29,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/414e3be9-cd54-40f9-bcfd-63148420374e"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "e5803268-09f4-479c-be9b-5be1e4d5b3e7",
+    "title": "Infotund kolmapäev, 14.10.2026 12:00",
+    "membership": 15,
+    "sittingDateTime": "2026-10-14T12:00:00",
+    "votings": [
+      {
+        "uuid": "37349bbe-62c0-4433-94d7-0d8838245309",
+        "votingNumber": 104314,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2026-10-14T12:00:39.14",
+        "endDateTime": "2026-10-14T12:01:09.137",
+        "present": 11,
+        "absent": 90,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/37349bbe-62c0-4433-94d7-0d8838245309"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "dacbcdbd-ed6f-4a18-9880-f941bc55525b",
+    "title": "Täiskogu korraline istung kolmapäev, 14.10.2026 14:00",
+    "membership": 15,
+    "sittingDateTime": "2026-10-14T14:00:00",
+    "votings": [
+      {
+        "uuid": "1b0a49de-68de-4318-a0dc-a555f598220b",
+        "votingNumber": 104315,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2026-10-14T14:00:23.243",
+        "endDateTime": "2026-10-14T14:00:53.24",
+        "present": 73,
+        "absent": 28,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/1b0a49de-68de-4318-a0dc-a555f598220b"
+          }
+        }
+      },
+      {
+        "uuid": "ebc3ed59-eb7b-4d6b-83f0-5c944eb0b2a1",
+        "votingNumber": 104316,
+        "type": {
+          "code": "AVALIK",
+          "value": "Avalik"
+        },
+        "description": "Lõpphääletus",
+        "startDateTime": "2026-10-14T15:00:15.08",
+        "endDateTime": "2026-10-14T15:00:35.073",
+        "present": 91,
+        "absent": 10,
+        "inFavor": 59,
+        "against": 28,
+        "neutral": 0,
+        "abstained": 14,
+        "relatedDraft": {
+          "uuid": "b9fab890-fa21-4a69-9039-171a0015bc84",
+          "title": "Euroopa Parlamendi valimise seaduse muutmise seadus (valimis- ja kandideerimisea langetamine)",
+          "mark": 414,
+          "copyOrOriginal": "ORIGINAL",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/volumes/drafts/b9fab890-fa21-4a69-9039-171a0015bc84"
+            }
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/ebc3ed59-eb7b-4d6b-83f0-5c944eb0b2a1"
+          }
+        }
+      },
+      {
+        "uuid": "dbbceb3c-eb80-488d-a8ad-35645ab62c2f",
+        "votingNumber": 104317,
+        "type": {
+          "code": "AVALIK",
+          "value": "Avalik"
+        },
+        "description": "Lõpphääletus",
+        "startDateTime": "2026-10-14T16:28:09.147",
+        "endDateTime": "2026-10-14T16:28:29.14",
+        "present": 96,
+        "absent": 5,
+        "inFavor": 65,
+        "against": 0,
+        "neutral": 0,
+        "abstained": 36,
+        "relatedDraft": {
+          "uuid": "eb6fe433-5083-4ed0-92e0-0768c63ed9a4",
+          "title": "Riigikogu avaldus „Kõrghariduse toetuseks\"",
+          "mark": 894,
+          "copyOrOriginal": "ORIGINAL",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/volumes/drafts/eb6fe433-5083-4ed0-92e0-0768c63ed9a4"
+            }
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/dbbceb3c-eb80-488d-a8ad-35645ab62c2f"
+          }
+        }
+      },
+      {
+        "uuid": "2ea8e410-4d74-4601-8007-aa9169bed010",
+        "votingNumber": 104318,
+        "type": {
+          "code": "AVALIK",
+          "value": "Avalik"
+        },
+        "description": "12. muudatusettepanek",
+        "startDateTime": "2026-10-14T16:47:36.91",
+        "endDateTime": "2026-10-14T16:47:56.903",
+        "present": 97,
+        "absent": 4,
+        "inFavor": 13,
+        "against": 43,
+        "neutral": 0,
+        "abstained": 45,
+        "relatedDraft": {
+          "uuid": "601f126d-99da-40a5-8cdd-f63a92ab6a0b",
+          "title": "Relvaseaduse ja lõhkematerjaliseaduse muutmise seadus",
+          "mark": 855,
+          "copyOrOriginal": "ORIGINAL",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/volumes/drafts/601f126d-99da-40a5-8cdd-f63a92ab6a0b"
+            }
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/2ea8e410-4d74-4601-8007-aa9169bed010"
+          }
+        }
+      },
+      {
+        "uuid": "0a2cad22-664a-4e95-86a0-09d3ebd0a007",
+        "votingNumber": 104319,
+        "type": {
+          "code": "AVALIK",
+          "value": "Avalik"
+        },
+        "description": "II lugemise katkestamine",
+        "startDateTime": "2026-10-14T19:26:16.87",
+        "endDateTime": "2026-10-14T19:26:36.863",
+        "present": 98,
+        "absent": 3,
+        "inFavor": 13,
+        "against": 52,
+        "neutral": 0,
+        "abstained": 36,
+        "relatedDraft": {
+          "uuid": "0c991fe4-2393-4ca6-a71d-38bb508f686f",
+          "title": "Loomakaitseseaduse ja veterinaarseaduse muutmise seadus",
+          "mark": 899,
+          "copyOrOriginal": "ORIGINAL",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/volumes/drafts/0c991fe4-2393-4ca6-a71d-38bb508f686f"
+            }
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/0a2cad22-664a-4e95-86a0-09d3ebd0a007"
+          }
+        }
+      }
+    ]
+  }
+]

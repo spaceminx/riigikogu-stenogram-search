@@ -9,6 +9,7 @@ import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import OUTPUT_DIR_PROCESSED
+from src.fetch_models import MembershipItem, UpstreamSchemaError, validate_response
 
 FALLBACK_MEMBERSHIPS = {
     "13": {
@@ -62,11 +63,17 @@ def fetch_memberships() -> bool:
         try:
             resp = requests.get(url, timeout=(5, 25))
             if resp.status_code == 200:
-                data = resp.json()
+                raw_data = resp.json()
+                validate_response(
+                    MembershipItem, raw_data, endpoint="/api/memberships", ref="memberships"
+                )
+                data = raw_data
                 break
             print(
                 f"Warning: HTTP {resp.status_code} fetching memberships (attempt {attempt}/{max_retries})"
             )
+        except UpstreamSchemaError:
+            raise
         except requests.exceptions.Timeout:
             print(
                 f"Warning: Connection timed out to api.riigikogu.ee (attempt {attempt}/{max_retries})"
@@ -127,5 +134,9 @@ def fetch_memberships() -> bool:
 
 
 if __name__ == "__main__":
-    success = fetch_memberships()
+    try:
+        success = fetch_memberships()
+    except UpstreamSchemaError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
     sys.exit(0 if success else 1)

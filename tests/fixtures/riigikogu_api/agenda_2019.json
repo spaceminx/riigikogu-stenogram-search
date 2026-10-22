@@ -1,0 +1,296 @@
+{
+  "weekStartDate": "2019-04-04",
+  "weekEndDate": "2019-04-30",
+  "title": "Riigikogu XIV täiskogu määramata istungjärgu päevakord",
+  "sittings": [
+    {
+      "uuid": "f1b7a276-c78e-4689-909d-a3c7863b4d73",
+      "title": "Täiskogu korraline istung neljapäev, 4.04.2019 11:00",
+      "sittingDateTime": "2019-04-04T11:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "dd205c77-d2ae-4b94-89e7-6492407ae393",
+          "title": "Vabariigi Presidendi avakõne XIV Riigikogu avaistungil",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2019-04-03T11:23:01.352",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 14,
+          "relatedDocuments": [],
+          "files": [],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "type": {
+            "code": "MUU_TEAVE",
+            "value": "Muu teave"
+          },
+          "reporters": [
+            {
+              "uuid": "c6ee5c10-ccae-4d20-a2bd-34c8d256f33a",
+              "name": "Eesti Vabariigi president Kersti Kaljulaid",
+              "type": "classifier",
+              "active": false,
+              "user": null,
+              "role": null
+            }
+          ],
+          "initiators": [],
+          "committeeProposals": [],
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/201904041100#PKP-24496"
+            }
+          }
+        },
+        {
+          "uuid": "1ba68720-6191-4fc9-9221-5106e1bf1040",
+          "title": "Riigikogu liikmete ametivanne",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2019-04-03T11:25:52.657",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 14,
+          "relatedDocuments": [],
+          "files": [],
+          "relatedCollectiveDocuments": [],
+          "order": 2,
+          "type": {
+            "code": "AMETIVANNE",
+            "value": "Ametivanne"
+          },
+          "reporters": [],
+          "initiators": [],
+          "committeeProposals": [],
+          "votings": [
+            {
+              "uuid": "6e0f93c6-1cfc-4fcd-b825-a27b542c0e4f",
+              "type": {
+                "code": "KOHALOLEKU_KONTROLL",
+                "value": "Kohaloleku kontroll"
+              },
+              "description": "Kohaloleku kontroll",
+              "startDateTime": "2019-04-04T11:25:15",
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/votings/6e0f93c6-1cfc-4fcd-b825-a27b542c0e4f"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/201904041100#PKP-24495"
+            }
+          }
+        },
+        {
+          "uuid": "6a73fb5c-3352-4dd3-a20c-7628c7131eb9",
+          "title": "Riigikogu esimehe ja aseesimeeste valimine",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2019-04-03T11:27:12.055",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 14,
+          "relatedDocuments": [],
+          "files": [],
+          "relatedCollectiveDocuments": [],
+          "order": 3,
+          "type": {
+            "code": "MUU_TEAVE",
+            "value": "Muu teave"
+          },
+          "reporters": [],
+          "initiators": [],
+          "committeeProposals": [],
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/201904041100#PKP-24497"
+            }
+          }
+        },
+        {
+          "uuid": "baf1bd52-fdc4-4ae8-8a57-75e735cd5c66",
+          "title": "Vabariigi Valitsuse tagasiastumine",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2019-04-03T11:28:06.44",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 14,
+          "relatedDocuments": [],
+          "files": [],
+          "relatedCollectiveDocuments": [],
+          "order": 4,
+          "type": {
+            "code": "VALITSUSE_POLIITILISED_AVALDUSED",
+            "value": "Vabariigi Presidendi , peaministri ja ministrite poliitilised avaldused"
+          },
+          "reporters": [
+            {
+              "uuid": "a30290b2-aacb-4041-b21f-8d8c0a1df9ec",
+              "name": "peaminister Jüri Ratas",
+              "type": "classifier",
+              "active": false,
+              "user": null,
+              "role": null
+            }
+          ],
+          "initiators": [],
+          "committeeProposals": [],
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/201904041100#PKP-24498"
+            }
+          }
+        }
+      ],
+      "votings": [],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/201904041100#PKP-24496"
+        }
+      }
+    },
+    {
+      "uuid": "9859b2bd-48fa-49c2-89be-c8462c4a88b5",
+      "title": "Täiskogu korraline istung esmaspäev, 8.04.2019 15:00",
+      "sittingDateTime": "2019-04-08T15:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "055de279-d8f2-4a41-b130-4fd2919a2b31",
+          "title": "Riigikogu liikme Mihhail Lotmani ametivanne",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2019-04-04T15:53:04.771",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 14,
+          "relatedDocuments": [],
+          "files": [],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "type": {
+            "code": "AMETIVANNE",
+            "value": "Ametivanne"
+          },
+          "reporters": [],
+          "initiators": [],
+          "committeeProposals": [],
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/201904081500#PKP-24501"
+            }
+          }
+        }
+      ],
+      "votings": [
+        {
+          "uuid": "e157ad39-8c76-493d-af5a-16cf0200485c",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2019-04-08T15:04:11.763",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/e157ad39-8c76-493d-af5a-16cf0200485c"
+            }
+          }
+        },
+        {
+          "uuid": "de6aa766-8352-4a5d-afcf-07feddf747a1",
+          "type": {
+            "code": "AVALIK",
+            "value": "Avalik"
+          },
+          "description": "Päevakorra kinnitamine",
+          "startDateTime": "2019-04-08T15:05:02.963",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/de6aa766-8352-4a5d-afcf-07feddf747a1"
+            }
+          }
+        }
+      ],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/201904081500#PKP-24501"
+        }
+      }
+    },
+    {
+      "uuid": "cff7cdec-ff6b-4084-801b-15d851900b4d",
+      "title": "Täiskogu korraline istung teisipäev, 9.04.2019 10:00",
+      "sittingDateTime": "2019-04-09T10:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [],
+      "votings": [
+        {
+          "uuid": "ee481d70-8390-49e7-93ec-b54b29a10175",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2019-04-09T10:03:06.867",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/ee481d70-8390-49e7-93ec-b54b29a10175"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "uuid": "202fda4d-f519-4dde-8d6c-d5ff4ff92f6f",
+      "title": "Täiskogu korraline istung kolmapäev, 10.04.2019 14:00",
+      "sittingDateTime": "2019-04-10T14:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [],
+      "votings": [
+        {
+          "uuid": "6c01d122-3355-4338-b70a-80ef6677f78c",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2019-04-10T14:02:30.463",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/6c01d122-3355-4338-b70a-80ef6677f78c"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "uuid": "213d3603-b2fd-474a-b36a-82c421c1bb68",
+      "title": "Täiskogu korraline istung neljapäev, 11.04.2019 10:00",
+      "sittingDateTime": "2019-04-11T10:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [],
+      "votings": [
+        {
+          "uuid": "8e54634e-0e17-4758-9a12-1cfc0feadf23",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2019-04-11T10:02:52.863",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/8e54634e-0e17-4758-9a12-1cfc0feadf23"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

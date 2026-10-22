@@ -1,0 +1,37 @@
+[
+  {
+    "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+    "first_name": "Jaak",
+    "last_name": "Aab",
+    "photo_url": "https://api.riigikogu.ee/api/files/628a5440-1825-4a60-9017-4c13069052b8/download",
+    "electoral_district": "Järva- ja Viljandimaa"
+  },
+  {
+    "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+    "first_name": "Annely",
+    "last_name": "Akkermann",
+    "photo_url": "https://api.riigikogu.ee/api/files/98f053d5-3567-4bb1-b7ad-afad23278792/download",
+    "electoral_district": "Pärnumaa"
+  },
+  {
+    "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+    "first_name": "Yoko",
+    "last_name": "Alender",
+    "photo_url": "https://api.riigikogu.ee/api/files/c6b13f27-e50e-4ed5-9ec5-3f76170e8167/download",
+    "electoral_district": "Tartu linn"
+  },
+  {
+    "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+    "first_name": "Anti",
+    "last_name": "Allas",
+    "photo_url": "https://api.riigikogu.ee/api/files/a5d4330e-1120-4279-adc3-c02650e83239/download",
+    "electoral_district": "Võru-, Valga- ja Põlvamaa"
+  },
+  {
+    "uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+    "first_name": "Arvo",
+    "last_name": "Aller",
+    "photo_url": "https://api.riigikogu.ee/api/files/b3cd8ebc-7920-4eb8-ba94-3e73165372df/download",
+    "electoral_district": "Ida-Virumaa"
+  }
+]

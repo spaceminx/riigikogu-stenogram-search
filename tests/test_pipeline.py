@@ -2445,6 +2445,8 @@ def test_verify_pipeline_integrity_skips_ignored_verbatim(tmp_path, monkeypatch)
                     "date": "2021-03-25T00:48:00.000+00:00",
                     "title": "Ignored night verbatim",
                     "link": f"https://stenogrammid.riigikogu.ee/{ignored_code}",
+                    "edited": True,
+                    "agendaItems": [],
                 }
             ]
 
@@ -2497,11 +2499,15 @@ def test_fetch_stenograms_fetches_20_day_old_missing_verbatim(tmp_path, monkeypa
             "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
             "title": "Eilne istung",
             "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+            "edited": True,
+            "agendaItems": [],
         },
         {
             "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
             "title": "20 päeva vana puuduv istung",
             "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+            "edited": True,
+            "agendaItems": [],
         },
     ]
 
@@ -2598,11 +2604,15 @@ def test_fetch_stenograms_explicit_start_date_skips_missing_check(tmp_path, monk
             "date": f"{yesterday.strftime('%Y-%m-%d')}T10:00:00.000+00:00",
             "title": "Eilne istung",
             "link": f"https://stenogrammid.riigikogu.ee/{code_yesterday}",
+            "edited": True,
+            "agendaItems": [],
         },
         {
             "date": f"{twenty_days_ago.strftime('%Y-%m-%d')}T14:00:00.000+00:00",
             "title": "20 päeva vana puuduv istung",
             "link": f"https://stenogrammid.riigikogu.ee/{code_missing_20d}",
+            "edited": True,
+            "agendaItems": [],
         },
     ]
 
@@ -2666,6 +2676,8 @@ def test_fetch_stenograms_skips_ignored_verbatim(tmp_path, monkeypatch):
                     "date": "2021-03-25T00:48:00.000+00:00",
                     "title": "Ignored night verbatim",
                     "link": f"https://stenogrammid.riigikogu.ee/{ignored_code}",
+                    "edited": True,
+                    "agendaItems": [],
                 }
             ]
 
