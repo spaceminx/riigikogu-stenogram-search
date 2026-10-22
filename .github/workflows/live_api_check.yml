@@ -1,0 +1,27 @@
+name: Live API Shape Check
+
+on:
+  schedule:
+    # Every Monday at 10:00 UTC
+    - cron: "0 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-live-api:
+    name: Check Live API Shape
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Run Live API Check
+        run: python3 scripts/check_live_api.py

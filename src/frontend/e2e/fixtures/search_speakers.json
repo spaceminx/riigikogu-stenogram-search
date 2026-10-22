@@ -1,0 +1,105 @@
+{
+  "query": "riigieelarve",
+  "speakers": [
+    {
+      "speaker": "Aivar Kokk",
+      "speaker_uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
+      "count": 796
+    },
+    {
+      "speaker": "Martin Helme",
+      "speaker_uuid": "98008392-64a2-4429-8a41-fb051823e402",
+      "count": 571
+    },
+    {
+      "speaker": "Kaja Kallas",
+      "speaker_uuid": "c7d52089-6129-468f-8789-9c4cf742b908",
+      "count": 497
+    },
+    {
+      "speaker": "Mart Võrklaev",
+      "speaker_uuid": "8600af41-4dcc-424d-9d05-7c851e5270b5",
+      "count": 429
+    },
+    {
+      "speaker": "Urmas Reinsalu",
+      "speaker_uuid": "a78027e5-2480-49f2-a340-ee88daf92d53",
+      "count": 354
+    },
+    {
+      "speaker": "Annely Akkermann",
+      "speaker_uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+      "count": 341
+    },
+    {
+      "speaker": "Helir-Valdor Seeder",
+      "speaker_uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+      "count": 294
+    },
+    {
+      "speaker": "Lauri Läänemets",
+      "speaker_uuid": "d557812c-971d-415b-827d-aa6a382ec6ef",
+      "count": 266
+    },
+    {
+      "speaker": "Jürgen Ligi",
+      "speaker_uuid": "c0c7bea2-4c5e-4295-9c0f-dca52d602098",
+      "count": 234
+    },
+    {
+      "speaker": "Tanel Kiik",
+      "speaker_uuid": "561abe91-76eb-45f3-90b0-efa94c663689",
+      "count": 234
+    },
+    {
+      "speaker": "Signe Riisalo",
+      "speaker_uuid": "0e66e826-df65-4fdd-a098-66a7e9a7c911",
+      "count": 231
+    },
+    {
+      "speaker": "Jüri Ratas",
+      "speaker_uuid": "87b36dbb-08e9-4048-91eb-6df699c6e27e",
+      "count": 216
+    },
+    {
+      "speaker": "Kristen Michal",
+      "speaker_uuid": "84bf9004-a454-44c9-8696-5337c74ff486",
+      "count": 204
+    },
+    {
+      "speaker": "Helle-Moonika Helme",
+      "speaker_uuid": "f4e5d00e-19d1-428a-ba5e-5ce9ae4ef2c2",
+      "count": 168
+    },
+    {
+      "speaker": "Janar Holm",
+      "speaker_uuid": null,
+      "count": 168
+    },
+    {
+      "speaker": "Aivar Sõerd",
+      "speaker_uuid": "5650dddf-f2ca-4b94-8888-e7482808f81b",
+      "count": 166
+    },
+    {
+      "speaker": "Maris Lauri",
+      "speaker_uuid": "315ea785-8f59-40e5-a158-3de8b908572f",
+      "count": 163
+    },
+    {
+      "speaker": "Lauri Laats",
+      "speaker_uuid": "1839253a-aec0-4019-995a-1c031db8fd10",
+      "count": 160
+    },
+    {
+      "speaker": "Jaak Aab",
+      "speaker_uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+      "count": 159
+    },
+    {
+      "speaker": "Peeter Ernits",
+      "speaker_uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
+      "count": 155
+    }
+  ]
+}

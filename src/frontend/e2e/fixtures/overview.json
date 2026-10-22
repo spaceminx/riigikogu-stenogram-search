@@ -1,0 +1,127 @@
+{
+  "speakers": [
+    {
+      "speaker": "Peeter Ernits",
+      "speaker_uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "count": 3295
+    },
+    {
+      "speaker": "Kalle Grünthal",
+      "speaker_uuid": "db532de2-5abd-4b6d-a82c-2d9a75fd9d18",
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "count": 3055
+    },
+    {
+      "speaker": "Aivar Kokk",
+      "speaker_uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
+      "faction": "Isamaa fraktsioon",
+      "count": 2712
+    },
+    {
+      "speaker": "Helle-Moonika Helme",
+      "speaker_uuid": "f4e5d00e-19d1-428a-ba5e-5ce9ae4ef2c2",
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "count": 2545
+    }
+  ],
+  "sessions": [
+    {
+      "date": "2026-10-21",
+      "source_url": "https://stenogrammid.riigikogu.ee/et/202610211400",
+      "topics": ["laps", "eelnõu", "tervis"]
+    },
+    {
+      "date": "2026-10-21",
+      "source_url": "https://stenogrammid.riigikogu.ee/et/202610211200",
+      "topics": ["kodakondsus", "raudtee", "küsimus"]
+    },
+    {
+      "date": "2026-10-20",
+      "source_url": "https://stenogrammid.riigikogu.ee/et/202610201000",
+      "topics": ["eelarve", "aasta", "riik"]
+    }
+  ],
+  "activity": [
+    {
+      "month": "2024-11",
+      "count": 3083
+    },
+    {
+      "month": "2024-12",
+      "count": 2485
+    },
+    {
+      "month": "2025-01",
+      "count": 1645
+    },
+    {
+      "month": "2025-02",
+      "count": 2115
+    },
+    {
+      "month": "2025-03",
+      "count": 2028
+    },
+    {
+      "month": "2025-04",
+      "count": 2295
+    },
+    {
+      "month": "2025-05",
+      "count": 3485
+    },
+    {
+      "month": "2025-06",
+      "count": 3546
+    },
+    {
+      "month": "2025-07",
+      "count": 0
+    },
+    {
+      "month": "2025-08",
+      "count": 0
+    },
+    {
+      "month": "2025-09",
+      "count": 3027
+    },
+    {
+      "month": "2025-10",
+      "count": 2566
+    },
+    {
+      "month": "2025-11",
+      "count": 3752
+    },
+    {
+      "month": "2025-12",
+      "count": 3061
+    },
+    {
+      "month": "2026-01",
+      "count": 2631
+    },
+    {
+      "month": "2026-02",
+      "count": 3070
+    },
+    {
+      "month": "2026-03",
+      "count": 2642
+    },
+    {
+      "month": "2026-04",
+      "count": 2973
+    },
+    {
+      "month": "2026-05",
+      "count": 2995
+    },
+    {
+      "month": "2026-06",
+      "count": 3993
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "term": "riigieelarve",
+    "lemma": "riigieelarve",
+    "df": 6574,
+    "is_person": false
+  },
+  {
+    "term": "riigikaitse",
+    "lemma": "riigikaitse",
+    "df": 2025,
+    "is_person": false
+  },
+  {
+    "term": "riigikohus",
+    "lemma": "riigikohus",
+    "df": 1769,
+    "is_person": false
+  },
+  {
+    "term": "riigikontroll",
+    "lemma": "riigikontroll",
+    "df": 1129,
+    "is_person": false
+  },
+  {
+    "term": "riigikaitsekomisjon",
+    "lemma": "riigikaitsekomisjon",
+    "df": 1099,
+    "is_person": false
+  },
+  {
+    "term": "riigiasutus",
+    "lemma": "riigiasutus",
+    "df": 693,
+    "is_person": false
+  },
+  {
+    "term": "riigikantselei",
+    "lemma": "riigikantselei",
+    "df": 569,
+    "is_person": false
+  },
+  {
+    "term": "riigikontrolör",
+    "lemma": "riigikontrolör",
+    "df": 486,
+    "is_person": false
+  }
+]

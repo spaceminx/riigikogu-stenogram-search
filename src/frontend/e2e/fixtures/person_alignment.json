@@ -1,0 +1,25 @@
+{
+  "same": 644,
+  "different": 176,
+  "share_same": 78.5,
+  "excluded": {
+    "absent": 52,
+    "split": 21,
+    "too_few": 0,
+    "no_faction": 1428
+  },
+  "by_membership": [
+    {
+      "membership": 15,
+      "same": 258,
+      "different": 60,
+      "share_same": 81.1
+    },
+    {
+      "membership": 14,
+      "same": 386,
+      "different": 116,
+      "share_same": 76.9
+    }
+  ]
+}

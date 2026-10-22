@@ -1,0 +1,126 @@
+{
+  "query": "riigieelarve",
+  "interval": "monthly",
+  "activity": [
+    {
+      "month": "2019-04",
+      "count": 7,
+      "total": 380,
+      "share": 0.0184
+    },
+    {
+      "month": "2019-05",
+      "count": 27,
+      "total": 995,
+      "share": 0.0271
+    },
+    {
+      "month": "2019-06",
+      "count": 28,
+      "total": 1222,
+      "share": 0.0229
+    },
+    {
+      "month": "2019-07",
+      "count": 0,
+      "total": 0,
+      "share": null
+    },
+    {
+      "month": "2019-08",
+      "count": 11,
+      "total": 261,
+      "share": 0.0421
+    },
+    {
+      "month": "2019-09",
+      "count": 39,
+      "total": 1477,
+      "share": 0.0264
+    },
+    {
+      "month": "2019-10",
+      "count": 104,
+      "total": 1706,
+      "share": 0.061
+    },
+    {
+      "month": "2019-11",
+      "count": 110,
+      "total": 2103,
+      "share": 0.0523
+    },
+    {
+      "month": "2019-12",
+      "count": 87,
+      "total": 1963,
+      "share": 0.0443
+    },
+    {
+      "month": "2020-01",
+      "count": 44,
+      "total": 1755,
+      "share": 0.0251
+    },
+    {
+      "month": "2020-02",
+      "count": 27,
+      "total": 1583,
+      "share": 0.0171
+    },
+    {
+      "month": "2020-03",
+      "count": 16,
+      "total": 1019,
+      "share": 0.0157
+    },
+    {
+      "month": "2020-04",
+      "count": 51,
+      "total": 1891,
+      "share": 0.027
+    },
+    {
+      "month": "2020-05",
+      "count": 33,
+      "total": 2600,
+      "share": 0.0127
+    },
+    {
+      "month": "2020-06",
+      "count": 96,
+      "total": 2649,
+      "share": 0.0362
+    },
+    {
+      "month": "2020-07",
+      "count": 0,
+      "total": 194,
+      "share": 0
+    },
+    {
+      "month": "2020-08",
+      "count": 1,
+      "total": 88,
+      "share": 0.0114
+    },
+    {
+      "month": "2020-09",
+      "count": 48,
+      "total": 1333,
+      "share": 0.036
+    },
+    {
+      "month": "2020-10",
+      "count": 69,
+      "total": 1873,
+      "share": 0.0368
+    },
+    {
+      "month": "2020-11",
+      "count": 138,
+      "total": 2527,
+      "share": 0.0546
+    }
+  ]
+}

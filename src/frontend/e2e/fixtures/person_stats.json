@@ -1,0 +1,212 @@
+{
+  "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+  "full_name": "Jaak Aab",
+  "totals": {
+    "mp": {
+      "speeches": 437,
+      "questions": 367,
+      "procedural": 22,
+      "unclassified": 27,
+      "total": 853
+    },
+    "chair": {
+      "speeches": 0,
+      "questions": 0,
+      "procedural": 0,
+      "unclassified": 0,
+      "total": 0
+    },
+    "minister": {
+      "speeches": 304,
+      "questions": 2,
+      "procedural": 0,
+      "unclassified": 5,
+      "total": 311
+    },
+    "candidate": {
+      "speeches": 0,
+      "questions": 0,
+      "procedural": 0,
+      "unclassified": 0,
+      "total": 0
+    },
+    "other": {
+      "speeches": 0,
+      "questions": 0,
+      "procedural": 0,
+      "unclassified": 0,
+      "total": 0
+    }
+  },
+  "director": 0,
+  "by_year": [
+    {
+      "year": "2026",
+      "mp": {
+        "speeches": 56,
+        "questions": 76,
+        "procedural": 1,
+        "unclassified": 4,
+        "total": 137
+      },
+      "chair": 0,
+      "minister": 0,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 0,
+      "director": 0
+    },
+    {
+      "year": "2025",
+      "mp": {
+        "speeches": 75,
+        "questions": 112,
+        "procedural": 1,
+        "unclassified": 13,
+        "total": 201
+      },
+      "chair": 0,
+      "minister": 0,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 0,
+      "director": 0
+    },
+    {
+      "year": "2024",
+      "mp": {
+        "speeches": 63,
+        "questions": 21,
+        "procedural": 1,
+        "unclassified": 6,
+        "total": 91
+      },
+      "chair": 0,
+      "minister": 0,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 0,
+      "director": 0
+    },
+    {
+      "year": "2023",
+      "mp": {
+        "speeches": 141,
+        "questions": 129,
+        "procedural": 17,
+        "unclassified": 4,
+        "total": 291
+      },
+      "chair": 0,
+      "minister": 0,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 0,
+      "director": 0
+    },
+    {
+      "year": "2022",
+      "mp": {
+        "speeches": 102,
+        "questions": 29,
+        "procedural": 2,
+        "unclassified": 0,
+        "total": 133
+      },
+      "chair": 0,
+      "minister": 63,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 63,
+      "director": 0
+    },
+    {
+      "year": "2021",
+      "mp": {
+        "speeches": 0,
+        "questions": 0,
+        "procedural": 0,
+        "unclassified": 0,
+        "total": 0
+      },
+      "chair": 0,
+      "minister": 134,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 134,
+      "director": 0
+    },
+    {
+      "year": "2020",
+      "mp": {
+        "speeches": 0,
+        "questions": 0,
+        "procedural": 0,
+        "unclassified": 0,
+        "total": 0
+      },
+      "chair": 0,
+      "minister": 83,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 83,
+      "director": 0
+    },
+    {
+      "year": "2019",
+      "mp": {
+        "speeches": 0,
+        "questions": 0,
+        "procedural": 0,
+        "unclassified": 0,
+        "total": 0
+      },
+      "chair": 0,
+      "minister": 31,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 31,
+      "director": 0
+    }
+  ],
+  "by_membership": [
+    {
+      "membership": "15",
+      "mp": {
+        "speeches": 295,
+        "questions": 329,
+        "procedural": 20,
+        "unclassified": 27,
+        "total": 671
+      },
+      "chair": 0,
+      "minister": 0,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 0,
+      "director": 0
+    },
+    {
+      "membership": "14",
+      "mp": {
+        "speeches": 142,
+        "questions": 38,
+        "procedural": 2,
+        "unclassified": 0,
+        "total": 182
+      },
+      "chair": 0,
+      "minister": 311,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 311,
+      "director": 0
+    }
+  ],
+  "duration": {
+    "mp_seconds": 88077,
+    "available_from": "2020-09-14"
+  },
+  "first_speech_date": "2019-09-24",
+  "last_speech_date": "2026-10-21"
+}

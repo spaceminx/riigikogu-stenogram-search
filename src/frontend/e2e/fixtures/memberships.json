@@ -1,0 +1,74 @@
+[
+  {
+    "id": "15",
+    "number": 15,
+    "name": "XV Riigikogu",
+    "start_date": "2023-04-10",
+    "end_date": "2027-02-25",
+    "is_current": true
+  },
+  {
+    "id": "14",
+    "number": 14,
+    "name": "XIV Riigikogu",
+    "start_date": "2019-04-04",
+    "end_date": "2023-04-09",
+    "is_current": false
+  },
+  {
+    "id": "13",
+    "number": 13,
+    "name": "XIII Riigikogu",
+    "start_date": "2015-03-30",
+    "end_date": "2019-04-03",
+    "is_current": false
+  },
+  {
+    "id": "12",
+    "number": 12,
+    "name": "XII Riigikogu",
+    "start_date": "2011-04-04",
+    "end_date": "2015-03-29",
+    "is_current": false
+  },
+  {
+    "id": "11",
+    "number": 11,
+    "name": "XI Riigikogu",
+    "start_date": "2007-04-02",
+    "end_date": "2011-04-03",
+    "is_current": false
+  },
+  {
+    "id": "10",
+    "number": 10,
+    "name": "X Riigikogu",
+    "start_date": "2003-03-31",
+    "end_date": "2007-04-01",
+    "is_current": false
+  },
+  {
+    "id": "9",
+    "number": 9,
+    "name": "IX Riigikogu",
+    "start_date": "1999-03-18",
+    "end_date": "2003-03-30",
+    "is_current": false
+  },
+  {
+    "id": "8",
+    "number": 8,
+    "name": "VIII Riigikogu",
+    "start_date": "1995-03-21",
+    "end_date": "1999-03-17",
+    "is_current": false
+  },
+  {
+    "id": "7",
+    "number": 7,
+    "name": "VII Riigikogu",
+    "start_date": "1992-09-28",
+    "end_date": "1995-03-20",
+    "is_current": false
+  }
+]

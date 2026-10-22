@@ -1,0 +1,227 @@
+{
+  "uuid": "3943e6d1-4259-4435-bb44-644bc6ce6105",
+  "voting_number": 104346,
+  "type": "AVALIK",
+  "is_technical": false,
+  "note": null,
+  "description": "Tagasi lükkamine",
+  "date": "2026-10-21",
+  "start_time": "2026-10-21T23:01:51.823",
+  "end_time": "2026-10-21T23:02:11.817",
+  "sitting_date": "2026-10-21",
+  "sitting_datetime": "2026-10-21T14:00:00",
+  "session_source_file": "2026-10-21_1400.api",
+  "membership": 15,
+  "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+  "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+  "related_document": {
+    "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
+    "reference": "980",
+    "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+    "type": "DRAFT"
+  },
+  "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+  "chairman_name": "Arvo Aller",
+  "totals": {
+    "present": 90,
+    "absent": 11,
+    "in_favor": 0,
+    "against": 18,
+    "neutral": 0,
+    "abstained": 83
+  },
+  "votes": [
+    {
+      "member_uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
+      "member_name": "Aivar Kokk",
+      "faction": "Isamaa fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "5650dddf-f2ca-4b94-8888-e7482808f81b",
+      "member_name": "Aivar Sõerd",
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "563f86fd-db45-4046-b8ed-b66e5a2aec45",
+      "member_name": "Alar Laneman",
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "fe6fcd51-6911-4dc6-9232-ddeac5ec1155",
+      "member_name": "Aleksandr Tšaplõgin",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "decision": "PUUDUB"
+    },
+    {
+      "member_uuid": "0ef9e676-8ee6-481a-ae29-e1ce75af5aaa",
+      "member_name": "Aleksei Jevgrafov",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "04510d7c-b12a-48aa-8402-80b0efb114a6",
+      "member_name": "Anastassia Kovalenko-Kõlvart",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "4e2e1744-16b5-4d88-a08a-cf250c776956",
+      "member_name": "Ando Kiviberg",
+      "faction": "Eesti 200 fraktsioon",
+      "decision": "VASTU"
+    },
+    {
+      "member_uuid": "80f542c1-393a-46e2-9fca-99948e59850d",
+      "member_name": "Andre Hanimägi",
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "decision": "VASTU"
+    },
+    {
+      "member_uuid": "a62b7530-a1fb-4c0b-b041-f10c2cfaa31a",
+      "member_name": "Andrei Korobeinik",
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "decision": "PUUDUB"
+    },
+    {
+      "member_uuid": "d5f3dddb-d809-448a-a94f-adbf208e408a",
+      "member_name": "Andres Metsoja",
+      "faction": "Isamaa fraktsioon",
+      "decision": "PUUDUB"
+    },
+    {
+      "member_uuid": "8e9879fd-2967-45ca-892b-42e927b22d75",
+      "member_name": "Andres Sutt",
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "fd57045c-5dde-4c26-bf60-e5c294da0e4c",
+      "member_name": "Andrus Seeme",
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+      "member_name": "Annely Akkermann",
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+      "member_name": "Anti Allas",
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "decision": "VASTU"
+    },
+    {
+      "member_uuid": "07003549-aa42-4764-8bdd-cab06cb94a92",
+      "member_name": "Anti Haugas",
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "bc9c1725-2fd8-4f54-a0e3-58b87e9dfe1f",
+      "member_name": "Anti Poolamets",
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "decision": "VASTU"
+    },
+    {
+      "member_uuid": "c4e3fc0f-80fb-4a3e-b49e-80045c5253d9",
+      "member_name": "Ants Frosch",
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "member_name": "Arvo Aller",
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "decision": "VASTU"
+    },
+    {
+      "member_uuid": "8946b072-80c5-436e-95b2-41f928a7c636",
+      "member_name": "Diana Ingerainen",
+      "faction": "Eesti 200 fraktsioon",
+      "decision": "EI_HAALETANUD"
+    },
+    {
+      "member_uuid": "b2226516-4cd4-4471-b93b-696c40b7a9e2",
+      "member_name": "Eerik-Niiles Kross",
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "decision": "EI_HAALETANUD"
+    }
+  ],
+  "by_faction": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "in_favor": 0,
+      "against": 0,
+      "neutral": 0,
+      "not_voted": 35,
+      "absent": 1,
+      "total": 36,
+      "majority_position": "EI_HAALETANUD"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "in_favor": 0,
+      "against": 7,
+      "neutral": 0,
+      "not_voted": 11,
+      "absent": 2,
+      "total": 20,
+      "majority_position": "EI_HAALETANUD"
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "in_favor": 0,
+      "against": 2,
+      "neutral": 0,
+      "not_voted": 10,
+      "absent": 0,
+      "total": 12,
+      "majority_position": "EI_HAALETANUD"
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "in_favor": 0,
+      "against": 2,
+      "neutral": 0,
+      "not_voted": 6,
+      "absent": 1,
+      "total": 9,
+      "majority_position": "EI_HAALETANUD"
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "in_favor": 0,
+      "against": 6,
+      "neutral": 0,
+      "not_voted": 0,
+      "absent": 3,
+      "total": 9,
+      "majority_position": "VASTU"
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "in_favor": 0,
+      "against": 0,
+      "neutral": 0,
+      "not_voted": 6,
+      "absent": 2,
+      "total": 8,
+      "majority_position": "EI_HAALETANUD"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "in_favor": 0,
+      "against": 1,
+      "neutral": 0,
+      "not_voted": 4,
+      "absent": 2,
+      "total": 7,
+      "majority_position": "EI_HAALETANUD"
+    }
+  ]
+}

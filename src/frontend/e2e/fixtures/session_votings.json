@@ -1,0 +1,472 @@
+{
+  "total": 15,
+  "limit": 100,
+  "offset": 0,
+  "results": [
+    {
+      "uuid": "d034d348-1fee-49bb-b534-6ce761f3b4b8",
+      "voting_number": 104332,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Tagasi lükkamine",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T14:24:23.913",
+      "end_time": "2026-10-21T14:24:43.907",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "7c878495-f160-459f-a5ca-b311b3156ff5",
+        "reference": "",
+        "title": "2027. aasta riigieelarve seaduse eelnõu (1037 SE I)",
+        "type": "plenaryAgendaItemDocument"
+      },
+      "chairman_uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+      "totals": {
+        "present": 85,
+        "absent": 16,
+        "in_favor": 28,
+        "against": 48,
+        "neutral": 0,
+        "abstained": 25
+      }
+    },
+    {
+      "uuid": "32b60160-5cfa-472e-928d-e76f80d0feeb",
+      "voting_number": 104333,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Lõpphääletus",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T14:27:57.213",
+      "end_time": "2026-10-21T14:28:17.207",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "601f126d-99da-40a5-8cdd-f63a92ab6a0b",
+        "reference": "855",
+        "title": "Relvaseaduse ja lõhkematerjaliseaduse muutmise seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+      "totals": {
+        "present": 86,
+        "absent": 15,
+        "in_favor": 78,
+        "against": 0,
+        "neutral": 0,
+        "abstained": 23
+      }
+    },
+    {
+      "uuid": "3f676973-5ddf-4d95-b51c-ba1ddb4dbdf6",
+      "voting_number": 104334,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Lõpphääletus",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T14:31:41.86",
+      "end_time": "2026-10-21T14:32:01.853",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "e7efbc07-fdfb-4964-a856-e7a4d3a03bf7",
+        "reference": "896",
+        "title": "Konsulaarseaduse ja teiste seaduste muutmise seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+      "totals": {
+        "present": 87,
+        "absent": 14,
+        "in_favor": 59,
+        "against": 0,
+        "neutral": 0,
+        "abstained": 42
+      }
+    },
+    {
+      "uuid": "8891c812-b618-41ab-ad47-5ce8ecd75979",
+      "voting_number": 104335,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Lõpphääletus",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T15:04:29.297",
+      "end_time": "2026-10-21T15:04:49.29",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "0c991fe4-2393-4ca6-a71d-38bb508f686f",
+        "reference": "899",
+        "title": "Loomakaitseseaduse ja veterinaarseaduse muutmise seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+      "totals": {
+        "present": 89,
+        "absent": 12,
+        "in_favor": 55,
+        "against": 11,
+        "neutral": 1,
+        "abstained": 34
+      }
+    },
+    {
+      "uuid": "71ea7fdb-04f4-412c-91c7-33d48e691d11",
+      "voting_number": 104336,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Lõpphääletus",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T15:22:07.75",
+      "end_time": "2026-10-21T15:22:27.743",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "63bf4736-defe-465e-a2e0-6a12797f2e72",
+        "reference": "936",
+        "title": "Võlaõigusseaduse muutmise ja sellega seonduvalt teiste seaduste muutmise seadus (finantspettuste ennetamine ja tõkestamine)",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+      "totals": {
+        "present": 89,
+        "absent": 12,
+        "in_favor": 76,
+        "against": 0,
+        "neutral": 0,
+        "abstained": 25
+      }
+    },
+    {
+      "uuid": "50bfaa7f-3491-4759-b956-c17e3a909b87",
+      "voting_number": 104337,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Lõpphääletus",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T15:26:04.03",
+      "end_time": "2026-10-21T15:26:24.023",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "f5631762-476d-40cc-9124-7dfcb2730c0f",
+        "reference": "941",
+        "title": "Notari tasu seaduse ja teiste seaduste muutmise seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+      "totals": {
+        "present": 89,
+        "absent": 12,
+        "in_favor": 67,
+        "against": 1,
+        "neutral": 0,
+        "abstained": 33
+      }
+    },
+    {
+      "uuid": "7d1db524-86a7-4b48-90d2-7defe9a6e3b3",
+      "voting_number": 104338,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Lõpphääletus",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T17:11:12.01",
+      "end_time": "2026-10-21T17:11:32.003",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "2b81379c-048a-4014-b617-82a1a2714216",
+        "reference": "977",
+        "title": "Riigikogu otsus „Ettepaneku tegemine Vabariigi Valitsusele töötada välja meetmed laste ja noorte vaimse tervise abi kättesaadavuse parandamiseks ning lapsevanemate toetamiseks nutiseadmete ja sotsiaalmeedia kasutuse piiramisel\"",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 41,
+        "against": 0,
+        "neutral": 0,
+        "abstained": 60
+      }
+    },
+    {
+      "uuid": "5bdc972f-fd0d-4226-adc8-ee59a95bcb48",
+      "voting_number": 104339,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "1. muudatusettepanek",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T18:18:12.667",
+      "end_time": "2026-10-21T18:18:32.66",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "4f37ea6b-bba9-4e59-8ddb-c5e043b92d0d",
+        "reference": "1019",
+        "title": "Riigi 2026. aasta teise lisaeelarve seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 47,
+        "against": 14,
+        "neutral": 1,
+        "abstained": 39
+      }
+    },
+    {
+      "uuid": "68c344d6-6088-43c3-ab7d-9987663eea47",
+      "voting_number": 104340,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "2. muudatusettepanek",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T18:19:20.247",
+      "end_time": "2026-10-21T18:19:40.24",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "4f37ea6b-bba9-4e59-8ddb-c5e043b92d0d",
+        "reference": "1019",
+        "title": "Riigi 2026. aasta teise lisaeelarve seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 21,
+        "against": 46,
+        "neutral": 0,
+        "abstained": 34
+      }
+    },
+    {
+      "uuid": "80be2626-5d8e-4aaa-9381-41229e4d5902",
+      "voting_number": 104341,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "3. muudatusettepanek",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T18:20:28.567",
+      "end_time": "2026-10-21T18:20:48.56",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "4f37ea6b-bba9-4e59-8ddb-c5e043b92d0d",
+        "reference": "1019",
+        "title": "Riigi 2026. aasta teise lisaeelarve seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 22,
+        "against": 47,
+        "neutral": 0,
+        "abstained": 32
+      }
+    },
+    {
+      "uuid": "71d24c80-708c-4e1d-8ec7-17ac4cc83013",
+      "voting_number": 104342,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "4. muudatusettepanek",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T18:21:33.59",
+      "end_time": "2026-10-21T18:21:53.583",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "4f37ea6b-bba9-4e59-8ddb-c5e043b92d0d",
+        "reference": "1019",
+        "title": "Riigi 2026. aasta teise lisaeelarve seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 22,
+        "against": 46,
+        "neutral": 0,
+        "abstained": 33
+      }
+    },
+    {
+      "uuid": "48a7bf57-e252-4a20-9eab-6e3c4e96e207",
+      "voting_number": 104343,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "5. muudatusettepanek",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T18:22:37.787",
+      "end_time": "2026-10-21T18:22:57.78",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "4f37ea6b-bba9-4e59-8ddb-c5e043b92d0d",
+        "reference": "1019",
+        "title": "Riigi 2026. aasta teise lisaeelarve seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 16,
+        "against": 47,
+        "neutral": 0,
+        "abstained": 38
+      }
+    },
+    {
+      "uuid": "6d09b693-b874-42e5-a7f3-e36de5c4365a",
+      "voting_number": 104344,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "II lugemise katkestamine",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T18:26:32.543",
+      "end_time": "2026-10-21T18:26:52.537",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "4f37ea6b-bba9-4e59-8ddb-c5e043b92d0d",
+        "reference": "1019",
+        "title": "Riigi 2026. aasta teise lisaeelarve seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 16,
+        "against": 47,
+        "neutral": 0,
+        "abstained": 38
+      }
+    },
+    {
+      "uuid": "1897abbd-c8f0-4576-bf55-a318fe2942fb",
+      "voting_number": 104345,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Tagasi lükkamine",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T22:20:06.28",
+      "end_time": "2026-10-21T22:20:26.273",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "17d01e7c-eb5e-4f48-ac91-9c24f0285256",
+        "reference": "959",
+        "title": "Perehüvitise seaduse muutmise seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 40,
+        "against": 19,
+        "neutral": 0,
+        "abstained": 42
+      }
+    },
+    {
+      "uuid": "3943e6d1-4259-4435-bb44-644bc6ce6105",
+      "voting_number": 104346,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Tagasi lükkamine",
+      "date": "2026-10-21",
+      "start_time": "2026-10-21T23:01:51.823",
+      "end_time": "2026-10-21T23:02:11.817",
+      "sitting_date": "2026-10-21",
+      "sitting_datetime": "2026-10-21T14:00:00",
+      "session_source_file": "2026-10-21_1400.api",
+      "membership": 15,
+      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
+      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "related_document": {
+        "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
+        "reference": "980",
+        "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "totals": {
+        "present": 90,
+        "absent": 11,
+        "in_favor": 0,
+        "against": 18,
+        "neutral": 0,
+        "abstained": 83
+      }
+    }
+  ]
+}

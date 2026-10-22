@@ -1,0 +1,46 @@
+{
+  "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+  "first_name": "Jaak",
+  "last_name": "Aab",
+  "full_name": "Jaak Aab",
+  "gender": "MALE",
+  "birth_year": 1960,
+  "photo_url": "https://api.riigikogu.ee/api/files/628a5440-1825-4a60-9017-4c13069052b8/download",
+  "electoral_district": "Järva- ja Viljandimaa",
+  "seniority_days": 3484,
+  "active": true,
+  "speeches_count": 853,
+  "speeches_count_all": 1164,
+  "factions": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2019-04-04",
+      "end": "2019-04-25"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2022-06-04",
+      "end": "2022-06-05"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2022-06-06",
+      "end": "2023-04-01"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2023-04-01",
+      "end": "2023-04-11"
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "start": "2023-04-11",
+      "end": "2024-01-05"
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "start": "2024-01-05",
+      "end": "2099-12-31"
+    }
+  ]
+}

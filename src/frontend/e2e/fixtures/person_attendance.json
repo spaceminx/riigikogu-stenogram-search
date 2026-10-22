@@ -1,0 +1,119 @@
+{
+  "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+  "member_name": "Jaak Aab",
+  "total_sessions": 654,
+  "present_sessions": 428,
+  "absent_sessions": 226,
+  "attendance_percentage": 65.4,
+  "votes": {
+    "voted": 1448,
+    "not_voted": 754,
+    "absent": 119,
+    "total": 2321,
+    "voted_pct": 62.4
+  },
+  "by_membership": [
+    {
+      "membership": "15",
+      "total_sessions": 535,
+      "present_sessions": 332,
+      "absent_sessions": 203,
+      "attendance_percentage": 62.1,
+      "votes": {
+        "voted": 1060,
+        "not_voted": 628,
+        "absent": 80,
+        "total": 1768,
+        "voted_pct": 60
+      }
+    },
+    {
+      "membership": "14",
+      "total_sessions": 119,
+      "present_sessions": 96,
+      "absent_sessions": 23,
+      "attendance_percentage": 80.7,
+      "votes": {
+        "voted": 388,
+        "not_voted": 126,
+        "absent": 39,
+        "total": 553,
+        "voted_pct": 70.2
+      }
+    }
+  ],
+  "role_breakdown": {
+    "coalition": {
+      "total_sessions": 8,
+      "present_sessions": 8,
+      "absent_sessions": 0,
+      "attendance_percentage": 100,
+      "votes": {
+        "voted": 4,
+        "not_voted": 0,
+        "absent": 0,
+        "total": 4,
+        "voted_pct": 100
+      },
+      "by_membership": [
+        {
+          "membership": "14",
+          "total_sessions": 8,
+          "present_sessions": 8,
+          "absent_sessions": 0,
+          "attendance_percentage": 100,
+          "votes": {
+            "voted": 4,
+            "not_voted": 0,
+            "absent": 0,
+            "total": 4,
+            "voted_pct": 100
+          }
+        }
+      ]
+    },
+    "opposition": {
+      "total_sessions": 220,
+      "present_sessions": 168,
+      "absent_sessions": 52,
+      "attendance_percentage": 76.4,
+      "votes": {
+        "voted": 553,
+        "not_voted": 284,
+        "absent": 52,
+        "total": 889,
+        "voted_pct": 62.2
+      },
+      "by_membership": [
+        {
+          "membership": "15",
+          "total_sessions": 110,
+          "present_sessions": 81,
+          "absent_sessions": 29,
+          "attendance_percentage": 73.6,
+          "votes": {
+            "voted": 169,
+            "not_voted": 158,
+            "absent": 13,
+            "total": 340,
+            "voted_pct": 49.7
+          }
+        },
+        {
+          "membership": "14",
+          "total_sessions": 110,
+          "present_sessions": 87,
+          "absent_sessions": 23,
+          "attendance_percentage": 79.1,
+          "votes": {
+            "voted": 384,
+            "not_voted": 126,
+            "absent": 39,
+            "total": 549,
+            "voted_pct": 69.9
+          }
+        }
+      ]
+    }
+  }
+}

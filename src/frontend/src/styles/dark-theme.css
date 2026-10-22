@@ -15,6 +15,21 @@ html[data-theme="dark"] body {
   color: #e2e8f0;
 }
 
+html[data-theme="dark"] .nav-btn {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .nav-btn:hover {
+  color: #f1f5f9;
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .nav-btn.active {
+  color: #60a5fa;
+  background: transparent;
+  box-shadow: inset 0 -2px 0 #60a5fa;
+}
+
 html[data-theme="dark"] .brand-copy strong,
 html[data-theme="dark"] .page-titlebar h1,
 html[data-theme="dark"] .summary-card strong,
