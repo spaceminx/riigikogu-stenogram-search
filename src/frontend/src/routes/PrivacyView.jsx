@@ -70,9 +70,9 @@ export function PrivacyView({ onOpenMethodology }) {
             </h2>
             <p style={{ margin: 0, color: "var(--text-secondary)" }}>
               Riigivaade avaldab Riigikogu liikmete kohta avalikest allikatest pärit andmeid (nimi,
-              foto, fraktsioon, valimisringkond, kõned, hääletused ja kohalolek). Andmeid
-              töödeldakse parlamendi töö läbipaistvuse ja avalikkuse teavitamise eesmärgil. Kui
-              leiate vea või soovite esitada vastuväite, kirjutage{" "}
+              sünniaasta, foto, fraktsioon, valimisringkond, kõned, hääletused ja kohalolek).
+              Andmeid töödeldakse parlamendi töö läbipaistvuse ja avalikkuse teavitamise eesmärgil.
+              Kui leiate vea või soovite esitada vastuväite, kirjutage{" "}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 style={{ color: "var(--accent-primary)", textDecoration: "underline" }}
@@ -95,6 +95,39 @@ export function PrivacyView({ onOpenMethodology }) {
               kohta saab tellida RSS-voo; voo lugemiseks pole kontot vaja ja Riigivaade ei salvesta
               tellijate andmeid.
             </p>
+          </section>
+
+          <section>
+            <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Avaandmed</h2>
+            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+              Kogu Riigivaate andmestik (kõned, hääletused, kohalolek, päevakorrapunktid ja
+              saadikute põhiandmed) avaldatakse perioodiliselt masinloetaval kujul (tihendatud JSONL
+              failidena) vabaks taaskasutuseks litsentsi{" "}
+              <a
+                href="https://creativecommons.org/licenses/by-sa/3.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--accent-primary)", textDecoration: "underline" }}
+              >
+                CC BY-SA 3.0
+              </a>{" "}
+              alusel. Väljalasked sisaldavad saadikute sünniaastaid, kuid ei sisalda täpseid
+              sünnikuupäevi ega e-posti aadresse.
+            </p>
+            <div style={{ marginTop: "0.75rem" }}>
+              <a
+                href="https://github.com/spaceminx/riigikogu-stenogram-search/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "var(--accent-primary)",
+                  textDecoration: "underline",
+                  fontWeight: 500,
+                }}
+              >
+                Laadi alla andmestik (GitHub Releases)
+              </a>
+            </div>
           </section>
 
           <section>

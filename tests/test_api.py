@@ -734,6 +734,13 @@ def test_list_and_get_persons():
     names = [p["full_name"] for p in data["results"]]
     assert "Kaja Kallas" in names
     assert "Hanno Pevkur" in names
+    # Verify birth_year is present and neither date_of_birth nor email is returned
+    for p in data["results"]:
+        assert "date_of_birth" not in p
+        assert "email" not in p
+        assert "birth_year" in p
+    kaja_in_list = next(p for p in data["results"] if p["full_name"] == "Kaja Kallas")
+    assert kaja_in_list["birth_year"] == 1977
 
     # Filter active_only
     res_active = client.get("/persons?active_only=true")
@@ -755,6 +762,9 @@ def test_list_and_get_persons():
     assert p_data["uuid"] == "uuid-person-1"
     assert p_data["full_name"] == "Kaja Kallas"
     assert p_data["electoral_district"] == "Harju- ja Raplamaa"
+    assert p_data["birth_year"] == 1977
+    assert "date_of_birth" not in p_data
+    assert "email" not in p_data
     assert "factions" in p_data
     assert "speeches_count" in p_data
 
