@@ -259,7 +259,7 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
         assert "text_lemmas" not in data  # text_lemmas must be omitted
         assert data["speaker"] == "Jüri Ratas"
 
-    # Check persons: date_of_birth and email must be omitted
+    # Check persons: birth_year present, date_of_birth and email omitted
     persons_file = out_dir / "persons.jsonl.gz"
     assert persons_file.exists()
     with gzip.open(persons_file, "rt", encoding="utf-8") as f:
@@ -267,6 +267,7 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
         person = json.loads(line)
         assert person["uuid"] == "p-1"
         assert person["full_name"] == "Jüri Ratas"
+        assert person["birth_year"] == 1978
         assert "date_of_birth" not in person
         assert "email" not in person
 
@@ -301,6 +302,44 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
     build_open_data_release(sample_sqlite_db, out_dir_2, release_date="2026-10-22")
     checksums_2 = (out_dir_2 / "SHA256SUMS").read_text(encoding="utf-8")
     assert checksums == checksums_2
+
+
+def test_build_open_data_release_duplicate_agenda_items(sample_sqlite_db: Path, tmp_path: Path):
+    conn = sqlite3.connect(sample_sqlite_db)
+    cur = conn.cursor()
+    # Add a duplicate agenda item for steno-1.html and Päevakord 1
+    cur.execute(
+        """
+        INSERT INTO agenda_items VALUES (
+            'item-dup-2', 'sit-1', '2023-05-15', '2023-05-15T11:00:00', 'steno-1.html',
+            2, 'Päevakord 1', 'Päevakord 1 Teine', 'Eelnõu', 'EELNOU', '2',
+            'OTSUSTATUD', 'Vastu võetud', 'draft-2', '124 SE', 'Eelnõu 2', '["v-2"]', 'title_exact'
+        )
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    out_dir = tmp_path / "dup_release"
+    summary = build_open_data_release(
+        sample_sqlite_db,
+        out_dir,
+        release_date="2026-10-22",
+        commit_override="abc12345",
+    )
+    assert summary["git_commit"] == "abc12345"
+
+    s2023 = out_dir / "speeches_2023.jsonl.gz"
+    assert s2023.exists()
+
+    with gzip.open(s2023, "rt", encoding="utf-8") as f:
+        lines = f.readlines()
+        # Must appear exactly once despite duplicate agenda items!
+        assert len(lines) == 1
+        data = json.loads(lines[0])
+        assert data["id"] == 1
+        assert data["speech_key"] == "sk-1"
+        assert data["agenda_item_uuid"] == "item-1"  # MIN(agenda_item_uuid)
 
 
 def test_publish_open_data_release_helpers(tmp_path: Path, monkeypatch):

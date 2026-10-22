@@ -17,6 +17,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -24,8 +25,13 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
-def get_git_commit() -> str:
-    """Return the current git commit hash or 'unknown'."""
+def get_git_commit(commit_override: str | None = None) -> str:
+    """Return git commit from argument, env GIT_COMMIT, git rev-parse, or 'unknown'."""
+    if commit_override and commit_override.strip():
+        return commit_override.strip()
+    env_commit = os.environ.get("GIT_COMMIT", "").strip()
+    if env_commit:
+        return env_commit
     try:
         out = (
             subprocess.check_output(
@@ -42,27 +48,31 @@ def get_git_commit() -> str:
 
 
 def write_deterministic_jsonl_gz(
-    file_path: Path, rows: list[dict[str, Any]]
+    file_path: Path, rows: Iterable[dict[str, Any]]
 ) -> tuple[int, int, str]:
     """Write rows as gzip-compressed JSONL with mtime=0 for reproducibility.
 
-    Returns (row_count, file_size_bytes, sha256_hex).
+    Streams rows one by one. Returns (row_count, file_size_bytes, sha256_hex).
     """
     hasher = hashlib.sha256()
-    # Write to a buffer or file with mtime=0
+    count = 0
     with open(file_path, "wb") as f_out:
         with gzip.GzipFile(filename="", mode="wb", fileobj=f_out, mtime=0) as gz:
             for row in rows:
                 line = json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n"
                 gz.write(line.encode("utf-8"))
+                count += 1
 
     # Compute hash and size
     with open(file_path, "rb") as f_in:
-        content = f_in.read()
-        hasher.update(content)
-        size = len(content)
+        while True:
+            chunk = f_in.read(65536)
+            if not chunk:
+                break
+            hasher.update(chunk)
+    size = file_path.stat().st_size
 
-    return len(rows), size, hasher.hexdigest()
+    return count, size, hasher.hexdigest()
 
 
 def write_deterministic_json(file_path: Path, data: Any, indent: int = 2) -> tuple[int, str]:
@@ -87,6 +97,7 @@ def write_text_file(file_path: Path, text: str) -> tuple[int, str]:
 def export_speeches(conn: sqlite3.Connection, out_dir: Path) -> dict[str, dict[str, Any]]:
     """Export speeches grouped by year into speeches_<year>.jsonl.gz.
 
+    Queries database year by year and streams rows to disk to keep memory minimal.
     Fields: id, external_id, speech_key, date, start_time, end_time,
     duration_seconds, speaker, speaker_uuid, speaker_role, speaker_faction,
     speech_type, agenda_title, agenda_item_uuid, draft_uuid, status, text,
@@ -100,86 +111,109 @@ def export_speeches(conn: sqlite3.Connection, out_dir: Path) -> dict[str, dict[s
         > 0
     )
 
-    query = (
-        """
-    SELECT
-        s.id,
-        s.external_id,
-        s.speech_key,
-        s.date,
-        s.start_time,
-        s.end_time,
-        s.duration_seconds,
-        s.speaker,
-        s.speaker_uuid,
-        s.speaker_role,
-        s.speaker_faction,
-        s.speech_type,
-        s.agenda_title,
-        """
-        + (
-            """a.agenda_item_uuid,
-        a.draft_uuid,
-        """
-            if has_agenda_items
-            else """NULL AS agenda_item_uuid,
-        NULL AS draft_uuid,
-        """
-        )
-        + """
-        s.status,
-        s.text,
-        s.source_url,
-        s.video_url
-    FROM speeches s
-    """
-        + (
-            """LEFT JOIN agenda_items a
-        ON a.source_file = s.source_file
-       AND a.steno_title = s.agenda_title
-    """
-            if has_agenda_items
-            else ""
-        )
-        + """
-    ORDER BY s.date ASC, s.time ASC, s.id ASC
-    """
-    )
-
+    # Discover speech years
     cursor = conn.cursor()
-    cursor.execute(query)
-
-    speeches_by_year: dict[str, list[dict[str, Any]]] = {}
-    for row in cursor.fetchall():
-        year = str(row[3])[:4] if row[3] else "unknown"
-        speech_obj = {
-            "id": row[0],
-            "external_id": row[1],
-            "speech_key": row[2],
-            "date": row[3],
-            "start_time": row[4],
-            "end_time": row[5],
-            "duration_seconds": row[6],
-            "speaker": row[7],
-            "speaker_uuid": row[8],
-            "speaker_role": row[9],
-            "speaker_faction": row[10],
-            "speech_type": row[11],
-            "agenda_title": row[12],
-            "agenda_item_uuid": row[13],
-            "draft_uuid": row[14],
-            "status": row[15],
-            "text": row[16],
-            "source_url": row[17],
-            "video_url": row[18],
-        }
-        speeches_by_year.setdefault(year, []).append(speech_obj)
+    cursor.execute(
+        "SELECT DISTINCT substr(date, 1, 4) FROM speeches "
+        "WHERE date IS NOT NULL AND date != '' ORDER BY 1"
+    )
+    years = [r[0] for r in cursor.fetchall() if r[0]]
 
     results: dict[str, dict[str, Any]] = {}
-    for year in sorted(speeches_by_year.keys()):
+
+    for year in years:
+        next_year = str(int(year) + 1)
+        start_date = f"{year}-01-01"
+        end_date = f"{next_year}-01-01"
+
+        query = (
+            """
+        SELECT
+            s.id,
+            s.external_id,
+            s.speech_key,
+            s.date,
+            s.start_time,
+            s.end_time,
+            s.duration_seconds,
+            s.speaker,
+            s.speaker_uuid,
+            s.speaker_role,
+            s.speaker_faction,
+            s.speech_type,
+            s.agenda_title,
+            """
+            + (
+                """a.agenda_item_uuid,
+            a.draft_uuid,
+            """
+                if has_agenda_items
+                else """NULL AS agenda_item_uuid,
+            NULL AS draft_uuid,
+            """
+            )
+            + """
+            s.status,
+            s.text,
+            s.source_url,
+            s.video_url
+        FROM speeches s
+        """
+            + (
+                """LEFT JOIN (
+            SELECT
+                source_file,
+                steno_title,
+                MIN(agenda_item_uuid) AS agenda_item_uuid,
+                MIN(draft_uuid) AS draft_uuid
+            FROM agenda_items
+            GROUP BY source_file, steno_title
+        ) a
+            ON a.source_file = s.source_file
+           AND a.steno_title = s.agenda_title
+        """
+                if has_agenda_items
+                else ""
+            )
+            + """
+        WHERE s.date >= ? AND s.date < ?
+        ORDER BY s.date ASC, s.time ASC, s.id ASC
+        """
+        )
+
+        def speech_row_generator(
+            sql_query: str, yr_start: str, yr_end: str
+        ) -> Iterable[dict[str, Any]]:
+            cur = conn.cursor()
+            cur.execute(sql_query, (yr_start, yr_end))
+            for row in cur:
+                yield {
+                    "id": row[0],
+                    "external_id": row[1],
+                    "speech_key": row[2],
+                    "date": row[3],
+                    "start_time": row[4],
+                    "end_time": row[5],
+                    "duration_seconds": row[6],
+                    "speaker": row[7],
+                    "speaker_uuid": row[8],
+                    "speaker_role": row[9],
+                    "speaker_faction": row[10],
+                    "speech_type": row[11],
+                    "agenda_title": row[12],
+                    "agenda_item_uuid": row[13],
+                    "draft_uuid": row[14],
+                    "status": row[15],
+                    "text": row[16],
+                    "source_url": row[17],
+                    "video_url": row[18],
+                }
+
         file_name = f"speeches_{year}.jsonl.gz"
         file_path = out_dir / file_name
-        count, size, sha256 = write_deterministic_jsonl_gz(file_path, speeches_by_year[year])
+        count, size, sha256 = write_deterministic_jsonl_gz(
+            file_path, speech_row_generator(query, start_date, end_date)
+        )
         results[file_name] = {
             "count": count,
             "size": size,
@@ -264,7 +298,7 @@ def export_votings(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
 
 
 def export_votes(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
-    """Export votes.jsonl.gz."""
+    """Export votes.jsonl.gz (streamed)."""
     cursor = conn.cursor()
     # Check if votes table has member_name or join with persons
     has_member_name_in_votes = False
@@ -286,26 +320,25 @@ def export_votes(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
         ORDER BY v.voting_uuid ASC, v.member_uuid ASC
         """
 
-    cursor.execute(query)
-    rows = []
-    for r in cursor.fetchall():
-        rows.append(
-            {
+    def vote_generator() -> Iterable[dict[str, Any]]:
+        cur = conn.cursor()
+        cur.execute(query)
+        for r in cur:
+            yield {
                 "voting_uuid": r[0],
                 "member_uuid": r[1],
                 "member_name": r[2] or "",
                 "faction": r[3],
                 "decision": r[4],
             }
-        )
 
     file_name = "votes.jsonl.gz"
-    count, size, sha256 = write_deterministic_jsonl_gz(out_dir / file_name, rows)
+    count, size, sha256 = write_deterministic_jsonl_gz(out_dir / file_name, vote_generator())
     return {"count": count, "size": size, "sha256": sha256}
 
 
 def export_attendance(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
-    """Export attendance.jsonl.gz (+ sitting_type from attendance_checks)."""
+    """Export attendance.jsonl.gz (+ sitting_type from attendance_checks, streamed)."""
     has_checks = (
         conn.execute(
             "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='attendance_checks'"
@@ -334,12 +367,11 @@ def export_attendance(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]
     """
     )
 
-    cursor = conn.cursor()
-    cursor.execute(query)
-    rows = []
-    for r in cursor.fetchall():
-        rows.append(
-            {
+    def attendance_generator() -> Iterable[dict[str, Any]]:
+        cur = conn.cursor()
+        cur.execute(query)
+        for r in cur:
+            yield {
                 "id": r[0],
                 "session_date": r[1],
                 "voting_uuid": r[2],
@@ -349,10 +381,9 @@ def export_attendance(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]
                 "status": r[6],
                 "sitting_type": r[7],
             }
-        )
 
     file_name = "attendance.jsonl.gz"
-    count, size, sha256 = write_deterministic_jsonl_gz(out_dir / file_name, rows)
+    count, size, sha256 = write_deterministic_jsonl_gz(out_dir / file_name, attendance_generator())
     return {"count": count, "size": size, "sha256": sha256}
 
 
@@ -391,9 +422,9 @@ def export_attendance_checks(conn: sqlite3.Connection, out_dir: Path) -> dict[st
 
 
 def export_persons(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
-    """Export persons.jsonl.gz (uuid, first_name, last_name, full_name, gender, electoral_district, photo_url, factions).
+    """Export persons.jsonl.gz (uuid, first_name, last_name, full_name, gender, birth_year, electoral_district, photo_url, factions).
 
-    Excludes date_of_birth and email.
+    Excludes exact date_of_birth and email, exposes birth_year (int).
     """
     # Load faction history from processed files if available
     factions_map: dict[str, list[Any]] = {}
@@ -407,7 +438,7 @@ def export_persons(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
 
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT uuid, first_name, last_name, full_name, gender, electoral_district, photo_url
+    SELECT uuid, first_name, last_name, full_name, gender, date_of_birth, electoral_district, photo_url
     FROM persons
     ORDER BY last_name ASC, first_name ASC, uuid ASC
     """)
@@ -415,14 +446,17 @@ def export_persons(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
     rows = []
     for r in cursor.fetchall():
         p_uuid = r[0]
+        dob = r[5]
+        birth_year = int(dob[:4]) if dob and len(dob) >= 4 and dob[:4].isdigit() else None
         person_obj: dict[str, Any] = {
             "uuid": p_uuid,
             "first_name": r[1],
             "last_name": r[2],
             "full_name": r[3],
             "gender": r[4],
-            "electoral_district": r[5],
-            "photo_url": r[6],
+            "birth_year": birth_year,
+            "electoral_district": r[6],
+            "photo_url": r[7],
         }
         if p_uuid in factions_map:
             person_obj["factions"] = factions_map[p_uuid]
@@ -661,12 +695,13 @@ Kohalolekukontrollide üldandmed.
 - `sitting_type` (string): Istungi liik.
 
 ### 6. `persons.jsonl.gz`
-Saadikute profiiliandmed (isikuandmetest on eemaldatud sünniajad ja e-post).
+Saadikute profiiliandmed (isikuandmetest on eemaldatud täpsed sünnikuupäevad ja e-post, avaldatud on sünniaasta).
 - `uuid` (string): Saadiku unikaalne identifikaator.
 - `first_name` (string): Eesnimi.
 - `last_name` (string): Perekonnanimi.
 - `full_name` (string): Täisnimi.
 - `gender` (string | null): Sugu.
+- `birth_year` (int | null): Sünniaasta (nt 1978).
 - `electoral_district` (string | null): Valimisringkond.
 - `photo_url` (string | null): Ametliku portreefoto URL.
 - `factions` (array | optional): Fraktsioonide ajalugu.
@@ -701,7 +736,10 @@ Vabariigi Valitsuste koosseisude ja koalitsioonierakondade ametlikud perioodid.
 
 
 def build_open_data_release(
-    db_path: Path, out_dir: Path, release_date: str | None = None
+    db_path: Path,
+    out_dir: Path,
+    release_date: str | None = None,
+    commit_override: str | None = None,
 ) -> dict[str, Any]:
     """Execute the full open data release build."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -796,7 +834,7 @@ def build_open_data_release(
     # 10. manifest.json
     manifest_data = {
         "version": date_str,
-        "git_commit": get_git_commit(),
+        "git_commit": get_git_commit(commit_override),
         "created_at": f"{date_str}T00:00:00Z"
         if release_date
         else datetime.now(timezone.utc).isoformat(),
@@ -848,6 +886,12 @@ def main() -> None:
         default=None,
         help="Output directory (default: release/<YYYY-MM-DD>/).",
     )
+    parser.add_argument(
+        "--commit",
+        type=str,
+        default=None,
+        help="Git commit hash override (defaults to env GIT_COMMIT, git rev-parse HEAD, or 'unknown').",
+    )
     args = parser.parse_args()
 
     if not args.db.exists():
@@ -858,7 +902,7 @@ def main() -> None:
     out_dir = args.out or (PROJECT_ROOT / "release" / date_str)
 
     print(f"Exporting open data release from {args.db} to {out_dir}...")
-    manifest = build_open_data_release(args.db, out_dir)
+    manifest = build_open_data_release(args.db, out_dir, commit_override=args.commit)
     print("Build complete! Manifest summary:")
     for fn, meta in manifest["files"].items():
         cnt = f"{meta['count']} rows, " if "count" in meta else ""
