@@ -1,0 +1,86 @@
+.sessions-card .chart-header {
+  margin-bottom: 8px;
+}
+
+.sessions-heading-icon {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+}
+
+.sessions-list {
+  display: grid;
+}
+
+.session-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 2px;
+  border-top: 1px solid #edf1f5;
+}
+
+.session-marker {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #6b8baa;
+  box-shadow: 0 0 0 3px #eef3f7;
+}
+
+.session-content {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 7px;
+}
+
+.session-content > strong {
+  color: #1e293b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.session-topics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.session-topic {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 3px 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #53677e;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-source-link {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.session-source-link svg {
+  width: 12px;
+  height: 12px;
+}
+
+.sidebar-empty-state {
+  margin: 0;
+  padding: 12px 3px 4px;
+  border-top: 1px solid #edf1f5;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.5;
+}

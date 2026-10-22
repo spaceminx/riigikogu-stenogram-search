@@ -65,7 +65,7 @@ export function SpeechView() {
         className="glass-panel"
         style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <p style={{ color: "var(--color-text-muted, #64748b)" }}>Laen kõne andmeid...</p>
+        <p style={{ color: "var(--text-secondary, #64748b)" }}>Laen kõne andmeid...</p>
       </div>
     );
   }
@@ -77,7 +77,7 @@ export function SpeechView() {
         style={{ padding: "3rem 1.5rem", textAlign: "center", marginTop: "1rem" }}
       >
         <h2 style={{ marginBottom: "0.5rem" }}>Kõnet ei leitud</h2>
-        <p style={{ color: "var(--color-text-muted, #64748b)", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--text-secondary, #64748b)", marginBottom: "1.5rem" }}>
           {error?.message || "Kõnet sellise identifikaatoriga ei leitud."}
         </p>
         <Link
@@ -113,7 +113,7 @@ export function SpeechView() {
         </button>
         <nav
           aria-label="Leivapuru"
-          style={{ fontSize: "0.85rem", color: "var(--color-text-muted, #64748b)" }}
+          style={{ fontSize: "0.85rem", color: "var(--text-secondary, #64748b)" }}
         >
           <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
             Avaleht
@@ -158,7 +158,7 @@ export function SpeechView() {
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
-              color: "var(--color-text-muted, #64748b)",
+              color: "var(--text-secondary, #64748b)",
             }}
           >
             <Calendar size={14} aria-hidden="true" />
@@ -211,7 +211,7 @@ export function SpeechView() {
 
         <footer
           className="speech-card-actions"
-          style={{ borderTop: "1px solid var(--color-border-subtle, #e2e8f0)", paddingTop: "1rem" }}
+          style={{ borderTop: "1px solid var(--panel-border, #e2e8f0)", paddingTop: "1rem" }}
         >
           <Link
             to={`/istung/${speech.date}${publicSpeechId ? `#speech-${publicSpeechId}` : ""}`}

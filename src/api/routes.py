@@ -211,19 +211,20 @@ def attendance_stats(
     role: str | None = Query(
         None,
         description="Filtreeri valitsuse rolli järgi (coalition või opposition)",
-        pattern=r"^(coalition|opposition)$",
+        pattern=r"^(coalition|opposition|)$",
     ),
 ):
     if membership is None:
         membership = latest_membership()
     validate_membership(membership)
+    role_val = role if role else None
     try:
         return get_attendance_stats(
             membership=membership,
             faction=faction,
             active_only=active_only,
             exclude_infotund=exclude_infotund,
-            role=role,
+            role=role_val,
         )
     except OperationalError as e:
         raise HTTPException(
@@ -248,18 +249,19 @@ def attendance_factions(
     role: str | None = Query(
         None,
         description="Filtreeri valitsuse rolli järgi (coalition või opposition)",
-        pattern=r"^(coalition|opposition)$",
+        pattern=r"^(coalition|opposition|)$",
     ),
 ):
     if membership is None:
         membership = latest_membership()
     validate_membership(membership)
+    role_val = role if role else None
     try:
         return get_faction_attendance_stats(
             membership=membership,
             active_only=active_only,
             exclude_infotund=exclude_infotund,
-            role=role,
+            role=role_val,
         )
     except OperationalError as e:
         raise HTTPException(
@@ -1172,12 +1174,13 @@ def person_attendance(
     role: str | None = Query(
         None,
         description="Filtreeri valitsuse rolli järgi (coalition või opposition)",
-        pattern=r"^(coalition|opposition)$",
+        pattern=r"^(coalition|opposition|)$",
     ),
 ):
     """Get MP attendance statistics by UUID, both overall and broken down by parliamentary membership."""
+    role_val = role if role else None
     try:
-        return get_person_attendance(person_uuid, exclude_infotund=exclude_infotund, role=role)
+        return get_person_attendance(person_uuid, exclude_infotund=exclude_infotund, role=role_val)
     except ValueError as e:
         if str(e) == "Isikut ei leitud.":
             raise HTTPException(status_code=404, detail=str(e)) from e

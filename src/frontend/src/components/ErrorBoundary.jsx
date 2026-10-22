@@ -34,7 +34,7 @@ export class ErrorBoundary extends React.Component {
           <h2 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>Midagi läks valesti</h2>
           <p
             style={{
-              color: "var(--color-text-muted, #64748b)",
+              color: "var(--text-secondary, #64748b)",
               marginBottom: "2rem",
               lineHeight: 1.6,
             }}

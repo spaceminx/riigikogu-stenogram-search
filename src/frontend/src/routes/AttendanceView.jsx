@@ -75,44 +75,71 @@ export function AttendanceView({
     setSearchParams(next, { replace: true });
   };
 
-  const reqMembership = attParam || defaultMembership || undefined;
+  const reqMembership =
+    attParam || (membershipsLoading ? undefined : defaultMembership || undefined);
 
   const {
-    data: attendanceData,
-    error,
-    isLoading: loading,
+    data: attendanceStats = [],
+    error: statsError,
+    isLoading: statsLoading,
   } = useSWR(
-    [
-      "attendance",
-      reqMembership || "latest",
-      selectedFaction,
-      activeOnly,
-      noInfotund,
-      selectedRole,
-    ],
+    reqMembership
+      ? [
+          "attendance-stats",
+          reqMembership,
+          selectedFaction || "",
+          activeOnly ? "1" : "0",
+          noInfotund ? "1" : "0",
+          selectedRole || "",
+        ]
+      : null,
     () =>
-      Promise.all([
-        fetchAttendance({
-          membership: reqMembership,
-          faction: selectedFaction || null,
-          activeOnly,
-          excludeInfotund: noInfotund,
-          role: selectedRole || null,
-        }),
-        fetchFactionAttendance({
-          membership: reqMembership,
-          activeOnly,
-          excludeInfotund: noInfotund,
-          role: selectedRole || null,
-        }),
-        fetchFactionsList(reqMembership),
-      ]),
+      fetchAttendance({
+        membership: reqMembership,
+        faction: selectedFaction || null,
+        activeOnly,
+        excludeInfotund: noInfotund,
+        role: selectedRole || null,
+      }),
     { revalidateOnFocus: false, shouldRetryOnError: false }
   );
 
-  const attendanceStats = useMemo(() => attendanceData?.[0] || [], [attendanceData]);
-  const factionStats = useMemo(() => attendanceData?.[1] || [], [attendanceData]);
-  const attendanceFactionsList = attendanceData?.[2] || [];
+  const {
+    data: factionStats = [],
+    error: factionsError,
+    isLoading: factionsLoading,
+  } = useSWR(
+    reqMembership
+      ? [
+          "attendance-factions",
+          reqMembership,
+          activeOnly ? "1" : "0",
+          noInfotund ? "1" : "0",
+          selectedRole || "",
+        ]
+      : null,
+    () =>
+      fetchFactionAttendance({
+        membership: reqMembership,
+        activeOnly,
+        excludeInfotund: noInfotund,
+        role: selectedRole || null,
+      }),
+    { revalidateOnFocus: false, shouldRetryOnError: false }
+  );
+
+  const {
+    data: attendanceFactionsList = [],
+    error: factionsListError,
+    isLoading: factionsListLoading,
+  } = useSWR(
+    reqMembership ? ["factions-list", reqMembership] : null,
+    () => fetchFactionsList(reqMembership),
+    { revalidateOnFocus: false, shouldRetryOnError: false }
+  );
+
+  const loading = statsLoading || factionsLoading || factionsListLoading || membershipsLoading;
+  const error = statsError || factionsError || factionsListError;
 
   const [sortConfig, setSortConfig] = useState({
     key: "votes_voted_pct",
