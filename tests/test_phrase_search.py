@@ -8,10 +8,15 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
-from src.api.search import parse_query_groups
+from src.api.search import (
+    clear_activity_denominator_cache,
+    clear_expansion_cache,
+    parse_query_groups,
+)
+from src.api.suggest import clear_suggest_cache
 from src.load.database import SessionLocal
 from src.load.loader import create_tables
-from src.load.models import Lemma, Speech, SpeechTerm
+from src.load.models import Lemma, LemmaLink, Person, Speech, SpeechTerm
 from src.transform.lemmatizer import lemmatize_text
 
 client = TestClient(app)
@@ -22,11 +27,17 @@ def setup_phrase_test_data():
     create_tables()
     session = SessionLocal()
 
-    # Clear speeches and terms for clean isolation
+    # Clear previous data and lemma links for clean isolation
+    session.query(LemmaLink).delete()
     session.query(SpeechTerm).delete()
     session.query(Speech).delete()
     session.query(Lemma).delete()
+    session.query(Person).delete()
     session.commit()
+
+    clear_expansion_cache()
+    clear_activity_denominator_cache()
+    clear_suggest_cache()
 
     test_speeches = [
         # id=101: adjacent phrase "riigi eelarvest", inflected
@@ -357,3 +368,28 @@ def test_phrase_with_comma_matches_across_comma():
     assert data["total_count"] == 1
     assert data["results"][0]["id"] == 108
     assert "Hea juhataja, austatud kolleegid" in data["results"][0]["matched_words"]
+
+
+def test_regression_dangling_lemma_links_do_not_leak_into_phrase_search():
+    """Ensure that leftover LemmaLink rows or stale expansion caches cannot cause words to alias each other."""
+    session = SessionLocal()
+    try:
+        l_riik = session.query(Lemma).filter_by(lemma="riik").first()
+        l_eelarve = session.query(Lemma).filter_by(lemma="eelarve").first()
+        assert l_riik is not None and l_eelarve is not None
+
+        # Verify that even with clean fixture setup, 'eelarve' and 'riik' are not linked
+        resp = client.get('/search?q="eelarve riigi"')
+        assert resp.status_code == 200
+        ids = {r["id"] for r in resp.json()["results"]}
+        assert ids == {103}
+        assert 101 not in ids
+        assert 107 not in ids
+
+        resp_phrase = client.get('/search?q="riigi eelarve"')
+        assert resp_phrase.status_code == 200
+        ids_phrase = {r["id"] for r in resp_phrase.json()["results"]}
+        assert ids_phrase == {101, 107}
+        assert 103 not in ids_phrase
+    finally:
+        session.close()
