@@ -459,7 +459,13 @@ def export_persons(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any]:
             "photo_url": r[7],
         }
         if p_uuid in factions_map:
-            person_obj["factions"] = factions_map[p_uuid]
+            normalized_factions = []
+            for fac in factions_map[p_uuid]:
+                f_copy = dict(fac)
+                if f_copy.get("end") == "2099-12-31":
+                    f_copy["end"] = None
+                normalized_factions.append(f_copy)
+            person_obj["factions"] = normalized_factions
         rows.append(person_obj)
 
     file_name = "persons.jsonl.gz"
@@ -704,7 +710,7 @@ Saadikute profiiliandmed (isikuandmetest on eemaldatud täpsed sünnikuupäevad 
 - `birth_year` (int | null): Sünniaasta (nt 1978).
 - `electoral_district` (string | null): Valimisringkond.
 - `photo_url` (string | null): Ametliku portreefoto URL.
-- `factions` (array | optional): Fraktsioonide ajalugu.
+- `factions` (array | optional): Fraktsioonide ajalugu (`factions[].end = null` tähistab kehtivat kuuluvust).
 
 ### 7. `agenda_items.jsonl.gz`
 Istungite päevakorrapunktid ja seosed seaduseelnõudega.
@@ -884,7 +890,7 @@ def main() -> None:
         "--out",
         type=Path,
         default=None,
-        help="Output directory (default: release/<YYYY-MM-DD>/).",
+        help="Output directory (default: data/release/<YYYY-MM-DD>/).",
     )
     parser.add_argument(
         "--commit",
@@ -899,7 +905,7 @@ def main() -> None:
         sys.exit(1)
 
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    out_dir = args.out or (PROJECT_ROOT / "release" / date_str)
+    out_dir = args.out or (PROJECT_ROOT / "data" / "release" / date_str)
 
     print(f"Exporting open data release from {args.db} to {out_dir}...")
     manifest = build_open_data_release(args.db, out_dir, commit_override=args.commit)
