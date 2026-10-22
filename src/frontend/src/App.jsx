@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -16,18 +16,19 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MethodologyModal from "./components/MethodologyModal";
-import DashboardView from "./routes/DashboardView";
-import SearchView from "./routes/SearchView";
-import SessionView from "./routes/SessionView";
-import AttendanceView from "./routes/AttendanceView";
-import SpeechView from "./routes/SpeechView";
-import PersonView from "./routes/PersonView";
-import PrivacyView from "./routes/PrivacyView";
-import VotingsView from "./routes/VotingsView";
-import VotingView from "./routes/VotingView";
-import DraftView from "./routes/DraftView";
-import NotFoundView from "./routes/NotFoundView";
 import "./App.css";
+
+const DashboardView = lazy(() => import("./routes/DashboardView"));
+const SearchView = lazy(() => import("./routes/SearchView"));
+const SessionView = lazy(() => import("./routes/SessionView"));
+const AttendanceView = lazy(() => import("./routes/AttendanceView"));
+const SpeechView = lazy(() => import("./routes/SpeechView"));
+const PersonView = lazy(() => import("./routes/PersonView"));
+const PrivacyView = lazy(() => import("./routes/PrivacyView"));
+const VotingsView = lazy(() => import("./routes/VotingsView"));
+const VotingView = lazy(() => import("./routes/VotingView"));
+const DraftView = lazy(() => import("./routes/DraftView"));
+const NotFoundView = lazy(() => import("./routes/NotFoundView"));
 
 function LegacyRedirectHandler() {
   const [searchParams] = useSearchParams();
@@ -174,43 +175,45 @@ function AppContent() {
 
       <main>
         <ErrorBoundary key={location.pathname}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <DashboardView
-                  theme={theme}
-                  memberships={memberships}
-                  systemStatus={systemStatus}
-                />
-              }
-            />
-            <Route
-              path="/otsing"
-              element={<SearchView memberships={memberships} theme={theme} />}
-            />
-            <Route path="/istung/:date" element={<SessionView />} />
-            <Route
-              path="/kohalolek"
-              element={
-                <AttendanceView
-                  memberships={memberships}
-                  membershipsLoading={membershipsLoading}
-                  onOpenMethodology={() => setShowMethodologyModal(true)}
-                />
-              }
-            />
-            <Route path="/kone/:id" element={<SpeechView />} />
-            <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
-            <Route path="/haaletused" element={<VotingsView memberships={memberships} />} />
-            <Route path="/haaletus/:uuid" element={<VotingView />} />
-            <Route path="/eelnou/:uuid" element={<DraftView />} />
-            <Route
-              path="/andmed"
-              element={<PrivacyView onOpenMethodology={() => setShowMethodologyModal(true)} />}
-            />
-            <Route path="*" element={<NotFoundView />} />
-          </Routes>
+          <Suspense fallback={<div className="empty-state">Laen…</div>}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <DashboardView
+                    theme={theme}
+                    memberships={memberships}
+                    systemStatus={systemStatus}
+                  />
+                }
+              />
+              <Route
+                path="/otsing"
+                element={<SearchView memberships={memberships} theme={theme} />}
+              />
+              <Route path="/istung/:date" element={<SessionView />} />
+              <Route
+                path="/kohalolek"
+                element={
+                  <AttendanceView
+                    memberships={memberships}
+                    membershipsLoading={membershipsLoading}
+                    onOpenMethodology={() => setShowMethodologyModal(true)}
+                  />
+                }
+              />
+              <Route path="/kone/:id" element={<SpeechView />} />
+              <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
+              <Route path="/haaletused" element={<VotingsView memberships={memberships} />} />
+              <Route path="/haaletus/:uuid" element={<VotingView />} />
+              <Route path="/eelnou/:uuid" element={<DraftView />} />
+              <Route
+                path="/andmed"
+                element={<PrivacyView onOpenMethodology={() => setShowMethodologyModal(true)} />}
+              />
+              <Route path="*" element={<NotFoundView />} />
+            </Routes>
+          </Suspense>
         </ErrorBoundary>
       </main>
 
