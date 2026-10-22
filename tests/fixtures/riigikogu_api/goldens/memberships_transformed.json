@@ -1,0 +1,37 @@
+{
+  "7": {
+    "number": 7,
+    "name": "VII Riigikogu",
+    "startDate": "1992-09-28",
+    "endDate": "1995-03-10",
+    "sessionEndDate": "1995-03-10"
+  },
+  "8": {
+    "number": 8,
+    "name": "VIII Riigikogu",
+    "startDate": "1995-03-21",
+    "endDate": "1999-02-25",
+    "sessionEndDate": "1999-02-25"
+  },
+  "9": {
+    "number": 9,
+    "name": "IX Riigikogu",
+    "startDate": "1999-03-18",
+    "endDate": "2003-02-25",
+    "sessionEndDate": "2003-02-25"
+  },
+  "10": {
+    "number": 10,
+    "name": "X Riigikogu",
+    "startDate": "2003-03-31",
+    "endDate": "2007-02-22",
+    "sessionEndDate": "2007-02-22"
+  },
+  "11": {
+    "number": 11,
+    "name": "XI Riigikogu",
+    "startDate": "2007-04-02",
+    "endDate": "2011-02-23",
+    "sessionEndDate": "2011-02-23"
+  }
+}

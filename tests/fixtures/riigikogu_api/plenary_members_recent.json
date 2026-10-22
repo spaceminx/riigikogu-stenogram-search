@@ -1,0 +1,1300 @@
+[
+  {
+    "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+    "fullName": "Jaak Aab",
+    "lastName": "Aab",
+    "firstName": "Jaak",
+    "active": true,
+    "email": "jaak.aab@riigikogu.ee",
+    "phone": "+372 6316693",
+    "electoralDistrictHistory": [
+      {
+        "membership": 14,
+        "electoralDistrict": {
+          "code": "JARVA_JA_VILJANDIMAA",
+          "value": "Järva- ja Viljandimaa"
+        }
+      },
+      {
+        "membership": 9,
+        "electoralDistrict": {
+          "code": "JARVA_JA_VILJANDIMAA",
+          "value": "Järva- ja Viljandimaa"
+        }
+      },
+      {
+        "membership": 15,
+        "electoralDistrict": {
+          "code": "JARVA_JA_VILJANDIMAA",
+          "value": "Järva- ja Viljandimaa"
+        }
+      },
+      {
+        "membership": 11,
+        "electoralDistrict": {
+          "code": "JARVA_JA_VILJANDIMAA",
+          "value": "Järva- ja Viljandimaa"
+        }
+      }
+    ],
+    "photo": {
+      "uuid": "628a5440-1825-4a60-9017-4c13069052b8",
+      "fileName": "Jaak_Aab_270.jpg",
+      "fileExtension": "jpg",
+      "_links": {
+        "download": {
+          "href": "https://api.riigikogu.ee/api/files/628a5440-1825-4a60-9017-4c13069052b8/download"
+        },
+        "self": {
+          "href": "https://api.riigikogu.ee/api/files/628a5440-1825-4a60-9017-4c13069052b8"
+        }
+      }
+    },
+    "plenaryMembership": {
+      "uuid": "5694e620-b2fd-4bac-9399-7abe61777531",
+      "membershipNumber": 15,
+      "startDate": "2023-04-01",
+      "endDate": null,
+      "role": {
+        "code": "LIIGE",
+        "value": "liige"
+      },
+      "jobTitle": {
+        "code": "RIIGIKOGU_LIIGE",
+        "value": "Riigikogu liige"
+      }
+    },
+    "factions": [
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2024-01-05",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "3c1832c0-7727-18d1-d9d3-e685a58f44b0",
+        "name": "Eesti Keskerakonna fraktsioon",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "3c1832c0-7727-18d1-d9d3-e685a58f44b0",
+          "membershipNumber": 15,
+          "startDate": "2023-04-11",
+          "endDate": "2024-01-05",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/3c1832c0-7727-18d1-d9d3-e685a58f44b0?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2023-04-01",
+          "endDate": "2023-04-11",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      }
+    ],
+    "committees": [
+      {
+        "uuid": "c1ea2082-ab92-e19b-4cf2-aa4fa10779ea",
+        "name": "Majanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c1ea2082-ab92-e19b-4cf2-aa4fa10779ea",
+          "membershipNumber": 15,
+          "startDate": "2025-04-08",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c1ea2082-ab92-e19b-4cf2-aa4fa10779ea?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "c1ea2082-ab92-e19b-4cf2-aa4fa10779ea",
+        "name": "Majanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c1ea2082-ab92-e19b-4cf2-aa4fa10779ea",
+          "membershipNumber": 15,
+          "startDate": "2024-05-14",
+          "endDate": "2025-04-08",
+          "role": {
+            "code": "ESIMEES",
+            "value": "esimees"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c1ea2082-ab92-e19b-4cf2-aa4fa10779ea?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "c1ea2082-ab92-e19b-4cf2-aa4fa10779ea",
+        "name": "Majanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c1ea2082-ab92-e19b-4cf2-aa4fa10779ea",
+          "membershipNumber": 15,
+          "startDate": "2024-05-09",
+          "endDate": "2024-05-14",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c1ea2082-ab92-e19b-4cf2-aa4fa10779ea?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+        "name": "Rahanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+          "membershipNumber": 15,
+          "startDate": "2024-03-04",
+          "endDate": "2024-05-09",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/527a03f5-d564-70f2-6266-70c1cdb5535f?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+        "name": "Rahanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+          "membershipNumber": 15,
+          "startDate": "2023-04-18",
+          "endDate": "2024-03-03",
+          "role": {
+            "code": "ASEESIMEES",
+            "value": "aseesimees"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/527a03f5-d564-70f2-6266-70c1cdb5535f?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+        "name": "Rahanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+          "membershipNumber": 15,
+          "startDate": "2023-04-17",
+          "endDate": "2023-04-18",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/527a03f5-d564-70f2-6266-70c1cdb5535f?lang=ET"
+          }
+        }
+      }
+    ],
+    "gender": "MALE",
+    "parliamentSeniority": 3484,
+    "dateOfBirth": "1960-04-09",
+    "dateOfDeath": null,
+    "agesInParliament": [
+      {
+        "membership": 11,
+        "userAge": 46
+      },
+      {
+        "membership": 9,
+        "userAge": 41
+      },
+      {
+        "membership": 15,
+        "userAge": 62
+      },
+      {
+        "membership": 14,
+        "userAge": 58
+      }
+    ],
+    "upn": "jaab@riigikogu.ee",
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d?querySteno=true&includeInactive=false&lang=ET"
+      }
+    }
+  },
+  {
+    "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+    "fullName": "Annely Akkermann",
+    "lastName": "Akkermann",
+    "firstName": "Annely",
+    "active": true,
+    "email": "annely.akkermann@riigikogu.ee",
+    "phone": "+372 6316420",
+    "electoralDistrictHistory": [
+      {
+        "membership": 14,
+        "electoralDistrict": {
+          "code": "PARNUMAA",
+          "value": "Pärnumaa"
+        }
+      },
+      {
+        "membership": 12,
+        "electoralDistrict": {
+          "code": "PARNUMAA",
+          "value": "Pärnumaa"
+        }
+      },
+      {
+        "membership": 15,
+        "electoralDistrict": {
+          "code": "PARNUMAA",
+          "value": "Pärnumaa"
+        }
+      }
+    ],
+    "photo": {
+      "uuid": "98f053d5-3567-4bb1-b7ad-afad23278792",
+      "fileName": "Annely_Akkermann_270.jpg",
+      "fileExtension": "jpg",
+      "_links": {
+        "download": {
+          "href": "https://api.riigikogu.ee/api/files/98f053d5-3567-4bb1-b7ad-afad23278792/download"
+        },
+        "self": {
+          "href": "https://api.riigikogu.ee/api/files/98f053d5-3567-4bb1-b7ad-afad23278792"
+        }
+      }
+    },
+    "plenaryMembership": {
+      "uuid": "5694e620-b2fd-4bac-9399-7abe61777531",
+      "membershipNumber": 15,
+      "startDate": "2023-04-01",
+      "endDate": null,
+      "role": {
+        "code": "LIIGE",
+        "value": "liige"
+      },
+      "jobTitle": {
+        "code": "RIIGIKOGU_LIIGE",
+        "value": "Riigikogu liige"
+      }
+    },
+    "factions": [
+      {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "name": "Eesti Reformierakonna fraktsioon",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+          "membershipNumber": 15,
+          "startDate": "2023-04-10",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2023-04-01",
+          "endDate": "2023-04-10",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      }
+    ],
+    "committees": [
+      {
+        "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+        "name": "Rahanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+          "membershipNumber": 15,
+          "startDate": "2023-04-18",
+          "endDate": null,
+          "role": {
+            "code": "ESIMEES",
+            "value": "esimees"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/527a03f5-d564-70f2-6266-70c1cdb5535f?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+        "name": "Rahanduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+          "membershipNumber": 15,
+          "startDate": "2023-04-17",
+          "endDate": "2023-04-18",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/527a03f5-d564-70f2-6266-70c1cdb5535f?lang=ET"
+          }
+        }
+      }
+    ],
+    "gender": "FEMALE",
+    "parliamentSeniority": 4057,
+    "dateOfBirth": "1972-10-05",
+    "dateOfDeath": null,
+    "agesInParliament": [
+      {
+        "membership": 14,
+        "userAge": 46
+      },
+      {
+        "membership": 15,
+        "userAge": 50
+      },
+      {
+        "membership": 12,
+        "userAge": 38
+      }
+    ],
+    "upn": "aakkermann@riigikogu.ee",
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/plenary-members/7655e8d3-b658-49f0-8e09-f6cbc4a2c714?querySteno=true&includeInactive=false&lang=ET"
+      }
+    }
+  },
+  {
+    "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+    "fullName": "Yoko Alender",
+    "lastName": "Alender",
+    "firstName": "Yoko",
+    "active": true,
+    "email": "yoko.alender@riigikogu.ee",
+    "phone": "+372 6316512",
+    "electoralDistrictHistory": [
+      {
+        "membership": 15,
+        "electoralDistrict": {
+          "code": "TARTU_LINN",
+          "value": "Tartu linn"
+        }
+      },
+      {
+        "membership": 13,
+        "electoralDistrict": {
+          "code": "HARJU_VA_TALLINN_JA_RAPLAMAA",
+          "value": "Harju- ja Raplamaa"
+        }
+      },
+      {
+        "membership": 14,
+        "electoralDistrict": {
+          "code": "JARVA_JA_VILJANDIMAA",
+          "value": "Järva- ja Viljandimaa"
+        }
+      }
+    ],
+    "photo": {
+      "uuid": "c6b13f27-e50e-4ed5-9ec5-3f76170e8167",
+      "fileName": "Yoko_Alender_270.jpg",
+      "fileExtension": "jpg",
+      "_links": {
+        "download": {
+          "href": "https://api.riigikogu.ee/api/files/c6b13f27-e50e-4ed5-9ec5-3f76170e8167/download"
+        },
+        "self": {
+          "href": "https://api.riigikogu.ee/api/files/c6b13f27-e50e-4ed5-9ec5-3f76170e8167"
+        }
+      }
+    },
+    "plenaryMembership": {
+      "uuid": "5694e620-b2fd-4bac-9399-7abe61777531",
+      "membershipNumber": 15,
+      "startDate": "2025-03-25",
+      "endDate": null,
+      "role": {
+        "code": "LIIGE",
+        "value": "liige"
+      },
+      "jobTitle": {
+        "code": "RIIGIKOGU_LIIGE",
+        "value": "Riigikogu liige"
+      }
+    },
+    "factions": [
+      {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "name": "Eesti Reformierakonna fraktsioon",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+          "membershipNumber": 15,
+          "startDate": "2025-03-25",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2025-03-25",
+          "endDate": "2025-03-25",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "name": "Eesti Reformierakonna fraktsioon",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+          "membershipNumber": 15,
+          "startDate": "2023-04-10",
+          "endDate": "2024-07-23",
+          "role": {
+            "code": "ASEESIMEES",
+            "value": "aseesimees"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2023-04-01",
+          "endDate": "2023-04-10",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      }
+    ],
+    "committees": [
+      {
+        "uuid": "4f907fd8-ace5-c3eb-d50a-b65606cd3621",
+        "name": "Keskkonnakomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "4f907fd8-ace5-c3eb-d50a-b65606cd3621",
+          "membershipNumber": 15,
+          "startDate": "2025-03-27",
+          "endDate": null,
+          "role": {
+            "code": "ESIMEES",
+            "value": "esimees"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/4f907fd8-ace5-c3eb-d50a-b65606cd3621?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "4f907fd8-ace5-c3eb-d50a-b65606cd3621",
+        "name": "Keskkonnakomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "4f907fd8-ace5-c3eb-d50a-b65606cd3621",
+          "membershipNumber": 15,
+          "startDate": "2025-03-25",
+          "endDate": "2025-03-27",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/4f907fd8-ace5-c3eb-d50a-b65606cd3621?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "4f907fd8-ace5-c3eb-d50a-b65606cd3621",
+        "name": "Keskkonnakomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "4f907fd8-ace5-c3eb-d50a-b65606cd3621",
+          "membershipNumber": 15,
+          "startDate": "2023-04-17",
+          "endDate": "2024-07-23",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/4f907fd8-ace5-c3eb-d50a-b65606cd3621?lang=ET"
+          }
+        }
+      }
+    ],
+    "gender": "FEMALE",
+    "parliamentSeniority": 3985,
+    "dateOfBirth": "1979-06-13",
+    "dateOfDeath": null,
+    "agesInParliament": [
+      {
+        "membership": 14,
+        "userAge": 39
+      },
+      {
+        "membership": 15,
+        "userAge": 43
+      },
+      {
+        "membership": 13,
+        "userAge": 35
+      }
+    ],
+    "upn": "yalender@riigikogu.ee",
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/plenary-members/90074aa2-4938-41a9-8275-3a6efa1cee31?querySteno=true&includeInactive=false&lang=ET"
+      }
+    }
+  },
+  {
+    "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+    "fullName": "Anti Allas",
+    "lastName": "Allas",
+    "firstName": "Anti",
+    "active": true,
+    "email": "anti.allas@riigikogu.ee",
+    "phone": "+372 6316687",
+    "electoralDistrictHistory": [
+      {
+        "membership": 15,
+        "electoralDistrict": {
+          "code": "VORU_VALGA_JA_POLVAMAA",
+          "value": "Võru-, Valga- ja Põlvamaa"
+        }
+      }
+    ],
+    "photo": {
+      "uuid": "a5d4330e-1120-4279-adc3-c02650e83239",
+      "fileName": "Anti_Allas_270.jpg",
+      "fileExtension": "jpg",
+      "_links": {
+        "download": {
+          "href": "https://api.riigikogu.ee/api/files/a5d4330e-1120-4279-adc3-c02650e83239/download"
+        },
+        "self": {
+          "href": "https://api.riigikogu.ee/api/files/a5d4330e-1120-4279-adc3-c02650e83239"
+        }
+      }
+    },
+    "plenaryMembership": {
+      "uuid": "5694e620-b2fd-4bac-9399-7abe61777531",
+      "membershipNumber": 15,
+      "startDate": "2023-04-01",
+      "endDate": null,
+      "role": {
+        "code": "LIIGE",
+        "value": "liige"
+      },
+      "jobTitle": {
+        "code": "RIIGIKOGU_LIIGE",
+        "value": "Riigikogu liige"
+      }
+    },
+    "factions": [
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2023-04-01",
+          "endDate": "2023-04-10",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "d188e268-5d01-7e93-0c22-3ae7f0c1e851",
+        "name": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "d188e268-5d01-7e93-0c22-3ae7f0c1e851",
+          "membershipNumber": 15,
+          "startDate": "2023-04-10",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/d188e268-5d01-7e93-0c22-3ae7f0c1e851?lang=ET"
+          }
+        }
+      }
+    ],
+    "committees": [
+      {
+        "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+        "name": "Maaelukomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+          "membershipNumber": 15,
+          "startDate": "2024-06-06",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/b40076b0-a453-4efb-acda-2554015471d1?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "1c539a07-8d36-a4a4-91e7-fbfe72e9e3fb",
+        "name": "Riigieelarve kontrolli erikomisjon",
+        "type": {
+          "code": "ERIKOMISJON",
+          "value": "erikomisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "1c539a07-8d36-a4a4-91e7-fbfe72e9e3fb",
+          "membershipNumber": 15,
+          "startDate": "2023-04-27",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/1c539a07-8d36-a4a4-91e7-fbfe72e9e3fb?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "38144a73-dde6-fd5e-68db-63e2736c85e2",
+        "name": "Põhiseaduskomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "38144a73-dde6-fd5e-68db-63e2736c85e2",
+          "membershipNumber": 15,
+          "startDate": "2023-04-17",
+          "endDate": "2024-06-06",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/38144a73-dde6-fd5e-68db-63e2736c85e2?lang=ET"
+          }
+        }
+      }
+    ],
+    "gender": "MALE",
+    "parliamentSeniority": 1300,
+    "dateOfBirth": "1977-11-26",
+    "dateOfDeath": null,
+    "agesInParliament": [
+      {
+        "membership": 15,
+        "userAge": 45
+      }
+    ],
+    "upn": "aallas@riigikogu.ee",
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/plenary-members/f6353ede-a0a5-4918-ab8b-790a1957c5cd?querySteno=true&includeInactive=false&lang=ET"
+      }
+    }
+  },
+  {
+    "uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+    "fullName": "Arvo Aller",
+    "lastName": "Aller",
+    "firstName": "Arvo",
+    "active": true,
+    "email": "arvo.aller@riigikogu.ee",
+    "phone": "+372 6316311",
+    "electoralDistrictHistory": [
+      {
+        "membership": 15,
+        "electoralDistrict": {
+          "code": "IDAVIRUMAA",
+          "value": "Ida-Virumaa"
+        }
+      }
+    ],
+    "photo": {
+      "uuid": "b3cd8ebc-7920-4eb8-ba94-3e73165372df",
+      "fileName": "Arvo_Aller_270.jpg",
+      "fileExtension": "jpg",
+      "_links": {
+        "download": {
+          "href": "https://api.riigikogu.ee/api/files/b3cd8ebc-7920-4eb8-ba94-3e73165372df/download"
+        },
+        "self": {
+          "href": "https://api.riigikogu.ee/api/files/b3cd8ebc-7920-4eb8-ba94-3e73165372df"
+        }
+      }
+    },
+    "plenaryMembership": {
+      "uuid": "5694e620-b2fd-4bac-9399-7abe61777531",
+      "membershipNumber": 15,
+      "startDate": "2024-07-15",
+      "endDate": null,
+      "role": {
+        "code": "ASEESIMEES",
+        "value": "aseesimees"
+      },
+      "jobTitle": {
+        "code": "RIIGIKOGU_II_ASEESIMEES",
+        "value": "Riigikogu II aseesimees"
+      }
+    },
+    "factions": [
+      {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+          "membershipNumber": 15,
+          "startDate": "2023-04-01",
+          "endDate": "2023-04-10",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "d4e90963-1d10-4f8a-bf37-a99ca8531ff3",
+        "name": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+        "type": {
+          "code": "FRAKTSIOON",
+          "value": "fraktsioon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "d4e90963-1d10-4f8a-bf37-a99ca8531ff3",
+          "membershipNumber": 15,
+          "startDate": "2023-04-10",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/d4e90963-1d10-4f8a-bf37-a99ca8531ff3?lang=ET"
+          }
+        }
+      }
+    ],
+    "committees": [
+      {
+        "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+        "name": "Maaelukomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+          "membershipNumber": 15,
+          "startDate": "2024-06-11",
+          "endDate": "2024-07-15",
+          "role": {
+            "code": "ASEESIMEES",
+            "value": "aseesimees"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/b40076b0-a453-4efb-acda-2554015471d1?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+        "name": "Maaelukomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+          "membershipNumber": 15,
+          "startDate": "2024-06-06",
+          "endDate": "2024-06-11",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/b40076b0-a453-4efb-acda-2554015471d1?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "44584179-67a8-ce54-da37-569f1a480919",
+        "name": "Sotsiaalkomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "44584179-67a8-ce54-da37-569f1a480919",
+          "membershipNumber": 15,
+          "startDate": "2023-10-12",
+          "endDate": "2024-06-06",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/44584179-67a8-ce54-da37-569f1a480919?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "fe0c2235-8e81-7b79-a0b3-37936a362e52",
+        "name": "Euroopa Liidu asjade komisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "fe0c2235-8e81-7b79-a0b3-37936a362e52",
+          "membershipNumber": 15,
+          "startDate": "2023-04-20",
+          "endDate": null,
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/fe0c2235-8e81-7b79-a0b3-37936a362e52?lang=ET"
+          }
+        }
+      },
+      {
+        "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+        "name": "Maaelukomisjon",
+        "type": {
+          "code": "ALALINE_KOMISJON",
+          "value": "alaline komisjon"
+        },
+        "active": true,
+        "membership": {
+          "uuid": "b40076b0-a453-4efb-acda-2554015471d1",
+          "membershipNumber": 15,
+          "startDate": "2023-04-17",
+          "endDate": "2023-10-12",
+          "role": {
+            "code": "LIIGE",
+            "value": "liige"
+          },
+          "jobTitle": {
+            "code": "RIIGIKOGU_LIIGE",
+            "value": "Riigikogu liige"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/b40076b0-a453-4efb-acda-2554015471d1?lang=ET"
+          }
+        }
+      }
+    ],
+    "gender": "MALE",
+    "parliamentSeniority": 1300,
+    "dateOfBirth": "1973-07-28",
+    "dateOfDeath": null,
+    "agesInParliament": [
+      {
+        "membership": 15,
+        "userAge": 49
+      }
+    ],
+    "upn": "aaller@riigikogu.ee",
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/plenary-members/a39c4392-bbc8-4036-b923-0f5f2b3d9766?querySteno=true&includeInactive=false&lang=ET"
+      }
+    }
+  }
+]

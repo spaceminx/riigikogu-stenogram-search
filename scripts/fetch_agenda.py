@@ -23,6 +23,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import OUTPUT_DIR_PROCESSED, UNEDITED_REFETCH_DAYS
 from scripts.fetch_stenograms_api import clean_html, get_month_ranges
 from src.api.votings import format_session_source_file
+from src.fetch_models import (
+    AgendaPlenary,
+    UpstreamSchemaError,
+    VerbatimSitting,
+    validate_response,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -159,7 +165,22 @@ def fetch_api_with_retry(
         try:
             resp = requests.get(url, params=params, timeout=(5, 30))
             if resp.status_code == 200:
-                return resp.json()
+                raw_data = resp.json()
+                if url == AGENDA_API_URL:
+                    validate_response(
+                        AgendaPlenary,
+                        raw_data,
+                        endpoint="/api/agenda/plenary",
+                        ref=f"{params.get('startDate')}..{params.get('endDate')}",
+                    )
+                elif url == VERBATIMS_API_URL:
+                    validate_response(
+                        VerbatimSitting,
+                        raw_data,
+                        endpoint="/api/steno/verbatims",
+                        ref=f"{params.get('startDate')}..{params.get('endDate')}",
+                    )
+                return raw_data
             if resp.status_code == 429:
                 logger.warning(
                     "Rate limited (429) on %s %s. Waiting 15s (attempt %d/%d)...",
@@ -187,6 +208,8 @@ def fetch_api_with_retry(
                     params,
                 )
                 return None
+        except UpstreamSchemaError:
+            raise
         except Exception as e:
             logger.warning(
                 "Request failed on %s %s (attempt %d/%d): %s",
@@ -799,4 +822,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except UpstreamSchemaError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)

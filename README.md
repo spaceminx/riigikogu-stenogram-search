@@ -540,6 +540,14 @@ Run the check manually:
 python3 scripts/check_live_api.py
 ```
 
+### Upstream API validation
+
+All external API responses from `api.riigikogu.ee` and `stenogrammid.riigikogu.ee` are validated with Pydantic models at the fetcher boundary (`src/fetch_models/riigikogu.py`). If upstream renames, removes, or retypes an expected field, the fetcher immediately raises `UpstreamSchemaError`, prints a readable path-level error to `stderr`, and terminates with exit code 2 without writing corrupt or partial records. In the daily pipeline, an exit code 2 is recorded as a pipeline failure and alerts Healthchecks. Upstream API shape is also checked weekly and manually via:
+
+```bash
+python3 scripts/check_upstream_api.py
+```
+
 ---
 
 ## License

@@ -18,6 +18,12 @@ import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, START_DATE
+from src.fetch_models import (
+    UpstreamSchemaError,
+    VotingDetail,
+    VotingsSitting,
+    validate_response,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -118,7 +124,14 @@ def fetch_votings_list(start_date: str, end_date: str, max_retries: int = 3) -> 
         try:
             resp = requests.get(url, headers=headers, timeout=(5, 30))
             if resp.status_code == 200:
-                return resp.json()
+                raw_data = resp.json()
+                validate_response(
+                    VotingsSitting,
+                    raw_data,
+                    endpoint="/api/votings",
+                    ref=f"{start_date}..{end_date}",
+                )
+                return raw_data
             if resp.status_code == 429:
                 wait_time = 15 * attempt
                 logger.warning(
@@ -135,6 +148,8 @@ def fetch_votings_list(start_date: str, end_date: str, max_retries: int = 3) -> 
                     attempt,
                     max_retries,
                 )
+        except UpstreamSchemaError:
+            raise
         except requests.exceptions.RequestException as e:
             logger.warning(
                 "Network error fetching votings list: %s (attempt %d/%d)", e, attempt, max_retries
@@ -153,7 +168,14 @@ def fetch_voting_detail(uuid: str, max_retries: int = 3) -> dict | None:
         try:
             resp = requests.get(url, headers=headers, timeout=(5, 25))
             if resp.status_code == 200:
-                return resp.json()
+                raw_data = resp.json()
+                validate_response(
+                    VotingDetail,
+                    raw_data,
+                    endpoint="/api/votings/{uuid}",
+                    ref=uuid,
+                )
+                return raw_data
             if resp.status_code == 429:
                 wait_time = 15 * attempt
                 logger.warning(
@@ -175,6 +197,8 @@ def fetch_voting_detail(uuid: str, max_retries: int = 3) -> dict | None:
                     attempt,
                     max_retries,
                 )
+        except UpstreamSchemaError:
+            raise
         except requests.exceptions.RequestException as e:
             logger.warning(
                 "Network error fetching voting %s: %s (attempt %d/%d)",
@@ -654,11 +678,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    success = fetch_votes(
-        start_date=args.start_date,
-        end_date=args.end_date,
-        dry_run=args.dry_run,
-        upload=args.upload,
-        load_db=args.load_db,
-    )
+    try:
+        success = fetch_votes(
+            start_date=args.start_date,
+            end_date=args.end_date,
+            dry_run=args.dry_run,
+            upload=args.upload,
+            load_db=args.load_db,
+        )
+    except UpstreamSchemaError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
     sys.exit(0 if success else 1)

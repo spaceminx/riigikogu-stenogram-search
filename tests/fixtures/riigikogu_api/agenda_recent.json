@@ -1,0 +1,3512 @@
+{
+  "weekStartDate": "2026-10-01",
+  "weekEndDate": "2026-10-22",
+  "title": "Riigikogu XV täiskogu VIII istungjärgu 3. töönädala päevakord",
+  "sittings": [
+    {
+      "uuid": "be750209-c86d-4265-a16e-6ea4318f6152",
+      "title": "Täiskogu korraline istung neljapäev, 1.10.2026 10:00",
+      "sittingDateTime": "2026-10-01T10:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "144e6060-435c-4126-9074-cdd5002cf190",
+          "title": "Kriminaalmenetluse seadustiku, väärteomenetluse seadustiku, elektroonilise side seaduse ja teiste seaduste muutmise seaduse (sideandmete säilitamine ja kasutamine) eelnõu (1007 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-21T12:46:42.928",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "1ebe37fd-20c0-416f-af02-ab44d6a03238",
+              "fileName": "1007_KrMS_VTMS_jt_s_m_s_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (märkused ja ettepanekud)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-22T12:36:18.932"
+            },
+            {
+              "uuid": "c36cf2ae-4ae3-4928-b62c-8e5e6d6e309f",
+              "fileName": "1007_KrMS_VTMS_jt_s_m_s_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (rakendusaktide kavandid)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-22T12:35:56.536"
+            },
+            {
+              "uuid": "c204dfad-a9dd-4e0d-a598-e00f9fe2bda4",
+              "fileName": "1007_KrMS_VTMS_jt_s_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-22T12:35:33.954"
+            },
+            {
+              "uuid": "857b15d4-52a1-4d0b-b8ad-5e2b028ed6e6",
+              "fileName": "1007_KrMS_VTMS_jt_s_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-22T12:35:07.967"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "429e71ce-d5ba-4617-8db4-d546482d43bc",
+              "name": "Madis Timpson",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/429e71ce-d5ba-4617-8db4-d546482d43bc?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "289fc421-d890-4401-ba74-4dc6813f0403",
+              "name": "Liisa-Ly Pakosta",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "31ef24f4-d8c6-4576-9ff1-fce0ec740687",
+                "name": "justiits- ja digiminister Liisa-Ly Pakosta",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/289fc421-d890-4401-ba74-4dc6813f0403?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "6f4b4cff-158e-497b-8553-851dca471711",
+            "title": "Kriminaalmenetluse seadustiku, väärteomenetluse seadustiku, elektroonilise side seaduse ja teiste seaduste muutmise seadus (sideandmete säilitamine ja kasutamine)",
+            "mark": 1007,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/6f4b4cff-158e-497b-8553-851dca471711"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-15T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610011000#PKP-1347708"
+            }
+          }
+        },
+        {
+          "uuid": "2395ccd2-bd7d-4f52-892c-4770d7c6086c",
+          "title": "Täitemenetluse seadustiku muutmise ja sellega seonduvalt teiste seaduste muutmise seaduse eelnõu (927 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-14T11:37:46.688",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "d0a462e7-e159-474a-b632-bd4224d1c531",
+              "fileName": "927_TMS_jt_s_m_s_SK_lisa.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa (kooskõlastustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T11:40:46.444"
+            },
+            {
+              "uuid": "274cb8b1-5c1e-4580-8933-23cfe15d47cb",
+              "fileName": "927_TMS_jt_s_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T11:40:19.544"
+            },
+            {
+              "uuid": "f8888cca-5561-4b0d-a146-6aa3f20d2c5e",
+              "fileName": "927_TMS_jt_s_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T11:39:27.104"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 2,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "289fc421-d890-4401-ba74-4dc6813f0403",
+              "name": "Liisa-Ly Pakosta",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "31ef24f4-d8c6-4576-9ff1-fce0ec740687",
+                "name": "justiits- ja digiminister Liisa-Ly Pakosta",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/289fc421-d890-4401-ba74-4dc6813f0403?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "429e71ce-d5ba-4617-8db4-d546482d43bc",
+              "name": "Madis Timpson",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/429e71ce-d5ba-4617-8db4-d546482d43bc?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "dcb8af06-0b09-46cb-b0bf-99ae12de0749",
+            "title": "Täitemenetluse seadustiku muutmise ja sellega seonduvalt teiste seaduste muutmise seadus",
+            "mark": 927,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/dcb8af06-0b09-46cb-b0bf-99ae12de0749"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-15T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610011000#PKP-1347707"
+            }
+          }
+        },
+        {
+          "uuid": "2cac709a-5864-4d23-be5b-39735d7403b8",
+          "title": "Äriseadustiku ja teiste seaduste muutmise seaduse eelnõu (1008 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-21T11:47:18.433",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "54e5fb5f-770f-456b-85ce-c79218ba551a",
+              "fileName": "1008_ÄS_jt_s_m_s_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (rakendusakti kavand)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-21T14:00:13.639"
+            },
+            {
+              "uuid": "acfa2425-0a6d-49c4-b370-a0070543b376",
+              "fileName": "1008_ÄS_jt_s_m_s_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (märkused ja ettepanekud)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-21T13:59:51.374"
+            },
+            {
+              "uuid": "898ae6f2-e958-4e8a-953c-1cd25f6bf855",
+              "fileName": "1008_ÄS_jt_s_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-21T13:59:29.845"
+            },
+            {
+              "uuid": "c962bc43-d8d7-4e44-b7bf-fb6feff8793f",
+              "fileName": "1008_ÄS_jt_s_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-21T13:58:41.951"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 3,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "289fc421-d890-4401-ba74-4dc6813f0403",
+              "name": "Liisa-Ly Pakosta",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "31ef24f4-d8c6-4576-9ff1-fce0ec740687",
+                "name": "justiits- ja digiminister Liisa-Ly Pakosta",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/289fc421-d890-4401-ba74-4dc6813f0403?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "07003549-aa42-4764-8bdd-cab06cb94a92",
+              "name": "Anti Haugas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/07003549-aa42-4764-8bdd-cab06cb94a92?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "bd461960-bd69-460e-8331-b5d438ec8e0e",
+            "title": "Äriseadustiku ja teiste seaduste muutmise seadus",
+            "mark": 1008,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/bd461960-bd69-460e-8331-b5d438ec8e0e"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-15T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610011000#PKP-1347705"
+            }
+          }
+        },
+        {
+          "uuid": "495cd25c-9aab-4172-a731-d27edcd48f6b",
+          "title": "Kriminaalmenetluse seadustiku muutmise seaduse (rahvusvahelise koostöö lihtsustamine) eelnõu (933 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-14T11:50:26.926",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "9379414b-203c-47d9-bf8a-de050891d63e",
+              "fileName": "933_KrMS_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:50:56.455"
+            },
+            {
+              "uuid": "5ad2e6b9-0e55-4e1d-98d2-9a8a403982a9",
+              "fileName": "933_KrMS_m_s_SK_lisa.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa (kooskõlastustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:46:57.392"
+            },
+            {
+              "uuid": "9600db0c-512d-4bcd-8be2-a1e6ca7e2284",
+              "fileName": "933_KrMS_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:46:09.593"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 4,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "289fc421-d890-4401-ba74-4dc6813f0403",
+              "name": "Liisa-Ly Pakosta",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "31ef24f4-d8c6-4576-9ff1-fce0ec740687",
+                "name": "justiits- ja digiminister Liisa-Ly Pakosta",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/289fc421-d890-4401-ba74-4dc6813f0403?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "7b6823ed-96f9-462b-b931-3dd4faceb09e",
+              "name": "Vilja Toomast",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/7b6823ed-96f9-462b-b931-3dd4faceb09e?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "dc687fa4-7405-4298-8179-38be693aa175",
+            "title": "Kriminaalmenetluse seadustiku muutmise seadus (rahvusvahelise koostöö lihtsustamine)",
+            "mark": 933,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/dc687fa4-7405-4298-8179-38be693aa175"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-15T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610011000#PKP-1347706"
+            }
+          }
+        },
+        {
+          "uuid": "9c231daa-2990-4ff7-9d44-0dcab3bb95fd",
+          "title": "Karistusseadustiku, kriminaalmenetluse seadustiku ja väärteomenetluse seadustiku muutmise seaduse eelnõu (934 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-14T12:38:12.946",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "2c8ca0b1-6d7f-487e-be3d-17c49df0c1fb",
+              "fileName": "934_KarS_jt_s_m_s_SK_Lisa_3.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 3 (kooskõlastustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:41:46.792"
+            },
+            {
+              "uuid": "e5113964-55b8-438b-a642-caa58441dd86",
+              "fileName": "934_KarS_jt_s_m_s_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (direktiivi (EL) 2024/1260 vastavustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:41:19.738"
+            },
+            {
+              "uuid": "4d746785-9311-482a-ac43-fdce7aabb2c9",
+              "fileName": "934_KarS_jt_s_m_s_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (direktiivi (EL) 2024/1203 vastavustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:40:45.654"
+            },
+            {
+              "uuid": "7b2fb99f-fb8f-4063-ba85-20aa07bffed8",
+              "fileName": "934_KarS_jt_s_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:40:14.132"
+            },
+            {
+              "uuid": "f30cb1ce-ba31-4d44-b301-da2e399190d5",
+              "fileName": "934_KarS_jt_s_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-14T13:38:43.604"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 5,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "289fc421-d890-4401-ba74-4dc6813f0403",
+              "name": "Liisa-Ly Pakosta",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "31ef24f4-d8c6-4576-9ff1-fce0ec740687",
+                "name": "justiits- ja digiminister Liisa-Ly Pakosta",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/289fc421-d890-4401-ba74-4dc6813f0403?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "429e71ce-d5ba-4617-8db4-d546482d43bc",
+              "name": "Madis Timpson",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/429e71ce-d5ba-4617-8db4-d546482d43bc?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "e1ba5b73-894e-4b50-82b8-9ef8ec6ee1d8",
+            "title": "Karistusseadustiku, kriminaalmenetluse seadustiku ja väärteomenetluse seadustiku muutmise seadus",
+            "mark": 934,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/e1ba5b73-894e-4b50-82b8-9ef8ec6ee1d8"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-15T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610011000#PKP-1347709"
+            }
+          }
+        }
+      ],
+      "votings": [
+        {
+          "uuid": "19f7b9a3-363c-4636-8ec4-6e08ce7b5bb2",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2026-10-01T10:00:20.767",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/19f7b9a3-363c-4636-8ec4-6e08ce7b5bb2"
+            }
+          }
+        }
+      ],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/202610011000#PKP-1347708"
+        }
+      }
+    },
+    {
+      "uuid": "d1d8f7f1-df9e-457e-8f5a-24a82cd6096d",
+      "title": "Täiskogu korraline istung esmaspäev, 12.10.2026 15:00",
+      "sittingDateTime": "2026-10-12T15:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "7b150354-b471-418d-bac8-19d68c65807e",
+          "title": "993 Parvlaeva tehniliste valikute ja toimepidevuse kohta",
+          "documentType": "interpellationsAgendaItemDocument",
+          "created": "2026-09-17T14:17:35.108",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "d0624357-352f-4359-acef-e90ac6003e22",
+              "fileName": "AP_993.pdf",
+              "fileExtension": "pdf",
+              "fileTitle": "Arupärimine",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-04-16T16:34:40.31"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "respondent": {
+            "uuid": "311c892c-6acb-41f2-97cb-cb63dd1c8221",
+            "name": "Kuldar Leis",
+            "type": "user",
+            "active": true,
+            "user": null,
+            "role": {
+              "uuid": "6c59461b-9323-41ed-bccd-8af3614e5f36",
+              "name": "taristuminister Kuldar Leis",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/contacts/311c892c-6acb-41f2-97cb-cb63dd1c8221?lang=ET"
+              }
+            }
+          },
+          "enquirers": [
+            {
+              "uuid": "988995d4-3cbe-4ea7-acdd-6222d0b658b1",
+              "name": "Reili Rand",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/988995d4-3cbe-4ea7-acdd-6222d0b658b1?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "b5922bb2-56bb-4de6-a7e1-754553191c27",
+              "name": "Heljo Pikhof",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/b5922bb2-56bb-4de6-a7e1-754553191c27?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "80f542c1-393a-46e2-9fca-99948e59850d",
+              "name": "Andre Hanimägi",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/80f542c1-393a-46e2-9fca-99948e59850d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "561abe91-76eb-45f3-90b0-efa94c663689",
+              "name": "Tanel Kiik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/561abe91-76eb-45f3-90b0-efa94c663689?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
+              "name": "Züleyxa Izmailova",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/658c9d00-82c9-4161-8314-48ff1d67e3b7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610121500#PKP-1325078"
+            }
+          }
+        },
+        {
+          "uuid": "a3cff9f5-33bd-4669-b3b7-fdb5004d1b77",
+          "title": "1030 Rail Balticu tuleviku kohta",
+          "documentType": "interpellationsAgendaItemDocument",
+          "created": "2026-09-17T14:18:34.803",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "f899faa8-b158-45df-bef3-f1de41db2b8f",
+              "fileName": "AP_1030.pdf",
+              "fileExtension": "pdf",
+              "fileTitle": "Arupärimine",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-06-08T17:31:45.465"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 2,
+          "respondent": {
+            "uuid": "311c892c-6acb-41f2-97cb-cb63dd1c8221",
+            "name": "Kuldar Leis",
+            "type": "user",
+            "active": true,
+            "user": null,
+            "role": {
+              "uuid": "6c59461b-9323-41ed-bccd-8af3614e5f36",
+              "name": "taristuminister Kuldar Leis",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/contacts/311c892c-6acb-41f2-97cb-cb63dd1c8221?lang=ET"
+              }
+            }
+          },
+          "enquirers": [
+            {
+              "uuid": "1839253a-aec0-4019-995a-1c031db8fd10",
+              "name": "Lauri Laats",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1839253a-aec0-4019-995a-1c031db8fd10?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "04510d7c-b12a-48aa-8402-80b0efb114a6",
+              "name": "Anastassia Kovalenko-Kõlvart",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/04510d7c-b12a-48aa-8402-80b0efb114a6?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "80eac2f1-bb1e-4996-ac5a-4c3dba91bade",
+              "name": "Vadim Belobrovtsev",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/80eac2f1-bb1e-4996-ac5a-4c3dba91bade?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "0ef9e676-8ee6-481a-ae29-e1ce75af5aaa",
+              "name": "Aleksei Jevgrafov",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/0ef9e676-8ee6-481a-ae29-e1ce75af5aaa?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "586335bd-0e3f-4cee-a325-7af602224ca7",
+              "name": "Vladimir Arhipov",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/586335bd-0e3f-4cee-a325-7af602224ca7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610121500#PKP-1325085"
+            }
+          }
+        },
+        {
+          "uuid": "af9e2175-285c-494a-bddc-5905a2e6fd0c",
+          "title": "1078 Tallinn-Tartu raudtee taristutööde kohta",
+          "documentType": "interpellationsAgendaItemDocument",
+          "created": "2026-09-24T08:23:35.482",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "3fb986f2-dd78-45ef-a55f-ef3b601882e6",
+              "fileName": "AP_1078.pdf",
+              "fileExtension": "pdf",
+              "fileTitle": "Arupärimine",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-16T17:38:35.393"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 3,
+          "respondent": {
+            "uuid": "311c892c-6acb-41f2-97cb-cb63dd1c8221",
+            "name": "Kuldar Leis",
+            "type": "user",
+            "active": true,
+            "user": null,
+            "role": {
+              "uuid": "6c59461b-9323-41ed-bccd-8af3614e5f36",
+              "name": "taristuminister Kuldar Leis",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/contacts/311c892c-6acb-41f2-97cb-cb63dd1c8221?lang=ET"
+              }
+            }
+          },
+          "enquirers": [
+            {
+              "uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
+              "name": "Aivar Kokk",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/2dcb35ed-acbc-4bcf-9e9d-9da681842d6d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610121500#PKP-1325084"
+            }
+          }
+        },
+        {
+          "uuid": "0df4ebc5-2f8f-496b-be82-b7831d9cad0e",
+          "title": "1019 Terviseandmete vaatamise õiguspärasuse, proportsionaalsuse ja järelevalve kohta",
+          "documentType": "interpellationsAgendaItemDocument",
+          "created": "2026-10-01T13:50:55.312",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "b65700cf-c915-4fc7-b12d-286ba49fe5d6",
+              "fileName": "AP_1019.pdf",
+              "fileExtension": "pdf",
+              "fileTitle": "Arupärimine",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-06-02T12:51:53.708"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 4,
+          "respondent": {
+            "uuid": "dea3f114-9d1a-4972-ae8a-76680d465968",
+            "name": "Karmen Joller",
+            "type": "plenary-member",
+            "active": false,
+            "user": null,
+            "role": {
+              "uuid": "6c52b749-06f7-4ce6-a04e-74f5bfd86a96",
+              "name": "sotsiaalminister Karmen Joller",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/dea3f114-9d1a-4972-ae8a-76680d465968?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "enquirers": [
+            {
+              "uuid": "a78027e5-2480-49f2-a340-ee88daf92d53",
+              "name": "Urmas Reinsalu",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a78027e5-2480-49f2-a340-ee88daf92d53?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "9a8a55b8-c946-47a2-9e17-9978c3fd23f8",
+              "name": "Tõnis Lukas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/9a8a55b8-c946-47a2-9e17-9978c3fd23f8?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "29068268-672d-451a-a08a-5727ec4300f4",
+              "name": "Mart Maastik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/29068268-672d-451a-a08a-5727ec4300f4?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "8940964b-6bfd-482d-a4f5-53f2cccb149d",
+              "name": "Priit Sibul",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/8940964b-6bfd-482d-a4f5-53f2cccb149d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d5f3dddb-d809-448a-a94f-adbf208e408a",
+              "name": "Andres Metsoja",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d5f3dddb-d809-448a-a94f-adbf208e408a?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+              "name": "Henn Põlluaas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/65b1d8bb-7f45-48f5-b4aa-7ba4ca459824?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "94351dfe-449e-48db-9396-06cf204ce22e",
+              "name": "Jaanus Karilaid",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/94351dfe-449e-48db-9396-06cf204ce22e?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+              "name": "Helir-Valdor Seeder",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/23161df7-bc1b-442e-b4cd-2d1f37627658?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "7f83e40c-4854-4632-9372-448b3a5dc93a",
+              "name": "Lea Danilson-Järg",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/7f83e40c-4854-4632-9372-448b3a5dc93a?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610121500#PKP-1325080"
+            }
+          }
+        },
+        {
+          "uuid": "13ceaa2c-e95c-4f76-89d4-7d2181de968c",
+          "title": "1049 Haiglavõrgu arendamise ja Tallinna Haigla kohta",
+          "documentType": "interpellationsAgendaItemDocument",
+          "created": "2026-10-01T13:51:33.56",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "86577424-4dc3-483e-b631-71d51e38caa1",
+              "fileName": "AP_1049.pdf",
+              "fileExtension": "pdf",
+              "fileTitle": "Arupärimine",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-06-16T15:33:07.644"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 5,
+          "respondent": {
+            "uuid": "dea3f114-9d1a-4972-ae8a-76680d465968",
+            "name": "Karmen Joller",
+            "type": "plenary-member",
+            "active": false,
+            "user": null,
+            "role": {
+              "uuid": "6c52b749-06f7-4ce6-a04e-74f5bfd86a96",
+              "name": "sotsiaalminister Karmen Joller",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/dea3f114-9d1a-4972-ae8a-76680d465968?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "enquirers": [
+            {
+              "uuid": "561abe91-76eb-45f3-90b0-efa94c663689",
+              "name": "Tanel Kiik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/561abe91-76eb-45f3-90b0-efa94c663689?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "80f542c1-393a-46e2-9fca-99948e59850d",
+              "name": "Andre Hanimägi",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/80f542c1-393a-46e2-9fca-99948e59850d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+              "name": "Jaak Aab",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "76c477e6-4b49-4d49-ad7b-a4853182a1da",
+              "name": "Riina Sikkut",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/76c477e6-4b49-4d49-ad7b-a4853182a1da?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1d0b281d-b769-4e94-8c67-faa1cb1b1395",
+              "name": "Helmen Kütt",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1d0b281d-b769-4e94-8c67-faa1cb1b1395?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+              "name": "Anti Allas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/f6353ede-a0a5-4918-ab8b-790a1957c5cd?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d557812c-971d-415b-827d-aa6a382ec6ef",
+              "name": "Lauri Läänemets",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d557812c-971d-415b-827d-aa6a382ec6ef?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "9d863d49-8bfb-4314-bd3c-cfa143f518c8",
+              "name": "Tiit Maran",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/9d863d49-8bfb-4314-bd3c-cfa143f518c8?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
+              "name": "Züleyxa Izmailova",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/658c9d00-82c9-4161-8314-48ff1d67e3b7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "caea357b-12c0-4069-b53e-89f69f517212",
+              "name": "Kersti Sarapuu",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/caea357b-12c0-4069-b53e-89f69f517212?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "07132cc4-5afc-4edb-9537-7c721ec39b2d",
+              "name": "Enn Eesmaa",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/07132cc4-5afc-4edb-9537-7c721ec39b2d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d7d9e4d7-699e-4038-83c3-d13369f644c9",
+              "name": "Tõnis Mölder",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d7d9e4d7-699e-4038-83c3-d13369f644c9?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "988995d4-3cbe-4ea7-acdd-6222d0b658b1",
+              "name": "Reili Rand",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/988995d4-3cbe-4ea7-acdd-6222d0b658b1?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610121500#PKP-1325077"
+            }
+          }
+        }
+      ],
+      "votings": [
+        {
+          "uuid": "396f88ce-b389-4592-b9d8-f2e9ac06d7bd",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2026-10-12T16:06:05.15",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/396f88ce-b389-4592-b9d8-f2e9ac06d7bd"
+            }
+          }
+        },
+        {
+          "uuid": "7195fba0-1bba-4bfe-a6a4-4e5443993bc4",
+          "type": {
+            "code": "AVALIK",
+            "value": "Avalik"
+          },
+          "description": "Päevakorra kinnitamine",
+          "startDateTime": "2026-10-12T16:17:49.373",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/7195fba0-1bba-4bfe-a6a4-4e5443993bc4"
+            }
+          }
+        }
+      ],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/202610121500#PKP-1325078"
+        }
+      }
+    },
+    {
+      "uuid": "166d9eed-d217-4f0a-8060-576408696144",
+      "title": "Täiskogu korraline istung teisipäev, 13.10.2026 10:00",
+      "sittingDateTime": "2026-10-13T10:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "896189fe-52de-47d1-9621-d8333b0ae80c",
+          "title": "Sotsiaalhoolekande seaduse ja sotsiaalseadustiku üldosa seaduse muutmise seaduse (erihoolekandeteenused) eelnõu (1001 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-29T14:58:11.737",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "81d07d66-3d9c-4164-82ed-4a09e3eed3e4",
+              "fileName": "1001_SHS_SÜS_m_s_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (kooskõlastustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T16:07:23.413"
+            },
+            {
+              "uuid": "9203526e-d00a-4bae-9e8b-c2bc63bdbf1f",
+              "fileName": "1001_SHS_SÜS_m_s_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (rakendusaktide kavandid)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T16:05:52.411"
+            },
+            {
+              "uuid": "f6b4694e-a1c8-463b-9359-13a369d70fc5",
+              "fileName": "1001_SHS_SÜS_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T16:04:52.448"
+            },
+            {
+              "uuid": "36cd7e5c-cc5b-4452-80f9-ed2072111abf",
+              "fileName": "1001_SHS_SÜS_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T16:03:49.759"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "dea3f114-9d1a-4972-ae8a-76680d465968",
+              "name": "Karmen Joller",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "6c52b749-06f7-4ce6-a04e-74f5bfd86a96",
+                "name": "sotsiaalminister Karmen Joller",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/dea3f114-9d1a-4972-ae8a-76680d465968?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1d0b281d-b769-4e94-8c67-faa1cb1b1395",
+              "name": "Helmen Kütt",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1d0b281d-b769-4e94-8c67-faa1cb1b1395?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "c5503d50-2470-4d81-bef6-e8f709e7a726",
+            "title": "Sotsiaalhoolekande seaduse ja sotsiaalseadustiku üldosa seaduse muutmise seadus (erihoolekandeteenused)",
+            "mark": 1001,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/c5503d50-2470-4d81-bef6-e8f709e7a726"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-27T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610131000#PKP-1325695"
+            }
+          }
+        },
+        {
+          "uuid": "261147a8-e03b-4541-9303-fa3e39a2f3cf",
+          "title": "Alusharidusseaduse muutmise seaduse eelnõu (937 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-29T14:41:38.599",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "ea4ac683-6744-4646-a95a-f9a43d418072",
+              "fileName": "937_AHS_m_s_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (kooskõlastustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-13T09:50:44.141"
+            },
+            {
+              "uuid": "ac588b87-95df-425a-b38d-866edfa97aaa",
+              "fileName": "937_AHS_m_s_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (rakendusakti kavand)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-13T09:50:25.781"
+            },
+            {
+              "uuid": "f6805db4-b4c5-442c-ba1f-6770845c35cb",
+              "fileName": "937_AHS_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-13T09:50:02.598"
+            },
+            {
+              "uuid": "51823a28-6b6f-4fd9-a7b0-02b9c714eb04",
+              "fileName": "937_AHS_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-13T09:49:30.971"
+            },
+            {
+              "uuid": "d28d527d-4bf9-4acb-86aa-ccecbc291068",
+              "fileName": "937_AHS_SK_muudetud_kujul.täiskogule.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri muudetud kujul",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-08T17:47:55.358"
+            },
+            {
+              "uuid": "bee14c6c-3c46-4292-80eb-d6caa2a61e2b",
+              "fileName": "937_AHS__eelnõu_muudetud_kujul.täiskogule.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu muudetud kujul",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-08T17:41:23.529"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 2,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "64c4dbef-730c-4c48-a4cd-68047478f8b2",
+              "name": "Kristina Kallas",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "b0dbcaf0-6bad-4ed6-b1d6-24eb97b09376",
+                "name": "haridus- ja teadusminister Kristina Kallas",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/64c4dbef-730c-4c48-a4cd-68047478f8b2?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "a12ffc5c-0809-46cb-abc4-cc99a7fa3f60",
+              "name": "Liina Kersna",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a12ffc5c-0809-46cb-abc4-cc99a7fa3f60?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "4198f66f-6b66-4501-8a6b-f53122b80231",
+            "title": "Alusharidusseaduse muutmise seadus",
+            "mark": 937,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/4198f66f-6b66-4501-8a6b-f53122b80231"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-27T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610131000#PKP-1325696"
+            }
+          }
+        },
+        {
+          "uuid": "6705bfa1-b9cc-4320-a6ca-ba3b06d1ce53",
+          "title": "Töövaidluse lahendamise seaduse muutmise seaduse eelnõu (1005 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-28T18:10:24.667",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "0e32ac7a-896a-4f15-b47f-3e54031a48b2",
+              "fileName": "1005_TvLS_m_s_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (märkused ja ettepanekud)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-08T16:50:06.177"
+            },
+            {
+              "uuid": "b9bdf5e3-1b1a-42ff-a38f-de8e5c2bac1c",
+              "fileName": "1005_TvLS_m_s_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (rakendusakti kavand)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-08T16:49:12.744"
+            },
+            {
+              "uuid": "15e57351-945e-4a42-b417-6ad5dd256f26",
+              "fileName": "1005_TvLS_m_s_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-08T16:48:29.715"
+            },
+            {
+              "uuid": "2550c6ec-238a-4b1a-b756-c7f7770d54e4",
+              "fileName": "1005_TvLS_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-08T16:47:24.165"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 3,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "7db4731a-23d6-4171-b73a-9d08a53cb228",
+              "name": "Liina Vahtras",
+              "type": "user",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "dedf7d19-7841-4ff6-8722-aa2982f5bc7c",
+                "name": "majandus- ja tööstusminister Liina Vahtras",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/contacts/7db4731a-23d6-4171-b73a-9d08a53cb228?lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1c173f0d-6c5e-445a-934f-32e7edf903db",
+              "name": "Mihkel Lees",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1c173f0d-6c5e-445a-934f-32e7edf903db?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "ea8635b6-40d0-48af-99a0-6d0aa4df99ed",
+            "title": "Töövaidluse lahendamise seaduse muutmise seadus",
+            "mark": 1005,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/ea8635b6-40d0-48af-99a0-6d0aa4df99ed"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-27T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610131000#PKP-1325694"
+            }
+          }
+        },
+        {
+          "uuid": "b8dcff07-fab3-45b7-b36e-620deacd1874",
+          "title": "Platvormitöö seaduse eelnõu (1003 SE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-28T18:06:11.34",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "ad148c3b-13db-49ec-8071-a83db979f018",
+              "fileName": "1003_Platvormitöö_SK_Lisa_2_lisa.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 lisa (Eesti Infotehnoloogia- ja Telekommunikatsiooni Liidu ja Bolti detailsed ettepanekud)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T12:19:11.208"
+            },
+            {
+              "uuid": "d3df97c5-2e76-4172-9143-120a190807e3",
+              "fileName": "1003_Platvormitöö_SK_Lisa_2.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 2 (kooskõlastustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T12:18:42.065"
+            },
+            {
+              "uuid": "dfd078ff-b555-4d05-8fbd-fae5ae636c37",
+              "fileName": "1003_Platvormitöö_SK_Lisa_1.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskirja lisa 1 (vastavustabel)",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T12:18:18.213"
+            },
+            {
+              "uuid": "50a81710-7591-4c77-8c4b-4af17b049010",
+              "fileName": "1003_Platvormitöö_seletuskiri.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T12:17:54.239"
+            },
+            {
+              "uuid": "f4867bc9-b74a-4d12-958a-4bb154eefd62",
+              "fileName": "1003_Platvormitöö_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T12:17:08.844"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 4,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "561abe91-76eb-45f3-90b0-efa94c663689",
+              "name": "Tanel Kiik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/561abe91-76eb-45f3-90b0-efa94c663689?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "7db4731a-23d6-4171-b73a-9d08a53cb228",
+              "name": "Liina Vahtras",
+              "type": "user",
+              "active": false,
+              "user": null,
+              "role": {
+                "uuid": "dedf7d19-7841-4ff6-8722-aa2982f5bc7c",
+                "name": "majandus- ja tööstusminister Liina Vahtras",
+                "type": "external-user",
+                "active": true,
+                "user": null,
+                "role": null
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/contacts/7db4731a-23d6-4171-b73a-9d08a53cb228?lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "0c85c27e-1bcd-4edc-a4fb-32a66893b1f3",
+            "title": "Platvormitöö seadus",
+            "mark": 1003,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/0c85c27e-1bcd-4edc-a4fb-32a66893b1f3"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_II_LUGEMISELE",
+            "value": "Esimene lugemine lõpetatud"
+          },
+          "amendmentsDeadline": "2026-10-27T17:15:00",
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610131000#PKP-1325698"
+            }
+          }
+        }
+      ],
+      "votings": [
+        {
+          "uuid": "414e3be9-cd54-40f9-bcfd-63148420374e",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2026-10-13T10:00:13.62",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/414e3be9-cd54-40f9-bcfd-63148420374e"
+            }
+          }
+        }
+      ],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/202610131000#PKP-1325695"
+        }
+      }
+    },
+    {
+      "uuid": "e5803268-09f4-479c-be9b-5be1e4d5b3e7",
+      "title": "Infotund kolmapäev, 14.10.2026 12:00",
+      "sittingDateTime": "2026-10-14T12:00:00",
+      "sittingTypeCode": null,
+      "volumeType": "infoSittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "1513ef31-c569-4773-9772-340c2842fafb",
+          "title": "Inimeste mured",
+          "documentType": "infoAgendaItemDocument",
+          "created": "2026-10-12T15:58:53.037",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "respondent": {
+            "uuid": "64c4dbef-730c-4c48-a4cd-68047478f8b2",
+            "name": "Kristina Kallas",
+            "type": "plenary-member",
+            "active": false,
+            "user": null,
+            "role": {
+              "uuid": "4d723ad0-b77a-469d-ae06-2378db9e4677",
+              "name": "haridus- ja teadusminister Kristina Kallas peaministri ülesannetes",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/64c4dbef-730c-4c48-a4cd-68047478f8b2?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "enquirer": {
+            "uuid": "1839253a-aec0-4019-995a-1c031db8fd10",
+            "name": "Lauri Laats",
+            "type": "plenary-member",
+            "active": true,
+            "user": null,
+            "role": null,
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/1839253a-aec0-4019-995a-1c031db8fd10?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141200#PKP-1329466"
+            }
+          }
+        },
+        {
+          "uuid": "6f2248dd-3143-4fe5-b05c-d84174ba01ca",
+          "title": "Olukord riigis",
+          "documentType": "infoAgendaItemDocument",
+          "created": "2026-10-13T11:04:53.327",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "relatedCollectiveDocuments": [],
+          "order": 2,
+          "respondent": {
+            "uuid": "64c4dbef-730c-4c48-a4cd-68047478f8b2",
+            "name": "Kristina Kallas",
+            "type": "plenary-member",
+            "active": false,
+            "user": null,
+            "role": {
+              "uuid": "4d723ad0-b77a-469d-ae06-2378db9e4677",
+              "name": "haridus- ja teadusminister Kristina Kallas peaministri ülesannetes",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/64c4dbef-730c-4c48-a4cd-68047478f8b2?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "enquirer": {
+            "uuid": "f4e5d00e-19d1-428a-ba5e-5ce9ae4ef2c2",
+            "name": "Helle-Moonika Helme",
+            "type": "plenary-member",
+            "active": true,
+            "user": null,
+            "role": null,
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/f4e5d00e-19d1-428a-ba5e-5ce9ae4ef2c2?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141200#PKP-1329470"
+            }
+          }
+        },
+        {
+          "uuid": "110b051c-6de5-4a6f-ab23-84ed5e857230",
+          "title": "Õpetajad ja kaasav haridus",
+          "documentType": "infoAgendaItemDocument",
+          "created": "2026-10-13T10:10:47.266",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "relatedCollectiveDocuments": [],
+          "order": 3,
+          "respondent": {
+            "uuid": "64c4dbef-730c-4c48-a4cd-68047478f8b2",
+            "name": "Kristina Kallas",
+            "type": "plenary-member",
+            "active": false,
+            "user": null,
+            "role": {
+              "uuid": "4d723ad0-b77a-469d-ae06-2378db9e4677",
+              "name": "haridus- ja teadusminister Kristina Kallas peaministri ülesannetes",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/64c4dbef-730c-4c48-a4cd-68047478f8b2?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "enquirer": {
+            "uuid": "1d0b281d-b769-4e94-8c67-faa1cb1b1395",
+            "name": "Helmen Kütt",
+            "type": "plenary-member",
+            "active": true,
+            "user": null,
+            "role": null,
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/1d0b281d-b769-4e94-8c67-faa1cb1b1395?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141200#PKP-1329465"
+            }
+          }
+        },
+        {
+          "uuid": "704eef39-0a4c-4343-ad7f-bb10681649f3",
+          "title": "Segased sõnumid sotsiaalministrilt",
+          "documentType": "infoAgendaItemDocument",
+          "created": "2026-10-13T11:35:55.179",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "relatedCollectiveDocuments": [],
+          "order": 4,
+          "respondent": {
+            "uuid": "dea3f114-9d1a-4972-ae8a-76680d465968",
+            "name": "Karmen Joller",
+            "type": "plenary-member",
+            "active": false,
+            "user": null,
+            "role": {
+              "uuid": "6c52b749-06f7-4ce6-a04e-74f5bfd86a96",
+              "name": "sotsiaalminister Karmen Joller",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/dea3f114-9d1a-4972-ae8a-76680d465968?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "enquirer": {
+            "uuid": "94351dfe-449e-48db-9396-06cf204ce22e",
+            "name": "Jaanus Karilaid",
+            "type": "plenary-member",
+            "active": true,
+            "user": null,
+            "role": null,
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/94351dfe-449e-48db-9396-06cf204ce22e?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141200#PKP-1329473"
+            }
+          }
+        },
+        {
+          "uuid": "5e512193-dc4e-4468-9409-76dbf41ce0b7",
+          "title": "Lennundus",
+          "documentType": "infoAgendaItemDocument",
+          "created": "2026-10-12T15:59:33.655",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "relatedCollectiveDocuments": [],
+          "order": 5,
+          "respondent": {
+            "uuid": "311c892c-6acb-41f2-97cb-cb63dd1c8221",
+            "name": "Kuldar Leis",
+            "type": "user",
+            "active": true,
+            "user": null,
+            "role": {
+              "uuid": "6c59461b-9323-41ed-bccd-8af3614e5f36",
+              "name": "taristuminister Kuldar Leis",
+              "type": "external-user",
+              "active": true,
+              "user": null,
+              "role": null
+            },
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/contacts/311c892c-6acb-41f2-97cb-cb63dd1c8221?lang=ET"
+              }
+            }
+          },
+          "enquirer": {
+            "uuid": "80eac2f1-bb1e-4996-ac5a-4c3dba91bade",
+            "name": "Vadim Belobrovtsev",
+            "type": "plenary-member",
+            "active": true,
+            "user": null,
+            "role": null,
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/plenary-members/80eac2f1-bb1e-4996-ac5a-4c3dba91bade?querySteno=true&includeInactive=false&lang=ET"
+              }
+            }
+          },
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141200#PKP-1329468"
+            }
+          }
+        }
+      ],
+      "votings": [
+        {
+          "uuid": "37349bbe-62c0-4433-94d7-0d8838245309",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2026-10-14T12:00:39.14",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/37349bbe-62c0-4433-94d7-0d8838245309"
+            }
+          }
+        }
+      ],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/202610141200#PKP-1329466"
+        }
+      }
+    },
+    {
+      "uuid": "dacbcdbd-ed6f-4a18-9880-f941bc55525b",
+      "title": "Täiskogu korraline istung kolmapäev, 14.10.2026 14:00",
+      "sittingDateTime": "2026-10-14T14:00:00",
+      "sittingTypeCode": "KORRALINE",
+      "volumeType": "plenarySittingVolume",
+      "agendaItems": [
+        {
+          "uuid": "d0b851f1-dee9-4cdb-911c-707b53a2d998",
+          "title": "Euroopa Parlamendi valimise seaduse muutmise seaduse (valimis- ja kandideerimisea langetamine) eelnõu (414 SE III) (Riigikogu koosseisu häälteenamus)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-28T11:56:16.06",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "c6822bb8-6b36-4bce-9a75-acd0e1c70dc7",
+              "fileName": "414_SE_kolmanda_lugemise_tekst.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-12T12:21:52.769"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 1,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [],
+          "initiators": [
+            {
+              "uuid": "561abe91-76eb-45f3-90b0-efa94c663689",
+              "name": "Tanel Kiik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/561abe91-76eb-45f3-90b0-efa94c663689?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "80f542c1-393a-46e2-9fca-99948e59850d",
+              "name": "Andre Hanimägi",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/80f542c1-393a-46e2-9fca-99948e59850d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "4f816f8e-1501-4940-b87a-af029fcd98c0",
+              "name": "Tanel Tein",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/4f816f8e-1501-4940-b87a-af029fcd98c0?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+              "name": "Annely Akkermann",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/7655e8d3-b658-49f0-8e09-f6cbc4a2c714?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "988995d4-3cbe-4ea7-acdd-6222d0b658b1",
+              "name": "Reili Rand",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/988995d4-3cbe-4ea7-acdd-6222d0b658b1?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "fd57045c-5dde-4c26-bf60-e5c294da0e4c",
+              "name": "Andrus Seeme",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/fd57045c-5dde-4c26-bf60-e5c294da0e4c?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "28e48bd7-9f1f-4d6a-b40c-9c6ff6d445e5",
+              "name": "Kristina Šmigun-Vähi",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/28e48bd7-9f1f-4d6a-b40c-9c6ff6d445e5?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+              "name": "Anti Allas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/f6353ede-a0a5-4918-ab8b-790a1957c5cd?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d7d9e4d7-699e-4038-83c3-d13369f644c9",
+              "name": "Tõnis Mölder",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d7d9e4d7-699e-4038-83c3-d13369f644c9?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "7d6b0605-e425-41c8-9a53-3b92b81f21b1",
+              "name": "Eero Merilind",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/7d6b0605-e425-41c8-9a53-3b92b81f21b1?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+              "name": "Yoko Alender",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/90074aa2-4938-41a9-8275-3a6efa1cee31?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "a12ffc5c-0809-46cb-abc4-cc99a7fa3f60",
+              "name": "Liina Kersna",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a12ffc5c-0809-46cb-abc4-cc99a7fa3f60?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "410c0030-7bcd-4977-85c2-27af3439770f",
+              "name": "Mati Raidma",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/410c0030-7bcd-4977-85c2-27af3439770f?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "987e47c7-929b-4437-9385-fab4f4fd7824",
+              "name": "Kalev Stoicescu",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/987e47c7-929b-4437-9385-fab4f4fd7824?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "ee639cdf-b86c-48b7-9b34-fbba9b83826d",
+              "name": "Margit Sutrop",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/ee639cdf-b86c-48b7-9b34-fbba9b83826d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "236e49d6-eecb-4562-8ad4-bedd586bb149",
+              "name": "Tarmo Tamm",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/236e49d6-eecb-4562-8ad4-bedd586bb149?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d0d7a6a5-25de-40d0-b5df-09575a7c9bfc",
+              "name": "Toomas Uibo",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d0d7a6a5-25de-40d0-b5df-09575a7c9bfc?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1d0b281d-b769-4e94-8c67-faa1cb1b1395",
+              "name": "Helmen Kütt",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1d0b281d-b769-4e94-8c67-faa1cb1b1395?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "b2226516-4cd4-4471-b93b-696c40b7a9e2",
+              "name": "Eerik-Niiles Kross",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/b2226516-4cd4-4471-b93b-696c40b7a9e2?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+              "name": "Lauri Hussar",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/64c0141f-371b-4520-8a50-09e65231f775?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "bdcec844-b004-4caf-bfc1-6a74c9fbd76f",
+              "name": "Erkki Keldo",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/bdcec844-b004-4caf-bfc1-6a74c9fbd76f?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d18cee4c-7b30-405f-96f2-4ab6f81efaf2",
+              "name": "Hanah Lahe",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d18cee4c-7b30-405f-96f2-4ab6f81efaf2?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "a5af5ad0-6e31-443a-9b12-15769d43e784",
+              "name": "Maria Jufereva-Skuratovski",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a5af5ad0-6e31-443a-9b12-15769d43e784?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "a5d17c31-61e5-4e45-87b0-5834b6728fe6",
+              "name": "Juku-Kalle Raid",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a5d17c31-61e5-4e45-87b0-5834b6728fe6?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "b6f8dff5-7c69-4d4c-b978-be0a2ad6e161",
+              "name": "Peeter Tali",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/b6f8dff5-7c69-4d4c-b978-be0a2ad6e161?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "8e9879fd-2967-45ca-892b-42e927b22d75",
+              "name": "Andres Sutt",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/8e9879fd-2967-45ca-892b-42e927b22d75?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "642e6a9e-8123-4b1d-bbdd-a58a4be0f1fa",
+              "name": "Igor Taro",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/642e6a9e-8123-4b1d-bbdd-a58a4be0f1fa?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "9d863d49-8bfb-4314-bd3c-cfa143f518c8",
+              "name": "Tiit Maran",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/9d863d49-8bfb-4314-bd3c-cfa143f518c8?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
+              "name": "Züleyxa Izmailova",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/658c9d00-82c9-4161-8314-48ff1d67e3b7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "8d9daaeb-dbaf-4887-8311-881b29bedfa9",
+              "name": "Õnne Pillak",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/8d9daaeb-dbaf-4887-8311-881b29bedfa9?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "989194b6-b6cc-4c8f-9e6a-8eb8913d103e",
+              "name": "Raimond Kaljulaid",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/989194b6-b6cc-4c8f-9e6a-8eb8913d103e?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "07132cc4-5afc-4edb-9537-7c721ec39b2d",
+              "name": "Enn Eesmaa",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/07132cc4-5afc-4edb-9537-7c721ec39b2d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1600fe77-4b45-44ab-972a-181a5ef71767",
+              "name": "Kristo Enn Vaga",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1600fe77-4b45-44ab-972a-181a5ef71767?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "53141769-f7bb-4995-8d12-5ff0d9c1eca1",
+              "name": "Mario Kadastik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/53141769-f7bb-4995-8d12-5ff0d9c1eca1?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "906f1a0a-0000-4a96-866c-b30f2b6adc49",
+              "name": "Toomas Kivimägi",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/906f1a0a-0000-4a96-866c-b30f2b6adc49?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "17d27ea5-b5e6-43e0-86db-ebc15bdd5788",
+              "name": "Luisa Värk",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/17d27ea5-b5e6-43e0-86db-ebc15bdd5788?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "9035e217-d990-40ca-87ed-54c77653c6d7",
+              "name": "Pipi-Liis Siemann",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/9035e217-d990-40ca-87ed-54c77653c6d7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "dea3f114-9d1a-4972-ae8a-76680d465968",
+              "name": "Karmen Joller",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/dea3f114-9d1a-4972-ae8a-76680d465968?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+              "name": "Jaak Aab",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "001dd80c-38c3-4557-b3ee-408d3ffd5cd7",
+              "name": "Katrin Kuusemäe",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/001dd80c-38c3-4557-b3ee-408d3ffd5cd7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "07003549-aa42-4764-8bdd-cab06cb94a92",
+              "name": "Anti Haugas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/07003549-aa42-4764-8bdd-cab06cb94a92?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "bd291baf-8d9d-4ed4-83bd-d0892d4a3a1b",
+              "name": "Priit Lomp",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/bd291baf-8d9d-4ed4-83bd-d0892d4a3a1b?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "289fc421-d890-4401-ba74-4dc6813f0403",
+              "name": "Liisa-Ly Pakosta",
+              "type": "plenary-member",
+              "active": false,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/289fc421-d890-4401-ba74-4dc6813f0403?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "3febb869-f443-4aba-908e-7c0c30f8c4dd",
+              "name": "Irja Lutsar",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/3febb869-f443-4aba-908e-7c0c30f8c4dd?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "798de8ee-0587-4543-aa2e-89c3f6c8f914",
+              "name": "Marek Reinaas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/798de8ee-0587-4543-aa2e-89c3f6c8f914?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "b9fab890-fa21-4a69-9039-171a0015bc84",
+            "title": "Euroopa Parlamendi valimise seaduse muutmise seadus (valimis- ja kandideerimisea langetamine)",
+            "mark": 414,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/b9fab890-fa21-4a69-9039-171a0015bc84"
+              }
+            }
+          },
+          "stage": "KOLMAS_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "VASTUVOTMINE",
+            "value": "Vastuvõtmine"
+          },
+          "votings": [
+            {
+              "uuid": "ebc3ed59-eb7b-4d6b-83f0-5c944eb0b2a1",
+              "type": {
+                "code": "AVALIK",
+                "value": "Avalik"
+              },
+              "description": "Lõpphääletus",
+              "startDateTime": "2026-10-14T15:00:15.08",
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/votings/ebc3ed59-eb7b-4d6b-83f0-5c944eb0b2a1"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141400#PKP-1335819"
+            }
+          }
+        },
+        {
+          "uuid": "02270fa4-8ebd-48f5-8711-33657c39fe09",
+          "title": "Riigikogu avalduse „Kõrghariduse toetuseks\" eelnõu (894 AE I)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-28T12:27:39.403",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "310e2ee9-85a8-4dce-b542-287566172ff7",
+              "fileName": "894_RK_avaldus_kõrghariduse_toetuseks_SK.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-13T10:40:37.345"
+            },
+            {
+              "uuid": "5b8ac156-32d4-4a27-9908-7caaf00d0094",
+              "fileName": "894_RK_avaldus_kõrghariduse_toetuseks_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-13T10:40:08.773"
+            },
+            {
+              "uuid": "79b8edae-cf0e-4da4-98e4-d129829b4139",
+              "fileName": "894_AE_I_SELETUSKIRI_muudetud_kujul.täiskogule.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri muudetud kujul",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-12T16:18:50.984"
+            },
+            {
+              "uuid": "96effa9d-5ce0-471e-ae03-32c828f62e69",
+              "fileName": "894_RK_avaldus_kõrghariduse_toetuseks_eelnõu._Muudetud_kujul_keeletoimetatud.täiskogule.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu muudetud kujul",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-12T16:18:22.911"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 2,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "ee639cdf-b86c-48b7-9b34-fbba9b83826d",
+              "name": "Margit Sutrop",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/ee639cdf-b86c-48b7-9b34-fbba9b83826d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d557812c-971d-415b-827d-aa6a382ec6ef",
+              "name": "Lauri Läänemets",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d557812c-971d-415b-827d-aa6a382ec6ef?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "a62b7530-a1fb-4c0b-b041-f10c2cfaa31a",
+              "name": "Andrei Korobeinik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a62b7530-a1fb-4c0b-b041-f10c2cfaa31a?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "c7f4f213-58a3-4b6f-a236-153644653d17",
+              "name": "Madis Kallas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/c7f4f213-58a3-4b6f-a236-153644653d17?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+              "name": "Anti Allas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/f6353ede-a0a5-4918-ab8b-790a1957c5cd?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+              "name": "Jaak Aab",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "b5922bb2-56bb-4de6-a7e1-754553191c27",
+              "name": "Heljo Pikhof",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/b5922bb2-56bb-4de6-a7e1-754553191c27?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d5c54f88-dff3-486b-aac6-2cd124577d38",
+              "name": "Ester Karuse",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d5c54f88-dff3-486b-aac6-2cd124577d38?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d557812c-971d-415b-827d-aa6a382ec6ef",
+              "name": "Lauri Läänemets",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d557812c-971d-415b-827d-aa6a382ec6ef?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "988995d4-3cbe-4ea7-acdd-6222d0b658b1",
+              "name": "Reili Rand",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/988995d4-3cbe-4ea7-acdd-6222d0b658b1?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1d0b281d-b769-4e94-8c67-faa1cb1b1395",
+              "name": "Helmen Kütt",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1d0b281d-b769-4e94-8c67-faa1cb1b1395?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "d7d9e4d7-699e-4038-83c3-d13369f644c9",
+              "name": "Tõnis Mölder",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/d7d9e4d7-699e-4038-83c3-d13369f644c9?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "76c477e6-4b49-4d49-ad7b-a4853182a1da",
+              "name": "Riina Sikkut",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/76c477e6-4b49-4d49-ad7b-a4853182a1da?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "fd2d1dd5-ff19-445e-b190-28aabb07763a",
+              "name": "Leo Kunnas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/fd2d1dd5-ff19-445e-b190-28aabb07763a?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "586335bd-0e3f-4cee-a325-7af602224ca7",
+              "name": "Vladimir Arhipov",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/586335bd-0e3f-4cee-a325-7af602224ca7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "0ef9e676-8ee6-481a-ae29-e1ce75af5aaa",
+              "name": "Aleksei Jevgrafov",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/0ef9e676-8ee6-481a-ae29-e1ce75af5aaa?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "80f542c1-393a-46e2-9fca-99948e59850d",
+              "name": "Andre Hanimägi",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/80f542c1-393a-46e2-9fca-99948e59850d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "9d863d49-8bfb-4314-bd3c-cfa143f518c8",
+              "name": "Tiit Maran",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/9d863d49-8bfb-4314-bd3c-cfa143f518c8?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "80eac2f1-bb1e-4996-ac5a-4c3dba91bade",
+              "name": "Vadim Belobrovtsev",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/80eac2f1-bb1e-4996-ac5a-4c3dba91bade?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "07132cc4-5afc-4edb-9537-7c721ec39b2d",
+              "name": "Enn Eesmaa",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/07132cc4-5afc-4edb-9537-7c721ec39b2d?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "561abe91-76eb-45f3-90b0-efa94c663689",
+              "name": "Tanel Kiik",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/561abe91-76eb-45f3-90b0-efa94c663689?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "1839253a-aec0-4019-995a-1c031db8fd10",
+              "name": "Lauri Laats",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/1839253a-aec0-4019-995a-1c031db8fd10?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "caea357b-12c0-4069-b53e-89f69f517212",
+              "name": "Kersti Sarapuu",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/caea357b-12c0-4069-b53e-89f69f517212?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
+              "name": "Peeter Ernits",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/f8a770b2-916c-4172-84b3-005ba9906a18?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            },
+            {
+              "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
+              "name": "Züleyxa Izmailova",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/658c9d00-82c9-4161-8314-48ff1d67e3b7?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "eb6fe433-5083-4ed0-92e0-0768c63ed9a4",
+            "title": "Riigikogu avaldus „Kõrghariduse toetuseks\"",
+            "mark": 894,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/eb6fe433-5083-4ed0-92e0-0768c63ed9a4"
+              }
+            }
+          },
+          "stage": "ESIMENE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "VASTUVOTMINE",
+            "value": "Vastuvõtmine"
+          },
+          "votings": [
+            {
+              "uuid": "dbbceb3c-eb80-488d-a8ad-35645ab62c2f",
+              "type": {
+                "code": "AVALIK",
+                "value": "Avalik"
+              },
+              "description": "Lõpphääletus",
+              "startDateTime": "2026-10-14T16:28:09.147",
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/votings/dbbceb3c-eb80-488d-a8ad-35645ab62c2f"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141400#PKP-1335815"
+            }
+          }
+        },
+        {
+          "uuid": "9ef0da92-98f8-4f69-bd15-aa68af71942c",
+          "title": "Relvaseaduse ja lõhkematerjaliseaduse muutmise seaduse eelnõu (855 SE II)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-28T12:44:08.972",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "e55f908a-52a6-4a9c-b779-587278274618",
+              "fileName": "855_SE_II_SELETUSKIRI.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-12T12:29:20.712"
+            },
+            {
+              "uuid": "90ff3e68-ea90-493c-ad81-707277edfcd2",
+              "fileName": "855_SE_II_ME_TABEL.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Muudatusettepanekute loetelu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-12T12:28:45.704"
+            },
+            {
+              "uuid": "ffd9a478-7fa0-4f20-ba15-413adddea2b4",
+              "fileName": "855_SE_II_SAALITEKST.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-12T12:27:58.902"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 3,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "07003549-aa42-4764-8bdd-cab06cb94a92",
+              "name": "Anti Haugas",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/07003549-aa42-4764-8bdd-cab06cb94a92?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "601f126d-99da-40a5-8cdd-f63a92ab6a0b",
+            "title": "Relvaseaduse ja lõhkematerjaliseaduse muutmise seadus",
+            "mark": 855,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/601f126d-99da-40a5-8cdd-f63a92ab6a0b"
+              }
+            }
+          },
+          "stage": "TEINE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_III_LUGEMISELE",
+            "value": "Teine lugemine lõpetatud"
+          },
+          "votings": [
+            {
+              "uuid": "2ea8e410-4d74-4601-8007-aa9169bed010",
+              "type": {
+                "code": "AVALIK",
+                "value": "Avalik"
+              },
+              "description": "12. muudatusettepanek",
+              "startDateTime": "2026-10-14T16:47:36.91",
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/votings/2ea8e410-4d74-4601-8007-aa9169bed010"
+                }
+              }
+            }
+          ],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141400#PKP-1335810"
+            }
+          }
+        },
+        {
+          "uuid": "eec9b8a0-d650-4b84-88b7-c9a317dfea28",
+          "title": "Võlaõigusseaduse ja sellega seonduvalt teiste seaduste muutmise seaduse (finantspettuste ennetamine ja tõkestamine) eelnõu (936 SE II)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-29T15:13:50.569",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "3cb33ca5-2a9f-41ca-9953-4ead552da8ca",
+              "fileName": "936_SE_II_SELETUSKIRI.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T17:00:09.134"
+            },
+            {
+              "uuid": "3bb414f5-3b5c-4225-b410-dd03de6b5ba2",
+              "fileName": "936_SE_II_ME_TABEL.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Muudatusettepanekute loetelu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T16:59:38.535"
+            },
+            {
+              "uuid": "3717976b-1042-4b5a-b3ba-e2807483bcc8",
+              "fileName": "936_SE_II_SAALITEKST.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-09-29T16:58:58.424"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 4,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "a5af5ad0-6e31-443a-9b12-15769d43e784",
+              "name": "Maria Jufereva-Skuratovski",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/a5af5ad0-6e31-443a-9b12-15769d43e784?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "63bf4736-defe-465e-a2e0-6a12797f2e72",
+            "title": "Võlaõigusseaduse muutmise ja sellega seonduvalt teiste seaduste muutmise seadus (finantspettuste ennetamine ja tõkestamine)",
+            "mark": 936,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/63bf4736-defe-465e-a2e0-6a12797f2e72"
+              }
+            }
+          },
+          "stage": "TEINE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_III_LUGEMISELE",
+            "value": "Teine lugemine lõpetatud"
+          },
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141400#PKP-1335808"
+            }
+          }
+        },
+        {
+          "uuid": "662b11c6-1ce7-4a13-bf8b-1858d190f6bd",
+          "title": "Konsulaarseaduse ja teiste seaduste muutmise seaduse eelnõu (896 SE II)",
+          "documentType": "plenaryAgendaItemDocument",
+          "created": "2026-09-29T16:07:03.67",
+          "copyOrOriginal": "ORIGINAL",
+          "membership": 15,
+          "relatedDocuments": [],
+          "files": [
+            {
+              "uuid": "a8e81a88-2493-4da8-9647-e71c4de75c3a",
+              "fileName": "896_SE_II_MEde_loetelu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Muudatusettepanekute  loetelu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T14:44:08.392"
+            },
+            {
+              "uuid": "bf56f2d4-d2d0-4d60-ba3a-bba1303bda19",
+              "fileName": "896_SE_II_seletuskiri.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Seletuskiri",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T14:43:49.064"
+            },
+            {
+              "uuid": "04144bb5-43ce-48be-abf3-7378d805cb21",
+              "fileName": "896_SE_II_KonS_jt_s_m_s_eelnõu.docx",
+              "fileExtension": "docx",
+              "fileTitle": "Eelnõu",
+              "accessRestrictionType": "PUBLIC",
+              "created": "2026-10-01T14:41:22.399"
+            }
+          ],
+          "relatedCollectiveDocuments": [],
+          "order": 5,
+          "type": {
+            "code": "EELNOU",
+            "value": "Eelnõu"
+          },
+          "reporters": [
+            {
+              "uuid": "17d27ea5-b5e6-43e0-86db-ebc15bdd5788",
+              "name": "Luisa Värk",
+              "type": "plenary-member",
+              "active": true,
+              "user": null,
+              "role": null,
+              "_links": {
+                "self": {
+                  "href": "https://api.riigikogu.ee/api/plenary-members/17d27ea5-b5e6-43e0-86db-ebc15bdd5788?querySteno=true&includeInactive=false&lang=ET"
+                }
+              }
+            }
+          ],
+          "initiators": [
+            {
+              "uuid": "65e1db80-49f1-4c5b-b1b6-539b7efd199f",
+              "name": "Vabariigi Valitsus",
+              "type": "classifier",
+              "active": true,
+              "user": null,
+              "role": null
+            }
+          ],
+          "relatedDraft": {
+            "uuid": "e7efbc07-fdfb-4964-a856-e7a4d3a03bf7",
+            "title": "Konsulaarseaduse ja teiste seaduste muutmise seadus",
+            "mark": 896,
+            "copyOrOriginal": "ORIGINAL",
+            "_links": {
+              "self": {
+                "href": "https://api.riigikogu.ee/api/volumes/drafts/e7efbc07-fdfb-4964-a856-e7a4d3a03bf7"
+              }
+            }
+          },
+          "stage": "TEINE_LUGEMINE",
+          "committeeProposals": [],
+          "decision": {
+            "code": "SAATA_III_LUGEMISELE",
+            "value": "Teine lugemine lõpetatud"
+          },
+          "votings": [],
+          "_links": {
+            "steno": {
+              "href": "https://stenogrammid.riigikogu.ee/202610141400#PKP-1335820"
+            }
+          }
+        }
+      ],
+      "votings": [
+        {
+          "uuid": "1b0a49de-68de-4318-a0dc-a555f598220b",
+          "type": {
+            "code": "KOHALOLEKU_KONTROLL",
+            "value": "Kohaloleku kontroll"
+          },
+          "description": "Kohaloleku kontroll",
+          "startDateTime": "2026-10-14T14:00:23.243",
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/votings/1b0a49de-68de-4318-a0dc-a555f598220b"
+            }
+          }
+        }
+      ],
+      "_links": {
+        "steno": {
+          "href": "https://stenogrammid.riigikogu.ee/202610141400#PKP-1335819"
+        }
+      }
+    }
+  ]
+}

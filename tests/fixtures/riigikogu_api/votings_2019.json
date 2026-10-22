@@ -1,0 +1,154 @@
+[
+  {
+    "uuid": "f1b7a276-c78e-4689-909d-a3c7863b4d73",
+    "title": "Täiskogu korraline istung neljapäev, 4.04.2019 11:00",
+    "membership": 14,
+    "sittingDateTime": "2019-04-04T11:00:00",
+    "votings": [
+      {
+        "uuid": "6e0f93c6-1cfc-4fcd-b825-a27b542c0e4f",
+        "votingNumber": 8415,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2019-04-04T11:25:15",
+        "endDateTime": "2019-04-04T11:25:44.997",
+        "present": 100,
+        "absent": 1,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/6e0f93c6-1cfc-4fcd-b825-a27b542c0e4f"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "9859b2bd-48fa-49c2-89be-c8462c4a88b5",
+    "title": "Täiskogu korraline istung esmaspäev, 8.04.2019 15:00",
+    "membership": 14,
+    "sittingDateTime": "2019-04-08T15:00:00",
+    "votings": [
+      {
+        "uuid": "e157ad39-8c76-493d-af5a-16cf0200485c",
+        "votingNumber": 8433,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2019-04-08T15:04:11.763",
+        "endDateTime": "2019-04-08T15:04:41.76",
+        "present": 92,
+        "absent": 9,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/e157ad39-8c76-493d-af5a-16cf0200485c"
+          }
+        }
+      },
+      {
+        "uuid": "de6aa766-8352-4a5d-afcf-07feddf747a1",
+        "votingNumber": 8434,
+        "type": {
+          "code": "AVALIK",
+          "value": "Avalik"
+        },
+        "description": "Päevakorra kinnitamine",
+        "startDateTime": "2019-04-08T15:05:02.963",
+        "endDateTime": "2019-04-08T15:05:22.953",
+        "present": 92,
+        "absent": 9,
+        "inFavor": 85,
+        "against": 2,
+        "neutral": 1,
+        "abstained": 13,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/de6aa766-8352-4a5d-afcf-07feddf747a1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "cff7cdec-ff6b-4084-801b-15d851900b4d",
+    "title": "Täiskogu korraline istung teisipäev, 9.04.2019 10:00",
+    "membership": 14,
+    "sittingDateTime": "2019-04-09T10:00:00",
+    "votings": [
+      {
+        "uuid": "ee481d70-8390-49e7-93ec-b54b29a10175",
+        "votingNumber": 8435,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2019-04-09T10:03:06.867",
+        "endDateTime": "2019-04-09T10:03:36.863",
+        "present": 89,
+        "absent": 12,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/ee481d70-8390-49e7-93ec-b54b29a10175"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "202fda4d-f519-4dde-8d6c-d5ff4ff92f6f",
+    "title": "Täiskogu korraline istung kolmapäev, 10.04.2019 14:00",
+    "membership": 14,
+    "sittingDateTime": "2019-04-10T14:00:00",
+    "votings": [
+      {
+        "uuid": "6c01d122-3355-4338-b70a-80ef6677f78c",
+        "votingNumber": 8436,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2019-04-10T14:02:30.463",
+        "endDateTime": "2019-04-10T14:03:00.46",
+        "present": 81,
+        "absent": 20,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/6c01d122-3355-4338-b70a-80ef6677f78c"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uuid": "213d3603-b2fd-474a-b36a-82c421c1bb68",
+    "title": "Täiskogu korraline istung neljapäev, 11.04.2019 10:00",
+    "membership": 14,
+    "sittingDateTime": "2019-04-11T10:00:00",
+    "votings": [
+      {
+        "uuid": "8e54634e-0e17-4758-9a12-1cfc0feadf23",
+        "votingNumber": 8437,
+        "type": {
+          "code": "KOHALOLEKU_KONTROLL",
+          "value": "Kohaloleku kontroll"
+        },
+        "description": "Kohaloleku kontroll",
+        "startDateTime": "2019-04-11T10:02:52.863",
+        "endDateTime": "2019-04-11T10:03:22.86",
+        "present": 87,
+        "absent": 14,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/votings/8e54634e-0e17-4758-9a12-1cfc0feadf23"
+          }
+        }
+      }
+    ]
+  }
+]

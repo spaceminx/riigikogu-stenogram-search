@@ -1,0 +1,172 @@
+{
+  "uuid": "688c290c-cd08-48a1-8d47-e10f8db9d5a8",
+  "votingNumber": 13079,
+  "type": {
+    "code": "KOHALOLEKU_KONTROLL",
+    "value": "Kohaloleku kontroll"
+  },
+  "description": "Kohaloleku kontroll",
+  "startDateTime": "2024-05-15T12:00:19.99",
+  "endDateTime": "2024-05-15T12:00:49.987",
+  "present": 13,
+  "absent": 88,
+  "sitting": {
+    "uuid": "76a70ecc-aeda-41b7-b4a4-f1d6cc80a3e7",
+    "reference": "2-1/15-362",
+    "title": "Infotund kolmapäev, 15.05.2024 12:00",
+    "volumeType": "infoSittingVolume",
+    "created": "2023-11-20T16:16:46.249",
+    "copyOrOriginal": "ORIGINAL",
+    "draft": false,
+    "_links": {
+      "self": {
+        "href": "https://api.riigikogu.ee/api/volumes/76a70ecc-aeda-41b7-b4a4-f1d6cc80a3e7"
+      }
+    }
+  },
+  "chairman": {
+    "uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+    "fullName": "Lauri Hussar",
+    "lastName": "Hussar",
+    "firstName": "Lauri",
+    "active": true,
+    "upn": "lhussar@riigikogu.ee"
+  },
+  "voters": [
+    {
+      "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+      "fullName": "Jaak Aab",
+      "lastName": "Aab",
+      "firstName": "Jaak",
+      "active": true,
+      "faction": {
+        "uuid": "c99e4e31-617c-49ad-bfa6-814736842182",
+        "name": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+        "active": true,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/c99e4e31-617c-49ad-bfa6-814736842182"
+          }
+        }
+      },
+      "decision": {
+        "code": "PUUDUB",
+        "value": "puudub"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d"
+        }
+      }
+    },
+    {
+      "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+      "fullName": "Annely Akkermann",
+      "lastName": "Akkermann",
+      "firstName": "Annely",
+      "active": true,
+      "faction": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "name": "Eesti Reformierakonna fraktsioon",
+        "active": true,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e"
+          }
+        }
+      },
+      "decision": {
+        "code": "PUUDUB",
+        "value": "puudub"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/7655e8d3-b658-49f0-8e09-f6cbc4a2c714"
+        }
+      }
+    },
+    {
+      "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+      "fullName": "Yoko Alender",
+      "lastName": "Alender",
+      "firstName": "Yoko",
+      "active": true,
+      "faction": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "name": "Eesti Reformierakonna fraktsioon",
+        "active": true,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e"
+          }
+        }
+      },
+      "decision": {
+        "code": "PUUDUB",
+        "value": "puudub"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/90074aa2-4938-41a9-8275-3a6efa1cee31"
+        }
+      }
+    },
+    {
+      "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+      "fullName": "Anti Allas",
+      "lastName": "Allas",
+      "firstName": "Anti",
+      "active": true,
+      "faction": {
+        "uuid": "d188e268-5d01-7e93-0c22-3ae7f0c1e851",
+        "name": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+        "active": true,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/d188e268-5d01-7e93-0c22-3ae7f0c1e851"
+          }
+        }
+      },
+      "decision": {
+        "code": "PUUDUB",
+        "value": "puudub"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/f6353ede-a0a5-4918-ab8b-790a1957c5cd"
+        }
+      }
+    },
+    {
+      "uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "fullName": "Arvo Aller",
+      "lastName": "Aller",
+      "firstName": "Arvo",
+      "active": true,
+      "faction": {
+        "uuid": "d4e90963-1d10-4f8a-bf37-a99ca8531ff3",
+        "name": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+        "active": true,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/usergroups/d4e90963-1d10-4f8a-bf37-a99ca8531ff3"
+          }
+        }
+      },
+      "decision": {
+        "code": "KOHAL",
+        "value": "kohal"
+      },
+      "upn": null,
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/a39c4392-bbc8-4036-b923-0f5f2b3d9766"
+        }
+      }
+    }
+  ]
+}

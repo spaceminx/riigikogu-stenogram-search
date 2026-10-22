@@ -25,3 +25,11 @@ jobs:
 
       - name: Run Live API Check
         run: python3 scripts/check_live_api.py
+
+      - name: Install Pydantic for Upstream Check
+        if: always()
+        run: pip install pydantic==2.14.1
+
+      - name: Run Upstream Riigikogu API Check
+        if: always()
+        run: python3 scripts/check_upstream_api.py

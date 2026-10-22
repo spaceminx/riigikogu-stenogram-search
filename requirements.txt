@@ -1,4 +1,5 @@
 fastapi==0.143.1
+pydantic==2.14.1
 requests==2.34.2
 sqlalchemy==2.1.4
 estnltk==1.7.5

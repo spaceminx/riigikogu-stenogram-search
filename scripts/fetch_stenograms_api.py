@@ -15,6 +15,12 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED, START_DATE, UNEDITED_REFETCH_DAYS
+from src.fetch_models import (
+    RichMeeting,
+    UpstreamSchemaError,
+    VerbatimSitting,
+    validate_response,
+)
 from src.transform.lemmatizer import lemmatize_text
 
 IGNORED_SPEECH_TYPES = {
@@ -72,7 +78,14 @@ def fetch_rich_meeting_data(meeting_code: str, max_retries: int = 3) -> dict | N
         try:
             resp = requests.get(url, timeout=(5, 20), headers={"User-Agent": "Mozilla/5.0"})
             if resp.status_code == 200:
-                return resp.json()
+                raw_data = resp.json()
+                validate_response(
+                    RichMeeting,
+                    raw_data,
+                    endpoint="stenogrammid.riigikogu.ee/api/meeting/{code}",
+                    ref=meeting_code,
+                )
+                return raw_data
             if resp.status_code == 429:
                 backoff = 10 * (2 ** (attempt - 1))
                 print(
@@ -81,6 +94,8 @@ def fetch_rich_meeting_data(meeting_code: str, max_retries: int = 3) -> dict | N
                 time.sleep(backoff)
             elif resp.status_code >= 500:
                 time.sleep(1 * attempt)
+        except UpstreamSchemaError:
+            raise
         except Exception as e:
             if attempt == max_retries:
                 print(f"Notice: Could not fetch rich meeting details for {meeting_code}: {e}")
@@ -1009,7 +1024,14 @@ def fetch_and_process_stenograms(
                     url, params={"startDate": start, "endDate": end}, timeout=(5, 30)
                 )
                 if resp.status_code == 200:
-                    verbatims = resp.json()
+                    raw_data = resp.json()
+                    validate_response(
+                        VerbatimSitting,
+                        raw_data,
+                        endpoint="api.riigikogu.ee/api/steno/verbatims",
+                        ref=f"{start}..{end}",
+                    )
+                    verbatims = raw_data
                     break
                 if resp.status_code == 429:
                     print(
@@ -1020,6 +1042,8 @@ def fetch_and_process_stenograms(
                     print(
                         f"Warning: HTTP {resp.status_code} fetching {start}-{end} (attempt {attempt}/{max_retries})"
                     )
+            except UpstreamSchemaError:
+                raise
             except requests.exceptions.Timeout:
                 print(f"Warning: Timeout fetching {start}-{end} (attempt {attempt}/{max_retries})")
             except requests.exceptions.RequestException as e:
@@ -1068,10 +1092,19 @@ def fetch_and_process_stenograms(
                         url, params={"startDate": m_start, "endDate": m_end}, timeout=(5, 30)
                     )
                     if resp.status_code == 200:
-                        verbatims = resp.json()
+                        raw_data = resp.json()
+                        validate_response(
+                            VerbatimSitting,
+                            raw_data,
+                            endpoint="api.riigikogu.ee/api/steno/verbatims",
+                            ref=f"{m_start}..{m_end}",
+                        )
+                        verbatims = raw_data
                         break
                     if resp.status_code == 429:
                         time.sleep(15)
+                except UpstreamSchemaError:
+                    raise
                 except Exception:
                     time.sleep(2)
 
@@ -1196,5 +1229,9 @@ def fetch_and_process_stenograms(
 
 
 if __name__ == "__main__":
-    success = fetch_and_process_stenograms()
+    try:
+        success = fetch_and_process_stenograms()
+    except UpstreamSchemaError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
     sys.exit(0 if success else 1)

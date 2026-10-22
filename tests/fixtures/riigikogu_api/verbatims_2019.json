@@ -1,0 +1,576 @@
+[
+  {
+    "membership": 14,
+    "plenarySession": 1,
+    "link": "https://stenogrammid.riigikogu.ee/201904041100",
+    "date": "2019-04-04T08:00:00.000+00:00",
+    "title": "XIV Riigikogu, I Istungjärk,  täiskogu korraline istung",
+    "agendaItems": [
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-04T11:00:11.000+00:00",
+        "title": " Avaistung",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:01:28.000+00:00",
+            "speaker": "",
+            "text": "Lauldakse Eesti Vabariigi hümni.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:04:00.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Austatud Eesti Vabariigi president Kersti Kaljulaid! Lugupeetud president Rüütel! Lugupeetud Riigikogu liikmed! Vabariigi Valitsuse liikmed! Põhiseaduslikud ametikandjad! Teie ekstsellentsid! Daamid ja härrad! Alustame Riigikogu XIV koosseisu I istungjärgu esimest istungit. Mina olen Vabariigi Valimiskomisjoni esimees Meelis Eerik ning tulenevalt Riigikogu kodu- ja töökorra seaduse § 2 lõikest 2 juhatan tänast istungit kuni Riigikogu esimehe valimiseni.",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "dd205c77-d2ae-4b94-89e7-6492407ae393",
+        "date": "2019-04-04T11:04:16.000+00:00",
+        "title": " Vabariigi Presidendi avakõne",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:04:25.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Istungi avamiseks on sõna Eesti Vabariigi presidendil Kersti Kaljulaidil. Palun!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:04:30.000+00:00",
+            "speaker": "Eesti Vabariigi president Kersti Kaljulaid",
+            "text": "Austatud president Rüütel! Kallid Riigikogu XIV koosseisu liikmed! Hea Eesti rahvas! Ekstsellentsid! Kohalviibijad! Ei ole mõtet keerutada, me seisame keeruliste aegade lävel. Nagu muide enamasti meie riigi ajaloo vältel. Meie asukoht maakaardil ja meie rahvaarv on paratamatult need tegurid, mis meie asjad enamasti igal ajal ikka keerulisena hoiavad. Eksida on kerge ja ühe Euroopa väikseima riigina ei ole meil lihtsalt mitte kunagi nii palju strateegilist sügavust, et olla kindel: eksimused ei too kaasa ohtu meie kestmajäämisele. Sellepärast peame olema siirad oma olukorrahinnangutes ja kõik koos ausalt otsima Eestile parimat tulevikku. Kõik koos, kõikide Eesti inimeste jaoks, kõikide eestlaste jaoks, kõikide teiste jaoks, kes ka Eestit kalliks peavad. Ma olen väga nõus nendega, kes ütlevad, et see maja, mille me 30 aastaga oleme kiiresti-kiiresti suutnud valmis ehitada, on oma katusekorruselt ilusa vaatega ja võrdlemisi kenasti sisustatud. Aga igasse tuppa päike ei paista. Ma mõistan neid, kes tahaksid selle ehitise maani maha lõhkuda ja otsast alata, lootes, et uues ehitises leidub neile mõni päikselisem nurk. Meie ühiskonna areng viimase 30 aasta jooksul, mil oleme suutnud oma okupatsioonist tingitud 50-aastasest majanduslikust mahajäämusest tagasi võtta umbes poole, on olnud kahtlemata edulugu. Kuid tootlikkuse ja sissetulekute kiire kasvu kõrval on sel edul ka teine külg – kaasnevad ühiskondlikud muutused on olnud valusad kanda. Nagu ma olen korduvalt ja korduvalt öelnud, oleme ühiskonna tasakaalustamisel – eriti sotsiaalpoliitika meetmete abil – olnud üsna saamatud. Eesti muutumine on ühelt poolt paratamatu: linnastumine, töökohtade kadu maamajanduses, sissetulekute ebavõrdsuse suurenemine. Nii on see olnud kõikides arenenud riikides. Ainult et meil on need protsessid olnud eriti kiired. Järelevõtukiirus on olnud ju suur, aga eks selle võrra keerulisemad ole olnud ka negatiivsed kõrvalmõjud. Juba tehtut maha lammutada ja täiesti otsast peale hakata ei ole ju ilmselgelt praktiline, kuigi see võiks kaasa tuua ressursside olulise ümberjaotumise ühiskonnas, nagu äkiliste muudatuste puhul ikka ju juhtub. Aga me teame – ja mis seal salata, me ka näeme seda praegugi vähemalt ühes suures Euroopa Liidu riigis –, et see toob kaasa segaduse ja ka majandusliku kaose. Nagu juba mainisin, meil tõenäoliselt ei ole oma asukoha ega rahvaarvu tõttu piisavat strateegilist sügavust, et lammutustöö meie riigi jaoks ohtlikuks ei saaks. Me oleme ka majanduslikus mõttes alles Euroopa keskmike hulgas, niisiis oleks lammutustööga kaasnev tagasilangus meile oluliselt suurem probleem kui mõnele päris rikkale riigile. Niisiis – ei revolutsioonidele! Jah, olgem konservatiivsed! Tõeline konservatiiv on see, kes oskab piisavalt hästi hinnata ühiskonnas toimuvaid ja ühiskonda ees ootavaid muutusi ning tasakaalustada neid nii, et meil ei oleks kunagi revolutsiooni tarvis. Selline konservatiivsus on tarviline. Hoidkem tehtut ja rääkigem ausalt, mida edaspidi paremini teha – ehitades, mitte lammutades. Tunnustagem oma edu kas või e-riigina. Olgem uhked oma rolli üle Euroopa Liidus ja NATO-s, seejuures mitte lihtsalt liikmena, vaid asjaliku ja kohusetundliku kaasarääkijana. Ma tahan tunnustada ja tänada kõiki neid Eesti poliitikuid, tänu kellele oleme nii kaugele jõudnud. Aga räägime ausalt ka sellest, kuidas ühiskonna toimimist parandada. Õnn ei jõua igale Eestimaa õuele niisama ja iseenesest. Elu maal ei paku tänase tootlikkuse tõttu enam nii palju töökohti kui 30 aastat tagasi. Ja ausalt öeldes, ega meist keegi ei tahakski neid kolhoosiaja töökohti, sest madala tootlikkusega töö eest ei saaks ju kuidagi mõistlikku palka. Samas on ideid, millega regionaalse arengu erinevusi tasandada. Näiteks on lihtne mõista, et ükski sent vähenevatest eurotoetustest ei tohi kuluda pealinnas, vaid see raha peaks korda tegema kaugeid külateid. Kindlasti aitaks see, kui ettevõtete tulumaksu jagada nii, et ka omavalitsusel oleks piirkonna ettevõtlusest rohkem tulu. Me peame jõuliselt seisma selle eest, et meie maakonnakeskused püsiks tugevate keskustena (ja mõnes kohas ka uuesti nendeks muutuks), kus on olemas kõik igapäevane, mida inimene üle oma elukaare vajab. Olen endiselt väga veendunud, et kohalikel omavalitsustel on ikka veel liiga pikk tee minna, selleks et pakkuda oma inimestele sotsiaalseid tagatisi määral, mida meie riigi elujärg juba tegelikult võimaldaks. Jah, oma kohustuste mõistmine on omavalitsustel võtnud kauem aega, kui ma tahaksin, aga suutmatus ei ole ka ainult nende süü – ahistav ja valdkondade vahel koordineerimata ministeeriumibürokraatia mängib siin ka tihti oma rolli. Sotsiaalset tõrjutust esineb muidugi ka pealinnas ja mujal suuremates keskustes. Kesine keeleoskus – meil ei ole ikka veel ainult eesti keeles toimivate lasteaedade ja koolide võrku – on siin üks põhitegureid. Pole mingi privileeg jääda keeletuks maal, kus töötatakse, olgu ajutiselt või alaliselt. Ei ole privileeg kasvada siin keeletuna. Kakskeelse koolisüsteemi tähtajatu jätkumine on oht eesti keele ja kultuuri kestmisele ning see ei suurenda kuidagi Eesti riigi sidusust. Meil on üks riigikeel. Meie vastutame selle eest, et seda oskaks kõik lasteaiast kooli minejad, saati siis koolilõpetajad. Näete, teha on teil palju. Aga õnneks lasevad need majanduslikud võimalused, mis 30 aastaga on loodud, meil tegelikult teenida kogu Eesti rahvast. Teenida ka neid, keda mure on viinud sinnani, et nad tahaksid pigem lammutada ja otsast alata. Kui me koos ja ausalt tegutseme, siis me võime oma ühiskonna uuesti kokku liita. Aga see eeldab tõepoolest ausust ja siirast tahet igaüht mõista ning omaenda poliitiliste otsuste heade külgede nägemise kõrval alati ka negatiivse kõrvalmõju tunnistamist ja sellele leevenduse otsimist. Meile ei ole praegu soodne ka suur geopoliitika. Nimelt on tänase maailma suurimad riskid meie suurima, globaalse jõuga liitlase Ameerika Ühendriikide jaoks hoopis mujal – need on seotud Hiinaga ja Kagu-Aasiaga laiemalt. Ainus põhjus, miks Ühendriigid võiksid tahta oma ressurssi kulutada just meie piirkonnas meie julgeoleku tagamiseks, on ühised väärtused. Meie ühised väärtused. Needsamad väärtused, mis on Washingtonis Jeffersoni monumendil ja Ühendriikide iseseisvusdeklaratsioonis. Väärtused, mis on meie iseseisvusdeklaratsioonis ja meie põhiseaduses. Eesti põhiseaduse 12. paragrahv ütleb: \"Kõik on seaduse ees võrdsed. Kedagi ei tohi diskrimineerida rahvuse, rassi, nahavärvuse, soo, keele, päritolu, usutunnistuse, poliitiliste või muude veendumuste, samuti varalise ja sotsiaalse seisundi või muude asjaolude tõttu. Rahvusliku, rassilise, usulise või poliitilise vihkamise, vägivalla ja diskrimineerimise õhutamine on seadusega keelatud ja karistatav. Samuti on seadusega keelatud ja karistatav õhutada vihkamist, vägivalda ja diskrimineerimist ühiskonnakihtide vahel.\" Ja edasi. Kogu põhiseaduse II. peatükk kirjeldab meie inimestele põhiseadusega tagatud vabadusi kogu nende mitmekülgsuses, sõnastades muu hulgas, et tsensuuri ei ole, et teadus ja kunst ning nende õpetused on vabad, et igaühel on õigus jääda truuks oma arvamustele ja veendumustele. Loomulikult, iga sõnastatud vabaduse teine külg on alati vastutus – vastutus selle eest, kuidas me oma vabadust kasutame. Sõnavabadus ei õigusta ju valetamist. Riskidele põhjendatud tähelepanu juhtimine ei ole hirmutamine. Mittenõustumine ei ole reetmine. Teise seisukohtadega mittenõustumine ei anna kuidagi õigust teda rumalaks ja maailmast mitte aru saavaks tembeldada. Ajakirjaniku ebamugavale küsimusele ei pea vastama, kui ei oska või ei taha, aga ei saa keelata küsimast. Teisiti ei oleks Eesti enam vaba meedia tšempionide hulgas. Uudisnupus muidugi ei peaks kajastuma arvamus, fakt ja kommentaar olgu selgelt lahus. See on ka ajakirjanike vastutustunne, mis hoiab meid vaba ajakirjanduse tšempionide hulgas. Eesti põhiseaduse II. peatükk on eriti selgelt pühendatud demokraatlikele väärtustele. See on side, mis hoiab meid kõigi meie liitlastega ühises väärtusruumis. See on Eesti riigi tüvitekst, mis tõestab kogu maailmale meie kuulumist vabasse Euroopasse. See on tekst, mis on püha kõigile, kes teenivad Eesti riiki ametnikuna, poliitikuna, kaitseväelasena, politseinikuna, õpetajana, arstina, ajakirjanikuna, kunstnikuna. See on tekst, milleta meie riik ei oleks vaba. See on tekst, milleta meie inimesed meie riigis ei oleks vabad. Ja see tekst on üksiti ka meie julgeolekugarantii. Meie põhiseaduse mõte elab, kui me Eesti kodanike ja patriootidena demokraatlikke väärtusi kasutame ja laseme neid ka teistel kasutada. Põhiseaduse ees on kõik maailmavaated võrdsed, seni kuni nad ei lähe vastuollu põhiseaduses toodud üldiste õiguste ja vabadustega. Iga maailmavaate kandjad on teretulnud osalema poliitilises protsessis ja võistlema kohtade eest Riigikogus. Siia jõudnuna on iga Riigikogu liige oma mandaadis vaba ning saab lähtuda põhiseadusest ja omaenda väärtuskompassist. Muide, vastuolu korral kahe viimase vahel kehtib põhiseadus. See, mis meie Eesti riigis täna toimub, on toimiv demokraatlik protsess. Demokraatiaga ei ole Eestis midagi valesti. Oli valija vastutus panna kokku uus Riigikogu ja valija on seda teinud. Valimised toimusid, võitja on selgunud, erakonnad on vabad arutlema võimaliku valitsuskoostöö üle ja Riigikogu iga liige on vaba hindama peaministrikandidaate. Presidendina ei ole minul õigust hinnata, milline võiks olla Riigikogu liikmete toetus ühele või teisele peaministrikandidaadile. Ainuke tee välja selgitada, kellel on Riigikogus toetus, viib läbi selle saali. On loomulik, et toetuse otsimisega siin saalis saab alustada valimised võitnud erakond. Täna alustab tööd Riigikogu XIV koosseis. Kõik siia jõudnud, nagu ütlesin, on siin demokraatlike protsesside tulemusena. Eesti demokraatia toimib. Aga võib-olla peaksime siiski mõtlema, miks on nii, et kuu pärast valimisi tunneb suur osa inimesi, nagu oleks midagi meie ühiskonnas katki tehtud. Mingid justkui kokku lepitud piirid ei kehtiks enam. Ja küsimus ei ole maailmavaatelistes seisukohtades, vaid tihtipeale viisakuses ja lugupidamises. Lugupidamises üksteise vastu ja kogu meie rahva vastu. Jah, ma arvan, et meil ei ole demokraatia kriisi – valimised ja neile järgnev on protseduurilises vastavuses põhiseaduse ja demokraatlike väärtustega –, aga meil on siiski väärtuste kriis. Põhiseaduses kirjeldatud vabadusi ja väärtusi, aga ka nende vabaduste ja väärtuste kaitsjaid rünnatakse erinevatel ettekäänetel. Rünnatakse neid, kes töö tõttu seisavad väärtuste ja vabaduste kaitsel, aga naeruvääristatakse neidki, kes kodanikuna sõna võtavad, et hoida meie vabadusi ja väärtusi. Sekka muidugi narritakse ja naeruvääristatakse neidki, kes tunnevad, et senised suundumused nende vajadustele ei vasta, ja kes on seepärast skeptilised ka vabaduste ja väärtuste endi suhtes. Kui me sellel laseme süveneda, siis on peagi kriisis ka meie demokraatia. Aga siis on juba hilja. Mida teha? See on alati kõige tähtsam: mida teha? Tuleb olla eeskujuks. Ja et oleks kergem eeskujuks olla, lubage mulle lõpetuseks üks väike isiklik mälupilt. See mälupilt on mind ennast alati toetanud, kui ma olen kõnelenud siit puldist, mõne Riigikogu komisjoni või ka fraktsiooni ees Vabariigi Presidendina või mõnes muus rollis. See oli aastal 1999. Üks minister tuli Riigikogu ette plaaniga, millesse ta ise siiralt uskus ja mis oli tema arvates vajalik, et Eestis asjad paremini läheksid. Arutelu siin saalis ei kujunenud, võiks öelda, ülearu konstruktiivseks. Võib-olla oli plaan ka halb – kes seda enam mäletab –, aga minister ei olnud kurb üldse selle pärast, et see plaan ei lennanud. Tema tundis, et see saal oli rünnanud teda, inimest, mitte tema plaani, ning seadnud küsimuse alla tema mõistuse, ja kui ma õigesti mäletan, siis isegi välimuse. Asja arutades ütles toonane sotsiaalminister Eiki Nestor: \"Vaata, sõber, jäta nüüd üks asi endale meelde igaveseks ajaks või vähemalt senikauaks, kuni sa Eesti Vabariigis minister oled, sest see on väga tähtis, üldse kõige tähtsam asi. Ja nimelt, Riigikogu puldist kõneled sa oma rahvaga. Mitte kunagi ainult selle saaliga siin. Mitte kunagi selle inimesega, kes on sulle küsimuse esitanud. Mitte kunagi ainult selle inimesega, kes siin saalis küsides on sind pilganud või isegi solvanud. Siit puldist kõneldakse oma rahvaga ja ainult oma rahvaga.\" Vana hipit täna siin ei ole, tervisi talle Hiiumaale. Aga aitäh sulle, Eiki! Ma olen kindel, et siin saalis on paljudel meeles mõni sinu antud, esindusdemokraatia valu ja vaevaga seotud õppetund, mis aitab Riigikogus olles kogu rahvast esindada ja siit kõnepuldist kogu rahvaga rääkida. Jõudu tööle, austust üksteise ja me rahva vastu!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:20:47.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Suur tänu, Vabariigi President! Austatud Riigikogu, viime läbi kohaloleku kontrolli. Kohaloleku kontroll. Katkestan kohaloleku kontrolli tehnilistel põhjustel. Kas me võime kohaloleku kontrolli uuesti läbi viia? Ei tööta. Me selgitame asjaolusid. Nii, viimane katse. Küsimus, kas võib läbi viia kohaloleku kontrolli? Kas on keegi, kelle pult ei tööta? Ikka on. Nii. Me viime kohaloleku kontrolli läbi järgmiselt. Ärge oma kaarti liigutage, vaid vajutage nuppu. Selline katse. Kohaloleku kontroll. Kohaloleku kontroll on lõppenud. Kohal on ... Nii, selge. Tulemus on järgmine: elektroonilisel teel tehtud kohaloleku kontroll ebaõnnestus, aga ma hindan silma järgi, et kohal on 101 Riigikogu liiget. (Aplaus.) Me läheme nüüd oma toimingutega edasi. Selleks, et Riigikogu liige saaks realiseerida oma volitusi, peab ta andma ametivande.",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "1ba68720-6191-4fc9-9221-5106e1bf1040",
+        "date": "2019-04-04T11:26:55.000+00:00",
+        "title": " Riigikogu liikmete ametivanne",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:26:56.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Järgmine päevakorrapunkt on ametivande andmine, aga enne seda on protseduuriline küsimus. Helir-Valdor Seeder. Palun vajutage ka sõnavõtunuppu, kui teil see töötab. Palun!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-04T11:27:07.000+00:00",
+            "speaker": "Helir-Valdor Seeder",
+            "text": "Aitäh, austatud juhataja! Minu hinnang kohalolekule on veidi teistsugune kui teie hinnang, minu silm haarab praegu 100 liiget, mitte 101 liiget. Me peame siin vist olema täpsed.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:27:50.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Küsimuse lahendame järgmiselt. Nimelt, iga Riigikogu liige peab andma ametivande ja seetõttu me näeme täpselt, kes on ja kes ei ole kohal. Me liigume nüüd ametivande andmise juurde. Ma palun ametivande teksti ettelugemiseks kõnetooli selle koosseisu vanima liikme Enn Eesmaa. Palun!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "07132cc4-5afc-4edb-9537-7c721ec39b2d",
+            "date": "2019-04-04T11:28:21.000+00:00",
+            "speaker": "Enn Eesmaa",
+            "text": "Asudes täitma oma kohustusi Riigikogu liikmena Riigikogu XIV koosseisus, annan vande jääda ustavaks Eesti Vabariigile ja tema põhiseaduslikule korrale. (Aplaus.)",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T11:29:10.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Kutsun nüüd Riigikogu liikmed tähestikulises järjekorras ametivande tekstile alla kirjutama: Jaak Aab, Merry Aart, Arto Aas, Taavi Aas, Annely Akkermann, Yoko Alender, Riho Breivel, Dmitri Dmitrijev, Peeter Ernits, Hele Everaus, Helle-Moonika Helme, Mart Helme, Martin Helme, Kaido Höövelson, Jüri Jaanson, Maria Jufereva-Skuratovski, Marek Jürgenson, Ruuben Kaalep, Raimond Kaljulaid, Marina Kaljurand, Kaja Kallas, Siim Kallas, Kalev Kallo, Jaanus Karilaid, Uno Kaskpeit, Erkki Keldo, Liina Kersna, Johannes Kert, Kert Kingo, Signe Kivi, Toomas Kivimägi, Aivar Kokk, Rene Kokk, Mihhail Korb, Siret Kotka-Repinski, Heiki Kranich, Igor Kravtšenko, Eerik-Niiles Kross, Urmas Kruuse, Tarmo Kruusimäe, Leo Kunnas, Kalvi Kõva, Helmen Kütt, Ants Laaneots, Kalle Laanet, Viktoria Ladõnskaja-Kubits, Alar Laneman, Maris Lauri, Jürgen Ligi, Mihhail Lotman (ei ole kohal), Jüri Luik, Jaak Madison, Andres Metsoja, Kristen Michal, Marko Mihkelson, Sven Mikser, Madis Milling, Aadu Must, Tõnis Mölder, Jevgeni Ossinovski, Anneli Ott, Ivari Padar, Kalle Palling, Keit Pentus-Rosimannus, Hanno Pevkur, Heljo Pikhof, Siim Pohlak, Anti Poolamets, Heidy Purga, Paul Puustusmaa, Henn Põlluaas, Katri Raik, Valdo Randpere, Jüri Ratas, Urmas Reinsalu, Urmas Reitelmann, Martin Repinski, Mailis Reps, Taavi Rõivas, Indrek Saar, Üllar Saaremäe, Kersti Sarapuu, Erki Savisaar, Helir-Valdor Seeder, Andrus Seeme, Sven Sester, Priit Sibul, Riina Sikkut, Kadri Simson, Mihhail Stalnuhhin, Andres Sutt, Aivar Sõerd, Kristina Šmigun-Vähi, Raivo Tamm, Tarmo Tamm, Urve Tiidus, Vilja Toomast, Marika Tuus-Laul, Jaak Valge, Viktor Vassiljev. Suur tänu, Riigikohtu esimees! Ametivande andmise tulemusena hindan ma ümber oma varasema seisukoha kohalviibivate Riigikogu liikmete arvu suhtes: kohalviibijaid on 100. Härra Helir-Valdor Seeder, teil on teravam silm kui minul. Austatud Riigikogu, Vabariigi Valimiskomisjoni nimel õnnitlen teid ametikohustuste täitmisele asumise puhul! (Laulab tütarlastekoor Ellerhein. Aplaus.) Kullo tütarlastekoori Ellerhein esituses kõlas Pärt Uusbergi laul \"Muusikale\". Täname lauljaid ja dirigent Ingrid Kõrvitsat. (Aplaus.)",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "6a73fb5c-3352-4dd3-a20c-7628c7131eb9",
+        "date": "2019-04-04T12:19:09.000+00:00",
+        "title": " Riigikogu esimehe ja aseesimeeste valimine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:19:09.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Austatud Riigikogu! Vastavalt põhiseaduse §-le 69 valib Riigikogu oma liikmete hulgast Riigikogu esimehe ja kaks aseesimeest. Valimiste korraldamisel lähtub Vabariigi Valimiskomisjon Riigikogu kodu- ja töökorra seadusest. Enne, kui me läheme valimistoimingute juurde, lubage mul lühidalt teile tutvustada Riigikogu juhatuse valimisega seonduvat. Esmalt valitakse Riigikogu esimees. Pärast Riigikogu esimehe valimist valitakse samaaegselt aseesimehed. Kandidaadi võib üles seada iga Riigikogu liige. Pärast Riigikogu esimehe valimist seatakse üles aseesimeeste kandidaadid ja ülesseatu peab andma kandideerimiseks nõusoleku. Hääletamine on salajane, see toimub hääletamissedeli täitmise teel. Igal Riigikogu liikmel on üks hääl nii esimehe kui ka aseesimeeste valimisel. Hääled loetakse avalikult kohe pärast hääletamise lõppemist. Protest hääletamise korraldamise kohta esitatakse valimiskomisjonile kohe pärast hääletamise lõppemist ja protest hääletamistulemuste kohta kohe pärast hääletamistulemuste teatavaks tegemist. Valimistulemused kuulutatakse välja pärast protestide läbivaatamist. Riigikogu esimeheks valituks osutub kandidaat, kes saab üle poole kehtivatest häältest. Kui ükski kandidaat ei saa üle poole kehtivatest häältest, korraldatakse kahe enim hääli saanud kandidaadi vahel valimise lisavoor. Võrdse häältearvu puhul heidetakse liisku. Kui Riigikogu esimehe kandidaatide nimekirjas on ainult üks kandidaat, osutub ta valituks, kui ta saab rohkem poolt- kui vastuhääli. Hääletamise korda tutvustan teile enne hääletamise väljakuulutamist. Kas Riigikogu liikmetel on küsimusi seni kõneldu kohta? Kas on küsimusi? Martin Helme.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "98008392-64a2-4429-8a41-fb051823e402",
+            "date": "2019-04-04T12:21:27.000+00:00",
+            "speaker": "Martin Helme",
+            "text": "Ei, mul ei olnud küsimus, ma soovisin esitada kandidaati.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:21:33.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Kohe jõuame selleni. Küsimusi ei ole. Nüüd ma küsin, kas keegi Riigikogu liikmetest soovib esitada Riigikogu esimehe kandidaati. Martin Helme, palun tulla kõnepulti!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "98008392-64a2-4429-8a41-fb051823e402",
+            "date": "2019-04-04T12:22:00.000+00:00",
+            "speaker": "Martin Helme",
+            "text": "Lugupeetud istungi juhataja! Lugupeetud kolleegid! Lugupeetud härra president Rüütel! Esitan Riigikogu esimehe kandidaadiks Henn Põlluaasa.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:22:14.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Jevgeni Ossinovski.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "74be76ab-c833-4ae8-89bc-6e4c7bc3f7fd",
+            "date": "2019-04-04T12:22:38.000+00:00",
+            "speaker": "Jevgeni Ossinovski",
+            "text": "Head kolleegid! Vabariigi President meenutas eelmise koosseisu esimehe Eiki Nestori sõnu, et siit puldist räägitakse oma rahvaga. Igal sõnal on kaal, sest sõna on tegu. Riigikogu esimees on formaalselt suure osa ajast küll vaid istungi juhataja, aga ta kannab Eesti demokraatias palju laiemat rolli, nii erinevate parteipoliitiliste vaidluste tasakaalustajana, aga ka avatud parlamentarismi kui väärtuse kaitsjana ühiskonnas. Esitan sotsiaaldemokraatide nimel Riigikogu esimehe kandidaadiks Sven Mikseri. Sven Mikser on väärikas kandidaat sellele väärikale kohale. Ta on üks Eesti kogenumaid parlamendipoliitikuid ning Eesti välispoliitika vaieldamatu tipuna esindaks meie riiki suurepäraselt ka diplomaatilises suhtluses. Ent pidades silmas vastaskandidaadi väärtusruumi ja nägemust ühiskonnast, on vist olulisemgi, et Sven Mikser on veendunud õigusriikluse, iga inimese vabaduse ja parlamentaarse demokraatia kaitsja. Homme 100 aastat tagasi algasid Asutava Kogu valimised. Asutav Kogu võttis vastu Eesti esimese põhiseaduse, mis oli üks demokraatlikumaid ja liberaalsemaid kogu maailmas. Samadest väärtustest on kantud ka meie tänane põhiseadus. Asutava Kogu esimees August Rei – sotsiaaldemokraat, muide – ütles esimesel Asutava Kogu istungil Estonias peetud kõnes: \"Meie esimeseks ülesandeks peab olema Eesti riikliku korra kindlaks määramine. Eestist peab saama vabariik, kus õiglus ja demokraatia valitseks, ja kõige suuremaks ülesandeks peab olema terava maaküsimuse lahendamine.\" Terav maaküsimus meil õnneks enam päevakorral ei ole, aga nii kurb kui see ka pole, Eesti hoidmine õiglusel ja demokraatial põhineva vabariigina on sada aastat hiljem, täna, taas päevakorral, ka sellel hääletusel. Sellest tulenevalt, head kolleegid, kutsun teid üles toetama vabadust ja hääletama Sven Mikseri poolt. Aitäh!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:25:27.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Aitäh! Kas on veel ettepanekuid? Protseduuriline küsimus. Martin Helme.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "98008392-64a2-4429-8a41-fb051823e402",
+            "date": "2019-04-04T12:25:33.000+00:00",
+            "speaker": "Martin Helme",
+            "text": "Me kuulsime äsja väga ilusat kehutuskõnet, aga kandidaadi esitajana nimetati Sotsiaaldemokraatliku Erakonna fraktsiooni. Juhin tähelepanu, et fraktsioone meil selles koosseisus veel ei ole. Ja kuna esitajat ei ole, on kandidaat esitatud ebakorrektselt. Palun teda mitte kanda kandidaatide nimekirja!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:25:59.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Tänan! Meil on veel sõnavõtte. Jevgeni Ossinovski.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "74be76ab-c833-4ae8-89bc-6e4c7bc3f7fd",
+            "date": "2019-04-04T12:26:04.000+00:00",
+            "speaker": "Jevgeni Ossinovski",
+            "text": "Tänan kolleeg Helmet selle tähelepaneku eest! Olen sellest, mida ta mainis, väga hästi teadlik ja sellest tulenevalt kasutasin oma sõnavõtus sõnu \"sotsiaaldemokraatide nimel\". Kirjalikus vormis on ettepanek esitatud Riigikogu liikme Jevgeni Ossinovski poolt.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:26:23.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Kirjalik avaldus on esitatud Jevgeni Ossinovski poolt. Kas on veel ettepanekuid Riigikogu esimehe kandidaatide kohta? Rohkem ettepanekuid ei ole. Vastavalt Riigikogu kodu- ja töökorra seaduse § 7 lõikele 2 peab ülesseatu andma kandideerimiseks oma nõusoleku. Võtame esitamise järjekorras. Härra Henn Põlluaas, kas te olete nõus kandideerima Riigikogu esimeheks?",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T12:27:00.000+00:00",
+            "speaker": "Henn Põlluaas",
+            "text": "Jah, olen nõus.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:27:03.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Suur tänu! Palun nõusolek esitada ka kirjalikult! Nii, see on meil nüüd olemas. Härra Sven Mikser, kas teie olete nõus kandideerima Riigikogu esimeheks?",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "8719c4cd-291e-4216-b3e1-8b5a0d7902fb",
+            "date": "2019-04-04T12:27:35.000+00:00",
+            "speaker": "Sven Mikser",
+            "text": "Jah, olen nõus.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:27:37.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Suur tänu! Palun nõusolek esitada ka kirjalikult! Aitäh! Austatud Riigikogu, sulgen Riigikogu esimehe kandidaatide nimekirja ja kuulutan välja vaheaja Riigikogu esimehe kandidaatide nimede kandmiseks hääletamissedelitele. Vaheaja lõppemisest annan märku helisignaaliga. V a h e a e g",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T12:39:28.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Austatud Riigikogu, vaheaeg on lõppenud. Vabariigi Valimiskomisjon on valmis läbi viima Riigikogu esimehe valimisi. Lubage mul tutvustada teile hääletamise korda. Valimiskomisjon annab Riigikogu liikmele hääletamissedeli isikut tõendava dokumendi alusel, milleks on Riigikogu liikme tunnistus, pass, isikutunnistus või juhiluba. Sedeli saamise kohta annate allkirja. Hääletamissedel täidetakse hääletamiskabiinis. Riigikogu liige märgistab hääletamissedelil ristiga lahtri selle kandidaadi nime juures, kelle poolt ta hääletab. Hääletamissedel, millel on märgistatud rohkem kui ühe kandidaadi nimi või millel ei ole märgistatud ühegi kandidaadi nime, loetakse kehtetuks. Hääletamine korraldatakse Riigikogu saali kõrval fuajees. Te väljute hääletamisruumi saali tagauksest. Pärast hääletamissedeli saamist teete hääletamiskabiinis oma otsuse, murrate sedeli kokku ja suundute hääletamiskasti juurde, kus pärast sedeli märgistamist valimiskomisjoni pitseriga lasete hääletamissedeli isiklikult hääletamiskasti. Kui olete hääletamissedeli rikkunud või eksinud sedeli täitmisel ja avastate selle enne sedeli hääletamiskasti laskmist, on teil õigus saada rikutud sedeli tagastamisel uus hääletamissedel. Selline on kord. Kas on küsimusi? Küsimusi ei ole. Valimiste ajal tohivad hääletamisruumis peale Riigikogu liikmete viibida ainult Vabariigi Valimiskomisjoni liikmed ja neid teenindavad isikud. Riigikogu kodu- ja töökorra seaduse alusel on hääletamiseks aega 30 minutit. Kontrollime hääletamiskasti ja sulgeme selle turvaplommiga. Kell on 12.42, hääletamiseks on aega 30 minutit. Kuulutan välja vaheaja hääletamiseks. V a h e a e g",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T13:12:07.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Austatud Riigikogu, kuulutan hääletamise Riigikogu esimehe valimisel lõppenuks. Palun tuua hääletamiskast saali! Kas Riigikogu liikmetel on hääletamise korraldamise kohta proteste? Proteste ei ole. Palun kontrollida hääletamiskasti ja seda, et turvaplomm ei oleks rikutud. Saame hakata hääli lugema. (Valimiskomisjon loeb hääli.)",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T13:21:17.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni liige Meelika Aava",
+            "text": "Ma kontrollin siin teie ees avalikult, kas esialgsed hääletamistulemused vastavad tegelikkusele. See tähendab, ma nimetan Riigikogu esimehe kandidaadi nimed sellises järjekorras, nagu nad on hääletamissedelitele kantud, ja nimetan kandidaadi poolt antud hääled. Henn Põlluaas: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55. (Aplaus.) Sven Mikser: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T13:26:33.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni esimees Meelis Eerik",
+            "text": "Suur tänu! Teen teatavaks hääletamistulemused Riigikogu esimehe valimisel. Vabariigi Valimiskomisjoni protokoll hääletamistulemuste kohta Riigikogu esimehe valimisel: \"Vabariigi Valimiskomisjon tegi häälte lugemisel kindlaks järgmised arvud. Nimekirja kantud Riigikogu liikmete arv – 101. Hääletamissedeli saanud Riigikogu liikmete arv – 100. Hääletamisest osa võtnud Riigikogu liikmete arv – 100. Kehtetute hääletamissedelite arv – 0. Riigikogu esimehe kandidaatidele antud häälte arv: Henn Põlluaas – 55, Sven Mikser – 45.\" Protokollile on alla kirjutanud Meelis Eerik, Vabariigi Valimiskomisjoni esimees. Kas Riigikogu liikmetel on proteste hääletamistulemuste kindlakstegemise kohta? Proteste ei ole. Vabariigi Valimiskomisjon vormistab otsuse. Austatud Riigikogu, kuulutan välja Riigikogu esimehe valimise tulemused: \"Vabariigi Valimiskomisjoni 4. aprilli otsus \"Riigikogu esimehe valimise tulemuste kindlakstegemine\": Riigikogu kodu- ja töökorra seaduse § 7 lõike 5 ja § 82 lõike 1 alusel Vabariigi Valimiskomisjon otsustab: tunnistada Henn Põlluaas valituks Riigikogu esimeheks.\" (Aplaus.) Austatud Riigikogu esimees, palju õnne! Palun nüüd tulla tööpostile, ma annan juhtimise üle.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T13:30:03.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Austatud Riigikogu, head kolleegid, ma tänan usalduse eest! Läheme aga oma töö ja istungiga edasi. Nüüd järgneb Riigikogu aseesimeeste valimine. Valimisel kehtib põhimõtteliselt sama protseduur, mille tegime läbi esimehe valimisel. Riigikogu aseesimeesteks saavad kaks enim hääli saanud kandidaati. Esimeseks aseesimeheks saab kahest enim hääli saanud kandidaat ja teiseks aseesimeheks saadud häälte arvult teine kandidaat. Võrdselt hääli kogunute vahel korraldatakse valimiste lisavoor. Hääletamise korda tutvustan enne hääletamise väljakuulutamist. Kas Riigikogu liikmetel on küsimusi? Ei ole. Kas keegi Riigikogu liikmetest soovib Riigikogu aseesimehe kandidaati üles seada? Palun selleks tulla kõnepulti! Sõna on Aivar Kokal.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
+            "date": "2019-04-04T13:31:18.000+00:00",
+            "speaker": "Aivar Kokk",
+            "text": "Hea Riigikogu esimees! Head kolleegid! Ma tahan esitada Riigikogu aseesimehe kohale ühe tõsise maamehe, kes on läbi aastate näinud ka Tallinnast kaugemale, ise sõrmed mulda pannud ja loomi kasvatanud, aga kõige olulisem on kindlasti see, et ta oli eelmise koosseisu ajal minu pinginaaber ja ma loodan, et ta on seda ka selle koosseisu ajal. See on Helir-Valdor Seeder.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T13:32:04.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Järgmisena palun Jürgen Ligi!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "c0c7bea2-4c5e-4295-9c0f-dca52d602098",
+            "date": "2019-04-04T13:32:17.000+00:00",
+            "speaker": "Jürgen Ligi",
+            "text": "Härra esimees! Esitan Riigikogu aseesimehe kandidaadiks Siim Kallase. Tema esindab liberaalset demokraatiat. See sõna nõuab lahtirääkimist, see tähendab peale demokraatia ka õigusriiki, võimude lahusust, kodaniku- ja poliitilisi õigusi, turumajandust. Siim on nende väärtuste pühendunud kaitsja. Ka need väärtused peavad olema Riigikogu juhatuses esindatud.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T13:32:59.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Kas on veel ettepanekuid? Ettepanekuid ja kandidaatide ülesseadmise soove rohkem ei ole. Vastavalt kodu- ja töökorra seaduse § 7 lõikele 2 peab ülesseatu andma kandideerimiseks oma nõusoleku. Härra Helir-Valdor Seeder, kas sa oled nõus?",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-04T13:33:22.000+00:00",
+            "speaker": "Helir-Valdor Seeder",
+            "text": "Jah, olen nõus.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T13:33:28.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Palun esitada nõusolek ka kirjalikult! Härra Siim Kallas, kas te olete nõus kandideerima Riigikogu aseesimehe ametikohale?",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0d906012-76b5-468c-a0c9-201f41f271a8",
+            "date": "2019-04-04T13:33:55.000+00:00",
+            "speaker": "Siim Kallas",
+            "text": "Jah, olen nõus.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T13:34:04.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Palun anda oma nõusolek ka kirjalikult! Austatud Riigikogu, sulen Riigikogu aseesimeeste kandidaatide nimekirja ja kuulutan välja vaheaja Riigikogu aseesimeeste kandidaatide nimede kandmiseks hääletamissedelitele. Vaheaja lõppemisest annan märku helisignaaliga. V a h e a e g",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T13:41:16.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Vaheaeg on lõppenud. Valimiskomisjon on valmis läbi viima Riigikogu aseesimeeste valimist. Komisjoni liikmed kontrollivad siinsamas teie ees hääletamiskasti ja sulgevad selle turvaplommiga. Hääletamise kord on sama, mis oli Riigikogu esimehe valimisel. Riigikogu liige märgistab hääletamissedelil ristiga lahtri selle kandidaadi nime juures, kelle poolt ta hääletab. Hääletamissedel, millel on märgistatud rohkem kui ühe kandidaadi nimi või millel ei ole märgistatud ühegi kandidaadi nime, loetakse kehtetuks. Kas Riigikogu liikmetel on küsimusi hääletamise kohta? Ei ole. Vastavalt Riigikogu kodu- ja töökorra seaduse § 87 lõikele 5 on Riigikogu liikmetel hääletamiseks aega 30 minutit hääletamise algusest. Kell on 13.43. Hääletamise lõppemisest annan märku helisignaaliga ja seejärel palun kõigil Riigikogu liikmetel uuesti istungisaali koguneda. Kuulutan välja hääletamise Riigikogu aseesimeeste valimisel. V a h e a e g",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T14:13:53.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Austatud Riigikogu, vaheaeg on lõppenud. Valimiskomisjon on valmis läbi viima Riigikogu aseesimeeste valimist. Komisjoni liikmed kontrollivad siinsamas ... Aa, jah, kõigepealt paluks valimiskomisjonil tuua kast saali. Nii. Kas Riigikogu liikmetel on hääletamise korraldamise kohta proteste? Ei ole. Sellisel juhul palun valimiskomisjonil kontrollida, kas turvaplomm hääletamiskastil on terve ja ega seda ei ole rikutud. Tänan! Palun valimiskomisjoni liikmetel asuda hääli lugema. (Valimiskomisjon loeb hääli.) Palun Vabariigi Valimiskomisjonil lugeda hääled ka avalikult. Palun, valimiskomisjoni liige Meelika Aava!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "0",
+            "date": "2019-04-04T14:22:23.000+00:00",
+            "speaker": "Vabariigi Valimiskomisjoni liige Meelika Aava",
+            "text": "Aitäh! Ma kontrollin siin teie ees avalikult, kas esialgsed hääletamistulemused vastavad tegelikkusele. See tähendab, ma nimetan Riigikogu aseesimehe kandidaatide nimed sellises järjekorras, nagu need on hääletamissedelitele kantud, ja loen ette nende poolt antud hääled. Helir-Valdor Seeder: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55. (Aplaus.) Siim Kallas: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44. Üks hääletamissedel on kehtetu, sest märgistatud ei ole kumbagi lahtrit.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T14:27:03.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Ma loen ette Vabariigi Valimiskomisjoni protokolli hääletamistulemuste kohta Riigikogu aseesimeeste valimisel: \"Vabariigi Valimiskomisjon tegi häälte lugemisel kindlaks järgmised arvud. Nimekirja kantud Riigikogu liikmete arv – 101. Hääletamissedeli saanud Riigikogu liikmete arv – 100. Hääletamisest osa võtnud Riigikogu liikmete arv – 100. Kehtetute hääletamissedelite arv – 1. Riigikogu aseesimeeste kandidaatidele antud häälte arv: Helir-Valdor Seeder – 55 häält, Siim Kallas – 44 häält.\" Kas Riigikogu liikmetel on hääletamistulemuste kindlakstegemise kohta proteste? Ei ole. Palun vormistada Vabariigi Valimiskomisjoni otsus. \"Vabariigi Valimiskomisjoni otsus \"Riigikogu aseesimeeste valimise tulemuste kindlakstegemine\": Riigikogu kodu- ja töökorra seaduse § 7 lõike 6 ja § 82 lõike 1 alusel Vabariigi Valimiskomisjon otsustab: tunnistada Helir-Valdor Seeder valituks Riigikogu esimeseks aseesimeheks ja Siim Kallas Riigikogu teiseks aseesimeheks.\" (Aplaus.) Austatud kolleegid, Riigikogu juhatus on valitud. Teie nõusolekul palun siia laua taha minu paremale käele esimese aseesimehe härra Helir-Valdor Seederi ning vasakule käele teise aseesimehe härra Siim Kallase.",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "baf1bd52-fdc4-4ae8-8a57-75e735cd5c66",
+        "date": "2019-04-04T14:31:02.000+00:00",
+        "title": " Vabariigi Valitsuse tagasiastumine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T14:31:02.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Läheme oma istungiga edasi. Järgmine päevakorrapunkt on Vabariigi Valitsuse tagasiastumine. Austatud Riigikogu, palun avalduse tegemiseks kõnepulti peaminister Jüri Ratase.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "a30290b2-aacb-4041-b21f-8d8c0a1df9ec",
+            "date": "2019-04-04T14:31:23.000+00:00",
+            "speaker": "Peaminister Jüri Ratas",
+            "text": "Austatud Riigikogu esimees! Austatud Riigikogu juhatus! Väga auväärt Riigikogu! Ametist lahkuva valitsuse nimel õnnitlen Riigikogu XIV koosseisu liikmeid. Ma tänan ametist lahkuva valitsuse ministreid Eesti rahva teenimise eest. Vabariigi Valitsuse seaduse § 10 lõike 1 punkti 1 kohaselt teatan minu juhitava Vabariigi Valitsuse tagasiastumisest Eesti Vabariigi põhiseaduse § 92 punkti 1 alusel. Ma tänan! (Aplaus.)",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-04T14:32:08.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Ma tänan, härra peaminister! Vabariigi Valitsuse seaduse § 11 kohaselt jätkab valitsus oma tegevust kuni uue valitsuse ametisse astumiseni. Riigikogu XIV koosseisu esimene istung on lõppenud. Üks teade, head kolleegid. Palun kõikidel Riigikogu liikmetel koguneda Riigikogu hoone esimese korruse fuajeesse pildistamisele! Istungi lõpp kell 14.33.",
+            "link": null
+          }
+        ]
+      }
+    ],
+    "edited": false
+  },
+  {
+    "membership": 14,
+    "plenarySession": 1,
+    "link": "https://stenogrammid.riigikogu.ee/201904081500",
+    "date": "2019-04-08T12:00:00.000+00:00",
+    "title": "XIV Riigikogu, I Istungjärk,  täiskogu korraline istung",
+    "agendaItems": [
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-08T15:00:08.000+00:00",
+        "title": " Istungi rakendamine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-08T15:00:24.000+00:00",
+            "speaker": "Aseesimees Helir-Valdor Seeder",
+            "text": "Tere päevast, austatud kolleegid! Tähelepanu! Alustame Riigikogu I istungjärgu teist töönädalat.",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "055de279-d8f2-4a41-b130-4fd2919a2b31",
+        "date": "2019-04-08T15:00:38.000+00:00",
+        "title": " Riigikogu liikme Mihhail Lotmani ametivanne",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-08T15:00:38.000+00:00",
+            "speaker": "Aseesimees Helir-Valdor Seeder",
+            "text": "Meil on täna au ja võimalus ära kuulata Riigikogu liikme Mihhail Lotmani ametivanne. Palun, Mihhail Lotman!",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "4dfb53e7-f9fc-4360-a52c-cef9e009bd61",
+            "date": "2019-04-08T15:00:51.000+00:00",
+            "speaker": "Mihhail Lotman",
+            "text": "Asudes täitma oma kohustusi Riigikogu liikmena Riigikogu XIV koosseisus, annan vande jääda ustavaks Eesti Vabariigile ja tema põhiseaduslikule korrale. (Aplaus.)",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-08T15:01:29.000+00:00",
+        "title": " Istungi rakendamine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-08T15:01:33.000+00:00",
+            "speaker": "Aseesimees Helir-Valdor Seeder",
+            "text": "Kas Riigikogu liikmetel on soovi anda üle seaduseelnõusid või arupärimisi? Arupärimiste ega eelnõude üleandmise soovi ole. Läheme teadete juurde. Head kolleegid, täna pärast täiskogu istungi lõppu toimuvad siin istungisaalis järgmiste parlamendirühmade asutamiskoosolekud. Esiteks, Eesti-Jaapan, kokkukutsuja on Kaido Höövelson. Teiseks, Eesti-Hiina, kokkukutsuja on Kalev Kallo. Kolmandaks, Eesti-Portugal, kokkukutsuja on Aivar Sõerd. Neljandaks, Eesti-Tšehhi, kokkukutsuja on Aivar Sõerd. Viiendaks, Eesti-Soome, kokkukutsuja on Kalle Palling. Kuuendaks, Eesti-Saksamaa, kokkukutsuja on Kalle Palling. Seitsmendaks, Eesti – Ameerika Ühendriigid, kokkukutsuja on Andres Sutt. Kaheksandaks, Eesti-Läti, kokkukutsuja on Aadu Must. Üheksandaks, Eesti – Tai Kuningriik, kokkukutsuja on Valdo Randpere. Kümnendaks, Eesti-Ukraina, kokkukutsuja on Johannes Kert. Üheteistkümnendaks, Eesti-Leedu, kokkukutsuja on Taavi Rõivas. Kaheteistkümnendaks, Eesti – Korea Vabariik, kokkukutsuja on Urve Tiidus. Kolmeteistkümnendaks, Eesti-Austria, kokkukutsuja on Jaak Madison. Neljateistkümnendaks, Eesti-Ungari, kokkukutsuja on Jaak Madison. Samuti toimuvad täna pärast täiskogu istungi lõppu siin järgmiste toetusrühmade asutamiskoosolekud. Esiteks, Pärnumaa toetusrühm, kokkukutsuja on Annely Akkermann. Teiseks, Tallinna-Helsingi püsiühenduse rajamise toetusrühm, kokkukutsuja on Kristen Michal. Kolmandaks, saarte toetusrühm, kokkukutsuja on Urve Tiidus. Neljandaks, spordi ja liikumisharrastuse toetusrühm, kokkukutsuja on Jüri Jaanson. Viiendaks, Rail Balticu toetusrühm, kokkukutsuja on Andres Metsoja. Head kolleegid, nüüd kohaloleku kontroll. Kohaloleku kontroll Kohalolijaks registreeris ennast 92 Riigikogu liiget, puudub 9. Läheme päevakorra kinnitamise juurde. Panen hääletusele Riigikogu täiskogu I istungjärgu teise töönädala päevakorra kinnitamise. Palun võtta seisukoht ja hääletada! Hääletustulemused Päevakorra kinnitamise poolt hääletas 85 Riigikogu liiget, vastu oli 2, 1 jäi erapooletuks. Päevakord on kinnitatud.",
+            "link": null
+          }
+        ]
+      },
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-08T15:05:44.000+00:00",
+        "title": " Vaba mikrofon",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-08T15:05:48.000+00:00",
+            "speaker": "Aseesimees Helir-Valdor Seeder",
+            "text": "Ja nüüd, head kolleegid, vaba mikrofon. Kõigil soovijatel on võimalik pärast haamrilööki registreerida ennast sõnavõtuks. Sõnavõtusoove ei ole. Tänane istung on lõppenud. Istungi lõpp kell 15.06.",
+            "link": null
+          }
+        ]
+      }
+    ],
+    "edited": false
+  },
+  {
+    "membership": 14,
+    "plenarySession": 1,
+    "link": "https://stenogrammid.riigikogu.ee/201904091000",
+    "date": "2019-04-09T07:00:00.000+00:00",
+    "title": "XIV Riigikogu, I Istungjärk,  täiskogu korraline istung",
+    "agendaItems": [
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-09T10:00:05.000+00:00",
+        "title": " Istungi rakendamine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "0d906012-76b5-468c-a0c9-201f41f271a8",
+            "date": "2019-04-09T10:00:20.000+00:00",
+            "speaker": "Aseesimees Siim Kallas",
+            "text": "Tere hommikust, lugupeetud kolleegid! Alustame Riigikogu täiskogu I istungjärgu teise töönädala teisipäevast istungit. Juhatus on valmis vastu võtma arupärimisi ja eelnõusid, kui neid on. Ma neid ei näe. Niisiis läheme edasi ilma arupärimiste ja eelnõudeta. On hulk teateid. Täna pärast täiskogu istungi lõppu toimuvad siin istungisaalis järgmiste parlamendirühmade asutamiskoosolekud. Esiteks, Eesti-Suurbritannia, kokkukutsuja on Maris Lauri. Teiseks, Eesti-Taani, kokkukutsuja on Yoko Alender. Kolmandaks, Eesti-Iisrael, kokkukutsuja on Keit Pentus-Rosimannus. Neljandaks, Eesti-Venemaa, kokkukutsuja on Aadu Must. Viiendaks, Eesti-Moldova, kokkukutsuja on Erki Savisaar. Kuuendaks, Eesti-Tuneesia, kokkukutsuja on Erki Savisaar. Seitsmendaks, Eesti-Rumeenia, kokkukutsuja on Erki Savisaar. Kaheksandaks, Eesti-Prantsusmaa, kokkukutsuja on Andres Sutt. Üheksandaks, Eesti-Luksemburg, kokkukutsuja on Andres Sutt. Kümnendaks, Eesti-India, kokkukutsuja on Sven Sester. Üheteistkümnendaks, Eesti-Aserbaidžaan, kokkukutsuja on Sven Sester. Kaheteistkümnendaks, Eesti-Hispaania, kokkukutsuja on Raivo Tamm. Kolmeteistkümnendaks, Eesti-Monaco, kokkukutsuja on Raivo Tamm. Samuti toimuvad täna pärast täiskogu istungi lõppu siin järgmiste toetusrühmade asutamiskoosolekud. Esiteks, kiusamisvaba kooli toetusrühm, kokkukutsuja on Maria Jufereva-Skuratovski. Teiseks, Ida-Virumaa toetusrühm, kokkukutsuja on Katri Raik. Kolmandaks, transiidi ja logistika toetusrühm, kokkukutsuja on Aivar Kokk. Neljandaks, vabatahtliku pääste toetusrühm, kokkukutsuja on Madis Milling. Viiendaks, Eesti metsavendluse traditsiooni hoidmise toetusrühm, kokkukutsuja on Eerik-Niiles Kross. Sellised teated ongi, asutatakse hulgaliselt igasuguseid rühmi. Nii. Teated on teadmiseks võetud, nüüd tuleb kohaloleku kontroll. Kohaloleku kontroll, palun! Kohaloleku kontroll Kohaloleku kontroll on lõppenud. Kohalolijaks on registreerunud 89 Riigikogu liiget, puudub 12. Tänase päevakorra kohta on mul selline teade, et päevakorras ei ole mitte midagi. Seega on tänane istung lõppenud. Kui keegi soovib teha ekskursiooni, siis see on võimalik pärast istungit. Istungi lõpp kell 10.04.",
+            "link": null
+          }
+        ]
+      }
+    ],
+    "edited": false
+  },
+  {
+    "membership": 14,
+    "plenarySession": 1,
+    "link": "https://stenogrammid.riigikogu.ee/201904101400",
+    "date": "2019-04-10T11:00:00.000+00:00",
+    "title": "XIV Riigikogu, I Istungjärk,  täiskogu korraline istung",
+    "agendaItems": [
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-10T14:00:04.000+00:00",
+        "title": " Istungi rakendamine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "23161df7-bc1b-442e-b4cd-2d1f37627658",
+            "date": "2019-04-10T14:00:14.000+00:00",
+            "speaker": "Aseesimees Helir-Valdor Seeder",
+            "text": "Tere päevast, head kolleegid! Austatud Riigikogu! Alustame täiskogu I istungjärgu 2. töönädala kolmapäevast istungit. Olen juhatuse nimel valmis vastu võtma eelnõusid ja arupärimisi. Tundub, et eelnõusid ega arupärimisi ei ole. Läheme teadete juurde. Täna pärast täiskogu istungi lõppu toimuvad siin istungisaalis järgmiste parlamendirühmade asutamiskoosolekud. Esiteks, Eesti-Kanada, kokkukutsuja on Keit Pentus-Rosimannus. Teiseks, Eesti-Mongoolia, kokkukutsuja on Kaido Höövelson. Kolmandaks, Eesti-Georgia, kokkukutsuja on Maria Jufereva-Skuratovski. Neljandaks, Eesti-Valgevene, kokkukutsuja on Igor Kravtšenko. Viiendaks, Eesti-Rootsi, kokkukutsuja on Yoko Alender. Kuuendaks, Eesti-Usbekistani parlamendirühm, kokkukutsuja on Aivar Kokk. Samuti toimuvad täna pärast täiskogu istungi lõppu siin järgmiste toetusrühmade asutamiskoosolekud. Esiteks, jalgpalli toetusrühm, kokkukutsuja on Dmitri Dmitrijev. Teiseks, Riigikogu kohalike omavalitsuste ja regionaalpoliitika toetusrühm, kokkukutsuja on Aivar Kokk. Kolmandaks, Setomaa toetusrühm, kokkukutsuja on Priit Sibul. Neljandaks, Raplamaa toetusrühm, kokkukutsuja on Rene Kokk. Viiendaks, Mulgimaa toetusrühm, kokkukutsuja on Helir-Valdor Seeder. Kuuendaks, Eesti toidu toetusrühm, kokkukutsuja on Maria Jufereva-Skuratovski. Rohkem teateid täna ei ole. Head kolleegid, teeme kohaloleku kontrolli. Kohaloleku kontroll Kohalolijaks registreeris ennast 81 Riigikogu liiget. Head kolleegid, kuna täna ühtegi päevakorrapunkti arutada ei ole, siis on meie istung lõppenud. Kohtumiseni homme! Istungi lõpp kell 14.03.",
+            "link": null
+          }
+        ]
+      }
+    ],
+    "edited": false
+  },
+  {
+    "membership": 14,
+    "plenarySession": 1,
+    "link": "https://stenogrammid.riigikogu.ee/201904111000",
+    "date": "2019-04-11T07:00:00.000+00:00",
+    "title": "XIV Riigikogu, I Istungjärk,  täiskogu korraline istung",
+    "agendaItems": [
+      {
+        "agendaItemUuid": "0",
+        "date": "2019-04-11T10:00:04.000+00:00",
+        "title": " Istungi rakendamine",
+        "events": [
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-11T10:00:27.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Austatud Riigikogu! Alustame täiskogu I istungjärgu 2. töönädala neljapäevast istungit. Kas kellelgi on soovi üle anda arupärimisi või eelnõusid? Ei ole. Sellisel juhul on mul edasi öelda mõned teated. Täna pärast täiskogu istungi lõppu toimuvad siin istungisaalis järgmiste parlamendirühmade asutamiskoosolekud: Eesti-Vietnami parlamendirühm, kokkukutsuja on Valdo Randpere; Eesti-Myanmari parlamendirühm, kokkukutsuja on Valdo Randpere; Eesti-Laose parlamendirühm, kokkukutsuja on Valdo Randpere; Eesti-Kambodža parlamendirühm, kokkukutsuja on Valdo Randpere. Samuti toimuvad täna pärast täiskogu istungi lõppu järgmiste toetusrühmade asutamiskoosolekud: Kagu-Eesti toetusrühm, kokkukutsuja on Anneli Ott; Järva- ja Viljandimaa toetusrühm, kokkukutsuja on Kersti Sarapuu; merenduse toetusrühm, kokkukutsuja on Kalev Kallo; Eesti-Tiibeti toetusrühm, kokkukutsuja on Yoko Alender; E-Eesti toetusrühm, kokkukutsuja on Arto Aas; lairibavõrgu toetusrühm, kokkukutsuja on Erki Savisaar. Härra Jürgen Ligil on küsimus.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "c0c7bea2-4c5e-4295-9c0f-dca52d602098",
+            "date": "2019-04-11T10:02:24.000+00:00",
+            "speaker": "Jürgen Ligi",
+            "text": "Jah, härra esimees. Me ootasime eile infotundi. Öelge, millise kodukorra paragrahvi järgi see eile ära jäeti.",
+            "link": null
+          },
+          {
+            "type": "SPEECH",
+            "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+            "date": "2019-04-11T10:02:32.000+00:00",
+            "speaker": "Esimees Henn Põlluaas",
+            "text": "Niikaua kui uus valitsus ei ole veel ametisse kinnitatud, ei ole infotunde. Paragrahvi kohta jään praegu vastuse võlgu, aga selline on tavapärane protseduur. Nüüd teeme kohaloleku kontrolli. Kohaloleku kontroll Nii. Täiskogul on kohal 87 Riigikogu liiget ja puudub 14. Austatud Riigikogu, tänase istungi päevakorras ühtegi punkti ei ole. Istung on lõppenud. Istungi lõpp kell 10.04.",
+            "link": null
+          }
+        ]
+      }
+    ],
+    "edited": false
+  }
+]

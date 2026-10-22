@@ -9,6 +9,12 @@ import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import OUTPUT_DIR_PROCESSED, START_DATE
+from src.fetch_models import (
+    UpstreamSchemaError,
+    VotingDetail,
+    VotingsSitting,
+    validate_response,
+)
 from src.load.loader import classify_sitting_type, upsert_attendance_checks_jsonl
 
 
@@ -86,11 +92,20 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> bool:
         try:
             resp = requests.get(votings_url, timeout=(5, 30))
             if resp.status_code == 200:
-                votings = resp.json()
+                raw_data = resp.json()
+                validate_response(
+                    VotingsSitting,
+                    raw_data,
+                    endpoint="/api/votings",
+                    ref=f"{start_date}..{end_date}",
+                )
+                votings = raw_data
                 break
             print(
                 f"Warning: HTTP {resp.status_code} fetching votings (attempt {attempt}/{max_retries})"
             )
+        except UpstreamSchemaError:
+            raise
         except requests.exceptions.Timeout:
             print(f"Warning: Connection timeout fetching votings (attempt {attempt}/{max_retries})")
         except requests.exceptions.RequestException as e:
@@ -148,7 +163,14 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> bool:
                     f"https://api.riigikogu.ee/api/votings/{uuid}", timeout=(5, 25)
                 )
                 if v_resp.status_code == 200:
-                    voters = v_resp.json().get("voters", [])
+                    raw_detail = v_resp.json()
+                    validate_response(
+                        VotingDetail,
+                        raw_detail,
+                        endpoint="/api/votings/{uuid}",
+                        ref=uuid,
+                    )
+                    voters = raw_detail.get("voters", [])
                     break
                 if v_resp.status_code == 429:
                     print(
@@ -159,6 +181,8 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> bool:
                     print(
                         f"Warning: HTTP {v_resp.status_code} for {uuid} (Attempt {attempt}/{max_retries})"
                     )
+            except UpstreamSchemaError:
+                raise
             except requests.exceptions.Timeout:
                 print(
                     f"Warning: Timeout fetching voters for {uuid} (Attempt {attempt}/{max_retries})"
@@ -211,5 +235,9 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> bool:
 
 
 if __name__ == "__main__":
-    success = fetch_attendance()
+    try:
+        success = fetch_attendance()
+    except UpstreamSchemaError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
     sys.exit(0 if success else 1)
