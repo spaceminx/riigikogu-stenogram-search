@@ -2,35 +2,42 @@ import { test, expect } from "@playwright/test";
 import { setupApiMock, FIXTURE_IDS } from "./support/api.js";
 
 const ROUTES = [
-  { path: "/", name: "Dashboard" },
-  { path: "/otsing", name: "Otsing" },
-  { path: `/istung/${FIXTURE_IDS.date}`, name: "Istung" },
-  { path: "/kohalolek", name: "Kohalolek" },
-  { path: `/kone/${FIXTURE_IDS.speechId}`, name: "Kõne" },
-  { path: `/saadik/${FIXTURE_IDS.personUuid}`, name: "Saadik" },
-  { path: "/haaletused", name: "Hääletused" },
-  { path: `/haaletus/${FIXTURE_IDS.votingUuid}`, name: "Hääletus" },
-  { path: `/eelnou/${FIXTURE_IDS.draftUuid}`, name: "Eelnõu" },
-  { path: "/andmed", name: "Andmed" },
+  { path: "/", name: "Dashboard", contentSelector: ".dashboard-grid" },
+  { path: "/otsing", name: "Otsing", contentSelector: ".search-section" },
+  { path: `/istung/${FIXTURE_IDS.date}`, name: "Istung", contentSelector: ".speeches-view-title" },
+  { path: "/kohalolek", name: "Kohalolek", contentSelector: ".attendance-filter-bar" },
+  { path: `/kone/${FIXTURE_IDS.speechId}`, name: "Kõne", contentSelector: ".speech-card" },
+  {
+    path: `/saadik/${FIXTURE_IDS.personUuid}`,
+    name: "Saadik",
+    contentSelector: ".person-view-container",
+  },
+  { path: "/haaletused", name: "Hääletused", contentSelector: ".votings-view-container" },
+  {
+    path: `/haaletus/${FIXTURE_IDS.votingUuid}`,
+    name: "Hääletus",
+    contentSelector: ".voting-detail-container",
+  },
+  { path: `/eelnou/${FIXTURE_IDS.draftUuid}`, name: "Eelnõu", contentSelector: ".reading-card" },
+  { path: "/andmed", name: "Andmed", contentSelector: "h1:has-text('Andmed ja privaatsus')" },
 ];
 
 test.describe("Smoke tests for all routes", () => {
-  for (const { path, name } of ROUTES) {
+  for (const { path, name, contentSelector } of ROUTES) {
     test(`loads ${name} (${path}) without crashes`, async ({ page }) => {
       const mock = await setupApiMock(page);
 
       await page.goto(path);
-      await page.waitForLoadState("domcontentloaded");
+      await page.waitForLoadState("networkidle");
 
-      // Verify no ErrorBoundary crashed
-      const errorBoundary = page.locator(".error-boundary");
-      await expect(errorBoundary).toHaveCount(0);
+      // Wait for route-specific content after lazy chunk & fixture data load
+      await expect(page.locator(contentSelector).first()).toBeVisible({ timeout: 10000 });
 
-      // Verify at least one visible heading exists
-      const heading = page.locator("h1, h2").first();
-      await expect(heading).toBeVisible();
+      // Assert ErrorBoundary alert is not rendered
+      const errorAlert = page.locator('.glass-panel[role="alert"]:has-text("Midagi läks valesti")');
+      await expect(errorAlert).toHaveCount(0);
 
-      // Ensure no intercepted errors occurred
+      // Ensure no intercepted errors or external requests occurred
       mock.verifyNoErrors();
     });
   }
@@ -39,13 +46,13 @@ test.describe("Smoke tests for all routes", () => {
     const mock = await setupApiMock(page);
 
     await page.goto("/tundmatu-lehe-aadress");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
-    const errorBoundary = page.locator(".error-boundary");
-    await expect(errorBoundary).toHaveCount(0);
+    // Wait for NotFoundView specific content
+    await expect(page.locator("h2:has-text('404 – Lehekülge ei leitud')")).toBeVisible();
 
-    const heading = page.locator("h1, h2").first();
-    await expect(heading).toBeVisible();
+    const errorAlert = page.locator('.glass-panel[role="alert"]:has-text("Midagi läks valesti")');
+    await expect(errorAlert).toHaveCount(0);
 
     mock.verifyNoErrors();
   });

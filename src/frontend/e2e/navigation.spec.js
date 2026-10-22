@@ -63,6 +63,8 @@ test.describe("Client-side navigation", () => {
     await verifyNotReloaded();
 
     // Verify no unhandled errors or unmatched API calls
+    const errorAlert = page.locator('.glass-panel[role="alert"]:has-text("Midagi läks valesti")');
+    await expect(errorAlert).toHaveCount(0);
     mock.verifyNoErrors();
   });
 });

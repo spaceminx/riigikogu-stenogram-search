@@ -48,6 +48,12 @@ test.describe("Theme toggle and contrast check", () => {
     await page.goto("/kohalolek");
     await page.waitForLoadState("domcontentloaded");
 
+    // Wait for html[data-theme="dark"] and disable transitions/animations to prevent timing flakes
+    await page.waitForSelector('html[data-theme="dark"]');
+    await page.addStyleTag({
+      content: "* { transition: none !important; animation: none !important; }",
+    });
+
     // Helper to evaluate element contrast against its effective background
     const getElementContrast = async (selector) => {
       return await page.evaluate((sel) => {
@@ -111,10 +117,15 @@ test.describe("Theme toggle and contrast check", () => {
       expect(headingInfo.ratio).toBeGreaterThanOrEqual(headingInfo.isLarge ? 3.0 : 4.5);
     }
 
-    // Spot-check nav link text
-    const linkInfo = await getElementContrast("nav a");
-    if (linkInfo) {
-      expect(linkInfo.ratio).toBeGreaterThanOrEqual(linkInfo.isLarge ? 3.0 : 4.5);
+    // Spot-check nav button elements (.nav-btn and .nav-btn.active)
+    const navBtnInfo = await getElementContrast(".nav-btn:not(.active)");
+    if (navBtnInfo) {
+      expect(navBtnInfo.ratio).toBeGreaterThanOrEqual(navBtnInfo.isLarge ? 3.0 : 4.5);
+    }
+
+    const activeNavBtnInfo = await getElementContrast(".nav-btn.active");
+    if (activeNavBtnInfo) {
+      expect(activeNavBtnInfo.ratio).toBeGreaterThanOrEqual(activeNavBtnInfo.isLarge ? 3.0 : 4.5);
     }
 
     // Spot-check attendance header / table header

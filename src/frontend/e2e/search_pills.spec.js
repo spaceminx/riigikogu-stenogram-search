@@ -23,6 +23,13 @@ test.describe("Search pills and query building", () => {
     await page.locator("button.search-button").click();
     await expect(page).toHaveURL(/q=%22kliima\+muutus%22|q="kliima muutus"/);
 
+    // Assert the intercepted GET /search request query (q)
+    const searchReq = mock.interceptedRequests.find(
+      (r) =>
+        r.method === "GET" && r.pathname === "/search" && r.queryParams?.q === '"kliima muutus"'
+    );
+    expect(searchReq).toBeDefined();
+
     mock.verifyNoErrors();
   });
 
@@ -49,18 +56,44 @@ test.describe("Search pills and query building", () => {
 
     // Type second word: mets and submit
     await input.fill("mets");
-    await page.locator("button.search-button").click();
+    const [searchResponse] = await Promise.all([
+      page.waitForResponse(
+        (res) => res.url().includes("api.e2e.test/search") && res.url().includes("kliima")
+      ),
+      page.locator("button.search-button").click(),
+    ]);
+    expect(searchResponse.status()).toBe(200);
 
     // Query should serialize as "kliima mets"
     await expect(page).toHaveURL(/q=kliima\+mets|q=kliima%20mets/);
     pills = page.locator(".token-pill");
     await expect(pills).toHaveCount(2);
 
+    // Assert intercepted GET /search request for +JA
+    const andReq = mock.interceptedRequests.find(
+      (r) => r.method === "GET" && r.pathname === "/search" && r.queryParams?.q === "kliima mets"
+    );
+    expect(andReq).toBeDefined();
+
     // Now click +VÕI
     await orBtn.click();
     const orDividers = page.locator(".or-divider");
     await expect(orDividers).toHaveCount(1);
     await expect(orDividers.first()).toHaveText("VÕI");
+
+    mock.verifyNoErrors();
+  });
+
+  test("+VÕI search query is intercepted correctly on submit", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/otsing?q=kliima%2C+mets");
+    await page.waitForLoadState("networkidle");
+
+    const searchReq = mock.interceptedRequests.find(
+      (r) => r.method === "GET" && r.pathname === "/search" && r.queryParams?.q === "kliima, mets"
+    );
+    expect(searchReq).toBeDefined();
 
     mock.verifyNoErrors();
   });

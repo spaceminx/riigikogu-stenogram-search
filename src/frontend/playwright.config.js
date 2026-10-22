@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: "list",
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: "http://localhost:4173",
     trace: "on-first-retry",
@@ -32,5 +32,8 @@ export default defineConfig({
     port: 4173,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      VITE_API_BASE_URL: "http://api.e2e.test",
+    },
   },
 });

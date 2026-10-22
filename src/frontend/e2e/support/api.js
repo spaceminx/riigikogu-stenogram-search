@@ -74,6 +74,7 @@ export async function setupApiMock(page, options = {}) {
   const { allowConsoleError = false } = options;
   const interceptedRequests = [];
   const errors = [];
+  const externalRequests = [];
 
   page.on("pageerror", (err) => {
     errors.push(`Page error: ${err.message}\n${err.stack}`);
@@ -89,49 +90,64 @@ export async function setupApiMock(page, options = {}) {
     }
   });
 
-  // Intercept http://api.e2e.test/**
-  await page.route(/^http:\/\/api\.e2e\.test\/.*/, async (route) => {
+  // Guard: route all requests and abort any whose host is not localhost:4173 or api.e2e.test
+  await page.route("**/*", async (route) => {
     const req = route.request();
     const url = new URL(req.url());
-    const method = req.method();
-    const pathname = url.pathname;
-    const queryParams = getQueryParams(req.url());
+    const host = url.host;
 
-    interceptedRequests.push({
-      method,
-      url: req.url(),
-      pathname,
-      queryParams,
-    });
+    if (host !== "localhost:4173" && host !== "127.0.0.1:4173" && host !== "api.e2e.test") {
+      externalRequests.push(req.url());
+      return route.abort();
+    }
 
-    const fixtureFile = findFixture(method, pathname, queryParams);
+    if (host === "api.e2e.test") {
+      const method = req.method();
+      const pathname = url.pathname;
+      const queryParams = getQueryParams(req.url());
 
-    if (!fixtureFile) {
-      // Unmatched route -> 599
+      interceptedRequests.push({
+        method,
+        url: req.url(),
+        pathname,
+        queryParams,
+      });
+
+      const fixtureFile = findFixture(method, pathname, queryParams);
+
+      if (!fixtureFile) {
+        // Unmatched route -> 599
+        return route.fulfill({
+          status: 599,
+          contentType: "application/json",
+          body: JSON.stringify({
+            error: `Unmatched mock API route: ${method} ${url.href}`,
+          }),
+        });
+      }
+
+      const body = fixtureCache.get(fixtureFile);
       return route.fulfill({
-        status: 599,
+        status: 200,
         contentType: "application/json",
-        body: JSON.stringify({
-          error: `Unmatched mock API route: ${method} ${url.href}`,
-        }),
+        headers: {
+          "access-control-allow-origin": "*",
+        },
+        body,
       });
     }
 
-    const body = fixtureCache.get(fixtureFile);
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      headers: {
-        "access-control-allow-origin": "*",
-      },
-      body,
-    });
+    return route.continue();
   });
 
   return {
     interceptedRequests,
     errors,
+    externalRequests,
     verifyNoErrors() {
+      if (externalRequests.length > 0) {
+        throw new Error(`external request: ${externalRequests.join(", ")}`);
+      }
       const unmatched = interceptedRequests.filter(
         (r) => !findFixture(r.method, r.pathname, r.queryParams)
       );

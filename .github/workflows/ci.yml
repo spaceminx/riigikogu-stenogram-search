@@ -120,6 +120,16 @@ jobs:
       - name: Run Playwright E2E tests
         run: npm run e2e
 
+      - name: Upload Playwright test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            src/frontend/playwright-report/
+            src/frontend/test-results/
+          retention-days: 7
+
 
   workflow-lint:
     name: GitHub Actions Workflow Lint
