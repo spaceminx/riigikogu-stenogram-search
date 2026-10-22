@@ -178,6 +178,7 @@ export function SpeechCard({
             speaker={speech.speaker}
             date={speech.date}
             showExternalLink={false}
+            autoLoad={true}
           />
         </div>
       )}
