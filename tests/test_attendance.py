@@ -117,16 +117,26 @@ def test_fetch_attendance_detail_error_exits_1_and_saves_successful(tmp_path, mo
                 ]
             if "check-uuid-1" in self.url:
                 return {
+                    "uuid": "check-uuid-1",
+                    "votingNumber": 1,
+                    "type": {"code": "KOHALOLEKU_KONTROLL"},
+                    "startDateTime": "2026-10-15T10:00:00",
                     "voters": [
                         {
                             "fullName": "Jaan Tamm",
                             "uuid": "m-1",
                             "decision": {"code": "KOHAL"},
                         }
-                    ]
+                    ],
                 }
             # Failing check returns empty voters / error
-            return {"voters": []}
+            return {
+                "uuid": "check-uuid-2-failing",
+                "votingNumber": 2,
+                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                "startDateTime": "2026-10-15T11:00:00",
+                "voters": [],
+            }
 
     monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
 
@@ -197,15 +207,25 @@ def test_fetch_attendance_fetches_20_day_missing_check(tmp_path, monkeypatch):
                 ]
             if "twenty-days-ago-check" in self.url:
                 return {
+                    "uuid": "twenty-days-ago-check",
+                    "votingNumber": 1,
+                    "type": {"code": "KOHALOLEKU_KONTROLL"},
+                    "startDateTime": f"{twenty_days_ago.strftime('%Y-%m-%d')}T10:00:00",
                     "voters": [
                         {
                             "fullName": "Mari Mets",
                             "uuid": "m-2",
                             "decision": {"code": "PUUDUB"},
                         }
-                    ]
+                    ],
                 }
-            return {"voters": []}
+            return {
+                "uuid": "unknown-check",
+                "votingNumber": 1,
+                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                "startDateTime": "2026-10-15T10:00:00",
+                "voters": [],
+            }
 
     monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
 
@@ -247,13 +267,17 @@ def test_fetch_attendance_no_db_file_created(tmp_path, monkeypatch):
                     }
                 ]
             return {
+                "uuid": "test-uuid-clean",
+                "votingNumber": 1,
+                "type": {"code": "KOHALOLEKU_KONTROLL"},
+                "startDateTime": "2026-10-15T10:00:00",
                 "voters": [
                     {
                         "fullName": "Jaan Tamm",
                         "uuid": "m-1",
                         "decision": {"code": "KOHAL"},
                     }
-                ]
+                ],
             }
 
     monkeypatch.setattr(requests, "get", lambda url, *args, **kwargs: MockResp(url))
