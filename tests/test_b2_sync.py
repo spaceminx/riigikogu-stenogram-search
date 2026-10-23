@@ -569,3 +569,15 @@ def test_b2_client_and_transfer_config(monkeypatch):
     assert transfer.multipart_chunksize == DEFAULT_PART_SIZE
     assert transfer.multipart_threshold == DEFAULT_PART_SIZE
     assert transfer.max_request_concurrency == 4
+
+
+def test_daily_download_includes_year_independent_jsonl_files():
+    """agenda_items.jsonl and attendance_checks.jsonl change daily, so they are active files."""
+    from scripts.download_from_b2 import is_active_daily_file
+
+    for name in ["attendance.jsonl", "attendance_checks.jsonl", "agenda_items.jsonl", "x.json"]:
+        assert is_active_daily_file(name, {"2026"}), name
+    assert is_active_daily_file("2026.jsonl", {"2026"})
+    assert is_active_daily_file("votes_2026.jsonl", {"2026"})
+    assert not is_active_daily_file("2020.jsonl", {"2026"})
+    assert not is_active_daily_file("votes_2020.jsonl", {"2026"})

@@ -23,6 +23,9 @@ from typing import Any
 REPO = "spaceminx/riigikogu-stenogram-search"
 API_BASE = "https://api.github.com"
 UPLOADS_BASE = "https://uploads.github.com"
+# Without a timeout a stalled connection would hang the monthly cron indefinitely.
+API_TIMEOUT_SECONDS = 60
+UPLOAD_TIMEOUT_SECONDS = 300
 
 
 def load_env_pipeline(root_dir: Path) -> None:
@@ -51,6 +54,7 @@ def github_api_request(
     token: str | None = None,
     data: bytes | None = None,
     headers: dict[str, str] | None = None,
+    timeout: float = API_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
     """Execute a GitHub API request and return JSON response."""
     req_headers = {
@@ -65,7 +69,7 @@ def github_api_request(
 
     req = urllib.request.Request(url, data=data, headers=req_headers, method=method)
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             resp_body = resp.read()
             if not resp_body:
                 return {}
@@ -178,7 +182,24 @@ def upload_asset(release_id: int, file_path: Path, token: str) -> dict[str, Any]
             "Content-Type": content_type,
             "Content-Length": str(len(file_bytes)),
         },
+        timeout=UPLOAD_TIMEOUT_SECONDS,
     )
+
+
+def verify_release_assets(release_id: int, files: list[Path], token: str) -> None:
+    """Raise if the draft's assets do not match the local files by name and size."""
+    url = f"{API_BASE}/repos/{REPO}/releases/{release_id}/assets?per_page=100"
+    assets = github_api_request(url, token=token)
+    remote = {a.get("name"): a.get("size") for a in assets if isinstance(a, dict)}
+    expected = {f.name: f.stat().st_size for f in files}
+    if remote != expected:
+        missing = sorted(set(expected) - set(remote))
+        wrong_size = sorted(n for n in expected if n in remote and remote[n] != expected[n])
+        extra = sorted(set(remote) - set(expected))
+        raise RuntimeError(
+            f"Draft release {release_id} assets do not match the local files "
+            f"(missing={missing}, wrong_size={wrong_size}, extra={extra}); not publishing."
+        )
 
 
 def publish_release(
@@ -250,6 +271,9 @@ def publish_release(
     for f in files_to_upload:
         print(f"  Uploading {f.name} ({f.stat().st_size} bytes)...")
         upload_asset(release_id, f, token)
+
+    print("Verifying uploaded assets...")
+    verify_release_assets(release_id, files_to_upload, token)
 
     print(f"Publishing release {tag} (updating draft=false)...")
     publish_draft_release(release_id, token)
