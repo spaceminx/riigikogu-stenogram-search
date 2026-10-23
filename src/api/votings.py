@@ -131,8 +131,11 @@ def get_member_vote_participation(
     session,
     membership: str | int | None = None,
     role: str | None = None,
+    faction: str | None = None,
 ) -> dict[str, dict]:
     """Calculate vote participation per member on public, non-technical votings.
+
+    With faction, only ballots cast as a member of that faction (Vote.faction) are counted.
 
     Returns mapping from member_uuid to:
         {"voted": int, "not_voted": int, "absent": int, "total": int, "voted_pct": float | None}
@@ -143,11 +146,11 @@ def get_member_vote_participation(
         _VOTE_PARTICIPATION_CACHE["members"].clear()
         _VOTE_PARTICIPATION_CACHE["factions"].clear()
 
-    cache_key = _normalize_cache_key(membership, role)
+    cache_key_mem, role_filter = _normalize_cache_key(membership, role)
+    cache_key = (cache_key_mem, role_filter, faction or None)
     if cache_key in _VOTE_PARTICIPATION_CACHE["members"]:
         return _VOTE_PARTICIPATION_CACHE["members"][cache_key]
 
-    cache_key_mem, role_filter = cache_key
     is_tech_sql = is_technical_voting_clause()
     query = (
         session.query(
@@ -175,6 +178,9 @@ def get_member_vote_participation(
 
     if role_filter:
         query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
+
+    if faction:
+        query = query.filter(Vote.faction == faction)
 
     results = query.group_by(Vote.member_uuid).all()
 
