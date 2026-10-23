@@ -25,6 +25,49 @@ class IntegrityUnverifiedError(Exception):
     """Raised when the official verbatims cannot be fetched, so nothing could be verified."""
 
 
+RETRY_ATTEMPTS = 3
+RETRY_BASE_WAIT_SECONDS = 15
+RETRY_MAX_WAIT_SECONDS = 120
+
+
+def get_with_retry(url: str, params: dict, attempts: int = RETRY_ATTEMPTS) -> requests.Response:
+    """GET with retries on connection errors, HTTP 429 and 5xx.
+
+    The check runs right after the fetchers, so the Riigikogu API often answers 429 at first.
+    Waits Retry-After seconds when given, otherwise 15 s × attempt.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            resp = requests.get(url, params=params, timeout=(5, 25))
+        except Exception as e:
+            if attempt == attempts:
+                raise IntegrityUnverifiedError(f"could not connect to Riigikogu API: {e}") from e
+            wait = RETRY_BASE_WAIT_SECONDS * attempt
+            print(f"Warning: Riigikogu API connection failed ({e}). Retrying in {wait}s...")
+            time.sleep(wait)
+            continue
+
+        if resp.status_code == 200:
+            return resp
+        if resp.status_code != 429 and resp.status_code < 500:
+            raise IntegrityUnverifiedError(f"verbatims API returned HTTP {resp.status_code}")
+        if attempt == attempts:
+            raise IntegrityUnverifiedError(
+                f"verbatims API returned HTTP {resp.status_code} after {attempts} attempts"
+            )
+
+        retry_after = resp.headers.get("Retry-After", "")
+        wait = (
+            min(int(retry_after), RETRY_MAX_WAIT_SECONDS)
+            if retry_after.isdigit()
+            else RETRY_BASE_WAIT_SECONDS * attempt
+        )
+        print(f"Warning: Verbatims API returned HTTP {resp.status_code}. Retrying in {wait}s...")
+        time.sleep(wait)
+
+    raise IntegrityUnverifiedError("verbatims API request did not complete")
+
+
 def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
     """Parse processed JSONL files and group speech counts and statuses by source file."""
     sessions: dict[str, dict] = {}
@@ -102,14 +145,7 @@ def verify_pipeline_integrity(
     url = "https://api.riigikogu.ee/api/steno/verbatims"
     print(f"Checking official verbatims from {start_str} to {end_str} via {url}...")
 
-    try:
-        resp = requests.get(
-            url, params={"startDate": start_str, "endDate": end_str}, timeout=(5, 25)
-        )
-    except Exception as e:
-        raise IntegrityUnverifiedError(f"could not connect to Riigikogu API: {e}") from e
-    if resp.status_code != 200:
-        raise IntegrityUnverifiedError(f"verbatims API returned HTTP {resp.status_code}")
+    resp = get_with_retry(url, params={"startDate": start_str, "endDate": end_str})
     try:
         official_verbatims = resp.json()
     except ValueError as e:
