@@ -334,6 +334,27 @@ docker compose run --rm pipeline python scripts/daily_pipeline.py --no-upload
 #### Manual GitHub Actions Fallback
 The GitHub Actions workflow (`.github/workflows/daily_pipeline.yml`) remains available as a manual fallback (`workflow_dispatch`). Any data uploaded by a manual GitHub run is automatically picked up by the server on its next scheduled run during the initial B2 download step.
 
+### Database Backup
+A rebuild from B2 is limited by the 1 GB/day download cap, so the database is also backed up weekly outside the WSL disk. `scripts/backup_database.py` uses only the standard library and runs with the host's `python3`: it copies the database with the SQLite online backup API, runs `PRAGMA quick_check` on the copy, writes `riigikogu-YYYY-MM-DD.sqlite.gz` and keeps the newest `--keep` files.
+
+Root crontab (Sunday 05:00, away from the 07:00 pipeline):
+```cron
+0 5 * * 0 python3 <DEPLOY_DIR>/scripts/backup_database.py --dest /mnt/c/Users/<user>/RiigivaadeBackups --keep 4 >> <DEPLOY_DIR>/logs/backup.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> <DEPLOY_DIR>/logs/backup.log 2>&1
+```
+
+Restore:
+```bash
+cd <DEPLOY_DIR>
+docker compose stop backend
+gunzip -c /mnt/c/Users/<user>/RiigivaadeBackups/riigikogu-YYYY-MM-DD.sqlite.gz > database/riigikogu.sqlite.restore
+mv database/riigikogu.sqlite database/riigikogu.sqlite.old
+rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
+mv database/riigikogu.sqlite.restore database/riigikogu.sqlite
+chown 999:999 database/riigikogu.sqlite
+docker compose start backend
+```
+The next daily run then fetches anything newer than the backup.
+
 ---
 
 ## Testing & Code Quality
