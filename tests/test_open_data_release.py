@@ -396,7 +396,13 @@ def test_publish_open_data_release_mock_api(tmp_path: Path):
     mock_upload_cm = MagicMock()
     mock_upload_cm.__enter__.return_value.read.return_value = b"{}"
 
-    # 6. publish_draft_release (PATCH draft=False)
+    # 6. verify_release_assets (GET assets) -> names and sizes match the local files
+    mock_assets_cm = MagicMock()
+    mock_assets_cm.__enter__.return_value.read.return_value = json.dumps(
+        [{"name": f.name, "size": f.stat().st_size} for f in release_dir.iterdir()]
+    ).encode("utf-8")
+
+    # 7. publish_draft_release (PATCH draft=False)
     mock_patch_cm = MagicMock()
     mock_patch_cm.__enter__.return_value.read.return_value = json.dumps(
         {"id": 9999, "draft": False}
@@ -409,6 +415,7 @@ def test_publish_open_data_release_mock_api(tmp_path: Path):
             mock_upload_cm,
             mock_upload_cm,
             mock_upload_cm,
+            mock_assets_cm,
             mock_patch_cm,
         ]
         publish_release(
@@ -416,4 +423,23 @@ def test_publish_open_data_release_mock_api(tmp_path: Path):
             token="ghp_testtoken",
             dry_run=False,
         )
+        assert mock_urlopen.call_count == 7
+        assert all(call.kwargs.get("timeout") for call in mock_urlopen.call_args_list)
+
+    # A missing asset keeps the release as a draft (no PATCH)
+    mock_short_cm = MagicMock()
+    mock_short_cm.__enter__.return_value.read.return_value = json.dumps(
+        [{"name": "data.jsonl.gz", "size": 4}]
+    ).encode("utf-8")
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.side_effect = [
+            mock_list_cm,
+            mock_create_cm,
+            mock_upload_cm,
+            mock_upload_cm,
+            mock_upload_cm,
+            mock_short_cm,
+        ]
+        with pytest.raises(RuntimeError, match="do not match the local files"):
+            publish_release(release_dir=release_dir, token="ghp_testtoken", dry_run=False)
         assert mock_urlopen.call_count == 6
