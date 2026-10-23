@@ -297,3 +297,19 @@ def test_attendance_stats_with_role_filter():
     assert factions_opp[0]["faction"] == "Sotsiaaldemokraatliku Erakonna fraktsioon"
     assert factions_opp[0]["total_sessions"] == 1
     assert factions_opp[0]["votes_total"] == 1
+
+
+def test_faction_stats_active_only_with_role_skips_members_without_rows():
+    """Active members with no rows in the selected role must not form a zero-session bucket."""
+    factions_coal = get_faction_attendance_stats(
+        membership="15", active_only=True, role="coalition"
+    )
+    assert [f["faction"] for f in factions_coal] == ["Sotsiaaldemokraatliku Erakonna fraktsioon"]
+    assert factions_coal[0]["member_count"] == 1
+    assert factions_coal[0]["total_sessions"] == 2
+    assert factions_coal[0]["votes_total"] == 1
+
+    factions_all = get_faction_attendance_stats(membership="15", active_only=True)
+    by_faction = {f["faction"]: f for f in factions_all}
+    assert by_faction["Fraktsiooni mittekuuluvad Riigikogu liikmed"]["member_count"] == 1
+    assert by_faction["Fraktsiooni mittekuuluvad Riigikogu liikmed"]["total_sessions"] == 1
