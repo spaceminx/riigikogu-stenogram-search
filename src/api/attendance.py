@@ -379,13 +379,6 @@ def get_faction_attendance_stats(
                     )
                 latest_factions = {r[0]: r[1] for r in f_query.group_by(member_key).all()}
 
-                active_faction_counts: dict[str, int] = {}
-                active_uuid_factions: dict[str, str] = {}
-                for uid in active_uuids:
-                    fac = latest_factions.get(uid, "Fraktsiooni mittekuuluvad Riigikogu liikmed")
-                    active_uuid_factions[uid] = fac
-                    active_faction_counts[fac] = active_faction_counts.get(fac, 0) + 1
-
                 query = session.query(
                     member_key,
                     func.count(Attendance.id).label("total_sessions"),
@@ -410,6 +403,18 @@ def get_faction_attendance_stats(
                 query = query.filter(Attendance.member_uuid.in_(active_uuids))
                 member_results = query.group_by(member_key).all()
 
+                # Members with no attendance rows in the selected period/role are left out,
+                # instead of being counted as non-affiliated with zero sessions.
+                members_with_rows = {r[0] for r in member_results}
+                active_faction_counts: dict[str, int] = {}
+                active_uuid_factions: dict[str, str] = {}
+                for uid in active_uuids:
+                    if uid not in latest_factions and uid not in members_with_rows:
+                        continue
+                    fac = latest_factions.get(uid, "Fraktsiooni mittekuuluvad Riigikogu liikmed")
+                    active_uuid_factions[uid] = fac
+                    active_faction_counts[fac] = active_faction_counts.get(fac, 0) + 1
+
                 faction_totals: dict[str, dict[str, int]] = {}
                 for m_key, total, present in member_results:
                     fac_name = active_uuid_factions.get(
@@ -424,10 +429,7 @@ def get_faction_attendance_stats(
                 member_votes = get_member_vote_participation(
                     session, membership=membership, role=role
                 )
-                for uid in active_uuids:
-                    fac = active_uuid_factions.get(
-                        uid, "Fraktsiooni mittekuuluvad Riigikogu liikmed"
-                    )
+                for uid, fac in active_uuid_factions.items():
                     if fac not in active_faction_votes:
                         active_faction_votes[fac] = {
                             "voted": 0,
