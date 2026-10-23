@@ -363,3 +363,33 @@ def test_schema_change_in_warning_step_fails_run(tmp_path, monkeypatch, script_n
     monkeypatch.setattr(dp, "sync_database", lambda **kw: True)
 
     assert dp.run_daily_pipeline() == 1
+
+
+def test_unverified_integrity_fails_run_and_skips_upload(tmp_path, monkeypatch):
+    """Integrity exit 3 (unverified) fails the run, skips the B2 upload and still syncs."""
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
+
+    upload_called = False
+    sync_called = False
+
+    def mock_run(cmd, *args, **kwargs):
+        nonlocal upload_called
+        script_name = os.path.basename(cmd[1])
+        if script_name == "verify_pipeline_integrity.py":
+            return subprocess.CompletedProcess(args=cmd, returncode=3)
+        if script_name == "upload_to_b2.py":
+            upload_called = True
+        return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+    def mock_sync(**kw):
+        nonlocal sync_called
+        sync_called = True
+        return True
+
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", mock_sync)
+
+    assert dp.run_daily_pipeline() == 1
+    assert upload_called is False
+    assert sync_called is True

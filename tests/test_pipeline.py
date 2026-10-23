@@ -2948,3 +2948,36 @@ def test_sync_database_lock_stale_overwritten(tmp_path, monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Stale lock file" in captured.out
     assert not lock_file.exists()
+
+
+@pytest.mark.parametrize("failure", ["http_error", "connection_error", "not_a_list"])
+def test_verify_pipeline_integrity_unverified_raises(tmp_path, monkeypatch, failure):
+    """If the official verbatims cannot be fetched, integrity is unverified, not OK."""
+    import requests
+
+    from scripts.verify_pipeline_integrity import (
+        IntegrityUnverifiedError,
+        verify_pipeline_integrity,
+    )
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+
+    class MockResp:
+        def __init__(self, status_code, payload):
+            self.status_code = status_code
+            self._payload = payload
+
+        def json(self):
+            return self._payload
+
+    def mock_get(url, *args, **kwargs):
+        if failure == "connection_error":
+            raise requests.exceptions.ConnectionError("no route to host")
+        if failure == "http_error":
+            return MockResp(503, None)
+        return MockResp(200, {"error": "maintenance"})
+
+    monkeypatch.setattr(requests, "get", mock_get)
+
+    with pytest.raises(IntegrityUnverifiedError):
+        verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)

@@ -27,11 +27,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from config import DATABASE_DIR, OUTPUT_DIR_PROCESSED, PROJECT_ROOT, active_years
 from scripts.sync_database import sync_database
+from scripts.verify_pipeline_integrity import INTEGRITY_UNVERIFIED_EXIT_CODE
 from src.load.lock import sync_lock
 
 STEP_TIMEOUT_SECONDS = 30 * 60  # 30 minutes per step
 UPSTREAM_SCHEMA_EXIT_CODE = 2  # fetchers exit 2 on UpstreamSchemaError
 SCHEMA_CHANGE_ERROR = f"upstream API schema changed (exit code {UPSTREAM_SCHEMA_EXIT_CODE})"
+INTEGRITY_UNVERIFIED_ERROR = (
+    f"integrity could not be verified (exit code {INTEGRITY_UNVERIFIED_EXIT_CODE})"
+)
 
 
 def run_subprocess_step(
@@ -60,6 +64,8 @@ def run_subprocess_step(
             return True, duration, ""
         if proc.returncode == UPSTREAM_SCHEMA_EXIT_CODE:
             return False, duration, SCHEMA_CHANGE_ERROR
+        if proc.returncode == INTEGRITY_UNVERIFIED_EXIT_CODE:
+            return False, duration, INTEGRITY_UNVERIFIED_ERROR
         return False, duration, f"exited with code {proc.returncode}"
     except subprocess.TimeoutExpired:
         duration = time.time() - t0
@@ -289,6 +295,17 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
                         "status": "skipped",
                         "duration": 0.0,
                         "note": "--no-upload",
+                    }
+                )
+            elif int_err == INTEGRITY_UNVERIFIED_ERROR:
+                # B2 is the rebuild source; only verified data goes there. The next run uploads.
+                print("Skipping upload_to_b2: integrity could not be verified.")
+                step_records.append(
+                    {
+                        "name": "upload_to_b2",
+                        "status": "skipped",
+                        "duration": 0.0,
+                        "note": "integrity unverified",
                     }
                 )
             else:

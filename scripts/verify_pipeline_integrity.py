@@ -18,6 +18,12 @@ import requests
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED, UNEDITED_REFETCH_DAYS
 
+INTEGRITY_UNVERIFIED_EXIT_CODE = 3
+
+
+class IntegrityUnverifiedError(Exception):
+    """Raised when the official verbatims cannot be fetched, so nothing could be verified."""
+
 
 def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
     """Parse processed JSONL files and group speech counts and statuses by source file."""
@@ -100,19 +106,17 @@ def verify_pipeline_integrity(
         resp = requests.get(
             url, params={"startDate": start_str, "endDate": end_str}, timeout=(5, 25)
         )
-        if resp.status_code != 200:
-            print(
-                f"Warning: Verbatims API returned HTTP {resp.status_code}. Skipping verification."
-            )
-            return True
-        official_verbatims = resp.json()
     except Exception as e:
-        print(f"Warning: Could not connect to Riigikogu API: {e}. Skipping verification.")
-        return True
+        raise IntegrityUnverifiedError(f"could not connect to Riigikogu API: {e}") from e
+    if resp.status_code != 200:
+        raise IntegrityUnverifiedError(f"verbatims API returned HTTP {resp.status_code}")
+    try:
+        official_verbatims = resp.json()
+    except ValueError as e:
+        raise IntegrityUnverifiedError(f"invalid JSON from verbatims API: {e}") from e
 
     if not isinstance(official_verbatims, list):
-        print("Notice: Unexpected response from verbatims API (not a list).")
-        return True
+        raise IntegrityUnverifiedError("unexpected response from verbatims API (not a list)")
 
     print(f"Found {len(official_verbatims)} official session records from API.")
 
@@ -318,5 +322,9 @@ def verify_votes_integrity(
 
 
 if __name__ == "__main__":
-    ok = verify_pipeline_integrity(days=UNEDITED_REFETCH_DAYS, fail_on_missing=True)
+    try:
+        ok = verify_pipeline_integrity(days=UNEDITED_REFETCH_DAYS, fail_on_missing=True)
+    except IntegrityUnverifiedError as e:
+        print(f"Error: Integrity could not be verified: {e}", file=sys.stderr)
+        sys.exit(INTEGRITY_UNVERIFIED_EXIT_CODE)
     sys.exit(0 if ok else 1)
