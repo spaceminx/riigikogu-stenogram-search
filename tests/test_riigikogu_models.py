@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.fetch_stenograms_api as fetch_stenograms_api
 from scripts.fetch_agenda import process_agenda_and_verbatims
 from scripts.fetch_factions import extract_electoral_district, extract_photo_url
 from scripts.fetch_memberships import roman_numeral
@@ -461,3 +462,21 @@ def test_agenda_transform_golden():
     with open(GOLDENS_DIR / "agenda_transformed.json", encoding="utf-8") as f:
         expected = json.load(f)
     assert existing_records == expected
+
+
+def test_meeting_schema_error_is_not_swallowed_by_verbatim_processing(monkeypatch):
+    """A meeting schema error must propagate out of process_single_verbatim (fetcher exits 2)."""
+
+    def raise_schema_error(meeting_code):
+        raise UpstreamSchemaError("meeting shape changed")
+
+    monkeypatch.setattr(fetch_stenograms_api, "fetch_rich_meeting_data", raise_schema_error)
+    verbatim = {
+        "date": "2026-10-21T11:00:00.000+00:00",
+        "title": "Täiskogu istung",
+        "link": "https://stenogrammid.riigikogu.ee/202610211400",
+    }
+    with pytest.raises(UpstreamSchemaError):
+        fetch_stenograms_api.process_single_verbatim(
+            verbatim, {}, {}, set(), {}, set(), set(), set(), set(), {}
+        )

@@ -895,6 +895,8 @@ def process_single_verbatim(
 
         time.sleep(1.5)
 
+    except UpstreamSchemaError:
+        raise
     except Exception as e:
         print(f"Warning: Error processing verbatim {verbatim.get('title')}: {e}")
         has_errors = True

@@ -30,6 +30,8 @@ from scripts.sync_database import sync_database
 from src.load.lock import sync_lock
 
 STEP_TIMEOUT_SECONDS = 30 * 60  # 30 minutes per step
+UPSTREAM_SCHEMA_EXIT_CODE = 2  # fetchers exit 2 on UpstreamSchemaError
+SCHEMA_CHANGE_ERROR = f"upstream API schema changed (exit code {UPSTREAM_SCHEMA_EXIT_CODE})"
 
 
 def run_subprocess_step(
@@ -56,6 +58,8 @@ def run_subprocess_step(
         duration = time.time() - t0
         if proc.returncode == 0:
             return True, duration, ""
+        if proc.returncode == UPSTREAM_SCHEMA_EXIT_CODE:
+            return False, duration, SCHEMA_CHANGE_ERROR
         return False, duration, f"exited with code {proc.returncode}"
     except subprocess.TimeoutExpired:
         duration = time.time() - t0
@@ -67,6 +71,13 @@ def run_subprocess_step(
         err = str(e)
         print(f"Error: Step {script_rel_path} raised exception: {err}")
         return False, duration, err
+
+
+def warning_step_note(ok: bool, err: str) -> str:
+    """Step note for warning-only steps; a schema change is a failure, not a warning."""
+    if ok:
+        return ""
+    return err if err == SCHEMA_CHANGE_ERROR else "warning only"
 
 
 def snapshot_processed_files(source_dir: str, target_dir: str) -> int:
@@ -169,11 +180,13 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
                     "name": "fetch_memberships",
                     "status": "ok" if m_ok else "failed",
                     "duration": m_dur,
-                    "note": "warning only" if not m_ok else "",
+                    "note": warning_step_note(m_ok, m_err),
                 }
             )
             if not m_ok:
                 print(f"Warning: fetch_memberships failed ({m_err}). Continuing.")
+                if m_err == SCHEMA_CHANGE_ERROR:
+                    required_failures.append("fetch_memberships")
 
             print("\n--- Step 3: Fetch Member Factions ---")
             f_ok, f_dur, f_err = run_subprocess_step("scripts/fetch_factions.py")
@@ -182,11 +195,13 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
                     "name": "fetch_factions",
                     "status": "ok" if f_ok else "failed",
                     "duration": f_dur,
-                    "note": "warning only" if not f_ok else "",
+                    "note": warning_step_note(f_ok, f_err),
                 }
             )
             if not f_ok:
                 print(f"Warning: fetch_factions failed ({f_err}). Continuing.")
+                if f_err == SCHEMA_CHANGE_ERROR:
+                    required_failures.append("fetch_factions")
 
             # Required fetch steps (continue on error, but record failure):
             print("\n--- Step 4: Fetch Stenograms API ---")
@@ -235,11 +250,13 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
                     "name": "fetch_agenda",
                     "status": "ok" if ag_ok else "failed",
                     "duration": ag_dur,
-                    "note": "warning only" if not ag_ok else "",
+                    "note": warning_step_note(ag_ok, ag_err),
                 }
             )
             if not ag_ok:
                 print(f"Warning: fetch_agenda failed ({ag_err}). Continuing.")
+                if ag_err == SCHEMA_CHANGE_ERROR:
+                    required_failures.append("fetch_agenda")
 
             # e. verify_pipeline_integrity.py (failure recorded, but continue)
             print("\n--- Step 7: Verify Pipeline Integrity ---")
