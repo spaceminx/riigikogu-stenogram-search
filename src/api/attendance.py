@@ -139,7 +139,13 @@ def get_attendance_stats(
 
         results = query.group_by(member_key).all()
 
-        member_votes = get_member_vote_participation(session, membership=membership, role=role)
+        # Without active_only the attendance rows are limited to the faction, so the votes are too.
+        member_votes = get_member_vote_participation(
+            session,
+            membership=membership,
+            role=role,
+            faction=faction if not active_only else None,
+        )
 
         stats = []
         for member_name, member_uuid, total, present, m_key in results:

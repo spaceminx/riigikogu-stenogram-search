@@ -12,6 +12,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func, literal, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
+from src.api.lru import MISSING, LRUDict
 from src.load.database import SessionLocal
 from src.load.models import (
     AgendaItem,
@@ -41,10 +42,13 @@ def _get_last_sync_at(session) -> str | None:
         return None
 
 
+EXPANSION_CACHE_MAX_SIZE = 50_000
+ACTIVITY_DENOMINATOR_CACHE_MAX_SIZE = 2_048
+
 _EXPANSION_CACHE: dict = {
     "last_sync_at": _UNSET,
-    "expansions": {},
-    "lemma_ids": {},
+    "expansions": LRUDict(EXPANSION_CACHE_MAX_SIZE),
+    "lemma_ids": LRUDict(EXPANSION_CACHE_MAX_SIZE),
     "person_lemmas": None,
 }
 
@@ -82,8 +86,9 @@ def _get_person_lemmas_cached(session) -> set[str]:
 
 def _get_lemma_id_cached(session, lemma_str: str) -> int | None:
     _check_and_update_expansion_sync(session)
-    if lemma_str in _EXPANSION_CACHE["lemma_ids"]:
-        return _EXPANSION_CACHE["lemma_ids"][lemma_str]
+    cached = _EXPANSION_CACHE["lemma_ids"].get(lemma_str, MISSING)
+    if cached is not MISSING:
+        return cached
     row = session.query(Lemma.id).filter(Lemma.lemma == lemma_str).first()
     lem_id = row[0] if row else None
     _EXPANSION_CACHE["lemma_ids"][lemma_str] = lem_id
@@ -92,8 +97,9 @@ def _get_lemma_id_cached(session, lemma_str: str) -> int | None:
 
 def _get_lemma_expansions_cached(session, target_lemma_id: int) -> dict[str, list[str]]:
     _check_and_update_expansion_sync(session)
-    if target_lemma_id in _EXPANSION_CACHE["expansions"]:
-        return _EXPANSION_CACHE["expansions"][target_lemma_id]
+    cached = _EXPANSION_CACHE["expansions"].get(target_lemma_id, MISSING)
+    if cached is not MISSING:
+        return cached
 
     rows = (
         session.query(Lemma.lemma, LemmaLink.kind)
@@ -1064,7 +1070,7 @@ def search_by_keyword(
 
 _ACTIVITY_DENOMINATOR_CACHE: dict = {
     "last_sync_at": _UNSET,
-    "denominators": {},
+    "denominators": LRUDict(ACTIVITY_DENOMINATOR_CACHE_MAX_SIZE),
 }
 
 
@@ -1103,8 +1109,9 @@ def get_activity_denominator(
         bool(exclude_chair),
         speech_category,
     )
-    if cache_key in _ACTIVITY_DENOMINATOR_CACHE["denominators"]:
-        return _ACTIVITY_DENOMINATOR_CACHE["denominators"][cache_key]
+    cached = _ACTIVITY_DENOMINATOR_CACHE["denominators"].get(cache_key, MISSING)
+    if cached is not MISSING:
+        return cached
 
     if interval == "daily":
         date_group = Speech.date

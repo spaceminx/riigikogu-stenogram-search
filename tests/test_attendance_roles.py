@@ -313,3 +313,64 @@ def test_faction_stats_active_only_with_role_skips_members_without_rows():
     by_faction = {f["faction"]: f for f in factions_all}
     assert by_faction["Fraktsiooni mittekuuluvad Riigikogu liikmed"]["member_count"] == 1
     assert by_faction["Fraktsiooni mittekuuluvad Riigikogu liikmed"]["total_sessions"] == 1
+
+
+def test_attendance_stats_faction_filter_applies_to_votes():
+    """With a faction filter, votes count only ballots cast in that faction, like attendance."""
+    session = SessionLocal()
+    try:
+        session.add(
+            Person(
+                uuid="uuid-mati",
+                first_name="Mati",
+                last_name="Mägi",
+                full_name="Mati Mägi",
+                active=0,
+            )
+        )
+        session.add_all(
+            [
+                Attendance(
+                    session_date="2024-05-10T10:00:00",
+                    voting_uuid="chk-1",
+                    member_uuid="uuid-mati",
+                    member_name="Mati Mägi",
+                    faction="Isamaa fraktsioon",
+                    status="KOHAL",
+                ),
+                Attendance(
+                    session_date="2025-03-20T10:00:00",
+                    voting_uuid="chk-3",
+                    member_uuid="uuid-mati",
+                    member_name="Mati Mägi",
+                    faction="Fraktsiooni mittekuuluvad Riigikogu liikmed",
+                    status="KOHAL",
+                ),
+                Vote(
+                    voting_uuid="vote-1",
+                    member_uuid="uuid-mati",
+                    faction="Isamaa fraktsioon",
+                    decision="POOLT",
+                ),
+                Vote(
+                    voting_uuid="vote-2",
+                    member_uuid="uuid-mati",
+                    faction="Fraktsiooni mittekuuluvad Riigikogu liikmed",
+                    decision="VASTU",
+                ),
+            ]
+        )
+        session.commit()
+    finally:
+        session.close()
+    clear_vote_participation_cache()
+
+    stats = get_attendance_stats(membership="15", faction="Isamaa fraktsioon")
+    assert [s["member_name"] for s in stats] == ["Mati Mägi"]
+    assert stats[0]["total_sessions"] == 1
+    assert stats[0]["votes_total"] == 1
+    assert stats[0]["votes_voted"] == 1
+
+    all_stats = {s["member_name"]: s for s in get_attendance_stats(membership="15")}
+    assert all_stats["Mati Mägi"]["total_sessions"] == 2
+    assert all_stats["Mati Mägi"]["votes_total"] == 2
