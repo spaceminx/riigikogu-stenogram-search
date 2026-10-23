@@ -2,6 +2,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.b2_utils import compute_multipart_etag, matches_multipart_etag
 from scripts.download_from_b2 import download_from_b2
 from scripts.upload_to_b2 import upload_to_b2
@@ -494,3 +496,59 @@ def test_upload_to_b2_skips_blocked_files_and_integrity_report(tmp_path, monkeyp
     assert "2025.jsonl" in uploaded_keys
     assert "2026.jsonl" not in uploaded_keys
     assert "integrity_report.json" not in uploaded_keys
+
+
+@pytest.mark.parametrize("b2_changed", [False, True])
+def test_download_from_b2_keeps_local_changes_when_b2_unchanged(tmp_path, monkeypatch, b2_changed):
+    """A local file changed after the last sync is kept if B2 still has the last-synced version."""
+    monkeypatch.setattr("scripts.download_from_b2.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setenv("B2_KEY_ID", "test_key")
+    monkeypatch.setenv("B2_APP_KEY", "test_secret")
+
+    synced_bytes = b'{"day": 21}\n'
+    local_bytes = b'{"day": 21}\n{"day": 22}\n'  # fetched today, upload failed
+    other_bytes = b'{"day": 21}\n{"day": 22, "from": "fallback"}\n'
+    synced_md5 = compute_md5(synced_bytes)
+    remote_bytes = other_bytes if b2_changed else synced_bytes
+    remote_md5 = compute_md5(remote_bytes)
+
+    local_file = tmp_path / "2026.jsonl"
+    local_file.write_bytes(local_bytes)
+    (tmp_path / ".b2_etags.json").write_text(
+        json.dumps({"2026.jsonl": synced_md5}), encoding="utf-8"
+    )
+
+    downloaded = []
+
+    class MockPaginator:
+        def paginate(self, Bucket):
+            return [
+                {
+                    "Contents": [
+                        {"Key": "2026.jsonl", "Size": len(remote_bytes), "ETag": f'"{remote_md5}"'}
+                    ]
+                }
+            ]
+
+    class MockS3Client:
+        def get_paginator(self, operation):
+            return MockPaginator()
+
+        def head_object(self, Bucket, Key):
+            return {"Metadata": {}}
+
+        def download_file(self, bucket, key, dest, **kwargs):
+            downloaded.append(key)
+            Path(dest).write_bytes(remote_bytes)
+
+    monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
+
+    assert download_from_b2(active_year="2026") is True
+    if b2_changed:
+        assert downloaded == ["2026.jsonl"]
+        assert local_file.read_bytes() == other_bytes
+    else:
+        assert downloaded == []
+        assert local_file.read_bytes() == local_bytes
+        etags = json.loads((tmp_path / ".b2_etags.json").read_text(encoding="utf-8"))
+        assert etags["2026.jsonl"] == synced_md5

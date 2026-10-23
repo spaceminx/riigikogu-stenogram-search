@@ -79,6 +79,16 @@ def download_from_b2(
         print(f"Error initializing B2 client: {e}")
         return False
 
+    # ETags from the last successful download/upload, to detect local changes not yet uploaded
+    last_synced_etags: dict[str, str] = {}
+    etags_path = os.path.join(OUTPUT_DIR_PROCESSED, ".b2_etags.json")
+    if os.path.exists(etags_path):
+        try:
+            with open(etags_path, encoding="utf-8") as f:
+                last_synced_etags = json.load(f)
+        except Exception:
+            last_synced_etags = {}
+
     downloaded_count = 0
     downloaded_bytes = 0
     skipped_count = 0
@@ -163,6 +173,17 @@ def download_from_b2(
                                     if is_active
                                     else f"size mismatch without MD5 metadata (local={os.path.getsize(local_path)}, B2={remote_size})"
                                 )
+
+                    # B2 is unchanged since the last sync but the local file differs: these are local
+                    # changes a failed upload did not send. Keep them for the upload step instead of
+                    # replacing them with the older B2 copy.
+                    last_etag = str(last_synced_etags.get(filename) or "").strip('"')
+                    if should_download and last_etag and cleaned_etag == last_etag:
+                        should_download = False
+                        skip_reason = (
+                            "local changes not yet uploaded (B2 unchanged since last sync)"
+                        )
+                        print(f"Keeping local {filename}: {skip_reason}")
 
                 if not should_download:
                     skipped_count += 1
