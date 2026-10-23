@@ -9,7 +9,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import config
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
-from scripts.b2_utils import get_file_md5, matches_multipart_etag
+from scripts.b2_utils import (
+    b2_transfer_config,
+    get_file_md5,
+    make_b2_client,
+    matches_multipart_etag,
+)
 
 try:
     from dotenv import load_dotenv
@@ -70,14 +75,20 @@ def download_from_b2(
     print("Connecting to Backblaze B2...")
 
     try:
-        import boto3
-
-        s3 = boto3.client(
-            "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
-        )
+        s3 = make_b2_client(endpoint, key_id, app_key)
     except Exception as e:
         print(f"Error initializing B2 client: {e}")
         return False
+
+    # ETags from the last successful download/upload, to detect local changes not yet uploaded
+    last_synced_etags: dict[str, str] = {}
+    etags_path = os.path.join(OUTPUT_DIR_PROCESSED, ".b2_etags.json")
+    if os.path.exists(etags_path):
+        try:
+            with open(etags_path, encoding="utf-8") as f:
+                last_synced_etags = json.load(f)
+        except Exception:
+            last_synced_etags = {}
 
     downloaded_count = 0
     downloaded_bytes = 0
@@ -164,6 +175,17 @@ def download_from_b2(
                                     else f"size mismatch without MD5 metadata (local={os.path.getsize(local_path)}, B2={remote_size})"
                                 )
 
+                    # B2 is unchanged since the last sync but the local file differs: these are local
+                    # changes a failed upload did not send. Keep them for the upload step instead of
+                    # replacing them with the older B2 copy.
+                    last_etag = str(last_synced_etags.get(filename) or "").strip('"')
+                    if should_download and last_etag and cleaned_etag == last_etag:
+                        should_download = False
+                        skip_reason = (
+                            "local changes not yet uploaded (B2 unchanged since last sync)"
+                        )
+                        print(f"Keeping local {filename}: {skip_reason}")
+
                 if not should_download:
                     skipped_count += 1
                     if dry_run:
@@ -182,7 +204,7 @@ def download_from_b2(
                     print(
                         f"Downloading {key} from {bucket_name} -> {local_path} ({remote_size} bytes)..."
                     )
-                    s3.download_file(bucket_name, key, tmp_path)
+                    s3.download_file(bucket_name, key, tmp_path, Config=b2_transfer_config())
                     if os.path.exists(tmp_path):
                         os.replace(tmp_path, local_path)
                     print(f"Downloaded: {local_path}")

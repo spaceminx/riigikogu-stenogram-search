@@ -3,6 +3,46 @@ import os
 
 DEFAULT_PART_SIZE = 8 * 1024 * 1024  # 8 MiB
 
+# The server uploads over a home connection: 2026.jsonl timed out with boto3 defaults
+# (10 parallel parts, 60 s read timeout). Fewer parts in flight, a longer socket timeout
+# and adaptive retries per part request.
+B2_CONNECT_TIMEOUT_SECONDS = 20
+B2_READ_TIMEOUT_SECONDS = 300
+B2_MAX_ATTEMPTS = 10
+B2_MAX_CONCURRENCY = 4
+
+
+def make_b2_client(endpoint_url: str, key_id: str, app_key: str):
+    """Create the B2 S3 client with timeouts and retries suited to a slow uplink."""
+    import boto3
+    from botocore.config import Config
+
+    return boto3.client(
+        "s3",
+        endpoint_url=endpoint_url,
+        aws_access_key_id=key_id,
+        aws_secret_access_key=app_key,
+        config=Config(
+            connect_timeout=B2_CONNECT_TIMEOUT_SECONDS,
+            read_timeout=B2_READ_TIMEOUT_SECONDS,
+            retries={"max_attempts": B2_MAX_ATTEMPTS, "mode": "adaptive"},
+        ),
+    )
+
+
+def b2_transfer_config():
+    """Transfer config for upload_file/download_file.
+
+    The part size stays DEFAULT_PART_SIZE so multipart ETags match compute_multipart_etag().
+    """
+    from boto3.s3.transfer import TransferConfig
+
+    return TransferConfig(
+        multipart_threshold=DEFAULT_PART_SIZE,
+        multipart_chunksize=DEFAULT_PART_SIZE,
+        max_concurrency=B2_MAX_CONCURRENCY,
+    )
+
 
 def get_file_md5(file_path: str) -> str:
     """Compute hex MD5 digest of a local file."""
