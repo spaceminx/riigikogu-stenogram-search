@@ -443,3 +443,21 @@ def test_publish_open_data_release_mock_api(tmp_path: Path):
         with pytest.raises(RuntimeError, match="do not match the local files"):
             publish_release(release_dir=release_dir, token="ghp_testtoken", dry_run=False)
         assert mock_urlopen.call_count == 6
+
+
+def test_build_open_data_release_clears_previous_build(sample_sqlite_db: Path, tmp_path: Path):
+    """Rebuilding into a release dir removes old files; other non-empty dirs are refused."""
+    out_dir = tmp_path / "2026-10-22"
+    build_open_data_release(sample_sqlite_db, out_dir, release_date="2026-10-22")
+    (out_dir / "speeches_2019.jsonl.gz").write_bytes(b"stale")
+
+    build_open_data_release(sample_sqlite_db, out_dir, release_date="2026-10-22")
+    assert not (out_dir / "speeches_2019.jsonl.gz").exists()
+    assert (out_dir / "manifest.json").exists()
+
+    other_dir = tmp_path / "not_a_release"
+    other_dir.mkdir()
+    (other_dir / "notes.txt").write_text("keep", encoding="utf-8")
+    with pytest.raises(ValueError, match="not a release"):
+        build_open_data_release(sample_sqlite_db, other_dir, release_date="2026-10-22")
+    assert (other_dir / "notes.txt").exists()

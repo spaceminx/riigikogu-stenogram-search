@@ -748,6 +748,15 @@ def build_open_data_release(
     commit_override: str | None = None,
 ) -> dict[str, Any]:
     """Execute the full open data release build."""
+    if out_dir.exists() and any(out_dir.iterdir()):
+        if not (out_dir / "manifest.json").exists():
+            raise ValueError(
+                f"Refusing to build into a non-empty directory that is not a release: {out_dir}"
+            )
+        # Rebuilding a previous release: remove its files so no stale file gets published.
+        for old_file in out_dir.iterdir():
+            if old_file.is_file():
+                old_file.unlink()
     out_dir.mkdir(parents=True, exist_ok=True)
     date_str = release_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
