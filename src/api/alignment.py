@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func
 from sqlalchemy.orm import aliased
 
+from src.api.lru import MISSING, LRUDict
 from src.api.votings import format_session_source_file, is_technical_voting_clause
 from src.load.models import Person, Speech, SystemMeta, Vote, Voting
 
@@ -19,9 +20,13 @@ logger = logging.getLogger(__name__)
 POSITIONS = {"POOLT", "VASTU", "ERAPOOLETU", "EI_HAALETANUD"}
 EXCLUDED_FACTIONS = {None, "", "Fraktsiooni mittekuuluvad Riigikogu liikmed"}
 
+ALIGNMENT_CACHE_MAX_SIZE = 64
+
+# Each entry holds every ballot of one person; a crawler following the sitemap would
+# otherwise keep all ~280 profiles in memory.
 _ALIGNMENT_CACHE: dict = {
     "last_sync_at": None,
-    "persons": {},  # person_uuid -> dict of computed data
+    "persons": LRUDict(ALIGNMENT_CACHE_MAX_SIZE),  # person_uuid -> dict of computed data
 }
 
 
@@ -242,8 +247,9 @@ def get_cached_person_alignment(session, person_uuid: str) -> dict:
         _ALIGNMENT_CACHE["last_sync_at"] = last_sync
         _ALIGNMENT_CACHE["persons"].clear()
 
-    if person_uuid in _ALIGNMENT_CACHE["persons"]:
-        return _ALIGNMENT_CACHE["persons"][person_uuid]
+    cached = _ALIGNMENT_CACHE["persons"].get(person_uuid, MISSING)
+    if cached is not MISSING:
+        return cached
 
     data = compute_person_alignment(session, person_uuid)
     _ALIGNMENT_CACHE["persons"][person_uuid] = data

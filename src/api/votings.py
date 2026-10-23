@@ -2,6 +2,7 @@
 
 from sqlalchemy import and_, case, func
 
+from src.api.lru import MISSING, LRUDict
 from src.api.roles import role_condition
 from src.load.models import SystemMeta, Vote, Voting
 
@@ -97,10 +98,13 @@ def format_voting_summary(
     }
 
 
+VOTE_PARTICIPATION_CACHE_MAX_SIZE = 256
+
+# Keys include the faction filter from the request, so the caches are bounded.
 _VOTE_PARTICIPATION_CACHE: dict = {
     "last_sync_at": None,
-    "members": {},
-    "factions": {},
+    "members": LRUDict(VOTE_PARTICIPATION_CACHE_MAX_SIZE),
+    "factions": LRUDict(VOTE_PARTICIPATION_CACHE_MAX_SIZE),
 }
 
 
@@ -148,8 +152,9 @@ def get_member_vote_participation(
 
     cache_key_mem, role_filter = _normalize_cache_key(membership, role)
     cache_key = (cache_key_mem, role_filter, faction or None)
-    if cache_key in _VOTE_PARTICIPATION_CACHE["members"]:
-        return _VOTE_PARTICIPATION_CACHE["members"][cache_key]
+    cached = _VOTE_PARTICIPATION_CACHE["members"].get(cache_key, MISSING)
+    if cached is not MISSING:
+        return cached
 
     is_tech_sql = is_technical_voting_clause()
     query = (
@@ -221,8 +226,9 @@ def get_faction_vote_participation(
         _VOTE_PARTICIPATION_CACHE["factions"].clear()
 
     cache_key = _normalize_cache_key(membership, role)
-    if cache_key in _VOTE_PARTICIPATION_CACHE["factions"]:
-        return _VOTE_PARTICIPATION_CACHE["factions"][cache_key]
+    cached = _VOTE_PARTICIPATION_CACHE["factions"].get(cache_key, MISSING)
+    if cached is not MISSING:
+        return cached
 
     cache_key_mem, role_filter = cache_key
     is_tech_sql = is_technical_voting_clause()
