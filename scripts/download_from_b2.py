@@ -30,11 +30,15 @@ except ImportError:
                     os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 
+# Year-independent JSONL files that the daily fetchers rewrite
+DAILY_JSONL_FILES = {"attendance.jsonl", "attendance_checks.jsonl", "agenda_items.jsonl"}
+
+
 def is_active_daily_file(filename: str, active_years: set[str]) -> bool:
     """Return True if the file is part of daily active sync (metadata, attendance, current year)."""
     if filename.endswith(".json"):
         return True
-    if filename == "attendance.jsonl":
+    if filename in DAILY_JSONL_FILES:
         return True
     for y in active_years:
         if filename == f"{y}.jsonl" or filename == f"votes_{y}.jsonl":
