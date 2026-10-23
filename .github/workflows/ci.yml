@@ -13,7 +13,7 @@ permissions:
 jobs:
   backend-test:
     name: Backend Lint, Format & Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout repository
@@ -39,7 +39,7 @@ jobs:
 
   frontend-check:
     name: Frontend Lint, Format & Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
@@ -79,7 +79,7 @@ jobs:
 
   frontend-e2e:
     name: Frontend E2E
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
@@ -133,7 +133,7 @@ jobs:
 
   workflow-lint:
     name: GitHub Actions Workflow Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout repository
