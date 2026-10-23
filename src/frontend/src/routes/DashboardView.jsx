@@ -75,6 +75,7 @@ export function DashboardView({
   const [searchSpeaker, setSearchSpeaker] = useState("");
   const [searchSpeechCategory, setSearchSpeechCategory] = useState("");
   const [searchExcludeChair, setSearchExcludeChair] = useState(false);
+  const [searchExactMatch, setSearchExactMatch] = useState(false);
 
   const recentSessions = dashboardOverview?.sessions || [];
   const overviewSpeakers = dashboardOverview?.speakers || [];
@@ -99,6 +100,7 @@ export function DashboardView({
     if (searchDateRange.endDate) params.set("end_date", searchDateRange.endDate);
     if (searchExcludeChair) params.set("exclude_chair", "true");
     if (searchSpeechCategory) params.set("speech_category", searchSpeechCategory);
+    if (searchExactMatch) params.set("expand", "false");
 
     const qs = params.toString();
     navigate(`/otsing${qs ? `?${qs}` : ""}`);
@@ -111,6 +113,7 @@ export function DashboardView({
     setSearchSpeaker("");
     setSearchSpeechCategory("");
     setSearchExcludeChair(false);
+    setSearchExactMatch(false);
   };
 
   const handleTopicClick = (topic) => {
@@ -162,6 +165,8 @@ export function DashboardView({
           setSearchSpeechCategory={setSearchSpeechCategory}
           searchExcludeChair={searchExcludeChair}
           setSearchExcludeChair={setSearchExcludeChair}
+          searchExactMatch={searchExactMatch}
+          setSearchExactMatch={setSearchExactMatch}
           onResetFilters={handleResetFilters}
         />
       </SearchQueryInput>
