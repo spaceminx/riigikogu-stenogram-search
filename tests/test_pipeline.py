@@ -2966,6 +2966,7 @@ def test_verify_pipeline_integrity_unverified_raises(tmp_path, monkeypatch, fail
         def __init__(self, status_code, payload):
             self.status_code = status_code
             self._payload = payload
+            self.headers = {}
 
         def json(self):
             return self._payload
@@ -2978,6 +2979,41 @@ def test_verify_pipeline_integrity_unverified_raises(tmp_path, monkeypatch, fail
         return MockResp(200, {"error": "maintenance"})
 
     monkeypatch.setattr(requests, "get", mock_get)
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.time.sleep", lambda *args: None)
 
     with pytest.raises(IntegrityUnverifiedError):
         verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)
+
+
+def test_verify_pipeline_integrity_retries_after_429(tmp_path, monkeypatch):
+    """A 429 right after the fetchers is retried (honouring Retry-After) before giving up."""
+    import requests
+
+    from scripts.verify_pipeline_integrity import (
+        IntegrityUnverifiedError,
+        verify_pipeline_integrity,
+    )
+
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    sleeps = []
+    monkeypatch.setattr("scripts.verify_pipeline_integrity.time.sleep", sleeps.append)
+
+    class MockResp:
+        def __init__(self, status_code, headers=None):
+            self.status_code = status_code
+            self.headers = headers or {}
+
+        def json(self):
+            return []
+
+    responses = [MockResp(429, {"Retry-After": "7"}), MockResp(200)]
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: responses.pop(0))
+
+    assert verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)
+    assert sleeps == [7]
+
+    sleeps.clear()
+    responses[:] = [MockResp(429), MockResp(429), MockResp(429)]
+    with pytest.raises(IntegrityUnverifiedError, match="HTTP 429 after 3 attempts"):
+        verify_pipeline_integrity(days=7, fail_on_missing=True, sample_meeting_checks=0)
+    assert sleeps == [15, 30]
