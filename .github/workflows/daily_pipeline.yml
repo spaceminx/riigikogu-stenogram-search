@@ -79,10 +79,16 @@ jobs:
         if: ${{ !cancelled() && steps.download.outcome == 'success' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
-        run: python scripts/verify_pipeline_integrity.py
+        run: |
+          set +e
+          python scripts/verify_pipeline_integrity.py
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit "$rc"
 
+      # Exit code 3 = integrity could not be verified: B2 only gets verified data (as on the server)
       - name: 7. Upload updated data and sync state back to Backblaze B2
-        if: ${{ !cancelled() && steps.download.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.download.outcome == 'success' && steps.integrity.outputs.rc != '3' }}
         env:
           PYTHONPATH: ${{ github.workspace }}
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
