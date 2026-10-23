@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import scripts.daily_pipeline as dp
+from src.load.lock import sync_lock
 
 
 def test_step_order_exactly_a_to_h(tmp_path, monkeypatch):
@@ -53,7 +54,6 @@ def test_lock_held_exits_1_no_step_runs(tmp_path, monkeypatch, capsys):
     db_dir = tmp_path / "db"
     db_dir.mkdir(parents=True, exist_ok=True)
     lock_file = db_dir / ".sync.lock"
-    lock_file.write_text("12345\n2026-10-18T00:00:00Z\n", encoding="utf-8")
 
     monkeypatch.setattr(dp, "DATABASE_DIR", str(db_dir))
     monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
@@ -63,8 +63,11 @@ def test_lock_held_exits_1_no_step_runs(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(dp.subprocess, "run", mock_run)
     monkeypatch.setattr(dp, "sync_database", mock_sync)
 
-    with pytest.raises(SystemExit) as exc_info:
-        dp.run_daily_pipeline()
+    # Another run holds the lock
+    with sync_lock(database_dir=str(db_dir)):
+        with pytest.raises(SystemExit) as exc_info:
+            dp.run_daily_pipeline()
+        assert lock_file.exists()
 
     assert exc_info.value.code == 1
     assert mock_run.call_count == 0
@@ -72,7 +75,6 @@ def test_lock_held_exits_1_no_step_runs(tmp_path, monkeypatch, capsys):
 
     captured = capsys.readouterr()
     assert "Sync already running" in captured.out
-    assert lock_file.exists()
 
 
 def test_download_fails_exits_1_no_fetch_upload_sync(tmp_path, monkeypatch):
