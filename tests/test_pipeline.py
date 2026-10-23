@@ -905,7 +905,7 @@ def test_download_from_b2_active_only(tmp_path, monkeypatch):
         def get_paginator(self, operation_name):
             return MockPaginator()
 
-        def download_file(self, bucket, key, local_path):
+        def download_file(self, bucket, key, local_path, **kwargs):
             downloaded.append(key)
             Path(local_path).write_text("dummy", encoding="utf-8")
 
@@ -958,7 +958,7 @@ def test_download_from_b2_include_all(tmp_path, monkeypatch):
         def head_object(self, Bucket, Key):
             return {"Metadata": {}, "ContentLength": 100}
 
-        def download_file(self, bucket, key, local_path):
+        def download_file(self, bucket, key, local_path, **kwargs):
             downloaded.append(key)
             Path(local_path).write_text("dummy", encoding="utf-8")
 
@@ -1062,7 +1062,7 @@ def test_download_from_b2_default_active_window(tmp_path, monkeypatch):
         def get_paginator(self, operation_name):
             return MockPaginator()
 
-        def download_file(self, bucket, key, local_path):
+        def download_file(self, bucket, key, local_path, **kwargs):
             downloaded.append(key)
             Path(local_path).write_text("dummy", encoding="utf-8")
 
@@ -1825,7 +1825,7 @@ def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
         def get_paginator(self, operation_name):
             return MockPaginatorActive()
 
-        def download_file(self, bucket, key, local_path):
+        def download_file(self, bucket, key, local_path, **kwargs):
             Path(local_path).write_text("active-data", encoding="utf-8")
 
     class MockBoto3Active:
@@ -1884,7 +1884,7 @@ def test_download_from_b2_etag_rules(tmp_path, monkeypatch):
         def head_object(self, Bucket, Key):
             return {"Metadata": {}, "ContentLength": 5}
 
-        def download_file(self, bucket, key, local_path):
+        def download_file(self, bucket, key, local_path, **kwargs):
             Path(local_path).write_bytes(hello_bytes)
 
     class MockBoto3History:

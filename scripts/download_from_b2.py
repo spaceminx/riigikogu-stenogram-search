@@ -9,7 +9,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import config
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
-from scripts.b2_utils import get_file_md5, matches_multipart_etag
+from scripts.b2_utils import (
+    b2_transfer_config,
+    get_file_md5,
+    make_b2_client,
+    matches_multipart_etag,
+)
 
 try:
     from dotenv import load_dotenv
@@ -70,11 +75,7 @@ def download_from_b2(
     print("Connecting to Backblaze B2...")
 
     try:
-        import boto3
-
-        s3 = boto3.client(
-            "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
-        )
+        s3 = make_b2_client(endpoint, key_id, app_key)
     except Exception as e:
         print(f"Error initializing B2 client: {e}")
         return False
@@ -203,7 +204,7 @@ def download_from_b2(
                     print(
                         f"Downloading {key} from {bucket_name} -> {local_path} ({remote_size} bytes)..."
                     )
-                    s3.download_file(bucket_name, key, tmp_path)
+                    s3.download_file(bucket_name, key, tmp_path, Config=b2_transfer_config())
                     if os.path.exists(tmp_path):
                         os.replace(tmp_path, local_path)
                     print(f"Downloaded: {local_path}")

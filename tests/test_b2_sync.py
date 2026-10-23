@@ -65,7 +65,7 @@ def test_upload_to_b2_saves_metadata_md5(tmp_path, monkeypatch):
             raise Exception("NoSuchKey")
 
         # Mock rejects any call without ExtraArgs
-        def upload_file(self, local_path, bucket, remote_key, ExtraArgs):
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs, **kwargs):
             assert ExtraArgs is not None
             assert ExtraArgs.get("Metadata", {}).get("md5") == expected_md5
             uploaded_calls.append({"path": local_path, "key": remote_key, "extra_args": ExtraArgs})
@@ -108,7 +108,7 @@ def test_upload_to_b2_skips_unchanged_file(tmp_path, monkeypatch, capsys):
                 "Metadata": {"md5": local_md5},
             }
 
-        def upload_file(self, local_path, bucket, remote_key, ExtraArgs=None):
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs=None, **kwargs):
             uploaded_calls.append(remote_key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -167,7 +167,7 @@ def test_download_from_b2_skips_same_md5_active_and_historical(tmp_path, monkeyp
         def head_object(self, Bucket, Key):
             return {"Metadata": {}}
 
-        def download_file(self, bucket, key, local_path):
+        def download_file(self, bucket, key, local_path, **kwargs):
             downloaded.append(key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -215,7 +215,7 @@ def test_download_from_b2_downloads_when_md5_differs_same_size(tmp_path, monkeyp
         def head_object(self, Bucket, Key):
             return {"Metadata": {}}
 
-        def download_file(self, bucket, key, tmp_path_arg):
+        def download_file(self, bucket, key, tmp_path_arg, **kwargs):
             downloaded.append(key)
             Path(tmp_path_arg).write_bytes(remote_bytes)
 
@@ -266,7 +266,7 @@ def test_download_from_b2_skips_when_multipart_etag_matches(tmp_path, monkeypatc
             # No md5 metadata
             return {"Metadata": {}, "ContentLength": len(content)}
 
-        def download_file(self, bucket, key, dest):
+        def download_file(self, bucket, key, dest, **kwargs):
             downloaded.append(key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -309,7 +309,7 @@ def test_download_from_b2_missing_metadata_warning_and_fallback(tmp_path, monkey
         def head_object(self, Bucket, Key):
             return {"Metadata": {}, "ContentLength": len(data)}
 
-        def download_file(self, bucket, key, tmp_dest):
+        def download_file(self, bucket, key, tmp_dest, **kwargs):
             downloaded.append(key)
             Path(tmp_dest).write_bytes(data)
 
@@ -355,7 +355,7 @@ def test_download_from_b2_multipart_uses_metadata(tmp_path, monkeypatch):
         def head_object(self, Bucket, Key):
             return {"Metadata": {"md5": data_md5}, "ContentLength": len(data)}
 
-        def download_file(self, bucket, key, dest):
+        def download_file(self, bucket, key, dest, **kwargs):
             downloaded.append(key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -395,7 +395,7 @@ def test_download_from_b2_atomic_failure_cleans_tmp_and_preserves_target(tmp_pat
         def head_object(self, Bucket, Key):
             return {"Metadata": {}}
 
-        def download_file(self, bucket, key, tmp_dest):
+        def download_file(self, bucket, key, tmp_dest, **kwargs):
             Path(tmp_dest).write_bytes(b"corrupt partial bytes")
             raise ConnectionResetError("Connection lost during download")
 
@@ -434,7 +434,7 @@ def test_download_from_b2_dry_run(tmp_path, monkeypatch, capsys):
         def head_object(self, Bucket, Key):
             return {"Metadata": {}}
 
-        def download_file(self, bucket, key, dest):
+        def download_file(self, bucket, key, dest, **kwargs):
             downloaded.append(key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -486,7 +486,7 @@ def test_upload_to_b2_skips_blocked_files_and_integrity_report(tmp_path, monkeyp
         def head_object(self, Bucket, Key):
             raise Exception("NoSuchKey")
 
-        def upload_file(self, local_path, bucket, remote_key, ExtraArgs):
+        def upload_file(self, local_path, bucket, remote_key, ExtraArgs, **kwargs):
             uploaded_keys.append(remote_key)
 
     monkeypatch.setattr("boto3.client", lambda *args, **kwargs: MockS3Client())
@@ -552,3 +552,20 @@ def test_download_from_b2_keeps_local_changes_when_b2_unchanged(tmp_path, monkey
         assert local_file.read_bytes() == local_bytes
         etags = json.loads((tmp_path / ".b2_etags.json").read_text(encoding="utf-8"))
         assert etags["2026.jsonl"] == synced_md5
+
+
+def test_b2_client_and_transfer_config(monkeypatch):
+    """B2 client uses long timeouts and adaptive retries; part size matches the ETag helper."""
+    from scripts.b2_utils import DEFAULT_PART_SIZE, b2_transfer_config, make_b2_client
+
+    captured = {}
+    monkeypatch.setattr("boto3.client", lambda *args, **kwargs: captured.update(kwargs) or object())
+    make_b2_client("https://s3.example.test", "key", "secret")
+    cfg = captured["config"]
+    assert cfg.read_timeout == 300
+    assert cfg.retries == {"max_attempts": 10, "mode": "adaptive"}
+
+    transfer = b2_transfer_config()
+    assert transfer.multipart_chunksize == DEFAULT_PART_SIZE
+    assert transfer.multipart_threshold == DEFAULT_PART_SIZE
+    assert transfer.max_request_concurrency == 4

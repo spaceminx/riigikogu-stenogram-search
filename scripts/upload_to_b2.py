@@ -3,13 +3,11 @@ import json
 import os
 import sys
 
-import boto3
-
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config import B2_BUCKET_NAME, B2_ENDPOINT_URL, OUTPUT_DIR_PROCESSED
-from scripts.b2_utils import get_file_md5
+from scripts.b2_utils import b2_transfer_config, get_file_md5, make_b2_client
 
 try:
     from dotenv import load_dotenv
@@ -37,9 +35,7 @@ def upload_to_b2(
     print("Connecting to Backblaze B2...")
 
     try:
-        s3 = boto3.client(
-            "s3", endpoint_url=endpoint, aws_access_key_id=key_id, aws_secret_access_key=app_key
-        )
+        s3 = make_b2_client(endpoint, key_id, app_key)
     except Exception as e:
         print(f"Error initializing B2 client: {e}")
         return False
@@ -180,7 +176,13 @@ def upload_to_b2(
 
             extra_args = {"Metadata": {"md5": local_md5}}
             print(f"Uploading file to cloud: {local_path} -> {bucket_name}/{remote_key} ...")
-            s3.upload_file(local_path, bucket_name, remote_key, ExtraArgs=extra_args)
+            s3.upload_file(
+                local_path,
+                bucket_name,
+                remote_key,
+                ExtraArgs=extra_args,
+                Config=b2_transfer_config(),
+            )
             uploaded_count += 1
 
             # Fetch fresh ETag after upload and atomically update .b2_etags.json
