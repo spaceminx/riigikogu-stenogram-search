@@ -1,0 +1,54 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { test, expect } from "@playwright/test";
+import { setupApiMock, FIXTURE_IDS } from "./support/api.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const sessionDates = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "fixtures", "session_dates.json"), "utf-8")
+).dates;
+
+test.describe("Dashboard session calendar and search filters", () => {
+  test("session calendar enables session days and opens the selected session", async ({ page }) => {
+    // The calendar opens on the current month, so pin the clock to the fixture session date.
+    await page.clock.setFixedTime(new Date(`${FIXTURE_IDS.date}T12:00:00`));
+    const mock = await setupApiMock(page);
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "Ava kalendrivaade" }).click();
+
+    const calendar = page.getByRole("dialog", { name: "Riigikogu istungite kalender" });
+    const monthPrefix = FIXTURE_IDS.date.slice(0, 7);
+    const expectedDays = sessionDates.filter((d) => d.startsWith(monthPrefix)).length;
+    const sessionDays = calendar.locator(".calendar-day.has-session:not(.is-outside-month)");
+    await expect(sessionDays).toHaveCount(expectedDays);
+    await expect(sessionDays.first()).toBeEnabled();
+
+    await calendar.locator(`[aria-describedby$="-${FIXTURE_IDS.date}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/istung/${FIXTURE_IDS.date}$`));
+    await expect(page.locator(".speeches-view-title").first()).toBeVisible();
+
+    mock.verifyNoErrors();
+  });
+
+  test("exact-match filter on the dashboard is passed to the search", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/");
+    await page.locator("input.search-input").fill("kliima");
+    await page.getByLabel("Ainult täpne sõna (ilma liitsõnadeta)").check();
+    await page.locator("button.search-button").click();
+
+    await expect(page).toHaveURL(/[?&]expand=false/);
+    await expect
+      .poll(() =>
+        mock.interceptedRequests.some(
+          (r) => r.pathname === "/search" && r.queryParams.expand === "false"
+        )
+      )
+      .toBe(true);
+
+    mock.verifyNoErrors();
+  });
+});

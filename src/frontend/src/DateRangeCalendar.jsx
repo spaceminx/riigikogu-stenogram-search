@@ -37,7 +37,10 @@ export default function DateRangeCalendar({
     }
   );
   const plenaryDatesList = plenaryDatesData?.dates;
-  const effectiveDates = useMemo(() => dates ?? plenaryDatesList ?? [], [dates, plenaryDatesList]);
+  const effectiveDates = useMemo(
+    () => (dates && dates.length > 0 ? dates : (plenaryDatesList ?? [])),
+    [dates, plenaryDatesList]
+  );
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const start = fromDateKey(value.startDate);
     const now = new Date();
