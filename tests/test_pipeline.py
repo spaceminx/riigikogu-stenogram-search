@@ -2903,23 +2903,25 @@ def test_sync_database_lock_active_exits_1(tmp_path, monkeypatch, capsys):
     import pytest
 
     import scripts.sync_database as sd
+    from src.load.lock import sync_lock
 
     monkeypatch.setattr(sd, "DATABASE_DIR", str(tmp_path))
     lock_file = tmp_path / ".sync.lock"
-    lock_file.write_text("99999\n2026-10-16T10:00:00\n", encoding="utf-8")
 
-    with pytest.raises(SystemExit) as exc_info:
-        sd.sync_database(skip_download=True)
+    # Another run holds the lock
+    with sync_lock(database_dir=str(tmp_path)):
+        with pytest.raises(SystemExit) as exc_info:
+            sd.sync_database(skip_download=True)
+        assert lock_file.exists()
+        assert str(os.getpid()) in lock_file.read_text(encoding="utf-8")
     assert exc_info.value.code == 1
 
     captured = capsys.readouterr()
     assert "Sync already running" in captured.out
-    assert lock_file.exists()
-    assert "99999" in lock_file.read_text(encoding="utf-8")
 
 
-def test_sync_database_lock_stale_overwritten(tmp_path, monkeypatch, capsys):
-    import time
+def test_sync_database_lock_leftover_file_taken_over(tmp_path, monkeypatch, capsys):
+    """A lock file left by a killed run (no process holds the lock) does not block a new run."""
     from unittest.mock import MagicMock
 
     import scripts.sync_database as sd
@@ -2941,12 +2943,10 @@ def test_sync_database_lock_stale_overwritten(tmp_path, monkeypatch, capsys):
 
     lock_file = tmp_path / ".sync.lock"
     lock_file.write_text("88888\n2026-10-16T00:00:00\n", encoding="utf-8")
-    stale_time = time.time() - 14400
-    os.utime(lock_file, (stale_time, stale_time))
 
     assert sd.sync_database(skip_download=True) is True
     captured = capsys.readouterr()
-    assert "Stale lock file" in captured.out
+    assert "Taking over a leftover lock file (pid 88888)" in captured.out
     assert not lock_file.exists()
 
 

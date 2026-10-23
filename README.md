@@ -300,7 +300,7 @@ When deploying updates with schema or data additions (such as the attendance `me
    No image rebuild or downtime is required.
 
 ### Server Daily Pipeline
-The daily pipeline runs on the server under a single sync lock (`database/.sync.lock`) inside a dedicated, one-off `pipeline` container:
+The daily pipeline runs on the server under a single sync lock (`database/.sync.lock`, a kernel `flock` that is released if the process dies, so a leftover file never blocks the next run) inside a dedicated, one-off `pipeline` container:
 `B2 download → fetch API data → integrity verification → B2 upload → in-process DB sync`.
 
 If the integrity check cannot reach the Riigikogu API, it exits with code 3: the run is marked failed and the B2 upload is skipped (the next run uploads), while the DB sync still runs. An upstream schema change (exit code 2) fails the run in every fetch step, including the otherwise warning-only memberships, factions and agenda steps.

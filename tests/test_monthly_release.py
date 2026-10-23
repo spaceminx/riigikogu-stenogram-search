@@ -13,6 +13,7 @@ from scripts.monthly_release import (
     run_monthly_release,
     select_releases_to_delete,
 )
+from src.load.lock import sync_lock
 
 
 @pytest.fixture
@@ -356,10 +357,6 @@ def test_db_copy_removed_on_exception(sample_sqlite_db: Path, tmp_path: Path, mo
 
 def test_lock_retry_times_out(sample_sqlite_db: Path, tmp_path: Path):
     backup_db = tmp_path / "backup.sqlite"
-    # Create active lock
-    lock_file = sample_sqlite_db.parent / ".sync.lock"
-    lock_file.write_text("12345\n2026-10-22T00:00:00Z\n", encoding="utf-8")
-
     current_time = [1000.0]
 
     def mock_time():
@@ -368,18 +365,20 @@ def test_lock_retry_times_out(sample_sqlite_db: Path, tmp_path: Path):
     def mock_sleep(seconds):
         current_time[0] += seconds
 
+    # Another run holds the lock for the whole test
     with (
+        sync_lock(database_dir=str(sample_sqlite_db.parent)),
         patch("scripts.monthly_release.time.time", side_effect=mock_time),
         patch("scripts.monthly_release.time.sleep", side_effect=mock_sleep) as sleep_spy,
-        pytest.raises(RuntimeError, match="Timed out waiting for sync_lock"),
     ):
-        acquire_backup_with_retry(
-            source_db=sample_sqlite_db,
-            backup_db=backup_db,
-            max_wait_seconds=600,
-            retry_interval_seconds=300,
-        )
-        assert sleep_spy.call_count >= 2
+        with pytest.raises(RuntimeError, match="Timed out waiting for sync_lock"):
+            acquire_backup_with_retry(
+                source_db=sample_sqlite_db,
+                backup_db=backup_db,
+                max_wait_seconds=600,
+                retry_interval_seconds=300,
+            )
+        assert sleep_spy.call_count >= 1
 
 
 def test_person_export_normalizes_sentinel_end_date(
