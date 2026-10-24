@@ -103,11 +103,8 @@
 
 .modal-search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
   padding: 0.6rem 1rem;
-  border-radius: 8px;
   font-size: 0.9rem;
   font-family: inherit;
   outline: none;
@@ -193,10 +190,6 @@
 }
 
 .keyword-highlight {
-  background: rgba(245, 158, 11, 0.25);
-  color: #fef3c7;
-  border-radius: 4px;
   padding: 0.05rem 0.25rem;
-  border: 1px solid rgba(245, 158, 11, 0.45);
   font-weight: 600;
 }
