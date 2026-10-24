@@ -154,6 +154,21 @@ export function SearchView({
 
   const hasSearchQuery = Boolean(queryParam.trim());
 
+  // Filters shared by the search, activity and speakers requests
+  const filterParams = {
+    query: queryParam,
+    membership: membershipParam,
+    faction: factionParam || null,
+    speaker: speakerParam || null,
+    speakerUuid: speakerUuidParam || null,
+    startDate: startDateParam || null,
+    endDate: endDateParam || null,
+    excludeChair: excludeChairParam,
+    speechCategory: speechCategoryParam || null,
+    expand: !exactMatchParam,
+  };
+  const panelDataKey = `${queryParam}|${urlFiltersKey}`;
+
   // Main search effect: triggered only when search parameters change (excluding interval)
   useEffect(() => {
     if (!hasSearchQuery) {
@@ -167,104 +182,23 @@ export function SearchView({
     searchAbortRef.current = abortController;
     const currentRequestId = ++searchRequestIdRef.current;
 
-    const currentActivityRequestId = ++activityRequestIdRef.current;
-    if (activityAbortRef.current) {
-      activityAbortRef.current.abort();
-    }
-
     Promise.resolve().then(() => {
       if (currentRequestId === searchRequestIdRef.current) {
         setLoading(true);
         setError(null);
-        setActivityError(null);
-        setActivityLoading(true);
       }
     });
 
     const offset = (pageParam - 1) * PAGE_SIZE;
-    const currentInterval = searchParams.get("interval") || "monthly";
 
-    Promise.allSettled([
-      fetchSearch(
-        {
-          query: queryParam,
-          limit: PAGE_SIZE,
-          offset,
-          membership: membershipParam,
-          faction: factionParam || null,
-          speaker: speakerParam || null,
-          speakerUuid: speakerUuidParam || null,
-          startDate: startDateParam || null,
-          endDate: endDateParam || null,
-          sortBy: sortParam,
-          excludeChair: excludeChairParam,
-          speechCategory: speechCategoryParam || null,
-          expand: !exactMatchParam,
-        },
-        abortController.signal
-      ),
-      fetchActivity(
-        {
-          query: queryParam,
-          interval: currentInterval,
-          membership: membershipParam,
-          faction: factionParam || null,
-          speaker: speakerParam || null,
-          speakerUuid: speakerUuidParam || null,
-          startDate: startDateParam || null,
-          endDate: endDateParam || null,
-          excludeChair: excludeChairParam,
-          speechCategory: speechCategoryParam || null,
-          expand: !exactMatchParam,
-        },
-        "monthly",
-        abortController.signal
-      ),
-      fetchSpeakers(
-        {
-          query: queryParam,
-          limit: 20,
-          membership: membershipParam,
-          faction: factionParam || null,
-          speaker: speakerParam || null,
-          speakerUuid: speakerUuidParam || null,
-          startDate: startDateParam || null,
-          endDate: endDateParam || null,
-          excludeChair: excludeChairParam,
-          speechCategory: speechCategoryParam || null,
-          expand: !exactMatchParam,
-        },
-        20,
-        abortController.signal
-      ),
-    ])
-      .then(([searchResult, activityResult, speakersResult]) => {
+    fetchSearch(
+      { ...filterParams, limit: PAGE_SIZE, offset, sortBy: sortParam },
+      abortController.signal
+    )
+      .then((searchResult) => {
         if (currentRequestId !== searchRequestIdRef.current) return;
-        if (searchResult.status === "fulfilled") {
-          setSpeeches(searchResult.value.results || []);
-          setTotalCount(searchResult.value.total_count || 0);
-        } else if (searchResult.reason?.name !== "AbortError") {
-          setSpeeches([]);
-          setTotalCount(0);
-          setError(searchResult.reason?.message || "Otsingupäring ebaõnnestus.");
-        }
-
-        if (currentActivityRequestId === activityRequestIdRef.current) {
-          if (activityResult.status === "fulfilled") {
-            setActivity(activityResult.value.activity || []);
-            setActivityError(null);
-          } else if (activityResult.reason?.name !== "AbortError") {
-            setActivity([]);
-            setActivityError(activityResult.reason?.message || "Ajajoone laadimine ebaõnnestus.");
-          }
-          setActivityLoading(false);
-        }
-
-        if (speakersResult.status === "fulfilled") {
-          setSpeakers(speakersResult.value.speakers || []);
-        } else {
-          setSpeakers([]);
-        }
+        setSpeeches(searchResult.results || []);
+        setTotalCount(searchResult.total_count || 0);
         setLoading(false);
       })
       .catch((err) => {
@@ -272,17 +206,14 @@ export function SearchView({
         if (currentRequestId !== searchRequestIdRef.current) return;
         setSpeeches([]);
         setTotalCount(0);
-        setActivity([]);
-        setSpeakers([]);
         setError(err.message || "Otsingupäring ebaõnnestus.");
         setLoading(false);
-        setActivityLoading(false);
       });
 
     return () => {
       abortController.abort();
     };
-    // intervalParam is intentionally omitted: interval changes only re-fetch activity in handleIntervalChange
+    // filterParams is rebuilt every render; its inputs are listed below
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     queryParam,
@@ -299,6 +230,82 @@ export function SearchView({
     exactMatchParam,
     hasSearchQuery,
   ]);
+
+  // The timeline and speaker panels are hidden by default: fetch their data only when shown,
+  // and only again when the query or filters change (not on paging or sorting).
+  const loadedActivityKeyRef = useRef(null);
+  useEffect(() => {
+    if (!hasSearchQuery || !showTimeline || loadedActivityKeyRef.current === panelDataKey) {
+      return;
+    }
+    if (activityAbortRef.current) {
+      activityAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    activityAbortRef.current = abortController;
+    const currentRequestId = ++activityRequestIdRef.current;
+
+    Promise.resolve().then(() => {
+      if (currentRequestId === activityRequestIdRef.current) {
+        setActivityLoading(true);
+        setActivityError(null);
+      }
+    });
+
+    // interval is read here but not a dependency: handleIntervalChange re-fetches on change
+    const currentInterval = searchParams.get("interval") || "monthly";
+    fetchActivity({ ...filterParams, interval: currentInterval }, "monthly", abortController.signal)
+      .then((data) => {
+        if (currentRequestId !== activityRequestIdRef.current) return;
+        setActivity(data.activity || []);
+        setActivityError(null);
+        loadedActivityKeyRef.current = panelDataKey;
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        if (currentRequestId !== activityRequestIdRef.current) return;
+        setActivity([]);
+        setActivityError(err.message || "Ajajoone laadimine ebaõnnestus.");
+      })
+      .finally(() => {
+        if (currentRequestId === activityRequestIdRef.current) {
+          setActivityLoading(false);
+        }
+      });
+
+    return () => {
+      abortController.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelDataKey, showTimeline, hasSearchQuery]);
+
+  const speakersAbortRef = useRef(null);
+  const loadedSpeakersKeyRef = useRef(null);
+  useEffect(() => {
+    if (!hasSearchQuery || !showSpeakers || loadedSpeakersKeyRef.current === panelDataKey) {
+      return;
+    }
+    if (speakersAbortRef.current) {
+      speakersAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    speakersAbortRef.current = abortController;
+
+    fetchSpeakers({ ...filterParams, limit: 20 }, 20, abortController.signal)
+      .then((data) => {
+        setSpeakers(data.speakers || []);
+        loadedSpeakersKeyRef.current = panelDataKey;
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setSpeakers([]);
+      });
+
+    return () => {
+      abortController.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelDataKey, showSpeakers, hasSearchQuery]);
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
@@ -507,7 +514,11 @@ export function SearchView({
             <span className="error-icon">!</span>
             <span>{error}</span>
           </div>
-          <button className="error-dismiss" onClick={() => setError(null)}>
+          <button
+            className="error-dismiss"
+            onClick={() => setError(null)}
+            aria-label="Sulge veateade"
+          >
             &times;
           </button>
         </div>
@@ -590,7 +601,7 @@ export function SearchView({
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Otsin stenogramme...</p>
           </div>
-        ) : currentSpeeches.length === 0 ? (
+        ) : error ? null : currentSpeeches.length === 0 ? (
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Otsingutingimustele vastavaid kõnesid ei leitud.</p>
           </div>

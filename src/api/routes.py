@@ -2006,7 +2006,7 @@ def system_status():
                 ),
                 "attendance": (
                     "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. "
-                    "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; vt /governments); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."
+                    "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; perioodid on avaandmete failis governments.json); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."
                 ),
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",
@@ -2035,6 +2035,20 @@ def system_status():
         session.close()
 
 
+def _agenda_voting_uuids(item) -> list[str]:
+    """Voting UUIDs stored on an agenda item (a list, or a JSON-encoded list)."""
+    if isinstance(item.voting_uuids, list):
+        return item.voting_uuids
+    if item.voting_uuids:
+        try:
+            loaded = json.loads(item.voting_uuids)
+            if isinstance(loaded, list):
+                return loaded
+        except Exception:
+            pass
+    return []
+
+
 @router.get("/drafts/{draft_uuid}")
 def get_draft(draft_uuid: str):
     """Return draft details, including readings and votings."""
@@ -2060,6 +2074,16 @@ def get_draft(draft_uuid: str):
 
         if not agenda_items and not votings:
             raise HTTPException(status_code=404, detail="Eelnõud ei leitud.")
+
+        # Some votings (e.g. a motion to reject) point to a reading document rather than the
+        # draft itself; their agenda items still list them, so merge those in.
+        known_uuids = {v.uuid for v in votings}
+        agenda_only_uuids = {
+            u for item in agenda_items for u in _agenda_voting_uuids(item) if u not in known_uuids
+        }
+        if agenda_only_uuids:
+            votings += session.query(Voting).filter(Voting.uuid.in_(agenda_only_uuids)).all()
+            votings.sort(key=lambda v: (v.sitting_date or "", v.start_time or "", v.uuid))
 
         mark = None
         title = None
@@ -2108,16 +2132,7 @@ def get_draft(draft_uuid: str):
 
         readings = []
         for item in agenda_items:
-            v_uuids = []
-            if isinstance(item.voting_uuids, list):
-                v_uuids = item.voting_uuids
-            elif item.voting_uuids:
-                try:
-                    loaded = json.loads(item.voting_uuids)
-                    if isinstance(loaded, list):
-                        v_uuids = loaded
-                except Exception:
-                    pass
+            v_uuids = _agenda_voting_uuids(item)
 
             count = (
                 speech_counts.get((item.source_file, item.steno_title), 0)

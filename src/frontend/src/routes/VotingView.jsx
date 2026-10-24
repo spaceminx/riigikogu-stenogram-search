@@ -319,6 +319,7 @@ export function VotingView() {
                   <input
                     type="text"
                     className="filter-text-input"
+                    aria-label="Otsi saadiku nime järgi"
                     placeholder="Otsi saadiku nime järgi"
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}

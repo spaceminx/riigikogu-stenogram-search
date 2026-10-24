@@ -618,7 +618,9 @@ html[data-theme="dark"] .sample-chart {
 .speech-card-links {
   display: flex;
   align-items: center;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  min-width: 0;
 }
 
 .speech-video-link {

@@ -31,9 +31,6 @@ export function AttendanceFactionsTable({
         </caption>
         <thead>
           <tr>
-            <th scope="col" className="att-col-rank">
-              #
-            </th>
             <th scope="col" className="att-col-name" aria-sort={getAriaSort("faction")}>
               <button
                 type="button"
@@ -124,7 +121,6 @@ export function AttendanceFactionsTable({
                   className={`faction-row-interactive ${isRowSmall ? "att-row-small-sample" : ""}`}
                   onClick={() => onSelectFaction(stat.faction)}
                 >
-                  <td className="att-col-rank">{idx + 1}</td>
                   <td className="att-col-name">
                     <button
                       type="button"

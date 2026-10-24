@@ -35,7 +35,7 @@ export function Header({
 
   const isVotings = pathname.startsWith("/haaletused") || pathname.startsWith("/haaletus");
   const isAttendance = pathname.startsWith("/kohalolek");
-  const isSearchOrDashboard = !isAttendance && !isVotings;
+  const isSearchOrDashboard = pathname === "/" || pathname.startsWith("/otsing");
 
   return (
     <header className="header">

@@ -525,11 +525,6 @@ select:focus-visible {
   background: #597a9b;
 }
 
-.profile-rank {
-  color: #778597;
-  font-size: 9px;
-}
-
 .members-empty {
   min-height: 110px;
   border-top: 1px solid #e7ebef;

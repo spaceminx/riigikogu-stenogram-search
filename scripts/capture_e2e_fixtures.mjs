@@ -159,7 +159,8 @@ async function main() {
     { name: 'attendance_factions.json', data: attendanceFactions },
     { name: 'speech_detail.json', data: speechDetail },
     { name: 'speech_context.json', data: speechContext },
-    { name: 'person_detail.json', data: personDetail },
+    // E2E fails on any external request, so the photo points to a same-origin image
+    { name: 'person_detail.json', data: { ...personDetail, photo_url: '/favicon.svg' } },
     { name: 'person_stats.json', data: personStats },
     { name: 'person_attendance.json', data: personAttendance },
     { name: 'person_speeches.json', data: personSpeeches },
