@@ -141,13 +141,14 @@ export function AttendanceView({
   const loading = statsLoading || factionsLoading || factionsListLoading || membershipsLoading;
   const error = statsError || factionsError || factionsListError;
 
+  // Alphabetical by default: sorting by participation would read as a ranking
   const [sortConfig, setSortConfig] = useState({
-    key: "votes_voted_pct",
-    direction: "descending",
+    key: "member_name",
+    direction: "ascending",
   });
   const [factionSortConfig, setFactionSortConfig] = useState({
-    key: "votes_voted_pct",
-    direction: "descending",
+    key: "faction",
+    direction: "ascending",
   });
 
   const requestSort = (key) => {

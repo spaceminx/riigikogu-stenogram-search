@@ -26,9 +26,6 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
         </caption>
         <thead>
           <tr>
-            <th scope="col" className="att-col-rank">
-              #
-            </th>
             <th scope="col" className="att-col-name" aria-sort={getAriaSort("member_name")}>
               <button
                 type="button"
@@ -110,7 +107,6 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                   key={stat.member_uuid || idx}
                   className={isRowSmall ? "att-row-small-sample" : ""}
                 >
-                  <td className="att-col-rank">{idx + 1}</td>
                   <td className="att-col-name">
                     {stat.member_uuid ? (
                       <Link

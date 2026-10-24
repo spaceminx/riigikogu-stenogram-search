@@ -249,12 +249,6 @@
   opacity: 1;
 }
 
-.att-col-rank {
-  width: 44px;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
 .att-col-name {
   width: 26%;
   min-width: 170px;
@@ -571,20 +565,6 @@ html[data-theme="dark"] .faction-badge {
   .att-col-registered,
   .att-col-votes {
     display: none !important;
-  }
-
-  /* 1. Rank column ~28 px */
-  th.att-col-rank,
-  td.att-col-rank,
-  .att-col-rank {
-    width: 28px !important;
-    min-width: 28px !important;
-    max-width: 28px !important;
-    padding-left: 0.15rem !important;
-    padding-right: 0.15rem !important;
-    font-size: 0.75rem;
-    text-align: center;
-    box-sizing: border-box;
   }
 
   /* 2. Name column: allow wrapping, remove min-width */
