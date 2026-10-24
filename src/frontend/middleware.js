@@ -10,9 +10,10 @@ export const config = {
   ],
 };
 
-// Known bot user-agent pattern (Facebook, Twitter/X, Slack, LinkedIn, Discord, Telegram, WhatsApp, search engine crawlers)
+// Known bot user-agent pattern: link-preview bots (Facebook, X, Slack, LinkedIn, Discord, Telegram,
+// WhatsApp, Reddit, Mastodon, Bluesky, Embedly/Iframely, Skype, VK) and search engine crawlers
 export const KNOWN_BOT_UA_REGEX =
-  /(facebookexternalhit|Facebot|Twitterbot|Slackbot|LinkedInBot|Discordbot|TelegramBot|WhatsApp|Pinterest|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot)/i;
+  /(facebookexternalhit|Facebot|Twitterbot|Slackbot|LinkedInBot|Discordbot|TelegramBot|WhatsApp|Pinterest|redditbot|Mastodon|Bluesky|Cardyb|Embedly|Iframely|SkypeUriPreview|vkShare|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot)/i;
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -63,10 +64,24 @@ export function injectOpenGraphTags(html, meta) {
   if (tags.length === 0) return html;
 
   const injection = `\n    ${tags.join("\n    ")}`;
-  if (html.includes("</head>")) {
-    return html.replace("</head>", `${injection}\n  </head>`);
+  // Replacement functions, not strings: "$&" or "$'" in API text must stay literal.
+  let out = html;
+  if (meta.title) {
+    out = out.replace(
+      /<title>[\s\S]*?<\/title>/i,
+      () => `<title>${escapeHtml(meta.title)}</title>`
+    );
   }
-  return html + injection;
+  if (meta.description) {
+    out = out.replace(
+      /<meta\s+name="description"[\s\S]*?>/i,
+      () => `<meta name="description" content="${escapeHtml(meta.description)}" />`
+    );
+  }
+  if (out.includes("</head>")) {
+    return out.replace("</head>", () => `${injection}\n  </head>`);
+  }
+  return out + injection;
 }
 
 export function resolveOgMetadata(routeType, id, data) {
@@ -242,8 +257,8 @@ export default async function middleware(request) {
 
     const [indexResp, dataResp] = await Promise.all([indexPromise, dataPromise]);
 
-    // If the API answers 404, serve 404.html with status 404 (and no OG tags)
-    if (dataResp.status === 404) {
+    // If the API answers 404 (or 422 for a malformed id), serve 404.html with status 404
+    if (dataResp.status === 404 || dataResp.status === 422) {
       try {
         const notFoundResp = await fetch(new URL("/404.html", request.url));
         if (notFoundResp.ok) {
