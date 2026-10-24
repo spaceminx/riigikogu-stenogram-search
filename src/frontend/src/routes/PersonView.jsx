@@ -515,6 +515,7 @@ export function PersonView({ theme = "light" }) {
                 <input
                   type="text"
                   className="filter-text-input"
+                  aria-label="Otsi selle saadiku kõnesid"
                   placeholder="Otsi selle saadiku kõnesid…"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}

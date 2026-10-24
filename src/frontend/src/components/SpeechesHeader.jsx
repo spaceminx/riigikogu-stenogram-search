@@ -14,7 +14,9 @@ export function SpeechesHeader({
       <div className="speeches-header-heading">
         <h2 className="speeches-view-title">
           Leitud stenogrammid
-          <span className="results-badge">{totalCount.toLocaleString("et-EE")} tk</span>
+          <span className="results-badge" aria-live="polite">
+            {totalCount.toLocaleString("et-EE")} tk
+          </span>
         </h2>
       </div>
 

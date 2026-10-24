@@ -73,6 +73,7 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
             className="modal-close-icon-btn"
             onClick={onClose}
             title="Sulge aken (ESC)"
+            aria-label="Sulge aken"
           >
             &times;
           </button>

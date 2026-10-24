@@ -87,6 +87,7 @@ export function ContextModal({ activeSpeechContext, onClose, groups = [[]] }) {
             className="modal-close-icon-btn"
             onClick={onClose}
             title="Sulge aken (ESC)"
+            aria-label="Sulge aken"
           >
             &times;
           </button>
@@ -96,6 +97,7 @@ export function ContextModal({ activeSpeechContext, onClose, groups = [[]] }) {
           <input
             type="text"
             className="modal-search-input"
+            aria-label="Otsi sellest istungist"
             placeholder="Otsi sellest istungist (esineja või märksõna)..."
             value={contextSearchTerm}
             onChange={(e) => setContextSearchTerm(e.target.value)}

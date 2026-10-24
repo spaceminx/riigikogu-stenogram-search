@@ -112,6 +112,7 @@ export function SearchFilters({
               className="filter-clear-icon-btn"
               onClick={() => setSearchSpeaker("")}
               title="Tühjenda esineja väli"
+              aria-label="Tühjenda esineja väli"
             >
               &times;
             </button>

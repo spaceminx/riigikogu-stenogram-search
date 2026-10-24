@@ -514,7 +514,11 @@ export function SearchView({
             <span className="error-icon">!</span>
             <span>{error}</span>
           </div>
-          <button className="error-dismiss" onClick={() => setError(null)}>
+          <button
+            className="error-dismiss"
+            onClick={() => setError(null)}
+            aria-label="Sulge veateade"
+          >
             &times;
           </button>
         </div>
