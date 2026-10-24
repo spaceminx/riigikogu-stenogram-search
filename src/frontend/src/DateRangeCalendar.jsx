@@ -326,7 +326,7 @@ export default function DateRangeCalendar({
 
   const rangeLabel = value.startDate
     ? `${formatDate(value.startDate)}${value.endDate ? ` – ${formatDate(value.endDate)}` : " – …"}`
-    : "Vali kuupäevad (Algus – Lõpp)";
+    : "Vali kuupäevad";
 
   return (
     <div className="date-range-picker" ref={rootRef}>

@@ -153,12 +153,14 @@
 .person-search-form {
   margin-top: 0.75rem;
   display: flex;
+  flex: 1 1 320px;
   gap: 0.5rem;
-  max-width: 500px;
+  max-width: 460px;
 }
 
 .person-search-form .filter-text-input {
   flex: 1;
+  min-width: 0;
 }
 
 .person-metrics-grid {

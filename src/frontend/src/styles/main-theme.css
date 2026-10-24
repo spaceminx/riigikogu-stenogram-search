@@ -888,6 +888,11 @@ input.search-input:focus-visible {
   min-width: 0;
 }
 
+/* Same height as the selects next to it, so the labels line up */
+.search-filters-row .date-range-trigger {
+  min-height: 32px;
+}
+
 .filter-input-wrap {
   position: relative;
 }

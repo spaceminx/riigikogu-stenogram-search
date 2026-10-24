@@ -663,8 +663,10 @@ html[data-theme="dark"] .sample-chart {
 }
 
 .agenda-title-text {
+  min-width: 0;
   color: #334155;
   font-weight: 500;
+  overflow-wrap: break-word;
 }
 
 .agenda-draft-link {

@@ -14,7 +14,8 @@ export function Pagination({ currentPage, totalPages, onPageChange, loading = fa
         &larr; Eelmine
       </button>
       <span className="pagination-text">
-        Lehekülg {currentPage} / {totalPages}
+        <span className="pagination-text-label">Lehekülg </span>
+        {currentPage} / {totalPages}
       </span>
       <button
         type="button"

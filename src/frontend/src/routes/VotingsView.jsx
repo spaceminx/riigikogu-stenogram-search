@@ -105,7 +105,7 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
               type="text"
               className="filter-text-input"
               aria-label="Otsi hääletuse või eelnõu nime järgi"
-              placeholder="Otsi hääletuse või eelnõu nime järgi"
+              placeholder="Otsi hääletust või eelnõu"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />

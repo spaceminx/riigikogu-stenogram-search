@@ -36,7 +36,7 @@
 
 .filter-group-item.speaker-filter-item {
   flex: 1;
-  min-width: 200px;
+  min-width: 0;
 }
 
 .filter-input-wrap {
@@ -97,11 +97,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: normal;
   cursor: pointer;
   user-select: none;
 }
 
 .filter-checkbox-label input[type="checkbox"] {
+  flex-shrink: 0;
   cursor: pointer;
   width: 15px;
   height: 15px;
@@ -122,4 +124,34 @@
   background: rgba(239, 68, 68, 0.22);
   border-color: rgba(239, 68, 68, 0.5);
   color: #ffffff;
+}
+
+/* "Näita ajajoont" / "Näita kõnelejaid" above the results */
+.search-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.search-summary-toggle {
+  min-height: 32px;
+  padding: 6px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-summary-toggle:hover {
+  border-color: var(--accent-primary);
+}
+
+.search-summary-toggle.is-active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
