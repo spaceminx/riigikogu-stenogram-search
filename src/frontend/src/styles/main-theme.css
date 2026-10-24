@@ -59,7 +59,7 @@ body {
 }
 
 .brand-copy strong,
-.page-titlebar h1 {
+.page-titlebar .page-title {
   color: #0f172a;
 }
 
@@ -80,7 +80,7 @@ body {
   border-bottom-color: #e2e8f0;
 }
 
-.page-titlebar h1 {
+.page-titlebar .page-title {
   font-size: 23px;
   font-weight: 650;
   letter-spacing: -0.04em;

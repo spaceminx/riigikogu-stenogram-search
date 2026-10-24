@@ -130,7 +130,7 @@ select:focus-visible {
   border-bottom: 1px solid #e0e5eb;
 }
 
-.page-titlebar h1 {
+.page-titlebar .page-title {
   margin: 0 0 8px;
   color: #243b55;
   font-size: 21px;
@@ -760,7 +760,7 @@ select:focus-visible {
     padding-bottom: 8px;
   }
 
-  .page-titlebar h1 {
+  .page-titlebar .page-title {
     margin-bottom: 0;
     font-size: 19px;
   }

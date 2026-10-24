@@ -94,9 +94,15 @@ function PageTitlebar({ memberships = [] }) {
       ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
       : null;
 
+  // Detail views render their own <h1> (person, speech, vote, bill, privacy page), so the
+  // section label here must not be a second one.
+  const viewHasOwnHeading =
+    /^\/(kone|saadik|haaletus|eelnou)\//.test(pathname) || pathname.startsWith("/andmed");
+  const TitleTag = viewHasOwnHeading ? "p" : "h1";
+
   return (
     <div className="page-titlebar">
-      <h1>{title}</h1>
+      <TitleTag className="page-title">{title}</TitleTag>
       <span>Riigikogu stenogrammid{memText ? ` · ${memText}` : ""}</span>
     </div>
   );
