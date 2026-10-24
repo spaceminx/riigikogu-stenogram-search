@@ -14,7 +14,7 @@ export function SpeakersPanel({
       <div className="chart-header">
         <div>
           <span className="section-kicker">ARUTELUDE PÕHJAL</span>
-          <h2 id="members-title">Aktiivseimad kõnelejad</h2>
+          <h2 id="members-title">Kõige rohkem sõnavõtte</h2>
         </div>
         <span className="member-total">{speakers.length || "—"}</span>
       </div>
@@ -61,7 +61,6 @@ export function SpeakersPanel({
                     />
                   </span>
                 </div>
-                <span className="profile-rank">{String(idx + 1).padStart(2, "0")}</span>
               </article>
             );
           })}

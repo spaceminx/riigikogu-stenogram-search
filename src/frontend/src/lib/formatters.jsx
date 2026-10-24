@@ -187,12 +187,6 @@ export function formatFactionName(name) {
   return fallbackMap[clean] || clean;
 }
 
-export function getPercentageColor(percentage) {
-  if (percentage >= 75) return "#10b981"; // green
-  if (percentage >= 50) return "#f59e0b"; // yellow
-  return "#ef4444"; // red
-}
-
 export const SPEECH_TYPE_LABELS = {
   SMALL_SPEECH: "Küsimus/repliik",
   PROCEDURAL: "Protseduuriline",

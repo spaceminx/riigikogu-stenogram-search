@@ -632,13 +632,6 @@ select:focus-visible {
   background: linear-gradient(90deg, #4b9f82, #88dbb9);
 }
 
-.profile-rank {
-  align-self: flex-start;
-  color: #647970;
-  font-size: 9px;
-  font-variant-numeric: tabular-nums;
-}
-
 .members-empty {
   display: grid;
   min-height: 142px;

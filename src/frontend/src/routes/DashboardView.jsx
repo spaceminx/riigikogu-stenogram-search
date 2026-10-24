@@ -171,8 +171,8 @@ export function DashboardView({
         />
       </SearchQueryInput>
 
-      <section className="topic-suggestions" aria-label="Populaarsed otsinguteemad">
-        <span className="topic-suggestions-label">Populaarsed teemad</span>
+      <section className="topic-suggestions" aria-label="Näiteteemad otsinguks">
+        <span className="topic-suggestions-label">Näiteteemad</span>
         {["Kaitsekulud", "Riigieelarve", "Maksupoliitika", "Õpetajate palgad", "Energeetika"].map(
           (topic) => (
             <button
