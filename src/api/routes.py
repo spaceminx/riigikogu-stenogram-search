@@ -2020,6 +2020,20 @@ def system_status():
         session.close()
 
 
+def _agenda_voting_uuids(item) -> list[str]:
+    """Voting UUIDs stored on an agenda item (a list, or a JSON-encoded list)."""
+    if isinstance(item.voting_uuids, list):
+        return item.voting_uuids
+    if item.voting_uuids:
+        try:
+            loaded = json.loads(item.voting_uuids)
+            if isinstance(loaded, list):
+                return loaded
+        except Exception:
+            pass
+    return []
+
+
 @router.get("/drafts/{draft_uuid}")
 def get_draft(draft_uuid: str):
     """Return draft details, including readings and votings."""
@@ -2045,6 +2059,16 @@ def get_draft(draft_uuid: str):
 
         if not agenda_items and not votings:
             raise HTTPException(status_code=404, detail="Eelnõud ei leitud.")
+
+        # Some votings (e.g. a motion to reject) point to a reading document rather than the
+        # draft itself; their agenda items still list them, so merge those in.
+        known_uuids = {v.uuid for v in votings}
+        agenda_only_uuids = {
+            u for item in agenda_items for u in _agenda_voting_uuids(item) if u not in known_uuids
+        }
+        if agenda_only_uuids:
+            votings += session.query(Voting).filter(Voting.uuid.in_(agenda_only_uuids)).all()
+            votings.sort(key=lambda v: (v.sitting_date or "", v.start_time or "", v.uuid))
 
         mark = None
         title = None
@@ -2093,16 +2117,7 @@ def get_draft(draft_uuid: str):
 
         readings = []
         for item in agenda_items:
-            v_uuids = []
-            if isinstance(item.voting_uuids, list):
-                v_uuids = item.voting_uuids
-            elif item.voting_uuids:
-                try:
-                    loaded = json.loads(item.voting_uuids)
-                    if isinstance(loaded, list):
-                        v_uuids = loaded
-                except Exception:
-                    pass
+            v_uuids = _agenda_voting_uuids(item)
 
             count = (
                 speech_counts.get((item.source_file, item.steno_title), 0)
