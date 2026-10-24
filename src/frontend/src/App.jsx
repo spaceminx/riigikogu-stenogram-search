@@ -12,6 +12,7 @@ import {
 import useSWR from "swr";
 import { fetchMemberships, fetchSystemStatus } from "./lib/api";
 import { toRoman } from "./lib/formatters";
+import { visibleMemberships } from "./lib/calendarUtils";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -157,12 +158,7 @@ function AppContent() {
     }
   );
 
-  const memberships = useMemo(() => {
-    if (Array.isArray(membershipsData) && membershipsData.length > 0) {
-      return membershipsData.filter((m) => m.number >= 14);
-    }
-    return [];
-  }, [membershipsData]);
+  const memberships = useMemo(() => visibleMemberships(membershipsData), [membershipsData]);
 
   return (
     <div className="app-container">

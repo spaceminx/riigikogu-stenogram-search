@@ -734,7 +734,7 @@ Istungite päevakorrapunktid ja seosed seaduseelnõudega.
 - `match_method` (string | null): Tuvastusmeetod.
 
 ### 8. `memberships.json`
-Riigikogu koosseisude algus- ja lõpukuupäevad.
+Riigikogu koosseisude algus- ja lõpukuupäevad. `endDate` on volituste lõpp (järgmise koosseisu kokkuastumisele eelnev päev); kehtival koosseisul on see `2099-12-31`. `sessionEndDate` on viimase korralise istungjärgu lõpp.
 
 ### 9. `governments.json`
 Vabariigi Valitsuste koosseisude ja koalitsioonierakondade ametlikud perioodid.
