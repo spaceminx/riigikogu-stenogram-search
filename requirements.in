@@ -1,4 +1,4 @@
-# Direct runtime dependencies. requirements.txt is the generated lock; see README "Updating dependencies".
+# Direct runtime dependencies. requirements.txt is the generated lock; see docs/development.md "Updating Python Dependencies".
 fastapi>=0.153.0
 pydantic>=2.14.1
 requests>=2.34.2
