@@ -3,6 +3,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -49,7 +50,8 @@ async def request_validation_exception_handler(request: Request, exc: RequestVal
             elif "msg" in first_err:
                 msg = first_err["msg"]
         return PlainTextResponse(content=msg, status_code=422)
-    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+    # jsonable_encoder: custom validators put the raised exception into the error's ctx
+    return JSONResponse(status_code=422, content={"detail": jsonable_encoder(exc.errors())})
 
 
 @app.exception_handler(HTTPException)
