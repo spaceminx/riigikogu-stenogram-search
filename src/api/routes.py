@@ -5,9 +5,11 @@ import logging
 import os
 import time
 from datetime import date, datetime, timezone
+from typing import Annotated
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
+from pydantic import AfterValidator
 from sqlalchemy import and_, case, exists, func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
@@ -64,6 +66,25 @@ from src.load.models import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
+
+
+def _validate_iso_date(value: str | None) -> str | None:
+    """Reject well-formed but impossible dates such as 2024-13-99."""
+    if value is not None:
+        date.fromisoformat(value)
+    return value
+
+
+def iso_date_query(description: str | None = None):
+    """Optional YYYY-MM-DD query parameter that must also be a real calendar date."""
+    return Annotated[
+        str | None,
+        Query(description=description, pattern=DATE_PATTERN),
+        AfterValidator(_validate_iso_date),
+    ]
+
 
 MAX_SQLITE_INT = 2**63 - 1
 MIN_SQLITE_INT = -(2**63)
@@ -229,7 +250,7 @@ def attendance_stats(
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
-            detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud. Käivita scripts/fetch_attendance.py või scripts/build_full_database.py.",
+            detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
         logger.error("Attendance stats query failed: %s", e, exc_info=True)
@@ -266,7 +287,7 @@ def attendance_factions(
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
-            detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud. Käivita scripts/fetch_attendance.py või scripts/build_full_database.py.",
+            detail="Andmebaas või kohalolekutabel ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
         logger.error("Faction attendance stats query failed: %s", e, exc_info=True)
@@ -334,12 +355,8 @@ def search(
     faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
     speaker: str | None = Query(None, description="Filtreeri esineja nime järgi"),
     speaker_uuid: str | None = Query(None, description="Filtreeri esineja UUID järgi"),
-    start_date: str | None = Query(
-        None, description="Alguskuupäev (YYYY-MM-DD)", pattern=r"^\d{4}-\d{2}-\d{2}$"
-    ),
-    end_date: str | None = Query(
-        None, description="Lõppkuupäev (YYYY-MM-DD)", pattern=r"^\d{4}-\d{2}-\d{2}$"
-    ),
+    start_date: iso_date_query("Alguskuupäev (YYYY-MM-DD)") = None,
+    end_date: iso_date_query("Lõppkuupäev (YYYY-MM-DD)") = None,
     sort_by: str = Query(
         "date_desc",
         description="Sorteerimine: date_desc (uuemad enne), date_asc (vanemad enne), match_count_desc (sagedus)",
@@ -394,7 +411,7 @@ def search(
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
-            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud. Käivita scripts/build_full_database.py.",
+            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
         logger.error("Search query failed for %r: %s", q, e, exc_info=True)
@@ -412,8 +429,8 @@ def search_activity(
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
     speaker_uuid: str | None = Query(None, description="Filtreeri esineja UUID järgi"),
-    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    start_date: iso_date_query() = None,
+    end_date: iso_date_query() = None,
     exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
     speech_category: str | None = Query(
         None,
@@ -462,7 +479,7 @@ def search_activity(
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
-            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud. Käivita scripts/build_full_database.py.",
+            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
         logger.error("Search activity query failed for %r: %s", q, e, exc_info=True)
@@ -480,8 +497,8 @@ def search_speakers(
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
     speaker_uuid: str | None = Query(None, description="Filtreeri esineja UUID järgi"),
-    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    start_date: iso_date_query() = None,
+    end_date: iso_date_query() = None,
     exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
     speech_category: str | None = Query(
         None,
@@ -524,7 +541,7 @@ def search_speakers(
     except OperationalError as e:
         raise HTTPException(
             status_code=503,
-            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud. Käivita scripts/build_full_database.py.",
+            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud.",
         ) from e
     except SQLAlchemyError as e:
         logger.error("Search speakers query failed for %r: %s", q, e, exc_info=True)
@@ -537,7 +554,9 @@ def search_speakers(
 @router.get("/speeches/{speech_id}/context")
 def speech_context(
     speech_id: int,
-    q: str | None = Query(None, description="Otsingupäring lemmade esiletõstmiseks"),
+    q: str | None = Query(
+        None, max_length=1000, description="Otsingupäring lemmade esiletõstmiseks"
+    ),
     expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
 ):
     q = sanitize_query(q)
@@ -579,8 +598,8 @@ def search_export(
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
     speaker_uuid: str | None = Query(None, description="Filtreeri esineja UUID järgi"),
-    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    start_date: iso_date_query() = None,
+    end_date: iso_date_query() = None,
     sort_by: str = Query("date_desc", pattern="^(date_desc|date_asc|match_count_desc)$"),
     limit: int = Query(2000, ge=1, le=5000),
     exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
@@ -722,7 +741,7 @@ def search_export(
 
 @router.get("/persons")
 def list_persons(
-    search: str | None = Query(None, description="Otsi nime järgi"),
+    search: str | None = Query(None, max_length=100, description="Otsi nime järgi"),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0, le=1_000_000),
@@ -1062,8 +1081,8 @@ def get_person_speeches(
         description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural, unclassified, all)",
         pattern=r"^(speeches|questions|procedural|unclassified|all)$",
     ),
-    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    start_date: iso_date_query() = None,
+    end_date: iso_date_query() = None,
 ):
     """Return paginated speeches for a specific person by UUID with role and category filters."""
     session = SessionLocal()
@@ -1594,15 +1613,11 @@ def get_speech_by_id(speech_identifier: str):
 
 @router.get("/votings")
 def list_votings(
-    start_date: str | None = None,
-    end_date: str | None = None,
-    sitting_date: str | None = Query(
-        None,
-        description="Filtreeri istungi kuupäeva järgi (YYYY-MM-DD)",
-        pattern=r"^\d{4}-\d{2}-\d{2}$",
-    ),
+    start_date: iso_date_query("Alguskuupäev (YYYY-MM-DD)") = None,
+    end_date: iso_date_query("Lõppkuupäev (YYYY-MM-DD)") = None,
+    sitting_date: iso_date_query("Filtreeri istungi kuupäeva järgi (YYYY-MM-DD)") = None,
     membership: str | None = None,
-    q: str | None = None,
+    q: str | None = Query(None, max_length=200),
     document_uuid: str | None = None,
     type: str | None = Query(
         None,
@@ -2170,7 +2185,7 @@ def get_draft(draft_uuid: str):
 def get_draft_speeches(
     draft_uuid: str,
     limit: int = Query(50, ge=1, le=100, description="Tulemuste limiit (vaikimisi 50)"),
-    offset: int = Query(0, ge=0, description="Tulemuste nihe (vaikimisi 0)"),
+    offset: int = Query(0, ge=0, le=1_000_000, description="Tulemuste nihe (vaikimisi 0)"),
     agenda_item_uuid: str | None = Query(
         None, description="Filtreeri konkreetse päevakorrapunkti järgi"
     ),
@@ -2394,8 +2409,8 @@ def get_rss_search(
     faction: str | None = Query(None),
     speaker: str | None = Query(None),
     speaker_uuid: str | None = Query(None),
-    start_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
-    end_date: str | None = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    start_date: iso_date_query() = None,
+    end_date: iso_date_query() = None,
     exclude_chair: bool = Query(False),
     speech_category: str | None = Query(
         None,

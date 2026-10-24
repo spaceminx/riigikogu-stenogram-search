@@ -26,6 +26,16 @@ describe("Open Graph middleware helpers", () => {
         true
       );
       assert.strictEqual(isBotUserAgent("TelegramBot (like TwitterBot)"), true);
+      assert.strictEqual(
+        isBotUserAgent("Mozilla/5.0 (compatible; redditbot/1.0; +http://www.reddit.com/feedback)"),
+        true
+      );
+      assert.strictEqual(
+        isBotUserAgent("http.rb/5.1.1 (Mastodon/4.3.0; +https://mstdn.ee/)"),
+        true
+      );
+      assert.strictEqual(isBotUserAgent("Mozilla/5.0 (compatible; Bluesky Cardyb/1.1)"), true);
+      assert.strictEqual(isBotUserAgent("Mozilla/5.0 (compatible; Embedly/0.2)"), true);
     });
 
     it("rejects normal browser user agents", () => {
@@ -172,6 +182,35 @@ describe("Open Graph middleware helpers", () => {
       assert.ok(out.includes("&quot;jutumärkidega&quot;"));
       assert.ok(!out.includes('<meta property="og:image"'));
     });
+
+    it("keeps $ replacement patterns in API text literal", () => {
+      const out = injectOpenGraphTags(baseHtml, {
+        title: "Hind $& ja $' — Riigivaade",
+        description: "Kulu 5$` eurot",
+      });
+      assert.ok(out.includes('content="Hind $&amp; ja $&#39; — Riigivaade"'));
+      assert.ok(out.includes('content="Kulu 5$` eurot"'));
+      assert.strictEqual(out.match(/<\/head>/g).length, 1);
+      assert.ok(out.endsWith("</html>"));
+    });
+
+    it("replaces the page title and description for previews", () => {
+      const html = `<!doctype html><html><head>
+    <meta
+      name="description"
+      content="Üldine kirjeldus"
+    />
+    <title>Riigivaade — üldine</title>
+  </head><body></body></html>`;
+      const out = injectOpenGraphTags(html, {
+        title: "Kaja Kallas — Riigivaade",
+        description: "Kaja Kallase profiil",
+      });
+      assert.ok(out.includes("<title>Kaja Kallas — Riigivaade</title>"));
+      assert.ok(out.includes('<meta name="description" content="Kaja Kallase profiil" />'));
+      assert.ok(!out.includes("Üldine kirjeldus"));
+      assert.ok(!out.includes("Riigivaade — üldine"));
+    });
   });
 
   describe("middleware execution", () => {
@@ -247,6 +286,33 @@ describe("Open Graph middleware helpers", () => {
         assert.ok(body.includes("Page not found"));
         // Ensure no OG tags were injected into 404 response
         assert.ok(!body.includes('property="og:title"'));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("returns 404 when the API rejects a malformed id with 422", async () => {
+      globalThis.fetch = async (url) => {
+        const urlStr = String(url);
+        if (urlStr.includes("/index.html")) {
+          return new Response("<html><head></head><body></body></html>", { status: 200 });
+        }
+        if (urlStr.includes("/speeches/abc")) {
+          return new Response(JSON.stringify({ detail: [] }), { status: 422 });
+        }
+        if (urlStr.includes("/404.html")) {
+          return new Response("<html><body>Page not found</body></html>", { status: 200 });
+        }
+        throw new Error(`Unexpected fetch: ${urlStr}`);
+      };
+
+      try {
+        const req = new Request("https://www.riigivaade.me/kone/abc", {
+          headers: { "user-agent": "Twitterbot/1.0" },
+        });
+        const resp = await middleware(req);
+        assert.strictEqual(resp.status, 404);
+        assert.ok((await resp.text()).includes("Page not found"));
       } finally {
         globalThis.fetch = originalFetch;
       }
