@@ -46,7 +46,7 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 
 ### Prerequisites
 - Python 3.10+ (Python 3.13 recommended)
-- Node.js 20+ & npm
+- Node.js 24 & npm
 - Docker (optional, for containerized run)
 
 ### 1. Clone the repository
@@ -65,169 +65,15 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Build / Initialize the Database
+### 3. Build the Database
 Build the full SQLite database (downloads data from B2, lemmatizes speeches with multiprocessing, builds term indexes):
 ```bash
 python scripts/build_full_database.py
 ```
 
-*Note on historical data updates:*
-The server daily pipeline (`daily_pipeline.py` via cron) only downloads data for active years from B2 (the current year, plus the previous year as long as it falls within the 60-day window until around March 1st) and only updates new or unedited sessions. If historical data from previous years is backfilled or modified, `build_full_database.py` will skip already existing sessions in the database. To apply historical updates, you must build a new database file, stop the API, swap the file, and check for WAL temporary files:
-```bash
-docker compose run --rm pipeline python scripts/download_from_b2.py --all
+Rebuilding the production database, history backfills and repair scripts are described in [docs/data-maintenance.md](docs/data-maintenance.md).
 
-# 1. Build the new database in the pipeline container (where B2 credentials live)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite pipeline python scripts/build_full_database.py
-
-# 2. Stop the API and clean up old WAL temporary files
-docker compose stop backend
-rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
-
-# 3. Ensure the new database file also doesn't have an orphaned .sqlite-wal next to it
-if [ -f database/riigikogu_new.sqlite-wal ]; then echo "ERROR: New database WAL file exists, data is not fully committed!"; exit 1; fi
-
-# 4. Swap the database file and restart
-mv database/riigikogu_new.sqlite database/riigikogu.sqlite
-docker compose start backend
-```
-
-### 4. Historical Data Backfill (`backfill_history.py`)
-To backfill rich metadata (`external_id`, `ems_id`, `speech_type`, `start_time`, `end_time`, `duration_seconds`) for historical sessions (2019–2026):
-1. Download all historical dataset files from B2:
-   ```bash
-   python scripts/download_from_b2.py --all
-   ```
-2. Run a dry run for a specific year to inspect changes and the summary report:
-   ```bash
-   python scripts/backfill_history.py --year 2021 --dry-run
-   ```
-3. Run the backfill year by year with `--upload`, or run backfill first and upload separately:
-   ```bash
-   python scripts/backfill_history.py --year 2021 --upload
-   # or run backfill first, then upload separately:
-   # python scripts/backfill_history.py --year 2021
-   # python scripts/backfill_history.py --upload-only --year 2021
-   ```
-4. On the server: rebuild the database following the instructions above under "3. Build / Initialize the Database" -> "Note on historical data updates" (build new file with `DATABASE_URL` in container, `docker compose stop backend`, verify WAL, `mv`, `docker compose start backend`).
-
-> [!NOTE]
-> The default end date (today minus `UNEDITED_REFETCH_DAYS`) skips recently edited sessions that old code already saved as edited (e.g. September 2026). The daily pipeline will also not touch them. To backfill these recent sessions, run explicitly:
-> ```bash
-> python scripts/backfill_history.py --start-date 2026-09-01 --end-date <today> --upload
-> ```
-> The current year dataset file in B2 is protected against concurrency conflicts by ETag validation.
-
-### Historical Voting Data Initial Load (One-Off)
-
-Initial loading of voting history (2019 to present) is performed on the server inside container services.
-
-Exact sequence:
-1. Load 2019 votings (from the start of the 14th Riigikogu on 2019-04-01) and upload to Backblaze B2:
-   ```bash
-   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
-   ```
-2. Load years 2020–2025 in a yearly loop and upload to B2:
-   ```bash
-   for y in {2020..2025}; do
-     docker compose run --rm pipeline python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
-   done
-   ```
-3. Load current 2026 votings and upload to B2:
-   ```bash
-   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2026-01-01 --upload
-   ```
-4. Load all votings into the server SQLite database:
-   ```bash
-   docker compose exec backend python scripts/load_votes.py
-   ```
-5. Verification:
-   ```bash
-   curl http://127.0.0.1:8000/system/status
-   # votings = 3621 + added after Oct 13
-
-   curl "http://127.0.0.1:8000/votings?start_date=2026-09-29&end_date=2026-09-29"
-   ```
-
-> [!NOTE]
-> **Important deployment notes:**
-> - Until step 3 is completed, the daily pipeline only fetches the last 14 days.
-> - **Execution timing:** Years 2019–2025 can be run at any time, as the server daily pipeline only downloads active-year files and does not overwrite older votes files in B2. Only the 2026 run (step 3) must not run around 07:00 server local time (when the server daily pipeline runs).
-> - **Fault tolerance:** The script saves checkpoints every 25 votes and handles interruptions (Ctrl-C / SIGTERM). If any year exits with code 1 (e.g. temporary API network error), re-run the command for that year — already saved votes are skipped and loading resumes from where it left off.
-> - **Estimated runtimes by year** (~5.1 s per vote):
->   - 2019: 172 votes → ~15 min
->   - 2020: 356 votes → ~30 min
->   - 2021: 533 votes → ~45 min
->   - 2022: 718 votes → ~61 min
->   - 2023: 436 votes → ~37 min
->   - 2024: 692 votes → ~59 min
->   - 2025: 402 votes → ~34 min
->   - 2026: 312 votes → ~27 min
-
-### 5. Maintenance & UUID Repair
-
-To resolve and maintain canonical member UUIDs across speeches and attendance records:
-
-#### Speaker UUIDs (`repair_speaker_uuids.py`)
-Resolves MP UUIDs across speeches in historical JSONL datasets and the SQLite database:
-1. Ensure all historical datasets are downloaded locally:
-   ```bash
-   python scripts/download_from_b2.py --all
-   ```
-2. Run a dry run to inspect changes without modifying files:
-   ```bash
-   python scripts/repair_speaker_uuids.py --dry-run
-   ```
-3. Apply repairs to JSONL files, upload updated datasets to B2, and sync database:
-   ```bash
-   python scripts/repair_speaker_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-
-#### Attendance UUIDs (`repair_attendance_uuids.py`)
-Populates `member_uuid` across historical attendance records (`data/processed/attendance.jsonl`) and the SQLite `attendance` table:
-1. Run a dry run to inspect mapping statistics without modifying files:
-   ```bash
-   python scripts/repair_attendance_uuids.py --dry-run
-   ```
-2. Apply changes locally, upload updated `attendance.jsonl` to Backblaze B2, and migrate the database:
-   ```bash
-   python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-   *Note:* The schema migration (`apply_migrations()`) runs automatically and idempotently on table initialization, adding column `member_uuid TEXT` and ensuring indexes if they do not yet exist.
-
-#### Ignored Sessions Removal (`remove_ignored_sessions.py`)
-Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` covering the night of 2021-03-24) from yearly JSONL datasets and the SQLite database:
-1. Download target year dataset from Backblaze B2:
-   ```bash
-   docker compose run --rm pipeline python scripts/download_from_b2.py --year 2021
-   ```
-2. Inspect rows to be removed (dry run, expected 79 speeches):
-   ```bash
-   docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021
-   ```
-3. Apply changes, upload updated dataset to Backblaze B2, and delete database records:
-   ```bash
-   docker compose run --rm pipeline python scripts/remove_ignored_sessions.py --year 2021 --apply
-   ```
-
-#### Backblaze B2 Content-Based Synchronization (`download_from_b2.py`, `upload_to_b2.py`)
-Dataset synchronization between local storage and Backblaze B2 uses content MD5 digests rather than file size:
-- **Content Matching (MD5):**
-  - Before uploading, `upload_to_b2.py` calculates local hex MD5 digests and attaches them as object metadata (`Metadata={"md5": "<hex>"}`). If remote metadata already matches the local file MD5, the upload is skipped ("muutmata, jätan vahele").
-  - On download (`download_from_b2.py`), single-part objects use the ETag as MD5 digest, while multipart objects retrieve MD5 from object metadata via `head_object` (without consuming download quota).
-  - If MD5 matches locally, the download is skipped (both for active and historical files), and remote ETags are recorded in `.b2_etags.json`.
-  - If MD5 differs, the file is downloaded even when local and remote file sizes are identical (e.g. replacing UUIDs of identical string length).
-  - If a legacy remote object lacks MD5 metadata, historical files fall back to size-based comparison with a logged warning, and active files are downloaded.
-- **Atomic Downloads:** Files are streamed to a temporary file (`<filename>.tmp.<pid>`) in the target directory and atomically moved via `os.replace` on completion, preventing corrupt partial files if a download is interrupted.
-- **Bandwidth Tracking & Dry Run:**
-  - Every run reports total downloaded file count and byte volume to monitor the 1 GB daily egress limit.
-  - Inspect sync decisions and byte volume without downloading:
-    ```bash
-    python scripts/download_from_b2.py --dry-run
-    # Inspect all historical files:
-    python scripts/download_from_b2.py --all --dry-run
-    ```
-
-### 6. Start the FastAPI Backend Server
+### 4. Start the FastAPI Backend Server
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
@@ -235,35 +81,9 @@ API documentation is available at:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 
-#### Key API Endpoints
-- **Search & Analytics:**
-  - `GET /search?q={query}` — Full-text keyword search across speeches (filters: `speaker_uuid`, `membership`, `faction`, `start_date`, `end_date`, `exclude_chair`, `speech_category`).
-  - `GET /search/activity?q={query}` — Keyword frequency grouped by day, week, or month (supports `speaker_uuid`).
-  - `GET /search/speakers?q={query}` — Most active speakers for a topic (supports `speaker_uuid`).
-  - `GET /search/export?q={query}&format={csv|json}` — Export search results in CSV or JSON (supports `speaker_uuid`; includes CC BY-SA 3.0 license metadata and `X-License` header).
-- **MP Profiles & Statistics:**
-  - `GET /persons` — List parliament members with optional name search and active status filter.
-  - `GET /persons/{uuid}` — Individual MP profile, metadata, and faction history.
-  - `GET /persons/{uuid}/stats` — Activity breakdown, speech durations, and counts by term and year.
-  - `GET /persons/{uuid}/speeches` — Speeches by MP with pagination and `role_class` filter (`all`, `mp`, `chair`, `minister`, `candidate`, `director`, `other`).
-  - `GET /persons/{uuid}/attendance` — MP attendance statistics and voting breakdown.
-  - `GET /persons/{uuid}/votes` — Voting history for an individual MP.
-- **Attendance & Factions:**
-  - `GET /attendance/stats` — Attendance statistics aggregated by member.
-  - `GET /attendance/factions` — Attendance statistics aggregated by faction.
-  - `GET /attendance/factions/list` — Distinct faction names for a parliamentary term.
-- **Transcripts, Sessions & Voting:**
-  - `GET /speeches/{id}` and `GET /speeches/{id}/context` — Specific speech and session context.
-  - `GET /speeches/by-external-id/{id}` — Retrieve speech by Riigikogu verbatim external ID.
-  - `GET /sessions/dates` — Dates with recorded parliamentary sessions.
-  - `GET /sessions/{date}` — Speeches and agenda items for a specific date session.
-  - `GET /votings` — List parliamentary votings with filters.
-  - `GET /votings/{uuid}` — Specific voting details and individual member votes.
-- **System Info & Overview:**
-  - `GET /overview` — Platform summary metrics, active MPs, and recent speech count.
-  - `GET /system/status` and `GET /memberships` — System health, data bounds, and parliamentary memberships.
+Key endpoints are listed in [docs/api.md](docs/api.md).
 
-### 7. Frontend Setup & Run
+### 5. Frontend Setup & Run
 In a separate terminal:
 ```bash
 cd src/frontend
@@ -274,120 +94,13 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## Deployment & Continuous Integration
+## Documentation
 
-Production deployments run automatically on push to `master` (after CI succeeds) or via manual trigger (`workflow_dispatch`) through `.github/workflows/deploy.yml`.
-
-### Deployment Configuration
-The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to be configured in GitHub:
-- Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
-- Add secret `DEPLOY_DIR` pointing to the repository clone path on the deployment host.
-
-### Schema Changes
-Database schema changes are managed via numbered migrations recorded in the `schema_migrations` table:
-- Add a new numbered migration tuple `(version, name, up(conn), verify(conn))` in `src/load/migrations.py`.
-- Never edit an applied migration; always add a new numbered migration.
-- Database indexes stay outside migrations for bulk-load performance; add or drop indexes in `INDEXES` and `REDUNDANT_INDEXES` in `src/load/indexes.py`.
-- Migrations run automatically and idempotently at API startup and during daily database sync (`apply_migrations()`).
-
-### Production Database Migration
-When deploying updates with schema or data additions (such as the attendance `member_uuid` column):
-1. Code deployment automatically applies pending migrations and creates missing indexes upon backend initialization via `apply_migrations()` and `create_indexes()`.
-2. To populate historical attendance member UUIDs in production:
-   ```bash
-   docker compose run --rm pipeline python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-   No image rebuild or downtime is required.
-
-### Server Daily Pipeline
-The daily pipeline runs on the server under a single sync lock (`database/.sync.lock`, a kernel `flock` that is released if the process dies, so a leftover file never blocks the next run) inside a dedicated, one-off `pipeline` container:
-`B2 download → fetch API data → integrity verification → B2 upload → in-process DB sync`.
-
-If the integrity check cannot reach the Riigikogu API, it exits with code 3: the run is marked failed and the B2 upload is skipped (the next run uploads), while the DB sync still runs. An upstream schema change (exit code 2) fails the run in every fetch step, including the otherwise warning-only memberships, factions and agenda steps.
-
-This replaces the previous standalone `docker exec … sync_database.py` cron job.
-
-#### Configuration (`.env.pipeline`)
-The `pipeline` service loads `.env` for baseline configuration and overrides credentials using `.env.pipeline`:
-- `B2_KEY_ID`
-- `B2_APP_KEY`
-
-Because the pipeline runs in a separate one-off container (`profiles: ["jobs"]`), Backblaze B2 write credentials never live inside the long-running API backend container.
-
-#### Scheduled Cron Job
-The intended server cron command (replacing the old `sync_database.py` cron line):
-```bash
-cd <DEPLOY_DIR> && docker compose run --rm -T pipeline python scripts/daily_pipeline.py >> logs/daily_pipeline.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> logs/daily_pipeline.log 2>&1
-```
-
-#### Running by Hand
-To run the full pipeline manually on the server:
-```bash
-cd <DEPLOY_DIR>
-docker compose run --rm pipeline python scripts/daily_pipeline.py
-```
-To run locally or without uploading to Backblaze B2:
-```bash
-docker compose run --rm pipeline python scripts/daily_pipeline.py --no-upload
-```
-
-#### Manual GitHub Actions Fallback
-The GitHub Actions workflow (`.github/workflows/daily_pipeline.yml`) remains available as a manual fallback (`workflow_dispatch`). Any data uploaded by a manual GitHub run is automatically picked up by the server on its next scheduled run during the initial B2 download step.
-
-### Database Backup
-A rebuild from B2 is limited by the 1 GB/day download cap, so the database is also backed up weekly outside the WSL disk. `scripts/backup_database.py` uses only the standard library and runs with the host's `python3`: it copies the database with the SQLite online backup API, runs `PRAGMA quick_check` on the copy, writes `riigikogu-YYYY-MM-DD.sqlite.gz` and keeps the newest `--keep` files.
-
-Root crontab (Sunday 05:00, away from the 07:00 pipeline):
-```cron
-0 5 * * 0 python3 <DEPLOY_DIR>/scripts/backup_database.py --dest /mnt/c/Users/<user>/RiigivaadeBackups --keep 4 >> <DEPLOY_DIR>/logs/backup.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> <DEPLOY_DIR>/logs/backup.log 2>&1
-```
-
-Restore:
-```bash
-cd <DEPLOY_DIR>
-docker compose stop backend
-gunzip -c /mnt/c/Users/<user>/RiigivaadeBackups/riigikogu-YYYY-MM-DD.sqlite.gz > database/riigikogu.sqlite.restore
-mv database/riigikogu.sqlite database/riigikogu.sqlite.old
-rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
-mv database/riigikogu.sqlite.restore database/riigikogu.sqlite
-chown 999:999 database/riigikogu.sqlite
-docker compose start backend
-```
-The next daily run then fetches anything newer than the backup.
-
----
-
-## Testing & Code Quality
-
-The codebase uses Ruff for Python, ESLint + Prettier for frontend, and Pytest for automated testing.
-
-### Automated Tests
-```bash
-# Run backend and API tests
-pytest -v
-```
-
-### Python Linting & Formatting
-```bash
-# Check and auto-fix linting issues & sort imports
-ruff check . --fix
-
-# Format code
-ruff format .
-```
-
-### Frontend Linting & Formatting
-```bash
-cd src/frontend
-
-# Lint checks
-npm run lint
-npm run lint:fix
-
-# Format code with Prettier
-npm run format
-npm run format:check
-```
+- [Development](docs/development.md): tests, linting, Python dependency updates, E2E tests, live and upstream API checks
+- [Deployment & Operations](docs/operations.md): deploy, schema changes, server daily pipeline, cron, database backup
+- [Data Maintenance](docs/data-maintenance.md): database rebuild, history backfill, voting initial load, UUID repair, B2 sync
+- [Open Data](docs/open-data.md): building, publishing and the monthly release
+- [API](docs/api.md): key endpoints
 
 ---
 
@@ -395,179 +108,26 @@ npm run format:check
 
 ```text
 riigikogu-stenogram-search/
-├── .github/
-│   ├── dependabot.yml             # Dependabot automated weekly dependency monitoring
-│   └── workflows/
-│       ├── ci.yml                 # Automated CI (Ruff, ESLint, Prettier, Pytest, Vite build)
-│       ├── deploy.yml             # Auto-deploy to self-hosted server on master CI success
-│       └── daily_pipeline.yml     # Manual fallback data pipeline (GitHub Actions)
-├── config.py                      # Global configuration & dynamic membership dates
-├── docker-compose.yml             # Multi-container Docker deployment
-├── Dockerfile                     # Multi-stage production backend Docker container
-├── pyproject.toml                 # Ruff, pytest, and project configuration
-├── requirements.txt               # Pinned Python runtime dependencies
-├── requirements-dev.txt           # Development and testing dependencies
-├── scripts/
-│   ├── add_indexes.py             # Creates database performance indexes
-│   ├── b2_utils.py                # Backblaze B2 cryptographic utilities (MD5, multipart ETag)
-│   ├── backfill_history.py        # History backfill script for rich Riigikogu stenograms
-│   ├── build_full_database.py     # End-to-end parallel DB build pipeline (--allow-partial)
-│   ├── build_lemmas.py            # Standalone lemma builder script
-│   ├── build_terms.py             # Standalone term index builder script
-│   ├── daily_pipeline.py          # Unified server daily data pipeline
-│   ├── download_all_from_b2.py    # Downloads all data & sync states from Backblaze B2
-│   ├── download_from_b2.py        # Incremental daily B2 downloader (--all)
-│   ├── fetch_attendance.py        # Voting & attendance scraper
-│   ├── fetch_factions.py          # MP faction history and person metadata scraper
-│   ├── fetch_memberships.py       # Membership terms scraper from Riigikogu API
-│   ├── fetch_stenograms_api.py    # Stenogram scraper from Riigikogu API
-│   ├── load_database.py           # Standalone JSONL to SQLite loader script
-│   ├── remove_ignored_sessions.py # Purges duplicate/ignored verbatims from JSONL and database
-│   ├── repair_attendance_uuids.py # Populates member_uuid in attendance records and database
-│   ├── repair_speaker_uuids.py    # Speaker UUID resolution and repair script
-│   ├── sync_database.py           # SQLite database update with speech aliases
-│   ├── upload_to_b2.py            # Backblaze B2 uploader for data and sync states
-│   ├── verify_pipeline_integrity.py # Direct pipeline data integrity verification
-│   └── verify_statistics.py       # Cross-verification script against official statistics
+├── .github/            # CI, deploy, live API check and fallback pipeline workflows; Dependabot
+├── docs/               # Development, operations, data maintenance, open data and API docs
+├── scripts/            # Data pipeline, fetchers, B2 sync, repairs, releases, backup
 ├── src/
-│   ├── api/                       # FastAPI routes & endpoints
-│   │   ├── main.py                # App entrypoint & CORS config
-│   │   ├── routes.py              # API router definitions
-│   │   ├── search.py              # Search & analytics logic
-│   │   └── attendance.py          # Attendance query endpoints
-│   ├── transform/                 # NLP & lemmatization
-│   │   ├── lemmatizer.py          # EstNLTK multiprocessing lemmatizer
-│   │   └── term_builder.py        # Term frequency & index builder
-│   ├── load/                      # Database models and table definitions
-│   │   ├── database.py            # Database engine and session factory
-│   │   ├── indexes.py             # Database SQL index creation
-│   │   ├── models.py              # SQLAlchemy ORM models (Speech, SpeechAlias, Attendance, Person)
-│   │   └── loader.py              # Bulk JSONL to SQLite loader with alias mapping
-│   └── frontend/                  # React + Vite application
-│       ├── eslint.config.js       # ESLint configuration
-│       ├── package.json
-│       ├── src/
-│       │   ├── App.jsx            # Main app router & layout component
-│       │   ├── App.css            # Application stylesheets & themes
-│       │   ├── api.js             # API client functions
-│       │   ├── components/        # UI components
-│       │   │   ├── ActivityChart.jsx
-│       │   │   ├── AttendanceFactionsTable.jsx
-│       │   │   ├── AttendanceMembersTable.jsx
-│       │   │   ├── ContextModal.jsx
-│       │   │   ├── Footer.jsx
-│       │   │   ├── Header.jsx
-│       │   │   ├── MethodologyModal.jsx
-│       │   │   ├── Pagination.jsx
-│       │   │   ├── SearchFilters.jsx
-│       │   │   ├── SearchQueryInput.jsx
-│       │   │   ├── SpeakersPanel.jsx
-│       │   │   ├── SpeechCard.jsx
-│       │   │   └── SpeechesHeader.jsx
-│       │   ├── routes/            # Page route views
-│       │   │   ├── AttendanceView.jsx
-│       │   │   ├── DashboardView.jsx
-│       │   │   ├── NotFoundView.jsx
-│       │   │   ├── PersonView.jsx
-│       │   │   ├── SearchView.jsx
-│       │   │   ├── SessionView.jsx
-│       │   │   └── SpeechView.jsx
-│       │   └── lib/               # Shared frontend utility modules
-│       │       ├── api.js
-│       │       ├── calendarUtils.js
-│       │       └── formatters.jsx
-├── tests/
-│   ├── test_api.py                # FastAPI endpoint integration tests
-│   ├── test_backfill.py           # Historical backfill and B2 upload tests
-│   ├── test_pipeline.py           # Pipeline, dynamic dates, and integrity verification tests
-│   └── test_query_parser.py       # Query parser and search logic unit tests
-```
-
----
-
-## Open Data
-
-The project periodically exports and releases public machine-readable datasets (gzipped JSONL) under CC BY-SA 3.0 on [GitHub Releases](https://github.com/spaceminx/riigikogu-stenogram-search/releases). The release includes speeches, votings, individual votes, attendance records, agenda items, and member details (including birth year, while excluding exact birth dates and email addresses).
-
-### Building a release
-
-```bash
-python3 scripts/build_open_data_release.py --db /path/to/riigikogu.sqlite --out data/release/YYYY-MM-DD/
-```
-
-Inside container environments where `.git` is omitted, supply the commit hash via `--commit` or `GIT_COMMIT`:
-```bash
-python3 scripts/build_open_data_release.py --db /path/to/riigikogu.sqlite --commit "$(git rev-parse HEAD)"
-# or in Docker:
-docker run -e GIT_COMMIT="$(git rev-parse HEAD)" ...
-```
-
-### Publishing a release to GitHub
-
-```bash
-python3 scripts/publish_open_data_release.py --dir data/release/YYYY-MM-DD/
-```
-
-### Automated Monthly Release & Retention
-
-The script `scripts/monthly_release.py` automates the end-to-end monthly release process:
-1. Skips execution if today's release tag (`data-YYYY-MM-DD`) already exists on GitHub (unless `--force` is given).
-2. Acquires the database sync lock (`sync_lock`) temporarily to create a safe backup (`database/release_copy.sqlite`) using the SQLite backup API, and releases the lock immediately.
-3. Builds the dataset into `data/release/<date>` using `build_open_data_release`.
-4. Publishes the release to GitHub Releases using `publish_release`.
-5. Enforces retention: keeps the newest 12 releases plus the earliest release of each calendar year. Obsolete releases and their git tag refs are deleted (with a safety guard aborting if >3 releases would be deleted).
-6. Cleans up the temporary database copy and older local release directories.
-
-Server cron job (runs on the 1st of every month at 09:00):
-```cron
-0 9 1 * * cd <DEPLOY_DIR> && docker compose run --rm -T -e GIT_COMMIT=$(git -C <DEPLOY_DIR> -c safe.directory=<DEPLOY_DIR> rev-parse HEAD) pipeline python scripts/monthly_release.py >> logs/monthly_release.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> logs/monthly_release.log 2>&1
-```
-
----
-
-## End-to-End Tests
-
-The frontend includes Playwright smoke tests that run against a mock API serving recorded fixtures:
-
-- Intercepts all API calls to `http://api.e2e.test` and responds from fixtures in `src/frontend/e2e/fixtures/`.
-- Verifies that all 10 core routes load without crashing (no ErrorBoundary trigger).
-- Verifies client-side navigation between routes without full page reload.
-- Verifies search pill logic (phrase quoting, `+JA`, `+VÕI`, removing pills, and 390px mobile responsiveness).
-- Verifies responsive layout on mobile viewport (no horizontal scrollbar / overflow).
-- Verifies dark mode toggle persistence in `localStorage` and WCAG AA contrast compliance.
-
-### Running E2E tests locally
-
-```bash
-cd src/frontend
-npx playwright install chromium
-npm run e2e
-```
-
-### Capturing fixtures
-
-To refresh recorded fixtures from the production API:
-
-```bash
-node scripts/capture_e2e_fixtures.mjs
-```
-
-### Weekly live API shape check
-
-A scheduled workflow (`.github/workflows/live_api_check.yml`) runs weekly (every Monday at 10:00 UTC) to verify that the live API at `https://api.riigivaade.me` matches the expected contract in `src/frontend/e2e/fixtures/index.json`.
-
-Run the check manually:
-
-```bash
-python3 scripts/check_live_api.py
-```
-
-### Upstream API validation
-
-All external API responses from `api.riigikogu.ee` and `stenogrammid.riigikogu.ee` are validated with Pydantic models at the fetcher boundary (`src/fetch_models/riigikogu.py`). If upstream renames, removes, or retypes an expected field, the fetcher immediately raises `UpstreamSchemaError`, prints a readable path-level error to `stderr`, and terminates with exit code 2. The record that failed validation is never written; records the fetcher had already validated and saved earlier in the same run (fetchers save in batches) are kept. In the daily pipeline, an exit code 2 is recorded as a pipeline failure and alerts Healthchecks, also in the otherwise warning-only memberships, factions and agenda steps. Upstream API shape is also checked weekly and manually via:
-
-```bash
-python3 scripts/check_upstream_api.py
+│   ├── api/            # FastAPI app, routes, search and attendance queries
+│   ├── data/           # Static reference data (governments)
+│   ├── fetch_models/   # Pydantic models for upstream Riigikogu API responses
+│   ├── load/           # SQLAlchemy models, migrations, indexes, JSONL loader
+│   ├── transform/      # EstNLTK lemmatizer and term index builder
+│   └── frontend/       # React + Vite app (Vercel)
+│       ├── e2e/        # Playwright tests and recorded API fixtures
+│       ├── src/        # Components, routes, lib, styles
+│       └── test/       # Unit tests (node --test)
+├── tests/              # Pytest backend, API and pipeline tests
+├── config.py           # Global configuration & dynamic membership dates
+├── docker-compose.yml  # Backend and one-off pipeline containers
+├── Dockerfile          # Multi-stage production backend image
+├── requirements.in     # Direct Python runtime dependencies
+├── requirements.txt    # Locked Python runtime dependencies (generated by uv)
+└── requirements-dev.txt
 ```
 
 ---
@@ -575,4 +135,3 @@ python3 scripts/check_upstream_api.py
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
-

@@ -13,6 +13,9 @@ test.describe("Smoke tests for all routes", () => {
       // Wait for route-specific content after lazy chunk & fixture data load
       await expect(page.locator(contentSelector).first()).toBeVisible({ timeout: 10000 });
 
+      // One main heading per page
+      await expect(page.locator("h1")).toHaveCount(1);
+
       // Assert ErrorBoundary alert is not rendered
       const errorAlert = page.locator('.glass-panel[role="alert"]:has-text("Midagi läks valesti")');
       await expect(errorAlert).toHaveCount(0);

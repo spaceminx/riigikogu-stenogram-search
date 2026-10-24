@@ -1,0 +1,10 @@
+# Direct runtime dependencies. requirements.txt is the generated lock; see docs/development.md "Updating Python Dependencies".
+fastapi>=0.153.0
+pydantic>=2.14.1
+requests>=2.34.2
+sqlalchemy>=2.1.4
+estnltk>=1.7.5
+boto3>=1.43.115
+uvicorn>=0.54.0
+python-dotenv>=1.2.4
+tqdm>=4.70.1
