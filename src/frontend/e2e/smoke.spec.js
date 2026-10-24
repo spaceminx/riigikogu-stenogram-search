@@ -1,26 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { setupApiMock, FIXTURE_IDS } from "./support/api.js";
-
-const ROUTES = [
-  { path: "/", name: "Dashboard", contentSelector: ".dashboard-grid" },
-  { path: "/otsing", name: "Otsing", contentSelector: ".search-section" },
-  { path: `/istung/${FIXTURE_IDS.date}`, name: "Istung", contentSelector: ".speeches-view-title" },
-  { path: "/kohalolek", name: "Kohalolek", contentSelector: ".attendance-filter-bar" },
-  { path: `/kone/${FIXTURE_IDS.speechId}`, name: "Kõne", contentSelector: ".speech-card" },
-  {
-    path: `/saadik/${FIXTURE_IDS.personUuid}`,
-    name: "Saadik",
-    contentSelector: ".person-view-container",
-  },
-  { path: "/haaletused", name: "Hääletused", contentSelector: ".votings-view-container" },
-  {
-    path: `/haaletus/${FIXTURE_IDS.votingUuid}`,
-    name: "Hääletus",
-    contentSelector: ".voting-detail-container",
-  },
-  { path: `/eelnou/${FIXTURE_IDS.draftUuid}`, name: "Eelnõu", contentSelector: ".reading-card" },
-  { path: "/andmed", name: "Andmed", contentSelector: "h1:has-text('Andmed ja privaatsus')" },
-];
+import { ROUTES } from "./support/routes.js";
 
 test.describe("Smoke tests for all routes", () => {
   for (const { path, name, contentSelector } of ROUTES) {
@@ -53,6 +33,16 @@ test.describe("Smoke tests for all routes", () => {
 
     const errorAlert = page.locator('.glass-panel[role="alert"]:has-text("Midagi läks valesti")');
     await expect(errorAlert).toHaveCount(0);
+
+    mock.verifyNoErrors();
+  });
+
+  test("person page shows the photo with its credit", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
+    await expect(page.locator("img.person-photo")).toBeVisible();
+    await expect(page.locator(".person-photo-caption")).toHaveText("Foto: Riigikogu");
 
     mock.verifyNoErrors();
   });
