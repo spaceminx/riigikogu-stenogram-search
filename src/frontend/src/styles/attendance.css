@@ -811,12 +811,7 @@ html[data-theme="dark"] .faction-badge {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
   padding: 0.85rem 1.25rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
   backdrop-filter: blur(8px);
   animation: popIn 0.2s ease-out forwards;
 }

@@ -1,23 +1,13 @@
 /* Search Filters Row */
 .search-filters-row {
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .filter-group-item {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .filter-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #94a3b8;
   white-space: nowrap;
 }
 
@@ -50,7 +40,6 @@
 }
 
 .filter-input-wrap {
-  position: relative;
   display: flex;
   align-items: center;
   flex: 1;
@@ -123,12 +112,6 @@
 }
 
 .reset-filters-btn {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
