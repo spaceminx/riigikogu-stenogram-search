@@ -41,6 +41,10 @@ npm run lint:fix
 # Format code with Prettier
 npm run format
 npm run format:check
+
+# Unit tests and the CSS variable check
+npm test
+npm run check:css-vars
 ```
 
 ## End-to-End Tests

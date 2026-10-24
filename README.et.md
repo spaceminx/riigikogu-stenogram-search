@@ -46,7 +46,7 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 
 ### Eeltingimused
 - Python 3.10+ (soovitatav Python 3.13)
-- Node.js 20+ & npm
+- Node.js 24 & npm
 - Docker (valikuline, konteineris käivitamiseks)
 
 ### 1. Projekti allalaadimine
@@ -110,57 +110,26 @@ Tehniline dokumentatsioon on inglise keeles:
 
 ```text
 riigikogu-stenogram-search/
-├── .github/
-│   ├── dependabot.yml             # Dependaboti iganädalane automaatne turvaseire
-│   └── workflows/
-│       ├── ci.yml                 # Automaatne CI (Ruff, ESLint, Prettier, Pytest, Vite build)
-│       ├── deploy.yml             # Automaatne serverisse paigaldus pärast masteri CI õnnestumist
-│       └── daily_pipeline.yml     # Käsitsi käivitatav varu-andmetoru (GitHub Actions)
-├── config.py                      # Globaalsed seadistused ja dünaamilised koosseisude kuupäevad
-├── docker-compose.yml             # Multi-container Docker paigaldus
-├── Dockerfile                     # Tootmistasemel backend Docker konteiner
-├── pyproject.toml                 # Ruffi, pytesti ja projekti seadistused
-├── requirements.txt               # Backendi Pythoni sõltuvused
-├── scripts/
-│   ├── backfill_history.py        # Ajalooliste stenogrammide rikaste andmete tagasitäitmine
-│   ├── build_full_database.py     # Paralleelne täielik andmebaasi ehitaja
-│   ├── daily_pipeline.py          # Serveri igapäevane andmetoru
-│   ├── download_all_from_b2.py    # Kõigi andmete ja olekute allalaadija B2-st
-│   ├── download_from_b2.py        # Igapäevane inkrementaalne B2 allalaadija
-│   ├── fetch_attendance.py        # Kohaloleku ja hääletuste allalaadija
-│   ├── fetch_factions.py          # Fraktsioonide kuuluvuse ajaloo ja isikute allalaadija
-│   ├── fetch_memberships.py       # Koosseisude (XIV, XV jne) allalaadija Riigikogu API-st
-│   ├── fetch_stenograms_api.py    # Stenogrammide allalaadija Riigikogu API-st
-│   ├── remove_ignored_sessions.py # Eemaldab ignoreeritud istungid JSONL-ist ja andmebaasist
-│   ├── repair_attendance_uuids.py # Täidab kohaloleku kirjetes ja andmebaasis member_uuid
-│   ├── repair_speaker_uuids.py    # Kõnelejate UUID lahendaja ja parandaja
-│   ├── sync_database.py           # SQLite andmebaasi uuendaja ja aliashaldur
-│   ├── upload_to_b2.py            # Backblaze B2 üleslaadija andmetele ja olekutele
-│   ├── verify_pipeline_integrity.py # Andmetoru terviklikkuse ja istungite kontroll Riigikogu API vastu
-│   └── verify_statistics.py       # Ametliku kõnestatistika ristkontrolli skript
+├── .github/            # CI, paigalduse, live API kontrolli ja varu-andmetoru töövood; Dependabot
+├── docs/               # Arenduse, käituse, andmete hoolduse, avaandmete ja API dokumentatsioon
+├── scripts/            # Andmetoru, allalaadijad, B2 sünkroniseerimine, parandused, väljalasked, varundus
 ├── src/
-│   ├── api/                       # FastAPI marsruudid ja loogika
-│   │   ├── main.py                # Rakenduse peafail ja CORS seaded
-│   │   ├── routes.py              # API endpointide definitsioonid
-│   │   ├── search.py              # Otsingu ja analüütika funktsioonid
-│   │   └── attendance.py          # Kohaloleku päringud
-│   ├── transform/                 # Tekstitöötlus ja morfoloogia
-│   │   ├── lemmatizer.py          # EstNLTK paralleelne lemmatiseerija
-│   │   └── term_builder.py        # Lemmade sagedusindeksi ehitaja
-│   ├── load/                      # Andmebaasimudelid ja laadimine
-│   │   ├── models.py              # SQLAlchemy mudelid (kõned, aliased, kohalolek)
-│   │   └── loader.py              # JSONL failide laadimine SQLite baasi koos aliastabeliga
-│   └── frontend/                  # React + Vite kasutajaliides
-│       ├── eslint.config.js       # ESLint konfiguratsioon
-│       ├── package.json
-│       └── src/
-│           ├── App.jsx            # Põhikomponent ja dashboard
-│           └── api.js             # API klientpäringud
-├── tests/
-│   ├── test_api.py                # FastAPI endpointide integratsioonitestid
-│   ├── test_pipeline.py           # Andmetoru, dünaamiliste kuupäevade ja terviklikkuse testid
-│   └── test_query_parser.py       # Päringuparsija ja otsinguloogika ühiktestid
-└── HOSTING.md                     # Majutuse ja arhitektuuri juhised
+│   ├── api/            # FastAPI rakendus, marsruudid, otsingu ja kohaloleku päringud
+│   ├── data/           # Staatilised viiteandmed (valitsused)
+│   ├── fetch_models/   # Pydantic mudelid Riigikogu API vastustele
+│   ├── load/           # SQLAlchemy mudelid, migratsioonid, indeksid, JSONL laadija
+│   ├── transform/      # EstNLTK lemmatiseerija ja terminiindeksi ehitaja
+│   └── frontend/       # React + Vite kasutajaliides (Vercel)
+│       ├── e2e/        # Playwright testid ja salvestatud API vastused
+│       ├── src/        # Komponendid, vaated, abiteegid, stiilid
+│       └── test/       # Ühiktestid (node --test)
+├── tests/              # Pytesti backendi, API ja andmetoru testid
+├── config.py           # Globaalsed seadistused ja dünaamilised koosseisude kuupäevad
+├── docker-compose.yml  # Backendi ja ühekordse andmetoru konteinerid
+├── Dockerfile          # Mitmeastmeline tootmise backendi tõmmis
+├── requirements.in     # Pythoni otsesed sõltuvused
+├── requirements.txt    # Lukustatud Pythoni sõltuvused (uv genereerib)
+└── requirements-dev.txt
 ```
 
 ---
