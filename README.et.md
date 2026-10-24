@@ -71,111 +71,9 @@ Käivita täielik andmebaasi ehitamise skript (laeb vajadusel B2-st andmed, lemm
 python scripts/build_full_database.py
 ```
 
-*Märkus ajaloo uuendamise kohta:*
-Serveri igapäevane andmetoru (`daily_pipeline.py` croni kaudu) laeb B2-st alla ainult aktiivsete aastate andmed (jooksev aasta ning eelmine aasta seni, kuni see jääb 60 päeva aknasse, umbes 1. märtsini) ning uuendab vaid uusi või poolikuid istungeid. Kui varasemate aastate andmeid muudetakse (näiteks puuduva ajaloo tagasitäitmisel või andmemudeli uuendamisel), ei uuenda `build_full_database.py` olemasolevas andmebaasis juba olevaid istungeid. Uue ajaloo rakendamiseks ehita uus fail, peata API, vaheta andmebaasifail ning kontrolli WAL ajutisi faile:
-```bash
-docker compose run --rm pipeline python scripts/download_from_b2.py --all
+Tootmisandmebaasi uuesti ehitamine, ajaloo tagasitäitmine ja parandusskriptid: [docs/data-maintenance.md](docs/data-maintenance.md).
 
-# 1. Ehita uus andmebaas pipeline-konteineris (kus asuvad B2 volitused)
-docker compose run --rm -e DATABASE_URL=sqlite:///database/riigikogu_new.sqlite pipeline python scripts/build_full_database.py
-
-# 2. Peata API ja puhasta vanad WAL ajutised failid
-docker compose stop backend
-rm -f database/riigikogu.sqlite-wal database/riigikogu.sqlite-shm
-
-# 3. Kontrolli, et uuel failil ei oleks .sqlite-wal faili kõrval
-if [ -f database/riigikogu_new.sqlite-wal ]; then echo "VIGA: Uue andmebaasi WAL fail on olemas, andmed pole lõplikud!"; exit 1; fi
-
-# 4. Asenda andmebaasifail ja taaskäivita
-mv database/riigikogu_new.sqlite database/riigikogu.sqlite
-docker compose start backend
-```
-
-### 4. Ajaloo tagasitäitmine (`backfill_history.py`)
-Varasemate istungite (2019–2026) rikaste metaandmete (`external_id`, `ems_id`, `speech_type`, `start_time`, `end_time`, `duration_seconds`) tagasitäitmiseks:
-1. Laadi B2-st kõik ajaloolised failid alla:
-   ```bash
-   python scripts/download_from_b2.py --all
-   ```
-2. Käivita testkäivitus ühe aasta kohta aruande vaatamiseks:
-   ```bash
-   python scripts/backfill_history.py --year 2021 --dry-run
-   ```
-3. Käivita päriselt tagasitäitmine aasta kaupa koos `--upload`-iga või eraldi `--upload-only --year YYYY`:
-   ```bash
-   python scripts/backfill_history.py --year 2021 --upload
-   # või eraldi sammudena:
-   # python scripts/backfill_history.py --year 2021
-   # python scripts/backfill_history.py --upload-only --year 2021
-   ```
-4. Serveris: ehita andmebaas uuesti, järgides eespool toodud juhist jaotises "Märkus ajaloo uuendamise kohta" (uus fail `DATABASE_URL`-iga konteineris, `docker compose stop backend`, WAL-faili kontroll, `mv`, `docker compose start backend`).
-
-> [!NOTE]
-> Vaikimisi lõppkuupäev (täna miinus `UNEDITED_REFETCH_DAYS`) jätab vahele hiljuti toimetatud istungid, mida vana kood juba toimetatuna salvestas (näiteks september 2026). Neid ei uuenda ka igapäevane andmetoru. Nende uuendamiseks käivita eraldi:
-> ```bash
-> python scripts/backfill_history.py --start-date 2026-09-01 --end-date <täna> --upload
-> ```
-> Jooksva aasta faili kaitseb B2-s samaaegsuse ja ETag-i kontroll.
-
-### Hääletuste ajaloo laadimine (ühekordne)
-
-Hääletuste ajaloo (2019 kuni tänaseni) esmane laadimine käib serveris konteinerite sees.
-
-Täpne järjekord:
-1. Laadi 2019. aasta hääletused (alates 14. koosseisu algusest 01.04.2019) ja saada Backblaze B2-sse:
-   ```bash
-   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2019-04-01 --end-date 2019-12-31 --upload
-   ```
-2. Laadi aastad 2020–2025 aastapõhise tsüklina ja saada B2-sse:
-   ```bash
-   for y in {2020..2025}; do
-     docker compose run --rm pipeline python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
-   done
-   ```
-3. Laadi jooksva 2026. aasta hääletused ja saada B2-sse:
-   ```bash
-   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2026-01-01 --upload
-   ```
-4. Laadi kõik hääletused serveri SQLite andmebaasi:
-   ```bash
-   docker compose exec backend python scripts/load_votes.py
-   ```
-5. Kontroll:
-   ```bash
-   curl http://127.0.0.1:8000/system/status
-   # votings = 3621 + pärast 13.10 lisandunud
-
-   curl "http://127.0.0.1:8000/votings?start_date=2026-09-29&end_date=2026-09-29"
-   ```
-
-> [!NOTE]
-> **Olulised märkused juurutamisel:**
-> - Kuni samm 3 pole tehtud, toob igapäevane pipeline ainult viimased 14 päeva.
-> - **Käivituse ajastus:** Aastaid 2019–2025 võib jooksutada igal ajal, sest serveri igapäevane andmetoru laeb alla ainult aktiivse aasta faile ega kirjuta vanu votes-faile B2-sse. Ainult 2026 käivitus (samm 3) ei tohi joosta kella 07:00 paiku serveri aja järgi (mil töötab igapäevane andmetoru).
-> - **Tõrketaluvus:** Skript teeb vahesalvestusi iga 25 hääletuse järel ning püüab katkestused (Ctrl-C / SIGTERM). Kui mõni aasta lõpetab koodiga 1 (nt ajutine API võrgutõrge), käivita sama aasta käsk uuesti – juba salvestatud hääletused jäetakse vahele ja laadimine jätkub poolelijäänud kohast.
-> - **Hinnangulised ajad aastate kaupa** (~5,1 s hääletuse kohta):
->   - 2019: 172 hääletust → ~15 min
->   - 2020: 356 hääletust → ~30 min
->   - 2021: 533 hääletust → ~45 min
->   - 2022: 718 hääletust → ~61 min
->   - 2023: 436 hääletust → ~37 min
->   - 2024: 692 hääletust → ~59 min
->   - 2025: 402 hääletust → ~34 min
->   - 2026: 312 hääletust → ~27 min
-
-### 5. Kohaloleku UUID-de migratsioon (`repair_attendance_uuids.py`)
-Saadikute `member_uuid` sidumiseks olemasolevate kohaloleku andmetega (`data/processed/attendance.jsonl`) ja SQLite `attendance` tabeliga:
-1. Käivita kuivkäivitus, et vaadata vastavusse viimise statistikat ilma faile muutmata:
-   ```bash
-   python scripts/repair_attendance_uuids.py --dry-run
-   ```
-2. Rakenda muudatused kohalikult, laadi uuendatud `attendance.jsonl` Backblaze B2-sse ja uuenda andmebaas:
-   ```bash
-   python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-   *Märkus:* Skeemi migratsioon (`apply_migrations()`) toimub automaatselt ja idempotentselt rakenduse käivitumisel, lisades tabelisse veeru `member_uuid TEXT` ja tagades vajalikud indeksid, kui need veel puuduvad.
-
-### 6. FastAPI serveri käivitamine
+### 4. FastAPI serveri käivitamine
 ```bash
 uvicorn src.api.main:app --reload --port 8000
 ```
@@ -183,7 +81,9 @@ API dokumentatsiooniga saab tutvuda aadressidel:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 
-### 7. Frontendi käivitamine
+Peamised endpointid: [docs/api.md](docs/api.md).
+
+### 5. Frontendi käivitamine
 Ava uus terminaliaken:
 ```bash
 cd src/frontend
@@ -194,110 +94,15 @@ Ava brauseris `http://localhost:5173`.
 
 ---
 
-## Paigaldus ja pidev integratsioon (CI/CD)
+## Dokumentatsioon
 
-Tootmiskeskkonna paigaldus käivitub automaatselt pärast `master` haru CI õnnestumist või käsitsi käivitades töövootagant `.github/workflows/deploy.yml`.
+Tehniline dokumentatsioon on inglise keeles:
 
-### Paigalduse seadistamine
-Serveri `self-hosted` runner vajab repositooriumi saladust (secret) `DEPLOY_DIR`:
-- Ava repositooriumi **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
-- Lisa saladus (secret) `DEPLOY_DIR`, mis määrab projekti kataloogitee serveris (nt `/home/<kasutaja>/riigikogu-stenogram-search`).
-
-### Skeemimuudatused
-Andmebaasi skeemimuudatusi hallatakse nummerdatud migratsioonidega, mis salvestatakse tabelisse `schema_migrations`:
-- Uue skeemimuudatuse lisamiseks lisa failis `src/load/migrations.py` listi `MIGRATIONS` uus migratsioon `(version, name, up(conn), verify(conn))`.
-- Ära kunagi muuda juba rakendatud migratsiooni; lisa alati uus nummerdatud migratsioon.
-- Indekseid hoitakse teadlikult migratsioonidest eraldi (et masslaadimisel saaks neid luua lõpus); uued indeksid või eemaldamised defineeritakse failis `src/load/indexes.py` (`INDEXES` ja `REDUNDANT_INDEXES`).
-- Migratsioonid käivituvad automaatselt ja idempotentselt rakenduse API käivitumisel ning igapäevase andmebaasi sünkroonimise käigus (`apply_migrations()`).
-
-### Tootmiskeskkonna migratsioon
-Uute skeemimuudatuste või andmetäienduste (nt kohaloleku `member_uuid` veerg) tootmisse viimisel:
-1. Koodi paigaldamisel teostab rakenduse käivitus vajadusel puuduvate migratsioonide ja indeksite lisamise automaatselt (`apply_migrations()`, `create_indexes()`).
-2. Ajalooliste kohaloleku kirjete UUID-de täitmiseks serveris käivita:
-   ```bash
-   docker compose run --rm pipeline python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-   Eraldi uut tõmmise ehitamist ega teenuse katkestust vaja ei ole.
-3. Duplikaatsete või ignoreeritud istungite eemaldamiseks (nt 24.03.2021 ööistung `202103250048`):
-   1) Laadi alla sihtaasta andmestik Backblaze B2-st:
-      ```bash
-      docker compose run --rm pipeline python scripts/download_from_b2.py --year 2021
-      ```
-   2) Kontrolli eemaldatavaid kirjeid kuivkäivitusega (oodatav 79 kõnet):
-      ```bash
-      docker compose exec backend python scripts/remove_ignored_sessions.py --year 2021
-      ```
-   3) Rakenda muudatused, laadi uuendatud fail B2-sse ja kustuta kirjed andmebaasist:
-      ```bash
-      docker compose run --rm pipeline python scripts/remove_ignored_sessions.py --year 2021 --apply
-      ```
-
-### Serveri igapäevane andmetoru
-Igapäevane andmetoru töötab serveris ühtse sünkroonimisluku (`database/.sync.lock`) all eraldi ühekordses `pipeline` konteineris:
-`B2 allalaadimine → API andmete pärimine → terviklikkuse kontroll → B2 üleslaadimine → andmebaasi sünkroonimine (in-process)`.
-
-See asendab varasema eraldiseisva `docker exec … sync_database.py` cron-töö.
-
-#### Seadistus (`.env.pipeline`)
-Teenus `pipeline` laeb baasseadistuse failist `.env` ning Backblaze B2 võtmed failist `.env.pipeline`:
-- `B2_KEY_ID`
-- `B2_APP_KEY`
-
-Kuna andmetoru töötab eraldi ühekordses konteineris (`profiles: ["jobs"]`), ei asu B2 kirjutamisõigusega võtmed kunagi pikaajaliselt töötavas API backendi konteineris.
-
-#### Ajastatud cron-töö
-Serveri croni käsk (asendab varasema `sync_database.py` rea):
-```bash
-cd <DEPLOY_DIR> && docker compose run --rm -T pipeline python scripts/daily_pipeline.py >> logs/daily_pipeline.log 2>&1; curl -fsS -m 10 --retry 3 https://hc-ping.com/<uuid>/$? >> logs/daily_pipeline.log 2>&1
-```
-
-#### Käsitsi käivitamine
-Täieliku andmetoru käsitsi käivitamiseks serveris:
-```bash
-cd <DEPLOY_DIR>
-docker compose run --rm pipeline python scripts/daily_pipeline.py
-```
-Kohalikuks käivitamiseks või ilma B2-sse üles laadimata:
-```bash
-docker compose run --rm pipeline python scripts/daily_pipeline.py --no-upload
-```
-
-#### GitHub Actions varuvariant
-GitHub Actions töövoog (`.github/workflows/daily_pipeline.yml`) jääb kättesaadavaks käsitsi käivitatava varuvariandina (`workflow_dispatch`). Kõik käsitsi käivitatud GitHubi töövoo poolt üles laaditud andmed laeb server järgmisel ajastatud käivitusel automaatselt alla esimese B2 sammu käigus.
-
----
-
-## Testimine ja koodikvaliteet
-
-Projekt kasutab koodikontrolliks Ruffi, ESLint + Prettierit ning automaattestideks Pytesti.
-
-### Automaattestid
-```bash
-# Käivita backendi ja API testid
-pytest -v
-```
-
-### Python (Backend & skriptid)
-```bash
-# Kontrolli koodi ja paranda impordid / vead automaatselt
-ruff check . --fix
-
-# Vorminda kood
-ruff format .
-```
-
-### Frontend (React / JS)
-```bash
-cd src/frontend
-
-# Koodikontroll
-npm run lint
-npm run lint:fix
-
-# Vormindamine Prettieriga
-npm run format
-npm run format:check
-```
+- [Arendus](docs/development.md): testid, koodikontroll, Pythoni sõltuvuste uuendamine, E2E testid, live ja upstream API kontrollid
+- [Paigaldus ja käitus](docs/operations.md): paigaldus, skeemimuudatused, serveri igapäevane andmetoru, cron, andmebaasi varundus
+- [Andmete hooldus](docs/data-maintenance.md): andmebaasi uuesti ehitamine, ajaloo tagasitäitmine, hääletuste esmane laadimine, UUID parandused, B2 sünkroniseerimine
+- [Avaandmed](docs/open-data.md): väljalaske ehitamine, avaldamine ja igakuine väljalase
+- [API](docs/api.md): peamised endpointid
 
 ---
 
