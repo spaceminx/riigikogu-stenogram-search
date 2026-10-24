@@ -71,14 +71,20 @@ export function SpeechView() {
   }
 
   if (error || !speech) {
+    // Only a 404 means the speech does not exist; other errors are temporary failures
+    const notFound = !error || error.status === 404;
     return (
       <div
         className="glass-panel"
         style={{ padding: "3rem 1.5rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <h2 style={{ marginBottom: "0.5rem" }}>Kõnet ei leitud</h2>
+        <h2 style={{ marginBottom: "0.5rem" }}>
+          {notFound ? "Kõnet ei leitud" : "Kõne laadimine ebaõnnestus"}
+        </h2>
         <p style={{ color: "var(--text-secondary, #64748b)", marginBottom: "1.5rem" }}>
-          {error?.message || "Kõnet sellise identifikaatoriga ei leitud."}
+          {notFound
+            ? "Kõnet sellise identifikaatoriga ei leitud."
+            : error?.message || "Proovi hiljem uuesti."}
         </p>
         <Link
           to="/"

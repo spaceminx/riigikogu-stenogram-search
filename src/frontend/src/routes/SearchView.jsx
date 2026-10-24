@@ -590,7 +590,7 @@ export function SearchView({
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Otsin stenogramme...</p>
           </div>
-        ) : currentSpeeches.length === 0 ? (
+        ) : error ? null : currentSpeeches.length === 0 ? (
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Otsingutingimustele vastavaid kõnesid ei leitud.</p>
           </div>
