@@ -1,6 +1,11 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { getQuickPresets, getPresetRange, QUICK_PRESETS } from "../src/lib/calendarUtils.js";
+import {
+  getQuickPresets,
+  getPresetRange,
+  QUICK_PRESETS,
+  visibleMemberships,
+} from "../src/lib/calendarUtils.js";
 
 describe("calendar quick presets", () => {
   it("builds presets for current and ended memberships", () => {
@@ -73,5 +78,32 @@ describe("calendar quick presets", () => {
 
     const rangeXiv = getPresetRange("xiv", [], null, "2026-10-18");
     assert.deepStrictEqual(rangeXiv, { startDate: "2019-04-04", endDate: "2023-04-09" });
+  });
+});
+
+describe("visible memberships", () => {
+  const api = [
+    { id: "16", number: 16, start_date: "2027-03-30", end_date: "2099-12-31" },
+    { id: "15", number: 15, start_date: "2023-04-10", end_date: "2027-03-29" },
+    { id: "14", number: 14, start_date: "2019-04-04", end_date: "2023-04-09" },
+    { id: "13", number: 13, start_date: "2015-03-30", end_date: "2019-04-03" },
+  ];
+
+  it("hides a newly elected membership until it convenes", () => {
+    const ids = visibleMemberships(api, "2027-03-29").map((m) => m.id);
+    assert.deepStrictEqual(ids, ["15", "14"]);
+    // The XV preset stays "current" right up to the day before XVI convenes
+    const presets = getQuickPresets(visibleMemberships(api, "2027-03-29"), "2027-03-29");
+    assert.strictEqual(presets[0].label, "XV Riigikogu (2023–praegu)");
+  });
+
+  it("shows it from the convening day", () => {
+    const ids = visibleMemberships(api, "2027-03-30").map((m) => m.id);
+    assert.deepStrictEqual(ids, ["16", "15", "14"]);
+  });
+
+  it("handles missing data", () => {
+    assert.deepStrictEqual(visibleMemberships(undefined), []);
+    assert.deepStrictEqual(visibleMemberships(null), []);
   });
 });

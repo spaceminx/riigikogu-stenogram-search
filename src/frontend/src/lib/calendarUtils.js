@@ -71,6 +71,14 @@ export function monthTitle(date) {
   return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+// Memberships the site covers (XIV onwards) that have already convened. A newly elected
+// membership is listed upstream before it convenes and must not show up in filters yet.
+export function visibleMemberships(memberships, today = new Date()) {
+  if (!Array.isArray(memberships)) return [];
+  const todayKey = typeof today === "string" ? today : toDateKey(today);
+  return memberships.filter((m) => m.number >= 14 && m.start_date && m.start_date <= todayKey);
+}
+
 export function getQuickPresets(memberships, today = new Date()) {
   const todayKey = typeof today === "string" ? today : toDateKey(today);
   if (!memberships || memberships.length === 0) {
