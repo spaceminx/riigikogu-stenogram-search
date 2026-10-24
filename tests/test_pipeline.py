@@ -535,7 +535,48 @@ def test_fetch_memberships_with_mock(tmp_path, monkeypatch):
     assert "14" in data
     assert "15" in data
     assert data["14"]["endDate"] == "2023-04-09"
-    assert data["15"]["endDate"] == "2027-02-25"
+    # The newest mandate stays open after its last regular session (2027-02-25)
+    assert data["15"]["endDate"] == "2099-12-31"
+    assert data["15"]["sessionEndDate"] == "2027-02-25"
+
+
+def test_fetch_memberships_xv_until_xvi_convenes(tmp_path, monkeypatch):
+    import requests
+
+    import config
+    from scripts.fetch_memberships import fetch_memberships
+    from scripts.fetch_votes import get_membership_for_date
+
+    monkeypatch.setattr("scripts.fetch_memberships.OUTPUT_DIR_PROCESSED", str(tmp_path))
+    monkeypatch.setattr(config, "OUTPUT_DIR_PROCESSED", str(tmp_path))
+    upstream = [
+        {"number": 14, "startDate": "2019-04-04", "endDate": "2023-02-23"},
+        {"number": 15, "startDate": "2023-04-10", "endDate": "2027-02-25"},
+    ]
+
+    class MockResp:
+        status_code = 200
+
+        def json(self):
+            return upstream
+
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResp())
+
+    # Before XVI is listed: a sitting after XV's last regular session still belongs to XV
+    assert fetch_memberships() is True
+    assert config.latest_membership(today="2027-03-10") == "15"
+    assert get_membership_for_date("2027-03-10") == 15
+
+    # XVI listed ahead of convening: XV ends the day before, XVI is not latest yet
+    upstream.append({"number": 16, "startDate": "2027-03-30", "endDate": None})
+    assert fetch_memberships() is True
+    data = json.loads((tmp_path / "memberships.json").read_text(encoding="utf-8"))
+    assert data["15"]["endDate"] == "2027-03-29"
+    assert data["16"]["endDate"] == "2099-12-31"
+    assert config.latest_membership(today="2027-03-29") == "15"
+    assert config.latest_membership(today="2027-03-30") == "16"
+    assert get_membership_for_date("2027-03-29") == 15
+    assert get_membership_for_date("2027-03-30") == 16
 
 
 def test_verify_statistics_with_mock(tmp_path, monkeypatch):

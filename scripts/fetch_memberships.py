@@ -28,7 +28,7 @@ FALLBACK_MEMBERSHIPS = {
         "number": 15,
         "name": "XV Riigikogu",
         "startDate": "2023-04-10",
-        "endDate": "2027-02-25",
+        "endDate": "2099-12-31",
     },
 }
 
@@ -114,7 +114,9 @@ def fetch_memberships() -> bool:
                 "%Y-%m-%d"
             )
         else:
-            mandate_end = session_end or "2099-12-31"
+            # The newest membership's mandate runs until the next one convenes, not until its
+            # last regular session ends (XV: 2027-02-25), so leave it open-ended.
+            mandate_end = "2099-12-31"
 
         roman = roman_numeral(num)
         memberships_map[str(num)] = {
