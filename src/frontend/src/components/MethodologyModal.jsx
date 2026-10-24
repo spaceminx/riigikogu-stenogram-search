@@ -90,7 +90,7 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
             <h3>1. Kohaloleku mõõtmine</h3>
             <p>
               {systemStatus?.methodology?.attendance ||
-                "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; vt /governments); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."}
+                "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; perioodid on avaandmete failis governments.json); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma."}
             </p>
           </div>
 
@@ -106,7 +106,7 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
             </p>
             <p>
               {systemStatus?.methodology?.duration ||
-                "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 2021. aastast; 2019–2020 kõnedel puudub algallikas algusaeg."}
+                "Kõneaeg on arvutatud Riigikogu stenogrammi algus- ja lõpuajast ning on saadaval alates 14.09.2020 (2020. aasta sügisistungjärk); varasematel kõnedel puudub algallikas algusaeg."}
             </p>
             <p>
               {systemStatus?.methodology?.search ||
