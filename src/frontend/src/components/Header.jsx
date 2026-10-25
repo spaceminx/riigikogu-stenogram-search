@@ -185,7 +185,7 @@ export function Header({
               className="menu-warning-notice"
               style={{
                 fontSize: "0.72rem",
-                color: "#eab308",
+                color: "var(--color-warning)",
                 padding: "0.25rem 0.75rem",
                 lineHeight: 1.3,
               }}

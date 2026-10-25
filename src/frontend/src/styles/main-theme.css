@@ -774,7 +774,7 @@ input.search-input:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #15803d;
+  color: var(--vote-for);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -783,15 +783,15 @@ input.search-input:focus-visible {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #22c55e;
+  background: var(--vote-for-fill);
 }
 
 .menu-status.is-offline {
-  color: #b45309;
+  color: var(--color-warning);
 }
 
 .menu-status.is-offline i {
-  background: #f59e0b;
+  background: var(--color-warning);
 }
 
 .github-mark {

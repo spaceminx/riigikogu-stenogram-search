@@ -31,6 +31,7 @@
   --color-highlight: #e3e8f7; /* Vaste: search match background */
   --color-editor: #f0a47e; /* Toimetaja: badge fill only, too light for text */
   --color-on-editor: #1c1f26;
+  --color-warning: #8a6a00;
 
   /* Votes: text passes 4.5:1 on the surface; fills are for bars */
   --vote-for: #23764f;
@@ -61,6 +62,7 @@ html[data-theme="dark"] {
   --color-highlight: #26305a;
   --color-editor: #f0a47e;
   --color-on-editor: #1c1f26;
+  --color-warning: #d9b44a;
 
   --vote-for: #6fcb9c;
   --vote-against: #f28b82;
