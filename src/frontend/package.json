@@ -17,6 +17,9 @@
     "e2e:build": "vite build"
   },
   "dependencies": {
+    "@fontsource-variable/source-code-pro": "5.3.1",
+    "@fontsource-variable/source-sans-3": "5.3.1",
+    "@fontsource-variable/source-serif-4": "5.3.1",
     "@vercel/functions": "3.10.2",
     "lucide-react": "^1.61.0",
     "react": "^19.3.1",
