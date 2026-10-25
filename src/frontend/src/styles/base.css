@@ -1,3 +1,11 @@
+h1,
+h2,
+h3,
+.page-title,
+.brand-copy strong {
+  font-family: var(--font-serif);
+}
+
 .header h1 {
   font-size: 1.8rem;
   font-weight: 700;
