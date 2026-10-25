@@ -68,15 +68,24 @@
   align-items: center;
 }
 
+/* Same height as the type select next to it, so the labels line up */
+.votings-filters-row .date-range-trigger {
+  min-height: 36px;
+}
+
 .votings-tech-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: var(--text-field);
+  color: var(--color-text-soft);
   cursor: pointer;
   user-select: none;
   margin-left: auto;
+}
+
+.votings-tech-checkbox input[type="checkbox"] {
+  accent-color: var(--color-accent-fill);
 }
 
 .votings-results-header {
@@ -88,12 +97,12 @@
 
 .votings-heading {
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .votings-list {
@@ -106,19 +115,15 @@
   display: block;
   text-decoration: none;
   color: inherit;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
   padding: 1.15rem 1.25rem;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .voting-row-link:hover {
-  border-color: var(--accent-primary);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  border-color: var(--color-border-strong);
 }
 
 .voting-row-main {
@@ -136,10 +141,10 @@
 }
 
 .voting-row-time {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
 }
 
 .voting-badges {
@@ -149,46 +154,47 @@
 }
 
 .voting-badge {
-  font-size: 0.7rem;
+  font-size: 11px;
   font-weight: 600;
   padding: 0.18rem 0.55rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-tag);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   line-height: 1.2;
 }
 
 .voting-badge-secret {
-  background: rgba(168, 85, 247, 0.12);
-  color: #8b5cf6;
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
+  border: 1px solid var(--color-border-strong);
 }
 
 .voting-badge-technical {
-  background: rgba(100, 116, 139, 0.12);
-  color: #64748b;
-  border: 1px solid rgba(100, 116, 139, 0.3);
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border-strong);
 }
 
 .voting-row-desc {
-  font-size: 0.98rem;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-name);
   font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-primary);
+  line-height: 1.35;
 }
 
 .voting-row-doc {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: var(--text-field);
+  color: var(--color-text-muted);
   line-height: 1.35;
 }
 
 .voting-row-summary {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
   margin-top: 0.2rem;
+  color: var(--color-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Voting Detail Page */
@@ -214,26 +220,26 @@
 }
 
 .voting-detail-title {
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: clamp(1.3rem, 3vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.3;
   margin: 0;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .voting-related-doc {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.92rem;
-  color: var(--text-secondary);
+  font-size: 15px;
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 
 .voting-doc-icon {
   flex-shrink: 0;
   margin-top: 0.2rem;
-  color: var(--text-secondary);
+  color: var(--color-text-muted);
 }
 
 .voting-doc-text {
@@ -242,7 +248,7 @@
 
 .voting-doc-link {
   font-weight: 500;
-  color: var(--accent-primary);
+  color: var(--color-accent);
   text-decoration: none;
 }
 
@@ -254,13 +260,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 1.25rem;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  font-size: var(--text-field);
+  color: var(--color-text-muted);
   align-items: center;
 }
 
 .voting-sitting-link {
-  color: var(--accent-primary);
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 600;
 }
@@ -270,7 +276,7 @@
 }
 
 .voting-meta-item {
-  color: var(--text-secondary);
+  color: var(--color-text-muted);
 }
 
 .voting-technical-callout {
@@ -278,11 +284,11 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.7rem 1rem;
-  border-radius: 8px;
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  color: #b45309;
-  font-size: 0.85rem;
+  border-radius: var(--radius-control);
+  background: var(--color-subtle);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-soft);
+  font-size: var(--text-field);
   font-weight: 500;
 }
 
@@ -298,9 +304,10 @@
 }
 
 .voting-total-card {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top-width: 3px;
+  border-radius: var(--radius-block);
   padding: 1.1rem 0.75rem;
   text-align: center;
   display: flex;
@@ -317,83 +324,53 @@
 }
 
 .voting-total-label {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .voting-total-card.poolt {
-  border-color: rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.05);
-}
-.voting-total-card.poolt .voting-total-count {
-  color: #10b981;
-}
-.voting-total-card.poolt .voting-total-label {
-  color: #059669;
+  border-top-color: var(--vote-for-fill);
+  color: var(--vote-for);
 }
 
 .voting-total-card.vastu {
-  border-color: rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.05);
-}
-.voting-total-card.vastu .voting-total-count {
-  color: #ef4444;
-}
-.voting-total-card.vastu .voting-total-label {
-  color: #dc2626;
+  border-top-color: var(--vote-against-fill);
+  color: var(--vote-against);
 }
 
 .voting-total-card.erapooletu {
-  border-color: rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.05);
-}
-.voting-total-card.erapooletu .voting-total-count {
-  color: #f59e0b;
-}
-.voting-total-card.erapooletu .voting-total-label {
-  color: #d97706;
+  border-top-color: var(--vote-abstain-fill);
+  color: var(--vote-abstain);
 }
 
 .voting-total-card.ei_haaletanud {
-  border-color: rgba(100, 116, 139, 0.3);
-  background: rgba(100, 116, 139, 0.05);
-}
-.voting-total-card.ei_haaletanud .voting-total-count {
-  color: #64748b;
-}
-.voting-total-card.ei_haaletanud .voting-total-label {
-  color: #475569;
+  border-top-color: var(--vote-none-fill);
+  color: var(--vote-none);
 }
 
 .voting-total-card.puudus {
-  border-color: rgba(148, 163, 184, 0.3);
-  background: rgba(148, 163, 184, 0.05);
-}
-.voting-total-card.puudus .voting-total-count {
-  color: #94a3b8;
-}
-.voting-total-card.puudus .voting-total-label {
-  color: #64748b;
+  border-top-color: var(--vote-absent-fill);
+  color: var(--vote-absent);
 }
 
 .voting-secret-callout {
   padding: 2.5rem 1.5rem;
   text-align: center;
-  font-size: 1.05rem;
+  font-size: var(--text-body);
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--color-text-muted);
 }
 
 .voting-section-heading {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .voting-table-scroll {
@@ -407,7 +384,8 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: var(--text-field);
+  color: var(--color-text);
 }
 
 .voting-factions-table th,
@@ -415,24 +393,23 @@
 .voting-members-table th,
 .voting-members-table td {
   padding: 0.75rem 0.9rem;
-  border-bottom: 1px solid var(--panel-border);
+  border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
 }
 
 .voting-factions-table thead th,
 .voting-members-table thead th {
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  border-bottom-color: var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .voting-factions-table tbody tr:hover,
 .voting-members-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--color-subtle);
 }
 
 .voting-factions-table tbody tr:last-child td,
@@ -445,9 +422,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+td.col-num {
+  font-family: var(--font-mono);
+}
+
 .col-faction-name {
+  color: var(--color-text);
+  font-family: var(--font-serif);
   font-weight: 600;
-  color: var(--text-primary);
 }
 
 .col-majority-val {
@@ -471,21 +453,23 @@
 }
 
 .voting-sort-th-btn:hover {
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .voting-member-link {
-  color: var(--accent-primary);
-  text-decoration: none;
+  color: var(--color-text);
+  font-family: var(--font-serif);
   font-weight: 600;
+  text-decoration: none;
 }
 
 .voting-member-link:hover {
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .col-member-faction {
-  color: var(--text-secondary);
+  color: var(--color-text-muted);
 }
 
 .col-member-decision {
@@ -496,41 +480,33 @@
 .voting-decision-badge {
   display: inline-block;
   padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.78rem;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-tag);
+  background: var(--color-surface);
+  font-size: var(--text-label);
   font-weight: 600;
   text-align: center;
   min-width: 65px;
 }
 
 .voting-decision-badge.poolt {
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--vote-for);
 }
 
 .voting-decision-badge.vastu {
-  background: rgba(239, 68, 68, 0.12);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--vote-against);
 }
 
 .voting-decision-badge.erapooletu {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--vote-abstain);
 }
 
 .voting-decision-badge.ei_haaletanud {
-  background: rgba(100, 116, 139, 0.12);
-  color: #475569;
-  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: var(--vote-none);
 }
 
 .voting-decision-badge.puudub {
-  background: rgba(148, 163, 184, 0.12);
-  color: #64748b;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: var(--vote-absent);
 }
 
 /* Member filtering controls */
@@ -562,179 +538,26 @@
 }
 
 .decision-tab-btn {
-  background: transparent;
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  padding: 0.35rem 0.65rem;
-  font-size: 0.8rem;
-  font-weight: 550;
-  color: var(--text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: 0.35rem 0.7rem;
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--color-text-soft);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .decision-tab-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-primary);
+  border-color: var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .decision-tab-btn.active,
 .decision-tab-btn[aria-pressed="true"] {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  color: #ffffff;
-}
-
-/* Dark theme overrides */
-html[data-theme="dark"] .voting-detail-title,
-html[data-theme="dark"] .voting-section-heading,
-html[data-theme="dark"] .votings-heading,
-html[data-theme="dark"] .col-faction-name,
-html[data-theme="dark"] .voting-row-desc {
-  color: var(--text-primary);
-}
-
-html[data-theme="dark"] .voting-factions-table td,
-html[data-theme="dark"] .voting-members-table td {
-  color: var(--text-primary);
-}
-
-html[data-theme="dark"] .voting-sitting-link,
-html[data-theme="dark"] .voting-member-link {
-  color: var(--accent-primary);
-}
-
-html[data-theme="dark"] .voting-sitting-link:hover,
-html[data-theme="dark"] .voting-member-link:hover {
-  color: var(--accent-secondary);
-}
-
-html[data-theme="dark"] .decision-tab-btn.active,
-html[data-theme="dark"] .decision-tab-btn[aria-pressed="true"] {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  color: #0f172a;
-  font-weight: 700;
-}
-
-html[data-theme="dark"] .voting-row-link:hover {
-  border-color: #60a5fa;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-}
-
-html[data-theme="dark"] .voting-badge-secret {
-  background: rgba(168, 85, 247, 0.22);
-  color: #c084fc;
-  border-color: rgba(168, 85, 247, 0.45);
-}
-
-html[data-theme="dark"] .voting-badge-technical {
-  background: rgba(100, 116, 139, 0.22);
-  color: #94a3b8;
-  border-color: rgba(100, 116, 139, 0.45);
-}
-
-html[data-theme="dark"] .voting-technical-callout {
-  background: rgba(234, 179, 8, 0.15);
-  border-color: rgba(234, 179, 8, 0.4);
-  color: #fde047;
-}
-
-html[data-theme="dark"] .voting-total-card.poolt {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.35);
-}
-html[data-theme="dark"] .voting-total-card.poolt .voting-total-count {
-  color: #34d399;
-}
-html[data-theme="dark"] .voting-total-card.poolt .voting-total-label {
-  color: #6ee7b7;
-}
-
-html[data-theme="dark"] .voting-total-card.vastu {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.35);
-}
-html[data-theme="dark"] .voting-total-card.vastu .voting-total-count {
-  color: #f87171;
-}
-html[data-theme="dark"] .voting-total-card.vastu .voting-total-label {
-  color: #fca5a5;
-}
-
-html[data-theme="dark"] .voting-total-card.erapooletu {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.35);
-}
-html[data-theme="dark"] .voting-total-card.erapooletu .voting-total-count {
-  color: #fbbf24;
-}
-html[data-theme="dark"] .voting-total-card.erapooletu .voting-total-label {
-  color: #fcd34d;
-}
-
-html[data-theme="dark"] .voting-total-card.ei_haaletanud {
-  background: rgba(100, 116, 139, 0.1);
-  border-color: rgba(100, 116, 139, 0.35);
-}
-html[data-theme="dark"] .voting-total-card.ei_haaletanud .voting-total-count {
-  color: #94a3b8;
-}
-html[data-theme="dark"] .voting-total-card.ei_haaletanud .voting-total-label {
-  color: #cbd5e1;
-}
-
-html[data-theme="dark"] .voting-total-card.puudus {
-  background: rgba(148, 163, 184, 0.1);
-  border-color: rgba(148, 163, 184, 0.35);
-}
-html[data-theme="dark"] .voting-total-card.puudus .voting-total-count {
-  color: #cbd5e1;
-}
-html[data-theme="dark"] .voting-total-card.puudus .voting-total-label {
-  color: #94a3b8;
-}
-
-html[data-theme="dark"] .voting-factions-table thead th,
-html[data-theme="dark"] .voting-members-table thead th {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-html[data-theme="dark"] .voting-factions-table tbody tr:hover,
-html[data-theme="dark"] .voting-members-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-html[data-theme="dark"] .decision-tab-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-html[data-theme="dark"] .voting-decision-badge.poolt {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.4);
-}
-
-html[data-theme="dark"] .voting-decision-badge.vastu {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-html[data-theme="dark"] .voting-decision-badge.erapooletu {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.4);
-}
-
-html[data-theme="dark"] .voting-decision-badge.ei_haaletanud {
-  background: rgba(100, 116, 139, 0.2);
-  color: #94a3b8;
-  border-color: rgba(100, 116, 139, 0.4);
-}
-
-html[data-theme="dark"] .voting-decision-badge.puudub {
-  background: rgba(148, 163, 184, 0.2);
-  color: #cbd5e1;
-  border-color: rgba(148, 163, 184, 0.4);
+  background: var(--color-accent-fill);
+  border-color: var(--color-accent-fill);
+  color: var(--color-on-accent);
 }

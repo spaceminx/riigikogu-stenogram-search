@@ -146,21 +146,21 @@ h3,
 
 /* Secondary button: "Otsi" on the person page, "Näita kõiki", "Tagasi avalehele" */
 .filter-search-btn {
-  min-height: 32px;
+  min-height: 36px;
   padding: 6px 14px;
-  border: 1px solid var(--accent-primary);
-  border-radius: 7px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-control);
   background: transparent;
-  color: var(--accent-primary);
+  color: var(--color-accent);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-field);
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .filter-search-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  background: var(--color-highlight);
 }
 
 .filter-search-btn:disabled {
