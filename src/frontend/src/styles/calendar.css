@@ -17,13 +17,13 @@
   align-items: center;
   gap: 8px;
   padding: 0 10px;
-  border: 1px solid #dbe3ec;
-  border-radius: 8px;
-  background: #fff;
-  color: #64748b;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   cursor: pointer;
   font: inherit;
-  font-size: 11px;
+  font-size: var(--text-field);
   text-align: left;
   transition:
     border-color 140ms ease,
@@ -39,13 +39,13 @@
 .date-range-trigger[aria-expanded="true"],
 .compact-calendar-toggle:hover,
 .compact-calendar-toggle[aria-expanded="true"] {
-  border-color: #9db2c8;
-  background: #f8fafc;
-  color: #1e3a5f;
+  border-color: var(--color-text-muted);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .date-range-trigger.has-value {
-  color: #27496b;
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -54,7 +54,7 @@
   width: 15px;
   height: 15px;
   flex: 0 0 15px;
-  color: #527292;
+  color: var(--color-text-muted);
 }
 
 .date-range-trigger span {
@@ -456,7 +456,6 @@
   line-height: 1.45;
 }
 
-html[data-theme="dark"] .date-range-trigger,
 html[data-theme="dark"] .calendar-select,
 html[data-theme="dark"] .calendar-preset-button,
 html[data-theme="dark"] .calendar-nav-button,
@@ -466,20 +465,11 @@ html[data-theme="dark"] .calendar-clear-button {
   color: #cbd5e1;
 }
 
-html[data-theme="dark"] .date-range-trigger:hover,
-html[data-theme="dark"] .date-range-trigger[aria-expanded="true"],
 html[data-theme="dark"] .calendar-preset-button:hover,
 html[data-theme="dark"] .calendar-preset-button:focus-visible,
-html[data-theme="dark"] .compact-calendar-toggle:hover,
-html[data-theme="dark"] .compact-calendar-toggle[aria-expanded="true"],
 html[data-theme="dark"] .calendar-nav-button:hover:not(:disabled) {
   background: #223149;
   color: #f1f5f9;
-}
-
-html[data-theme="dark"] .date-range-trigger.has-value,
-html[data-theme="dark"] .compact-calendar-toggle {
-  color: #cbd5e1;
 }
 
 html[data-theme="dark"] .calendar-popover {

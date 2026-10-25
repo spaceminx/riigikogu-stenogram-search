@@ -124,35 +124,33 @@ select:focus-visible {
 
 .and-group-box:focus-within {
   border: 0;
-  background: #fff;
+  background: transparent;
 }
 
 .or-divider {
   padding: 3px 6px;
   border: 0;
-  border-radius: 2px;
-  background: #e9edf2;
-  color: #4e6073;
-  font-size: 9px;
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
+  font-size: 11px;
   animation: none;
 }
 
 .token-pill {
-  padding: 4px 7px;
-  border: 1px solid #d0d8e1;
-  font-size: 11px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  font-size: var(--text-field);
   animation: none;
 }
 
 .search-input {
   min-height: 30px;
-  color: #25364a;
-  font-size: 12px;
 }
 
 .search-input::placeholder,
 .filter-text-input::placeholder {
-  color: #788596;
+  color: var(--color-text-muted);
 }
 
 .search-controls {
@@ -169,8 +167,8 @@ select:focus-visible {
 .filter-select,
 .filter-text-input {
   min-height: 34px;
-  border: 1px solid #b9c3cf;
-  background-color: #fff;
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-surface);
 }
 
 .logic-btn {
@@ -180,27 +178,26 @@ select:focus-visible {
 
 .logic-btn.and-btn:hover,
 .logic-btn.or-btn:hover {
-  border-color: #8798aa;
-  background: #edf1f5;
+  border-color: var(--color-border-strong);
+  background: var(--color-subtle);
 }
 
 .search-select {
   padding: 0 27px 0 9px;
-  background-color: #fff;
+  background-color: var(--color-surface);
 }
 
 .search-select option,
 .filter-select option {
-  color: #25364a;
-  background: #fff;
+  color: var(--color-text);
+  background: var(--color-surface);
 }
 
 .search-button {
   height: auto;
   margin-left: 0;
   padding: 0 15px;
-  border: 1px solid #274b70;
-  color: #fff;
+  border: 1px solid var(--color-accent-fill);
   font-weight: 600;
   box-shadow: none;
   transition: background-color 120ms ease;
@@ -213,7 +210,7 @@ select:focus-visible {
 
 .search-filters-row {
   grid-column: 1 / -1;
-  border-top: 1px solid #e0e5eb;
+  border-top: 1px solid var(--color-border);
 }
 
 .filter-select,
@@ -225,8 +222,8 @@ select:focus-visible {
 .filter-select:focus,
 .filter-text-input:hover,
 .filter-text-input:focus {
-  border-color: #7c8fa4;
-  background-color: #fff;
+  border-color: var(--color-text-muted);
+  background-color: var(--color-surface);
 }
 
 .summary-card,

@@ -458,7 +458,7 @@ select {
   }
   .search-hint {
     display: block;
-    font-size: 10.5px;
+    font-size: 12px;
     line-height: 1.35;
   }
   .search-controls {

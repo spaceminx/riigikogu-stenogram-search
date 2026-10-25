@@ -88,12 +88,10 @@ body {
   gap: 12px 14px;
   margin-bottom: 10px;
   padding: 15px 16px 12px;
-  border-color: #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 1px 3px rgba(15, 23, 42, 0.035);
+  border-color: var(--color-border);
+  border-radius: var(--radius-block);
+  background: var(--color-surface);
+  box-shadow: none;
 }
 
 .search-heading h2 {
@@ -105,9 +103,9 @@ body {
 .search-groups-container {
   min-height: 42px;
   padding: 4px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -120,8 +118,8 @@ body {
 }
 
 .search-groups-container:focus-within {
-  border-color: #5b84ae;
-  box-shadow: 0 0 0 3px rgba(49, 91, 132, 0.13);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-highlight);
 }
 
 .and-group-box {
@@ -142,10 +140,10 @@ body {
 }
 
 .token-pill {
-  border-color: #dbe4ed;
-  border-radius: 6px;
-  background: #f1f5f9;
-  color: #334155;
+  border-color: var(--color-border);
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .search-input,
@@ -159,8 +157,8 @@ input.search-input {
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
-  font-size: 13px;
-  color: var(--text-primary);
+  font-size: var(--text-body);
+  color: var(--color-text);
   font-family: inherit;
 }
 
@@ -181,9 +179,9 @@ input.search-input:focus-visible {
   max-width: 480px;
   max-height: 320px;
   overflow-y: auto;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
   box-shadow:
     0 10px 25px -5px rgba(0, 0, 0, 0.2),
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -199,23 +197,23 @@ input.search-input:focus-visible {
   justify-content: space-between;
   gap: 12px;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   user-select: none;
-  color: var(--text-primary);
-  font-size: 13px;
+  color: var(--color-text);
+  font-size: var(--text-field);
   line-height: 1.4;
   transition: background-color 100ms ease;
 }
 
 .search-suggestion-item:hover,
 .search-suggestion-item.is-highlighted {
-  background: var(--panel-border);
-  color: var(--text-primary);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .search-suggestion-item.is-highlighted .suggestion-term {
-  color: var(--accent-primary);
+  color: var(--color-accent);
 }
 
 .search-suggestion-item .suggestion-term {
@@ -226,8 +224,9 @@ input.search-input:focus-visible {
 }
 
 .search-suggestion-item .suggestion-count {
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--color-text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -240,10 +239,10 @@ input.search-input:focus-visible {
 .search-select,
 .filter-select,
 .filter-text-input {
-  border-color: #cbd5e1;
-  border-radius: 7px;
-  color: #334155;
-  font-size: 12px;
+  border-color: var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  font-size: var(--text-field);
 }
 
 .logic-btn {
@@ -257,44 +256,46 @@ input.search-input:focus-visible {
 }
 
 .search-button {
-  min-height: 36px;
-  padding-inline: 16px;
-  border-color: #315b84;
-  border-radius: 7px;
-  background: #315b84;
-  font-size: 12px;
+  min-height: 42px;
+  padding-inline: 20px;
+  border-color: var(--color-accent-fill);
+  border-radius: var(--radius-control);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font-size: var(--text-menu);
 }
 
 .search-button:hover:not(:disabled) {
-  background: #274b70;
+  border-color: var(--color-accent-fill-hover);
+  background: var(--color-accent-fill-hover);
 }
 
 .search-filters-row {
   padding-top: 10px;
-  border-top-color: #edf1f5;
+  border-top-color: var(--color-border);
 }
 
 .filter-label {
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 550;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  font-weight: 600;
 }
 
 .filter-select,
 .filter-text-input {
-  min-height: 32px;
-  border-color: #d5dde7;
-  border-radius: 7px;
-  color: #334155;
-  font-size: 11px;
+  min-height: 36px;
+  border-color: var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  font-size: var(--text-field);
 }
 
 .filter-select:focus,
 .filter-text-input:focus,
 .search-select:focus {
-  border-color: #5b84ae;
+  border-color: var(--color-accent);
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(49, 91, 132, 0.13);
+  box-shadow: 0 0 0 3px var(--color-highlight);
 }
 
 .topic-suggestions {
@@ -847,19 +848,20 @@ input.search-input:focus-visible {
 }
 
 .search-query-row .logic-btn {
-  min-height: 30px;
-  padding: 0 9px;
-  border-radius: 999px;
-  background: #f8fafc;
-  color: #475569;
-  font-size: 10px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-color: var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--text-field);
   font-weight: 600;
 }
 
 .search-query-row .logic-btn:hover {
-  border-color: #b9c9d9;
-  background: #eef4f8;
-  color: #1e3a5f;
+  border-color: var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .search-controls {
@@ -868,8 +870,8 @@ input.search-input:focus-visible {
 
 .search-hint {
   grid-column: 1 / -1;
-  color: #64748b;
-  font-size: 11px;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
   line-height: 1.4;
   margin-top: -2px;
 }
@@ -895,7 +897,7 @@ input.search-input:focus-visible {
 
 /* Same height as the selects next to it, so the labels line up */
 .search-filters-row .date-range-trigger {
-  min-height: 32px;
+  min-height: 36px;
 }
 
 .filter-input-wrap {
@@ -913,7 +915,7 @@ input.search-input:focus-visible {
   z-index: 1;
   width: 14px;
   height: 14px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   pointer-events: none;
 }
 
@@ -921,12 +923,12 @@ input.search-input:focus-visible {
   grid-column: 1 / -1;
   justify-self: end;
   margin-top: -3px;
-  padding: 5px 9px;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  background: #fff;
-  color: #64748b;
-  font-size: 10px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--text-label);
 }
 
 .profile-details .faction-badge {
