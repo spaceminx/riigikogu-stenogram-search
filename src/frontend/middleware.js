@@ -64,8 +64,13 @@ export function injectOpenGraphTags(html, meta) {
   if (tags.length === 0) return html;
 
   const injection = `\n    ${tags.join("\n    ")}`;
+  // index.html carries site-wide defaults; drop the ones this page replaces so each appears once.
+  // The default image stays unless the page has its own.
+  const replaced = meta.image ? /^og:/ : /^og:(?!image)/;
+  let out = html.replace(/\s*<meta\s+property="(og:[^"]+)"[^>]*>/gi, (tag, property) =>
+    replaced.test(property) ? "" : tag
+  );
   // Replacement functions, not strings: "$&" or "$'" in API text must stay literal.
-  let out = html;
   if (meta.title) {
     out = out.replace(
       /<title>[\s\S]*?<\/title>/i,
