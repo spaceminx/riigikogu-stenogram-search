@@ -427,13 +427,6 @@ select:focus-visible {
   flex-wrap: wrap;
 }
 
-.results-badge {
-  border: 1px solid #d4dce5;
-  border-radius: 2px;
-  background: #f3f5f7;
-  color: #4f6277;
-}
-
 .speech-card {
   border-bottom: 1px solid #e0e5eb;
 }
@@ -457,30 +450,12 @@ select:focus-visible {
 }
 
 .back-nav-btn,
-.context-btn,
-.pagination-btn,
-.export-btn-link,
-.search-sort-select {
-  border-radius: 2px;
+.context-btn {
+  border-radius: var(--radius-control);
   box-shadow: none;
 }
 
-.context-btn,
-.pagination-btn,
-.search-sort-select {
-  border-color: #cbd3dc;
-  background: #fff;
-  color: #3e536b;
-}
-
-.context-btn:hover,
-.pagination-btn:hover:not(:disabled),
-.export-btn-link:hover {
-  background: #edf1f5;
-}
-
-.speech-link,
-.export-btn-link {
+.speech-link {
   color: var(--color-accent);
 }
 

@@ -33,38 +33,10 @@ html[data-theme="dark"] .transcript-row-text {
   color: #dbe4ef;
 }
 
-html[data-theme="dark"] .transcript-agenda-badge,
-html[data-theme="dark"] .results-badge {
+html[data-theme="dark"] .transcript-agenda-badge {
   border-color: #35445b;
   background: #202d41;
   color: #cbd5e1;
-}
-
-html[data-theme="dark"] .pagination-btn,
-html[data-theme="dark"] .search-sort-select,
-html[data-theme="dark"] .export-btn-link {
-  border-color: #35445b;
-  background: #202d41;
-  color: #cbd5e1;
-}
-
-html[data-theme="dark"] .pagination-btn:hover:not(:disabled),
-html[data-theme="dark"] .search-sort-select:hover,
-html[data-theme="dark"] .export-btn-link:hover {
-  border-color: #4b5f7d;
-  background: #273750;
-  color: #f1f5f9;
-}
-
-html[data-theme="dark"] .pagination-btn:disabled {
-  border-color: #29364a;
-  background: #172235;
-  color: #64748b;
-}
-
-html[data-theme="dark"] .search-sort-select option {
-  background: #111c2d;
-  color: #e2e8f0;
 }
 
 html[data-theme="dark"] .modal-content.glass-panel {
@@ -283,9 +255,9 @@ html[data-theme="dark"] .sample-chart {
 .speeches-view-title {
   min-width: 0;
   padding-left: 14px;
-  border-left-color: #dbe3ec;
-  color: #1e293b;
-  font-size: 16px;
+  border-left-color: var(--color-border);
+  color: var(--color-text);
+  font-size: var(--text-name);
   line-height: 1.4;
 }
 
