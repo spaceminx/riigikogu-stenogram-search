@@ -72,16 +72,6 @@
   flex-wrap: wrap;
 }
 
-.modal-external-link {
-  color: var(--color-accent);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.modal-external-link:hover {
-  text-decoration: underline;
-}
-
 .modal-close-icon-btn {
   background: transparent;
   border: none;
@@ -96,10 +86,6 @@
 
 .modal-close-icon-btn:hover {
   color: var(--color-text);
-}
-
-.modal-filter-box {
-  margin: 1rem 0;
 }
 
 .modal-search-input {

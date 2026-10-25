@@ -51,13 +51,6 @@
   gap: 1.25rem;
 }
 
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-}
-
 .filter-label,
 .attendance-label {
   color: var(--color-text-muted);
@@ -216,12 +209,6 @@
   border-radius: var(--radius-tag);
 }
 
-.percent-bar-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
 .faction-row-interactive {
   cursor: pointer;
 }
@@ -278,9 +265,7 @@
   box-sizing: border-box;
 }
 
-.att-col-count,
-.att-col-total,
-.att-col-present {
+.att-col-count {
   width: 12%;
   min-width: 90px;
   color: var(--color-text-soft);
@@ -372,36 +357,6 @@
   text-decoration: none;
 }
 
-.att-col-percent {
-  width: 26%;
-  min-width: 180px;
-}
-
-.percent-bar-bg {
-  flex: 1;
-  height: 8px;
-  overflow: hidden;
-  border-radius: var(--radius-tag);
-  background: var(--color-border);
-}
-
-.percent-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-tag);
-  transition: width 0.6s ease-out;
-}
-
-.percent-text {
-  display: inline-block;
-  min-width: 48px;
-  margin-left: 10px;
-  color: var(--color-text-soft);
-  font-family: var(--font-mono);
-  font-size: var(--text-field);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
 html[data-theme="dark"] .attendance-select {
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%23a4a9b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
@@ -428,7 +383,6 @@ html[data-theme="dark"] .attendance-select {
 
   .att-col-faction,
   .att-col-count,
-  .att-col-total,
   .att-col-registered,
   .att-col-votes {
     display: none !important;
@@ -613,36 +567,9 @@ html[data-theme="dark"] .attendance-select {
     box-sizing: border-box;
   }
 
-  .att-col-present {
-    width: auto;
-    min-width: 0;
-    font-size: 13px;
-    text-align: right;
-  }
-
-  .att-col-percent {
-    width: auto;
-    min-width: 0;
-    padding-right: 0.25rem;
-  }
-
   .att-sort-btn {
     font-size: 12px;
     padding: 0.15rem;
-  }
-
-  .percent-bar-container {
-    gap: 4px;
-  }
-
-  .percent-bar-bg {
-    display: none;
-  }
-
-  .percent-text {
-    margin-left: 0;
-    min-width: 0;
-    font-size: 13px;
   }
 }
 
@@ -657,7 +584,6 @@ html[data-theme="dark"] .attendance-select {
     flex-direction: column;
     align-items: stretch;
   }
-  .search-select,
   .search-button {
     width: 100%;
   }

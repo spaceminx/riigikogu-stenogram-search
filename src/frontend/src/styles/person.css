@@ -254,12 +254,6 @@
   margin-bottom: 1.5rem;
 }
 
-.person-tab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .person-tab-count {
   background: var(--color-subtle);
   color: inherit;
