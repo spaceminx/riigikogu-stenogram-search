@@ -437,9 +437,6 @@ select {
 }
 
 @media (max-width: 720px) {
-  .brand-copy > span {
-    font-size: 9px;
-  }
   .nav-links {
     gap: 1px;
     padding: 3px;

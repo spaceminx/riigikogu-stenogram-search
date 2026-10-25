@@ -27,49 +27,61 @@ body {
 .header {
   min-height: 70px;
   margin-bottom: 20px;
-  border-bottom-color: #e2e8f0;
 }
 
 .brand-mark {
   width: 36px;
   height: 36px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .brand-mark svg {
-  width: 26px;
-  stroke: #315b84;
+  width: 100%;
+  height: 100%;
+}
+
+.brand-tile {
+  fill: var(--color-accent-fill);
+}
+
+.brand-comma {
+  fill: var(--color-on-accent);
+}
+
+.brand-comma-editor {
+  fill: var(--color-editor);
 }
 
 .brand-copy strong,
 .page-titlebar .page-title {
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .brand-copy strong {
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -0.025em;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.1;
 }
 
 .brand-copy > span,
 .page-titlebar > span {
-  color: #64748b;
+  color: var(--color-text-muted);
+}
+
+.brand-copy > span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .page-titlebar {
   min-height: 43px;
   margin-bottom: 14px;
-  border-bottom-color: #e2e8f0;
 }
 
 .page-titlebar .page-title {
-  font-size: 23px;
-  font-weight: 650;
-  letter-spacing: -0.04em;
+  font-size: 26px;
+  font-weight: 600;
 }
 
 .search-section {
@@ -648,16 +660,15 @@ input.search-input:focus-visible {
   justify-content: center;
   gap: 8px;
   padding: 0 11px;
-  border: 1px solid #dbe3ec;
-  border-radius: 8px;
-  background: #fff;
-  color: #475569;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
-  font-weight: 550;
+  font-size: var(--text-field);
+  font-weight: 600;
   list-style: none;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .header-menu-trigger::-webkit-details-marker {
@@ -671,9 +682,9 @@ input.search-input:focus-visible {
 
 .header-menu-trigger:hover,
 .header-menu[open] .header-menu-trigger {
-  border-color: #b9c9d9;
-  background: #f8fafc;
-  color: #1e3a5f;
+  border-color: var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .header-menu-panel {
@@ -685,16 +696,16 @@ input.search-input:focus-visible {
   width: min(300px, calc(100vw - 32px));
   gap: 4px;
   padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
+  background: var(--color-surface);
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
 }
 
 .menu-section-label {
   padding: 4px 7px;
-  color: #94a3b8;
-  font-size: 9px;
+  color: var(--color-text-muted);
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -709,11 +720,11 @@ input.search-input:focus-visible {
   gap: 9px;
   padding: 6px 7px;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   background: transparent;
-  color: #334155;
+  color: var(--color-text-soft);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--text-field);
   text-align: left;
   text-decoration: none;
 }
@@ -725,8 +736,8 @@ input.search-input:focus-visible {
 
 .menu-action:hover,
 .menu-link:hover {
-  background: #f1f5f9;
-  color: #1e3a5f;
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .menu-action svg,
@@ -735,7 +746,7 @@ input.search-input:focus-visible {
   width: 15px;
   height: 15px;
   flex: 0 0 15px;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .menu-link > span:nth-child(2),
@@ -746,13 +757,13 @@ input.search-input:focus-visible {
 .menu-link > svg:last-child {
   width: 12px;
   height: 12px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .menu-divider {
   height: 1px;
   margin: 5px 2px;
-  background: #edf1f5;
+  background: var(--color-border);
 }
 
 .menu-status {
@@ -760,7 +771,7 @@ input.search-input:focus-visible {
   align-items: center;
   gap: 5px;
   color: #15803d;
-  font-size: 9px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -784,9 +795,9 @@ input.search-input:focus-visible {
   width: 15px;
   height: 15px;
   place-items: center;
-  border-radius: 4px;
-  background: #1e293b;
-  color: #fff;
+  border-radius: var(--radius-tag);
+  background: var(--color-text);
+  color: var(--color-surface);
   font-size: 7px;
   font-weight: 700;
 }

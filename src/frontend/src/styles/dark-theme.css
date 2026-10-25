@@ -2,23 +2,6 @@ html[data-theme="dark"] {
   color-scheme: dark;
 }
 
-html[data-theme="dark"] .nav-btn {
-  color: #94a3b8;
-}
-
-html[data-theme="dark"] .nav-btn:hover {
-  color: #f1f5f9;
-  background: #1e293b;
-}
-
-html[data-theme="dark"] .nav-btn.active {
-  color: #60a5fa;
-  background: transparent;
-  box-shadow: inset 0 -2px 0 #60a5fa;
-}
-
-html[data-theme="dark"] .brand-copy strong,
-html[data-theme="dark"] .page-titlebar .page-title,
 html[data-theme="dark"] .summary-card strong,
 html[data-theme="dark"] .chart-header h2,
 html[data-theme="dark"] .voting-card h2,
@@ -27,18 +10,6 @@ html[data-theme="dark"] .profile-details .speaker-name {
   color: #e2e8f0;
 }
 
-html[data-theme="dark"] .header-menu-trigger:hover,
-html[data-theme="dark"] .header-menu[open] .header-menu-trigger,
-html[data-theme="dark"] .menu-action:hover,
-html[data-theme="dark"] .menu-link:hover {
-  border-color: #40536c;
-  background: #223149;
-  color: #f1f5f9;
-}
-
-html[data-theme="dark"] .menu-action,
-html[data-theme="dark"] .menu-link,
-html[data-theme="dark"] .menu-status-row,
 html[data-theme="dark"] .filter-label,
 html[data-theme="dark"] .summary-caption,
 html[data-theme="dark"] .speaker-count-caption,
@@ -64,8 +35,7 @@ html[data-theme="dark"] .profile-details .faction-badge {
 }
 
 html[data-theme="dark"] .session-item,
-html[data-theme="dark"] .sidebar-empty-state,
-html[data-theme="dark"] .menu-divider {
+html[data-theme="dark"] .sidebar-empty-state {
   border-color: #29364a;
 }
 
