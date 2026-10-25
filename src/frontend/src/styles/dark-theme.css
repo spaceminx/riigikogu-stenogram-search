@@ -258,6 +258,7 @@ html[data-theme="dark"] {
   color: var(--color-accent);
   font-size: var(--text-field);
   text-align: left;
+  text-decoration: none;
 }
 
 .speech-card-actions .context-btn:hover {
