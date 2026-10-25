@@ -134,10 +134,33 @@
 
 .voting-row-meta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.5rem 0.75rem;
   flex-wrap: wrap;
+}
+
+.voting-row-meta .voting-badges {
+  margin-left: auto;
+}
+
+/* Procedural step ("Lõpphääletus"); the topic itself is the heading */
+.voting-stage {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.voting-detail-stage {
+  align-self: flex-start;
+  margin: 0;
 }
 
 .voting-row-time {
@@ -176,6 +199,11 @@
 }
 
 .voting-row-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   color: var(--color-text);
   font-family: var(--font-serif);
   font-size: var(--text-name);
@@ -184,9 +212,48 @@
 }
 
 .voting-row-doc {
-  font-size: var(--text-field);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
   color: var(--color-text-muted);
   line-height: 1.35;
+}
+
+.vote-bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin-top: 0.45rem;
+  overflow: hidden;
+  border-radius: var(--radius-tag);
+}
+
+.vote-bar-segment {
+  flex-basis: 0;
+  min-width: 2px;
+}
+
+.vote-bar-for {
+  background: var(--vote-for-fill);
+}
+
+.vote-bar-against {
+  background: var(--vote-against-fill);
+}
+
+.vote-bar-abstain {
+  background: var(--vote-abstain-fill);
+}
+
+.vote-bar-none {
+  background: var(--vote-none-fill);
+}
+
+.vote-bar-absent {
+  background: var(--vote-absent-fill);
+}
+
+.voting-row-summary-part {
+  white-space: nowrap;
 }
 
 .voting-row-summary {

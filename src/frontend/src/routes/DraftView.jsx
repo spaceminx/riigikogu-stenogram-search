@@ -103,7 +103,7 @@ function ReadingCard({ reading, draftUuid }) {
         <div className="reading-votings-block">
           <div className="reading-votings-list">
             {reading.votings.map((voting) => (
-              <VotingRow key={voting.uuid} voting={voting} showDate={false} />
+              <VotingRow key={voting.uuid} voting={voting} showDate={false} showDocument={false} />
             ))}
           </div>
         </div>
@@ -320,7 +320,7 @@ export function DraftView() {
           <h2 className="draft-section-title">Muud hääletused</h2>
           <div className="votings-list">
             {otherVotings.map((voting) => (
-              <VotingRow key={voting.uuid} voting={voting} showDate={true} />
+              <VotingRow key={voting.uuid} voting={voting} showDate={true} showDocument={false} />
             ))}
           </div>
         </section>

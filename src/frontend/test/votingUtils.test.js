@@ -8,6 +8,9 @@ import {
   formatTimeHHMM,
   formatOvernightTime,
   formatVotingSummary,
+  getVotingHeading,
+  formatDocumentReference,
+  getVoteBarSegments,
 } from "../src/lib/votingUtils.js";
 
 test("voting utilities", async (t) => {
@@ -90,5 +93,54 @@ test("voting utilities", async (t) => {
       "Poolt 54 · Vastu 22 · Erapooletu 0 · Ei hääletanud 5 · Puudus 20"
     );
     assert.equal(formatVotingSummary(null), "");
+  });
+
+  await t.test("getVotingHeading puts the document first and keeps the step as a label", () => {
+    const voting = {
+      description: "Lõpphääletus",
+      related_document: { reference: "855", title: "Relvaseaduse muutmise seadus", type: "DRAFT" },
+    };
+    assert.deepEqual(getVotingHeading(voting), {
+      title: "Relvaseaduse muutmise seadus",
+      stage: "Lõpphääletus",
+    });
+    assert.deepEqual(getVotingHeading(voting, { showDocument: false }), {
+      title: "Lõpphääletus",
+      stage: null,
+    });
+    assert.deepEqual(getVotingHeading({ description: "Päevakorra kinnitamine" }), {
+      title: "Päevakorra kinnitamine",
+      stage: null,
+    });
+  });
+
+  await t.test("formatDocumentReference", () => {
+    assert.equal(formatDocumentReference({ reference: "855", type: "DRAFT" }), "Eelnõu 855");
+    assert.equal(
+      formatDocumentReference({ reference: "OE 12", type: "otherQuestionDocument" }),
+      "OE 12"
+    );
+    assert.equal(formatDocumentReference({ title: "Ilma numbrita" }), "");
+    assert.equal(formatDocumentReference(null), "");
+  });
+
+  await t.test("getVoteBarSegments keeps non-zero groups in vote order", () => {
+    const segments = getVoteBarSegments({
+      present: 90,
+      absent: 11,
+      in_favor: 0,
+      against: 18,
+      neutral: 0,
+    });
+    assert.deepEqual(
+      segments.map((s) => [s.key, s.value]),
+      [
+        ["against", 18],
+        ["none", 72],
+        ["absent", 11],
+      ]
+    );
+    assert.deepEqual(getVoteBarSegments({ present: 0, absent: 0 }), []);
+    assert.deepEqual(getVoteBarSegments(null), []);
   });
 });
