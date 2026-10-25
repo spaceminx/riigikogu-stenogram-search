@@ -226,12 +226,6 @@ select:focus-visible {
   background-color: var(--color-surface);
 }
 
-.summary-card,
-.glass-panel {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
 .summary-card {
   display: flex;
   align-items: center;

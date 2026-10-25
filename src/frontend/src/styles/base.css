@@ -19,7 +19,6 @@ h3,
 }
 
 .glass-panel {
-  -webkit-backdrop-filter: blur(12px);
   padding: 1.5rem;
 }
 

@@ -19,6 +19,13 @@ test.describe("Dashboard session calendar and search filters", () => {
     await page.getByRole("button", { name: "Ava kalendrivaade" }).click();
 
     const calendar = page.getByRole("dialog", { name: "Riigikogu istungite kalender" });
+
+    // The popover is position: fixed; an ancestor with a backdrop-filter used to push it off-screen
+    const box = await calendar.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+
     const monthPrefix = FIXTURE_IDS.date.slice(0, 7);
     const expectedDays = sessionDates.filter((d) => d.startsWith(monthPrefix)).length;
     const sessionDays = calendar.locator(".calendar-day.has-session:not(.is-outside-month)");
