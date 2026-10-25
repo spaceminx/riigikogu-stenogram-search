@@ -14,7 +14,8 @@
     "check:css-vars": "node scripts/check_css_vars.mjs",
     "preview": "vite preview",
     "e2e": "playwright test",
-    "e2e:build": "vite build"
+    "e2e:build": "vite build",
+    "og-image": "node scripts/build_og_image.mjs"
   },
   "dependencies": {
     "@fontsource-variable/source-code-pro": "5.3.1",
