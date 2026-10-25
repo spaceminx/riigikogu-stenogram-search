@@ -1,0 +1,69 @@
+/* Design tokens of the "Stenogramm" brand. Names in comments are the palette names on the design canvas. */
+:root {
+  --font-serif: "Source Serif 4 Variable", Georgia, serif;
+  --font-sans: "Source Sans 3 Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Source Code Pro Variable", ui-monospace, Consolas, monospace;
+
+  /* Type scale M */
+  --text-label: 13px;
+  --text-field: 14px;
+  --text-menu: 15px;
+  --text-body: 16px;
+  --text-name: 17px;
+
+  /* Corners: large block / field and button / tag */
+  --radius-block: 4px;
+  --radius-control: 3px;
+  --radius-tag: 2px;
+
+  --color-text: #1c1f26; /* Tint */
+  --color-text-muted: #5e6472; /* Grafiit */
+  --color-bg: #f8f8f6; /* Paber */
+  --color-surface: #ffffff;
+  --color-border: #dadce2;
+  --color-border-strong: #a9aeba;
+  --color-accent: #2e3f78; /* Protokoll: links and the active tab */
+  --color-accent-fill: #2e3f78; /* primary button background */
+  --color-on-accent: #ffffff;
+  --color-highlight: #e3e8f7; /* Vaste: search match background */
+  --color-editor: #f0a47e; /* Toimetaja: badge fill only, too light for text */
+  --color-on-editor: #1c1f26;
+
+  /* Votes: text passes 4.5:1 on the surface; fills are for bars */
+  --vote-for: #23764f;
+  --vote-against: #b3261e;
+  --vote-abstain: #8a6a00;
+  --vote-none: #4a4f5b;
+  --vote-absent: #6b7080;
+  --vote-for-fill: #3e9a6e;
+  --vote-against-fill: #b3261e;
+  --vote-abstain-fill: #8a6a00;
+  --vote-none-fill: #6b7080;
+  --vote-absent-fill: #c4c8d0;
+}
+
+html[data-theme="dark"] {
+  --color-text: #e9eaee;
+  --color-text-muted: #a4a9b5;
+  --color-bg: #121419; /* Öö */
+  --color-surface: #1b1e25; /* Pind */
+  --color-border: #2d313b;
+  --color-border-strong: #4a4f5c;
+  --color-accent: #93a5e8;
+  --color-accent-fill: #3b4f96;
+  --color-on-accent: #ffffff;
+  --color-highlight: #26305a;
+  --color-editor: #f0a47e;
+  --color-on-editor: #1c1f26;
+
+  --vote-for: #6fcb9c;
+  --vote-against: #f28b82;
+  --vote-abstain: #d9b44a;
+  --vote-none: #c8cbd3;
+  --vote-absent: #a4a9b5;
+  --vote-for-fill: #3e9a6e;
+  --vote-against-fill: #d0473c;
+  --vote-abstain-fill: #d9b44a;
+  --vote-none-fill: #6b7080;
+  --vote-absent-fill: #3e4350;
+}
