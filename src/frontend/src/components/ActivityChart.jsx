@@ -9,6 +9,7 @@ import {
   formatWeekAxis,
   formatWeekTooltip,
 } from "../lib/formatters";
+import { chartColors } from "../lib/chartColors";
 
 function ActivityCustomTooltip({ active, payload, label, formatLabel, scale, style }) {
   if (!active || !payload || payload.length === 0) return null;
@@ -37,20 +38,21 @@ export function ActivityChart({
   kicker = "TEEMA LÄBI AJA",
   emptyMessage = "Sellele otsingule kõnesid ei leitud.",
 }) {
+  const colors = chartColors(theme);
   const tooltipStyle = {
     contentStyle: {
-      backgroundColor: theme === "dark" ? "#1e293b" : "#ffffff",
-      color: theme === "dark" ? "#f1f5f9" : "#25364a",
-      border: `1px solid ${theme === "dark" ? "#334155" : "#cbd3dc"}`,
+      backgroundColor: colors.surface,
+      color: colors.text,
+      border: `1px solid ${colors.border}`,
       borderRadius: "4px",
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
     },
-    itemStyle: { color: theme === "dark" ? "#60a5fa" : "#315b84", fontWeight: 600 },
-    labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
+    itemStyle: { color: colors.accent, fontWeight: 600 },
+    labelStyle: { color: colors.muted, marginBottom: "4px" },
   };
 
-  const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
-  const axisTickColor = theme === "dark" ? "#94a3b8" : "#64748b";
+  const axisStroke = colors.border;
+  const axisTickColor = colors.muted;
 
   const formatAxisTick = (tick) => {
     if (!tick) return "";
@@ -199,7 +201,7 @@ export function ActivityChart({
               <Bar
                 dataKey={scale === "share" ? "share" : "count"}
                 name={scale === "share" ? "Osakaal" : "Kõnesid"}
-                fill="#315b84"
+                fill={colors.accent}
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
               />

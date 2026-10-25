@@ -23,16 +23,21 @@
 
 .speeches-view-title {
   margin: 0;
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
 .results-badge {
-  font-size: 0.85rem;
-  font-weight: 600;
   padding: 0.2rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
 }
 
 .speeches-header-controls {
@@ -50,36 +55,38 @@
 }
 
 .sort-label {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  font-weight: 500;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  font-weight: 600;
 }
 
 .search-sort-select {
   min-width: 0;
   max-width: 100%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
   padding: 0.35rem 0.75rem;
-  font-size: 0.82rem;
+  font-size: var(--text-field);
   font-family: inherit;
   outline: none;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.search-sort-select:focus,
 .search-sort-select:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
-  color: #ffffff;
+  border-color: var(--color-text-muted);
+}
+
+.search-sort-select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-highlight);
 }
 
 .search-sort-select option {
-  background: #0f172a;
-  color: #f8fafc;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .export-actions-wrap {
@@ -89,29 +96,28 @@
 }
 
 .export-label {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  font-weight: 500;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
+  font-weight: 600;
 }
 
 .export-btn-link {
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: #e2e8f0;
-  font-size: 0.82rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-accent);
+  font-size: var(--text-field);
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .export-btn-link:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: rgba(139, 92, 246, 0.5);
-  color: #ffffff;
+  background: var(--color-subtle);
+  border-color: var(--color-border-strong);
 }
 
 /* Speech Card Meta & Actions */
@@ -124,20 +130,20 @@
 .speaker-role-tag {
   display: inline-block;
   padding: 0.15rem 0.5rem;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 6px;
-  color: #93c5fd;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tag);
+  color: var(--color-text-soft);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
 .context-btn {
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: #c4b5fd;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
   padding: 0.45rem 0.9rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -148,7 +154,6 @@
 }
 
 .context-btn:hover {
-  background: rgba(139, 92, 246, 0.25);
-  border-color: rgba(139, 92, 246, 0.6);
-  color: #ffffff;
+  background: var(--color-subtle);
+  border-color: var(--color-border-strong);
 }

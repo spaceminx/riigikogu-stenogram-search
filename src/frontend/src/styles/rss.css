@@ -4,25 +4,24 @@
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #fed7aa;
-  background: #fff7ed;
-  color: #c2410c;
-  font-size: 13px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: var(--text-field);
   font-weight: 600;
   text-decoration: none;
   transition: all 0.15s ease;
 }
 
 .rss-feed-link:hover {
-  background: #ffedd5;
-  border-color: #fdba74;
-  color: #9a3412;
+  background: var(--color-subtle);
+  border-color: var(--color-border-strong);
   text-decoration: underline;
 }
 
 .rss-feed-link:focus-visible {
-  outline: 2px solid var(--accent-primary, #3b82f6);
+  outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
 
@@ -32,16 +31,4 @@
   align-items: center;
   gap: 0.75rem;
   margin-top: 0.25rem;
-}
-
-html[data-theme="dark"] .rss-feed-link {
-  background: rgba(249, 115, 22, 0.12);
-  border-color: rgba(249, 115, 22, 0.25);
-  color: #fb923c;
-}
-
-html[data-theme="dark"] .rss-feed-link:hover {
-  background: rgba(249, 115, 22, 0.22);
-  border-color: rgba(249, 115, 22, 0.4);
-  color: #fdba74;
 }
