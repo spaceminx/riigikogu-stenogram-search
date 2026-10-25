@@ -85,7 +85,7 @@ select:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   margin: 0 0 16px;
-  border: 1px solid #cbd3dc;
+  border: 1px solid var(--color-border);
   backdrop-filter: none;
 }
 
@@ -208,7 +208,6 @@ select:focus-visible {
 
 .chart-header h2 {
   margin: 0;
-  color: #2d435c;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0;
@@ -306,10 +305,6 @@ select:focus-visible {
 
 .speeches-header-bar {
   flex-wrap: wrap;
-}
-
-.speech-card {
-  border-bottom: 1px solid #e0e5eb;
 }
 
 .speech-meta,

@@ -26,17 +26,8 @@ h3,
   flex-direction: column;
 }
 
-.search-groups-container {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1rem;
-}
-
 .and-group-box {
   transition: all 0.2s;
-}
-
-.and-group-box:focus-within {
-  border-color: rgba(59, 130, 246, 0.6);
 }
 
 .or-divider {
@@ -98,23 +89,11 @@ h3,
 }
 
 .logic-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.logic-btn.and-btn:hover {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.6);
-}
-
-.logic-btn.or-btn:hover {
-  background: rgba(139, 92, 246, 0.3);
-  border-color: rgba(139, 92, 246, 0.6);
 }
 
 .search-button {

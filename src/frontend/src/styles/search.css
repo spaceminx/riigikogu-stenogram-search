@@ -12,12 +12,12 @@
 }
 
 .filter-select {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
   padding: 0.4rem 2rem 0.4rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: var(--radius-control);
+  font-size: var(--text-field);
   font-family: inherit;
   cursor: pointer;
   outline: none;
@@ -30,8 +30,8 @@
 
 .filter-select:hover,
 .filter-select:focus {
-  border-color: rgba(139, 92, 246, 0.5);
-  background-color: rgba(255, 255, 255, 0.09);
+  border-color: var(--color-text-muted);
+  background-color: var(--color-surface);
 }
 
 .filter-group-item.speaker-filter-item {
@@ -47,12 +47,12 @@
 
 .filter-text-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
   padding: 0.4rem 1.8rem 0.4rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: var(--radius-control);
+  font-size: var(--text-field);
   font-family: inherit;
   outline: none;
   transition: all 0.2s;
@@ -60,12 +60,12 @@
 
 .filter-text-input:hover,
 .filter-text-input:focus {
-  border-color: rgba(139, 92, 246, 0.5);
-  background-color: rgba(255, 255, 255, 0.09);
+  border-color: var(--color-text-muted);
+  background-color: var(--color-surface);
 }
 
 .filter-text-input::placeholder {
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .filter-clear-icon-btn {
