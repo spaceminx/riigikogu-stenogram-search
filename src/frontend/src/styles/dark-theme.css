@@ -16,8 +16,7 @@ html[data-theme="dark"] .sidebar-empty-state {
   color: #a8b5c6;
 }
 
-html[data-theme="dark"] .session-topic,
-html[data-theme="dark"] .profile-details .faction-badge {
+html[data-theme="dark"] .session-topic {
   border-color: #35445b;
   background: #202d41;
   color: #cbd5e1;
@@ -32,44 +31,10 @@ html[data-theme="dark"] .session-marker {
   box-shadow: 0 0 0 3px #25344a;
 }
 
-html[data-theme="dark"] .speech-text,
 html[data-theme="dark"] .transcript-row-text {
   color: #dbe4ef;
 }
 
-html[data-theme="dark"] .speaker-name-highlight {
-  color: #e2e8f0;
-}
-
-html[data-theme="dark"] .speaker-name-link {
-  color: #93c5fd;
-}
-
-html[data-theme="dark"] .speaker-name-link:hover,
-html[data-theme="dark"] .speaker-name-link:focus-visible {
-  color: #bfdbfe;
-}
-
-html[data-theme="dark"] .speech-meta,
-html[data-theme="dark"] .speaker-header-info,
-html[data-theme="dark"] .speech-datetime {
-  color: #a8b5c6;
-}
-
-html[data-theme="dark"] .speech-anchor-link {
-  color: #a8b5c6;
-}
-
-html[data-theme="dark"] .speech-anchor-link:hover {
-  color: #93c5fd;
-}
-
-html[data-theme="dark"] .speaker-role-tag,
-html[data-theme="dark"] .speech-type-badge,
-html[data-theme="dark"] .speech-duration-badge,
-html[data-theme="dark"] .faction-badge,
-html[data-theme="dark"] .speech-card .faction-badge,
-html[data-theme="dark"] .modal-content .faction-badge,
 html[data-theme="dark"] .transcript-agenda-badge,
 html[data-theme="dark"] .results-badge {
   border-color: #35445b;
@@ -77,44 +42,16 @@ html[data-theme="dark"] .results-badge {
   color: #cbd5e1;
 }
 
-html[data-theme="dark"] .speech-agenda-tag {
-  border-left-color: #60a5fa;
-  background: #202d41;
-  color: #dbe4ef;
-}
-
-html[data-theme="dark"] .agenda-kicker {
-  color: #93c5fd;
-}
-
-html[data-theme="dark"] .agenda-title-text {
-  color: #e2e8f0;
-}
-
-html[data-theme="dark"] .agenda-draft-link {
-  background: rgba(119, 226, 194, 0.15);
-  border-color: rgba(119, 226, 194, 0.35);
-  color: #77e2c2;
-}
-
-html[data-theme="dark"] .agenda-draft-link:hover {
-  background: rgba(119, 226, 194, 0.25);
-}
-
-html[data-theme="dark"] .context-btn,
 html[data-theme="dark"] .pagination-btn,
 html[data-theme="dark"] .search-sort-select,
-html[data-theme="dark"] .back-nav-btn,
 html[data-theme="dark"] .export-btn-link {
   border-color: #35445b;
   background: #202d41;
   color: #cbd5e1;
 }
 
-html[data-theme="dark"] .context-btn:hover,
 html[data-theme="dark"] .pagination-btn:hover:not(:disabled),
 html[data-theme="dark"] .search-sort-select:hover,
-html[data-theme="dark"] .back-nav-btn:hover,
 html[data-theme="dark"] .export-btn-link:hover {
   border-color: #4b5f7d;
   background: #273750;
@@ -130,35 +67,6 @@ html[data-theme="dark"] .pagination-btn:disabled {
 html[data-theme="dark"] .search-sort-select option {
   background: #111c2d;
   color: #e2e8f0;
-}
-
-html[data-theme="dark"] .speech-link {
-  color: #93c5fd;
-}
-
-html[data-theme="dark"] .speech-link:hover {
-  color: #bfdbfe;
-}
-
-html[data-theme="dark"] .speech-video-link {
-  color: #f87171;
-}
-
-html[data-theme="dark"] .speech-video-link:hover {
-  color: #fca5a5;
-}
-
-html[data-theme="dark"] .speech-card-actions {
-  border-top-color: #29364a;
-}
-
-html[data-theme="dark"] .speech-card:hover {
-  border-color: #40536c;
-}
-
-html[data-theme="dark"] .target-speech-highlight {
-  background: #1c2a3f;
-  border-color: #3b5070;
 }
 
 html[data-theme="dark"] .modal-content.glass-panel {
@@ -357,7 +265,7 @@ html[data-theme="dark"] .sample-chart {
   gap: 14px 20px;
   margin: 0;
   padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .speeches-header-heading {
@@ -370,7 +278,7 @@ html[data-theme="dark"] .sample-chart {
 
 .speeches-header-heading .back-nav-btn {
   flex: 0 0 auto;
-  color: #315b84;
+  color: var(--color-accent);
   white-space: nowrap;
 }
 
@@ -407,19 +315,22 @@ html[data-theme="dark"] .sample-chart {
   width: 100%;
   min-width: 0;
   padding: 18px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
+  background: var(--color-surface);
+  box-shadow: none;
+  transition: border-color 160ms ease;
 }
 
 .speech-card:hover {
   transform: none;
-  border-color: #cbd5e1;
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.08);
+  border-color: var(--color-border-strong);
+  box-shadow: none;
+}
+
+.speech-card.target-speech-highlight {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
 .speech-meta {
@@ -437,36 +348,39 @@ html[data-theme="dark"] .sample-chart {
   gap: 7px;
 }
 
-.speaker-name-highlight {
-  color: #1e293b;
-  font-size: 15px;
-  font-weight: 700;
+.speaker-name-highlight,
+.speaker-name-highlight.speaker-name-link {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-name);
+  font-weight: 600;
 }
 
 .speech-datetime {
   flex: 0 0 auto;
   margin-left: auto;
-  color: #64748b;
-  font-size: 12px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
 .speech-anchor-link {
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   text-decoration: none;
   line-height: 1;
 }
 
 .speech-anchor-link:hover {
-  color: #315b84;
+  color: var(--color-accent);
 }
 
 .speech-text {
   margin: 0;
-  color: #334155;
-  font-size: 14px;
+  color: var(--color-text);
+  font-size: var(--text-body);
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
@@ -479,22 +393,23 @@ html[data-theme="dark"] .sample-chart {
   gap: 10px 16px;
   margin-top: 18px;
   padding-top: 14px;
-  border-top: 1px solid #edf1f5;
+  border-top: 1px solid var(--color-border);
 }
 
 .speech-card-actions .context-btn {
   max-width: 100%;
-  border: 1px solid #dbe3ec;
-  border-radius: 7px;
-  background: #f8fafc;
-  color: #315b84;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: var(--text-field);
   text-align: left;
 }
 
 .speech-card-actions .context-btn:hover {
-  border-color: #b9c9d9;
-  background: #f1f5f9;
-  color: #1e3a5f;
+  border-color: var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-accent);
 }
 
 .speech-card-actions .speech-link {
@@ -503,15 +418,15 @@ html[data-theme="dark"] .sample-chart {
   gap: 5px;
   flex: 0 0 auto;
   margin-top: 0;
-  color: #315b84;
+  color: var(--color-accent);
   white-space: nowrap;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--text-field);
+  font-weight: 600;
   text-decoration: none;
 }
 
 .speech-card-actions .speech-link:hover {
-  color: #1e3a5f;
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
@@ -527,15 +442,15 @@ html[data-theme="dark"] .sample-chart {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #b91c1c;
-  font-size: 13px;
+  color: var(--color-accent);
+  font-size: var(--text-field);
   font-weight: 600;
   text-decoration: none;
   transition: color 0.15s ease;
 }
 
 .speech-video-link:hover {
-  color: #991b1b;
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
@@ -544,18 +459,18 @@ html[data-theme="dark"] .sample-chart {
   align-items: baseline;
   gap: 6px;
   margin-bottom: 12px;
-  padding: 5px 10px;
-  background: #f1f5f9;
-  border-left: 3px solid #315b84;
-  border-radius: 0 4px 4px 0;
-  color: #334155;
-  font-size: 12px;
+  padding: 6px 10px;
+  background: var(--color-subtle);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-tag) var(--radius-tag) 0;
+  color: var(--color-text-soft);
+  font-size: var(--text-label);
   line-height: 1.4;
 }
 
 .agenda-kicker {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -564,7 +479,7 @@ html[data-theme="dark"] .sample-chart {
 
 .agenda-title-text {
   min-width: 0;
-  color: #334155;
+  color: var(--color-text);
   font-weight: 500;
   overflow-wrap: break-word;
 }
@@ -573,10 +488,10 @@ html[data-theme="dark"] .sample-chart {
   display: inline-flex;
   align-items: center;
   padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(49, 91, 132, 0.1);
-  border: 1px solid rgba(49, 91, 132, 0.25);
-  color: #1e3a5f;
+  border-radius: var(--radius-tag);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-accent);
   font-size: 11px;
   font-weight: 600;
   text-decoration: none;
@@ -587,7 +502,7 @@ html[data-theme="dark"] .sample-chart {
 }
 
 .agenda-draft-link:hover {
-  background: rgba(49, 91, 132, 0.18);
+  background: var(--color-highlight);
   text-decoration: none;
 }
 
@@ -666,7 +581,7 @@ html[data-theme="dark"] .sample-chart {
   }
 
   .speech-datetime {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 

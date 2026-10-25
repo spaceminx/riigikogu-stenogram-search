@@ -6,7 +6,7 @@
 .back-nav-btn {
   background: transparent;
   border: none;
-  color: #8b5cf6;
+  color: var(--color-accent);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
 }
 
 .back-nav-btn:hover {
-  color: #a78bfa;
+  text-decoration: underline;
 }
 
 .speeches-view-title {

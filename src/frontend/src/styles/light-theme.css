@@ -440,7 +440,7 @@ select:focus-visible {
 
 .speech-meta,
 .speaker-header-info {
-  color: #526579;
+  color: var(--color-text-muted);
 }
 
 .speech-text,
@@ -450,18 +450,10 @@ select:focus-visible {
   line-height: 1.65;
 }
 
-.speaker-role-tag,
-.faction-badge {
-  border: 1px solid #d8dee6;
-  border-radius: 2px;
-  background: #f4f6f8;
-  color: #596b7f;
-}
-
 .keyword-highlight {
   border: 0;
-  background: #fff1c7;
-  color: #3c3a32;
+  background: var(--color-highlight);
+  color: inherit;
 }
 
 .back-nav-btn,
@@ -488,9 +480,8 @@ select:focus-visible {
 }
 
 .speech-link,
-.export-btn-link,
-.reset-filters-btn {
-  color: #315b84;
+.export-btn-link {
+  color: var(--color-accent);
 }
 
 .modal-content.glass-panel {
@@ -515,7 +506,7 @@ select:focus-visible {
 }
 
 .target-speech-highlight {
-  background: #f2f6fa;
+  background: var(--color-highlight);
 }
 
 @media (max-width: 960px) {

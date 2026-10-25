@@ -533,12 +533,6 @@ html[data-theme="dark"] .percent-bar-bg {
   background: #334155;
 }
 
-html[data-theme="dark"] .faction-badge {
-  border-color: #334155;
-  background: #1e293b;
-  color: #cbd5e1;
-}
-
 .att-mobile-faction-badge {
   display: none;
 }
@@ -596,7 +590,7 @@ html[data-theme="dark"] .faction-badge {
     padding: 0.1rem 0.35rem;
     font-size: 0.7rem;
     line-height: 1.2;
-    border-radius: 4px;
+    border-radius: var(--radius-tag);
     max-width: 100%;
     white-space: normal !important;
     overflow-wrap: anywhere !important;

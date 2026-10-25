@@ -255,7 +255,7 @@ h3,
 }
 
 .speech-link {
-  color: #8b5cf6;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9rem;
@@ -266,7 +266,7 @@ h3,
 }
 
 .speech-link:hover {
-  color: #a78bfa;
+  text-decoration: underline;
 }
 
 .nav-links {
