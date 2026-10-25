@@ -17,13 +17,16 @@
   --radius-tag: 2px;
 
   --color-text: #1c1f26; /* Tint */
+  --color-text-soft: #3b404c;
   --color-text-muted: #5e6472; /* Grafiit */
   --color-bg: #f8f8f6; /* Paber */
   --color-surface: #ffffff;
+  --color-subtle: #f1f2f5;
   --color-border: #dadce2;
-  --color-border-strong: #a9aeba;
+  --color-border-strong: #8b919d; /* field outlines, 3:1 on the surface */
   --color-accent: #2e3f78; /* Protokoll: links and the active tab */
   --color-accent-fill: #2e3f78; /* primary button background */
+  --color-accent-fill-hover: #24315f;
   --color-on-accent: #ffffff;
   --color-highlight: #e3e8f7; /* Vaste: search match background */
   --color-editor: #f0a47e; /* Toimetaja: badge fill only, too light for text */
@@ -44,13 +47,16 @@
 
 html[data-theme="dark"] {
   --color-text: #e9eaee;
+  --color-text-soft: #c8cbd3;
   --color-text-muted: #a4a9b5;
   --color-bg: #121419; /* Öö */
   --color-surface: #1b1e25; /* Pind */
+  --color-subtle: #23262e;
   --color-border: #2d313b;
-  --color-border-strong: #4a4f5c;
+  --color-border-strong: #6b7080;
   --color-accent: #93a5e8;
   --color-accent-fill: #3b4f96;
+  --color-accent-fill-hover: #4a5fa8;
   --color-on-accent: #ffffff;
   --color-highlight: #26305a;
   --color-editor: #f0a47e;

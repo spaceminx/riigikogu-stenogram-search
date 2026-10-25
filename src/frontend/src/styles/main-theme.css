@@ -1,19 +1,19 @@
 :root {
   color-scheme: light;
-  --bg-color: #f8fafc;
-  --panel-bg: #ffffff;
-  --panel-border: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --accent-primary: #315b84;
-  --accent-secondary: #496e93;
-  --accent-gradient: #315b84;
+  --bg-color: var(--color-bg);
+  --panel-bg: var(--color-surface);
+  --panel-border: var(--color-border);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-text-muted);
+  --accent-primary: var(--color-accent);
+  --accent-secondary: var(--color-accent);
+  --accent-gradient: var(--color-accent);
   font-family: var(--font-sans);
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-sans);
   font-size: 14px;
 }
@@ -328,12 +328,10 @@ input.search-input:focus-visible {
 
 .summary-card,
 .glass-panel {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.045),
-    0 1px 3px rgba(15, 23, 42, 0.035);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
+  background: var(--color-surface);
+  box-shadow: none;
 }
 
 .summary-card {
@@ -342,12 +340,8 @@ input.search-input:focus-visible {
     box-shadow 150ms ease;
 }
 
-.summary-card:hover,
-.glass-panel:hover {
-  border-color: #d6dee8;
-  box-shadow:
-    0 2px 5px rgba(15, 23, 42, 0.055),
-    0 1px 3px rgba(15, 23, 42, 0.035);
+.summary-card:hover {
+  border-color: var(--color-border-strong);
 }
 
 .summary-icon {
@@ -590,7 +584,7 @@ input.search-input:focus-visible {
 .speeches-header-bar,
 .speech-card,
 .modal-content.glass-panel {
-  border-radius: 12px;
+  border-radius: var(--radius-block);
 }
 
 .keyword-highlight {
