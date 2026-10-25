@@ -437,9 +437,6 @@ select {
 }
 
 @media (max-width: 720px) {
-  .brand-copy > span {
-    font-size: 9px;
-  }
   .nav-links {
     gap: 1px;
     padding: 3px;
@@ -461,7 +458,7 @@ select {
   }
   .search-hint {
     display: block;
-    font-size: 10.5px;
+    font-size: 12px;
     line-height: 1.35;
   }
   .search-controls {

@@ -144,6 +144,30 @@ h3,
   cursor: not-allowed;
 }
 
+/* Secondary button: "Otsi" on the person page, "Näita kõiki", "Tagasi avalehele" */
+.filter-search-btn {
+  min-height: 32px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent-primary);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--accent-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filter-search-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
+.filter-search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -231,7 +255,7 @@ h3,
 }
 
 .speech-link {
-  color: #8b5cf6;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9rem;
@@ -242,7 +266,7 @@ h3,
 }
 
 .speech-link:hover {
-  color: #a78bfa;
+  text-decoration: underline;
 }
 
 .nav-links {

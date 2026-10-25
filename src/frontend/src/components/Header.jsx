@@ -41,9 +41,16 @@ export function Header({
     <header className="header">
       <Link to="/" className="brand-lockup" aria-label="Riigivaade">
         <span className="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" fill="none">
-            <path d="M5 11.5 16 5l11 6.5-11 6.3L5 11.5Z" />
-            <path d="m5 16 11 6.4L27 16M5 20.5l11 6.4 11-6.4" />
+          <svg viewBox="0 0 40 40">
+            <rect className="brand-tile" width="40" height="40" rx="6" />
+            <path
+              className="brand-comma"
+              d="M14 21a5 5 0 1 1 0 10c0 3.4-2 6-5 7.4l-.9-1.8c1.7-1 2.8-2.6 3.1-4.5A5 5 0 0 1 14 21z"
+            />
+            <path
+              className="brand-comma-editor"
+              d="M27 21a5 5 0 1 1 0 10c0 3.4-2 6-5 7.4l-.9-1.8c1.7-1 2.8-2.6 3.1-4.5A5 5 0 0 1 27 21z"
+            />
           </svg>
         </span>
         <span className="brand-copy">

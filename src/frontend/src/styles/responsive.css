@@ -29,6 +29,30 @@
 }
 
 @media (max-width: 480px) {
+  /* Label above the agenda title, so long titles get the full width */
+  .speech-agenda-tag {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pagination-container {
+    gap: 0.6rem;
+  }
+
+  .pagination-btn {
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Keep "Lehekülg" for screen readers, show only "1 / 278" */
+  .pagination-text-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .voting-totals-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -67,11 +91,11 @@
   }
 
   .brand-copy strong {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .brand-copy > span {
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .voting-detail-header {
@@ -106,5 +130,22 @@
 
   .reading-speeches-more-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .pagination-container {
+    gap: 0.4rem;
+  }
+
+  .pagination-btn {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.85rem;
+  }
+
+  .segmented-control {
+    flex-wrap: wrap;
+    width: auto;
+    max-width: 100%;
   }
 }

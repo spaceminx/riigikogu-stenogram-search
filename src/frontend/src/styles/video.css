@@ -97,31 +97,30 @@
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #b91c1c;
-  font-size: 13px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: var(--text-field);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .speech-video-inline-toggle:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background: var(--color-subtle);
+  border-color: var(--color-border-strong);
 }
 
 .speech-video-inline-toggle:focus-visible {
-  outline: 2px solid var(--accent-primary, #3b82f6);
+  outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
 
 .speech-video-inline-toggle.is-active {
-  background: #b91c1c;
-  color: #ffffff;
-  border-color: #b91c1c;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  border-color: var(--color-accent-fill);
 }
 
 .speech-card-inline-video {
@@ -154,24 +153,6 @@ html[data-theme="dark"] .video-embed-play-btn:hover {
 
 html[data-theme="dark"] .video-embed-privacy-note {
   color: #94a3b8;
-}
-
-html[data-theme="dark"] .speech-video-inline-toggle {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.25);
-  color: #fca5a5;
-}
-
-html[data-theme="dark"] .speech-video-inline-toggle:hover {
-  background: rgba(239, 68, 68, 0.22);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fecaca;
-}
-
-html[data-theme="dark"] .speech-video-inline-toggle.is-active {
-  background: #ef4444;
-  color: #ffffff;
-  border-color: #ef4444;
 }
 
 html[data-theme="dark"] .speech-card-inline-video {
