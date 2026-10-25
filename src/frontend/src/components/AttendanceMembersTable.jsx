@@ -90,7 +90,10 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
         <tbody>
           {sortedStats.length === 0 ? (
             <tr>
-              <td colSpan={6} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+              <td
+                colSpan={6}
+                style={{ textAlign: "center", padding: "2.5rem", color: "var(--color-text-muted)" }}
+              >
                 Valitud filtritele vastavaid saadikuid ei leitud.
               </td>
             </tr>

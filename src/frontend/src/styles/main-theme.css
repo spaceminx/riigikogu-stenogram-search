@@ -412,10 +412,10 @@ input.search-input:focus-visible {
 
 .chart-header h2,
 .voting-card h2 {
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 620;
-  letter-spacing: -0.015em;
+  color: var(--color-text);
+  font-size: var(--text-name);
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .chart-period,

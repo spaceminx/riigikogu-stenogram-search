@@ -99,7 +99,10 @@ export function AttendanceFactionsTable({
         <tbody>
           {sortedFactionStats.length === 0 ? (
             <tr>
-              <td colSpan={6} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+              <td
+                colSpan={6}
+                style={{ textAlign: "center", padding: "2.5rem", color: "var(--color-text-muted)" }}
+              >
                 Fraktsioonide andmeid ei leitud.
               </td>
             </tr>
