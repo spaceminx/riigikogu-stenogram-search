@@ -45,10 +45,6 @@ html[data-theme="dark"] .transcript-row.active {
   background: #253752;
 }
 
-html[data-theme="dark"] .person-metric-value-primary {
-  color: #93c5fd;
-}
-
 .archive-stats-row {
   display: flex;
   min-height: 34px;

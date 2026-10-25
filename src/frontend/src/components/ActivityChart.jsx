@@ -9,23 +9,7 @@ import {
   formatWeekAxis,
   formatWeekTooltip,
 } from "../lib/formatters";
-
-const CHART_COLORS = {
-  light: {
-    surface: "#ffffff",
-    text: "#1c1f26",
-    muted: "#5e6472",
-    border: "#dadce2",
-    accent: "#2e3f78",
-  },
-  dark: {
-    surface: "#1b1e25",
-    text: "#e9eaee",
-    muted: "#a4a9b5",
-    border: "#2d313b",
-    accent: "#93a5e8",
-  },
-};
+import { chartColors } from "../lib/chartColors";
 
 function ActivityCustomTooltip({ active, payload, label, formatLabel, scale, style }) {
   if (!active || !payload || payload.length === 0) return null;
@@ -54,8 +38,7 @@ export function ActivityChart({
   kicker = "TEEMA LÄBI AJA",
   emptyMessage = "Sellele otsingule kõnesid ei leitud.",
 }) {
-  // SVG attributes cannot read CSS variables, so the chart uses the token values from tokens.css
-  const colors = CHART_COLORS[theme === "dark" ? "dark" : "light"];
+  const colors = chartColors(theme);
   const tooltipStyle = {
     contentStyle: {
       backgroundColor: colors.surface,

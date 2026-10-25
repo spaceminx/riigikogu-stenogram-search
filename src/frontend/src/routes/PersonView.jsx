@@ -26,6 +26,7 @@ import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
 import { usePageMeta } from "../lib/usePageMeta";
+import { chartColors } from "../lib/chartColors";
 import { Rss } from "lucide-react";
 
 const SPEECHES_PER_PAGE = 20;
@@ -398,20 +399,21 @@ export function PersonView({ theme = "light" }) {
   const hasDirector = (stats?.director || 0) > 0;
 
   // Theming for chart tooltip, axes and grid lines
-  const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
-  const tickColor = theme === "dark" ? "#94a3b8" : "#64748b";
-  const gridStroke = theme === "dark" ? "#334155" : "#e2e8f0";
+  const colors = chartColors(theme);
+  const axisStroke = colors.border;
+  const tickColor = colors.muted;
+  const gridStroke = colors.border;
 
   const chartTooltipStyle = {
     contentStyle: {
-      backgroundColor: theme === "dark" ? "#1e293b" : "#ffffff",
-      color: theme === "dark" ? "#f1f5f9" : "#25364a",
-      border: `1px solid ${theme === "dark" ? "#334155" : "#cbd3dc"}`,
+      backgroundColor: colors.surface,
+      color: colors.text,
+      border: `1px solid ${colors.border}`,
       borderRadius: "4px",
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
     },
     itemStyle: { fontWeight: 600 },
-    labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
+    labelStyle: { color: colors.muted, marginBottom: "4px" },
   };
 
   // Helper for metrics when stats load or fail
@@ -826,22 +828,30 @@ export function PersonView({ theme = "light" }) {
                   allowDecimals={false}
                 />
                 <Tooltip {...chartTooltipStyle} />
-                <Legend wrapperStyle={{ paddingTop: "10px" }} />
-                <Bar
-                  dataKey="speeches"
-                  name="Kõned"
-                  stackId="mp"
-                  fill={theme === "dark" ? "#60a5fa" : "#315b84"}
+                <Legend
+                  wrapperStyle={{ paddingTop: "10px" }}
+                  formatter={(value) => <span style={{ color: colors.text }}>{value}</span>}
                 />
+                <Bar dataKey="speeches" name="Kõned" stackId="mp" fill={colors.series[0]} />
                 <Bar
                   dataKey="questions"
                   name="Küsimused ja repliigid"
                   stackId="mp"
-                  fill="#0ea5e9"
+                  fill={colors.series[1]}
                 />
-                <Bar dataKey="procedural" name="Protseduurilised" stackId="mp" fill="#94a3b8" />
+                <Bar
+                  dataKey="procedural"
+                  name="Protseduurilised"
+                  stackId="mp"
+                  fill={colors.series[2]}
+                />
                 {hasUnclassified && (
-                  <Bar dataKey="unclassified" name="Liigitamata" stackId="mp" fill="#f59e0b" />
+                  <Bar
+                    dataKey="unclassified"
+                    name="Liigitamata"
+                    stackId="mp"
+                    fill={colors.series[3]}
+                  />
                 )}
               </BarChart>
             </ResponsiveContainer>
@@ -1184,7 +1194,7 @@ export function PersonView({ theme = "light" }) {
           </div>
         ) : speechesError ? (
           <div style={{ padding: "2rem 1rem", textAlign: "center" }}>
-            <p style={{ color: "#ef4444" }}>
+            <p style={{ color: "var(--vote-against)" }}>
               Kõnede laadimine ebaõnnestus: {speechesError.message}
             </p>
           </div>
