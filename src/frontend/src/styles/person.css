@@ -269,8 +269,8 @@
 
 .segmented-btn.active .person-tab-count,
 .segmented-btn[aria-pressed="true"] .person-tab-count {
-  background: var(--accent-primary, #315b84);
-  color: #ffffff;
+  background: var(--color-on-accent);
+  color: var(--color-accent-fill);
 }
 
 .table-responsive-container {

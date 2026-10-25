@@ -3,8 +3,6 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="dark"] .summary-card strong,
-html[data-theme="dark"] .chart-header h2,
-html[data-theme="dark"] .voting-card h2,
 html[data-theme="dark"] .session-content > strong,
 html[data-theme="dark"] .profile-details .speaker-name {
   color: #e2e8f0;
