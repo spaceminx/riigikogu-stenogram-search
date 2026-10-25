@@ -408,9 +408,10 @@ select:focus-visible {
 
 .error-banner {
   margin-bottom: 12px;
-  border: 1px solid #dfbcbc;
-  background: #fff7f7;
-  color: #672e2e;
+  border: 1px solid var(--color-border-strong);
+  border-left: 3px solid var(--vote-against);
+  background: var(--color-subtle);
+  color: var(--color-text);
   box-shadow: none;
 }
 
@@ -427,13 +428,6 @@ select:focus-visible {
   color: var(--color-text-muted);
 }
 
-.speech-text,
-.transcript-row-text {
-  color: #34465a;
-  font-size: 13px;
-  line-height: 1.65;
-}
-
 .keyword-highlight {
   border: 0;
   background: var(--color-highlight);
@@ -448,27 +442,6 @@ select:focus-visible {
 
 .speech-link {
   color: var(--color-accent);
-}
-
-.modal-content.glass-panel {
-  background: #fff;
-  box-shadow: 0 8px 30px rgba(25, 40, 58, 0.2);
-}
-
-.modal-heading,
-.transcript-row-speaker {
-  color: #2d435c;
-}
-
-.modal-search-input {
-  border-color: #cbd3dc;
-  border-radius: 2px;
-  background: #fff;
-  color: #25364a;
-}
-
-.transcript-speech-row {
-  border-bottom-color: #e0e5eb;
 }
 
 .target-speech-highlight {

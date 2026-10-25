@@ -2,9 +2,9 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(18, 20, 25, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 999;
   display: flex;
   align-items: center;
@@ -29,9 +29,10 @@
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
-  background: #0f172a;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
   animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -52,29 +53,29 @@
   align-items: flex-start;
   gap: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-heading {
   margin: 0 0 0.35rem 0;
   font-size: 1.35rem;
-  font-weight: 700;
-  color: #f8fafc;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .modal-meta-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: var(--text-label);
+  color: var(--color-text-muted);
   flex-wrap: wrap;
 }
 
 .modal-external-link {
-  color: #8b5cf6;
+  color: var(--color-accent);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .modal-external-link:hover {
@@ -84,17 +85,17 @@
 .modal-close-icon-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 1.75rem;
   line-height: 1;
   cursor: pointer;
   padding: 0 0.35rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   transition: color 0.15s;
 }
 
 .modal-close-icon-btn:hover {
-  color: #ffffff;
+  color: var(--color-text);
 }
 
 .modal-filter-box {
@@ -103,17 +104,20 @@
 
 .modal-search-input {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 0.6rem 1rem;
-  font-size: 0.9rem;
+  font-size: var(--text-field);
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
 }
 
 .modal-search-input:focus {
-  border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-highlight);
 }
 
 .modal-speeches-scroll {
@@ -131,26 +135,26 @@
 }
 
 .modal-speeches-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--color-border-strong);
   border-radius: 3px;
 }
 
 .transcript-speech-row {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
   padding: 1rem 1.25rem;
   transition: background 0.15s;
 }
 
 .transcript-speech-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-subtle);
 }
 
 .transcript-speech-row.target-speech-highlight {
-  background: rgba(139, 92, 246, 0.12);
-  border: 1.5px solid rgba(139, 92, 246, 0.6);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
 .transcript-row-header {
@@ -163,28 +167,29 @@
 }
 
 .transcript-row-speaker {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-body);
   font-weight: 600;
-  color: #f8fafc;
-  font-size: 0.95rem;
 }
 
 .target-speech-badge {
   display: inline-block;
   padding: 0.15rem 0.55rem;
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid rgba(245, 158, 11, 0.5);
-  border-radius: 6px;
-  color: #fbbf24;
-  font-size: 0.75rem;
+  background: var(--color-highlight);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-tag);
+  color: var(--color-accent);
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .transcript-row-text {
-  font-size: 0.95rem;
+  font-size: var(--text-body);
   line-height: 1.6;
-  color: #cbd5e1;
+  color: var(--color-text);
   white-space: pre-wrap;
   word-break: break-word;
 }
