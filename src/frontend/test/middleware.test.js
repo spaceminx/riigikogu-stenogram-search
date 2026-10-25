@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import middleware, {
@@ -192,6 +193,39 @@ describe("Open Graph middleware helpers", () => {
       assert.ok(out.includes('content="Kulu 5$` eurot"'));
       assert.strictEqual(out.match(/<\/head>/g).length, 1);
       assert.ok(out.endsWith("</html>"));
+    });
+
+    it("replaces the site-wide defaults from index.html instead of duplicating them", () => {
+      const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+      const count = (html, property) =>
+        (html.match(new RegExp(`property="${property}"`, "g")) || []).length;
+
+      const speech = injectOpenGraphTags(indexHtml, {
+        title: "Kõneleja, 21.10.2026 — Riigivaade",
+        description: "Kõne algus...",
+        url: "https://www.riigivaade.me/kone/1",
+        type: "article",
+        image: null,
+      });
+      for (const property of ["og:title", "og:description", "og:url", "og:type", "og:site_name"]) {
+        assert.strictEqual(count(speech, property), 1, property);
+      }
+      assert.ok(speech.includes('content="Kõneleja, 21.10.2026 — Riigivaade"'));
+      assert.ok(speech.includes('content="https://www.riigivaade.me/og-image.png"'));
+
+      const person = injectOpenGraphTags(indexHtml, {
+        title: "Kaja Kallas — Riigivaade",
+        image: "https://api.riigikogu.ee/photo.jpg",
+      });
+      assert.strictEqual(count(person, "og:image"), 1);
+      assert.strictEqual(count(person, "og:image:width"), 0);
+      assert.ok(person.includes('content="https://api.riigikogu.ee/photo.jpg"'));
+    });
+
+    it("ships a 1200 × 630 preview image", () => {
+      const png = fs.readFileSync(new URL("../public/og-image.png", import.meta.url));
+      assert.strictEqual(png.readUInt32BE(16), 1200);
+      assert.strictEqual(png.readUInt32BE(20), 630);
     });
 
     it("replaces the page title and description for previews", () => {
