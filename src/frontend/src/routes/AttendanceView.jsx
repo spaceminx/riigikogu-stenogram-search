@@ -227,6 +227,7 @@ export function AttendanceView({
         <div className="segmented-control">
           <button
             type="button"
+            aria-pressed={attendanceTab === "members"}
             className={`segmented-btn ${attendanceTab === "members" ? "active" : ""}`}
             onClick={() => setAttendanceTab("members")}
           >
@@ -234,6 +235,7 @@ export function AttendanceView({
           </button>
           <button
             type="button"
+            aria-pressed={attendanceTab === "factions"}
             className={`segmented-btn ${attendanceTab === "factions" ? "active" : ""}`}
             onClick={() => setAttendanceTab("factions")}
           >
