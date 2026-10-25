@@ -10,6 +10,23 @@ import {
   formatWeekTooltip,
 } from "../lib/formatters";
 
+const CHART_COLORS = {
+  light: {
+    surface: "#ffffff",
+    text: "#1c1f26",
+    muted: "#5e6472",
+    border: "#dadce2",
+    accent: "#2e3f78",
+  },
+  dark: {
+    surface: "#1b1e25",
+    text: "#e9eaee",
+    muted: "#a4a9b5",
+    border: "#2d313b",
+    accent: "#93a5e8",
+  },
+};
+
 function ActivityCustomTooltip({ active, payload, label, formatLabel, scale, style }) {
   if (!active || !payload || payload.length === 0) return null;
   const row = payload[0]?.payload;
@@ -37,20 +54,22 @@ export function ActivityChart({
   kicker = "TEEMA LÄBI AJA",
   emptyMessage = "Sellele otsingule kõnesid ei leitud.",
 }) {
+  // SVG attributes cannot read CSS variables, so the chart uses the token values from tokens.css
+  const colors = CHART_COLORS[theme === "dark" ? "dark" : "light"];
   const tooltipStyle = {
     contentStyle: {
-      backgroundColor: theme === "dark" ? "#1e293b" : "#ffffff",
-      color: theme === "dark" ? "#f1f5f9" : "#25364a",
-      border: `1px solid ${theme === "dark" ? "#334155" : "#cbd3dc"}`,
+      backgroundColor: colors.surface,
+      color: colors.text,
+      border: `1px solid ${colors.border}`,
       borderRadius: "4px",
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
     },
-    itemStyle: { color: theme === "dark" ? "#60a5fa" : "#315b84", fontWeight: 600 },
-    labelStyle: { color: theme === "dark" ? "#94a3b8" : "#536477", marginBottom: "4px" },
+    itemStyle: { color: colors.accent, fontWeight: 600 },
+    labelStyle: { color: colors.muted, marginBottom: "4px" },
   };
 
-  const axisStroke = theme === "dark" ? "#334155" : "#cbd3dc";
-  const axisTickColor = theme === "dark" ? "#94a3b8" : "#64748b";
+  const axisStroke = colors.border;
+  const axisTickColor = colors.muted;
 
   const formatAxisTick = (tick) => {
     if (!tick) return "";
@@ -199,7 +218,7 @@ export function ActivityChart({
               <Bar
                 dataKey={scale === "share" ? "share" : "count"}
                 name={scale === "share" ? "Osakaal" : "Kõnesid"}
-                fill="#315b84"
+                fill={colors.accent}
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
               />

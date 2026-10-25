@@ -308,20 +308,20 @@ input.search-input:focus-visible {
 
 .topic-suggestions-label {
   margin-right: 3px;
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 550;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  font-weight: 600;
 }
 
 .topic-pill {
-  min-height: 29px;
+  min-height: 32px;
   padding: 5px 11px;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  background: #fff;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--text-label);
+  font-weight: 600;
   transition:
     border-color 120ms ease,
     background-color 120ms ease,
@@ -329,9 +329,9 @@ input.search-input:focus-visible {
 }
 
 .topic-pill:hover {
-  border-color: #b9c9d9;
-  background: #f1f5f9;
-  color: #1e3a5f;
+  border-color: var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-text);
 }
 
 .summary-grid {
@@ -420,10 +420,11 @@ input.search-input:focus-visible {
 
 .chart-period,
 .member-total {
-  border-color: #e2e8f0;
-  border-radius: 999px;
-  background: #f8fafc;
-  color: #475569;
+  border-color: var(--color-border);
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
+  font-family: var(--font-mono);
 }
 
 .sample-preview {
@@ -489,7 +490,7 @@ input.search-input:focus-visible {
 }
 
 .chart-footer {
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .legend-dot {
@@ -497,33 +498,34 @@ input.search-input:focus-visible {
 }
 
 .speaker-item.profile-card {
-  border-top-color: #edf1f5;
+  border-top-color: var(--color-border);
 }
 
 .profile-avatar {
-  border-color: #dbe4ed;
-  border-radius: 9px;
-  background: #f1f5f9;
-  color: #385b7e;
+  border-color: var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
 }
 
 .profile-details .speaker-name {
-  color: #1e293b;
-  font-size: 12px;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 15px;
 }
 
 .profile-details > span:nth-child(2) {
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .profile-meter {
   height: 3px;
-  border-radius: 999px;
+  border-radius: var(--radius-tag);
 }
 
 .profile-meter i {
-  border-radius: 999px;
-  background: #6b8baa;
+  border-radius: var(--radius-tag);
+  background: var(--color-accent);
 }
 
 .member-sample {
@@ -936,12 +938,12 @@ input.search-input:focus-visible {
   align-self: flex-start;
   min-height: 18px;
   padding: 1px 7px;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .speaker-count-caption {
-  color: #64748b;
-  font-size: 9px;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .sessions-card {
