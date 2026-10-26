@@ -41,10 +41,13 @@ export function VotingRow({ voting, showDate = true, showDocument = true }) {
         <VoteBar totals={voting.totals} />
         {summaryParts.length > 0 && (
           <div className="voting-row-summary">
+            {/* The separator stays with the preceding part so a wrapped line never starts with it */}
             {summaryParts.map((part, index) => (
               <React.Fragment key={part}>
-                {index > 0 && " · "}
-                <span className="voting-row-summary-part">{part}</span>
+                {index > 0 && " "}
+                <span className="voting-row-summary-part">
+                  {index < summaryParts.length - 1 ? `${part} ·` : part}
+                </span>
               </React.Fragment>
             ))}
           </div>
