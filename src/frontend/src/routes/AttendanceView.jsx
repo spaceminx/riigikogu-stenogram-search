@@ -337,6 +337,23 @@ export function AttendanceView({
         </div>
       )}
 
+      {!loading && (
+        <div className="att-bar-legend" aria-hidden="true">
+          <span className="att-bar-legend-item">
+            <span className="att-bar-legend-swatch vote-bar-present" />
+            Osales / registreerus
+          </span>
+          <span className="att-bar-legend-item">
+            <span className="att-bar-legend-swatch vote-bar-none" />
+            Ei hääletanud
+          </span>
+          <span className="att-bar-legend-item">
+            <span className="att-bar-legend-swatch vote-bar-absent" />
+            Puudus / ei registreerunud
+          </span>
+        </div>
+      )}
+
       {loading ? (
         <div className="empty-state" style={{ padding: "3rem 1rem" }}>
           <p>Laadin kohaloleku andmeid...</p>

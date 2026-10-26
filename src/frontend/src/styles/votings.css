@@ -252,6 +252,11 @@
   background: var(--vote-absent-fill);
 }
 
+/* Attendance: voted or registered. Not the "for" green, which would read as a judgement */
+.vote-bar-present {
+  background: var(--color-accent);
+}
+
 .voting-row-summary-part {
   white-space: nowrap;
 }

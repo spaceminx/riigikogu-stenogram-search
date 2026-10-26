@@ -160,3 +160,34 @@ export function sortAttendanceItems(items, sortConfig) {
 
   return list;
 }
+
+/**
+ * Bar segments for registering in attendance checks; empty for a small sample.
+ *
+ * @param {Object} item
+ * @returns {Array<{key: string, value: number}>}
+ */
+export function getChecksBarSegments(item) {
+  if (!item || isSmallSample(item, "registered_pct")) return [];
+  const total = item.total_checks ?? item.total_sessions ?? 0;
+  const registered = item.registered_checks ?? item.present_sessions ?? 0;
+  return [
+    { key: "present", value: registered },
+    { key: "absent", value: total - registered },
+  ].filter((segment) => segment.value > 0);
+}
+
+/**
+ * Bar segments for taking part in votes; empty for a small sample.
+ *
+ * @param {Object} item
+ * @returns {Array<{key: string, value: number}>}
+ */
+export function getVotesBarSegments(item) {
+  if (!item || isSmallSample(item)) return [];
+  return [
+    { key: "present", value: item.votes_voted ?? 0 },
+    { key: "none", value: item.votes_not_voted ?? 0 },
+    { key: "absent", value: item.votes_absent ?? 0 },
+  ].filter((segment) => segment.value > 0);
+}
