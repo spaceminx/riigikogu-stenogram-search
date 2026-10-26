@@ -27,3 +27,47 @@ test.describe("Mobile viewport 390px layout", () => {
     });
   }
 });
+
+test.describe("Voting summary wrapping at 390px", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("a wrapped summary line never starts with the separator", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/haaletused");
+    await expect(page.locator(".voting-row-summary").first()).toBeVisible();
+
+    // Where the line breaks depends on the numbers and the card width, so try a range of widths
+    const lineStarts = await page.evaluate(() => {
+      const summary = document.querySelector(".voting-row-summary");
+      const range = document.createRange();
+      const starts = new Set();
+      for (let width = 120; width <= 360; width += 2) {
+        summary.style.width = `${width}px`;
+        // Leftmost glyph on each rendered line
+        const firstByLine = new Map();
+        const walker = document.createTreeWalker(summary, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          for (let i = 0; i < node.length; i++) {
+            if (!node.data[i].trim()) continue;
+            range.setStart(node, i);
+            range.setEnd(node, i + 1);
+            const rect = range.getBoundingClientRect();
+            const line = Math.round(rect.top);
+            const current = firstByLine.get(line);
+            if (!current || rect.left < current.left) {
+              firstByLine.set(line, { left: rect.left, char: node.data[i] });
+            }
+          }
+        }
+        for (const start of firstByLine.values()) starts.add(start.char);
+      }
+      return [...starts];
+    });
+
+    expect(lineStarts.length).toBeGreaterThan(1);
+    expect(lineStarts).not.toContain("·");
+
+    mock.verifyNoErrors();
+  });
+});
