@@ -284,6 +284,8 @@ export {
   formatMetricRatio,
   formatPercent,
   formatVoteSplit,
+  getChecksBarSegments,
+  getVotesBarSegments,
   isSmallSample,
   sortAttendanceItems,
 } from "./attendanceFormatters.js";

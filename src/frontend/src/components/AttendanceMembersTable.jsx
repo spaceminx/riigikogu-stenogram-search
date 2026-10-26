@@ -4,8 +4,11 @@ import {
   formatFactionName,
   formatMetricRatio,
   formatVoteSplit,
+  getChecksBarSegments,
+  getVotesBarSegments,
   isSmallSample,
 } from "../lib/formatters";
+import VoteBar from "./VoteBar";
 
 export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort }) {
   const getSortIndicator = (key) => {
@@ -146,6 +149,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                         )}
                         {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
                       </span>
+                      <VoteBar segments={getChecksBarSegments(stat)} />
                     </div>
                   </td>
                   <td className="att-col-votes">
@@ -156,6 +160,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                         {formatMetricRatio(stat.votes_voted_pct, stat.votes_voted, votesTotal)}
                         {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
                       </span>
+                      <VoteBar segments={getVotesBarSegments(stat)} />
                       {votesTotal > 0 && (
                         <span className="att-metric-subtext">
                           {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
@@ -174,6 +179,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                           {isVotesSmall && <span className="att-sample-note">vähe andmeid</span>}
                         </span>
                       </div>
+                      <VoteBar segments={getVotesBarSegments(stat)} />
                       {votesTotal > 0 && (
                         <div className="att-metric-subtext att-mobile-subtext">
                           {formatVoteSplit(stat.votes_not_voted, stat.votes_absent, votesTotal)}
@@ -192,6 +198,7 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
                           {isChecksSmall && <span className="att-sample-note">vähe andmeid</span>}
                         </span>
                       </div>
+                      <VoteBar segments={getChecksBarSegments(stat)} />
                     </div>
                   </td>
                 </tr>

@@ -312,6 +312,33 @@
   display: none;
 }
 
+.att-metric-cell .vote-bar {
+  max-width: 18rem;
+  margin: 0.3rem 0 0.1rem;
+}
+
+.att-bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem 1.25rem;
+  margin: 0 0 0.6rem;
+  color: var(--color-text-soft);
+  font-size: var(--text-label);
+}
+
+.att-bar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.att-bar-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-tag);
+}
+
 .att-sample-note {
   display: inline-block;
   margin-left: 0.35rem;
@@ -528,6 +555,16 @@ html[data-theme="dark"] .attendance-select {
     font-variant-numeric: tabular-nums;
     white-space: normal !important;
     overflow-wrap: anywhere !important;
+  }
+
+  .att-mobile-stacked-cell .vote-bar {
+    width: 100%;
+    max-width: 11rem;
+    margin: 0.15rem 0 0.1rem;
+  }
+
+  .att-bar-legend {
+    justify-content: flex-start;
   }
 
   .att-mobile-subtext {

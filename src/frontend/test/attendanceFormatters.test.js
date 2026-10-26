@@ -4,6 +4,8 @@ import {
   formatMetricRatio,
   formatPercent,
   formatVoteSplit,
+  getChecksBarSegments,
+  getVotesBarSegments,
   isSmallSample,
   sortAttendanceItems,
 } from "../src/lib/attendanceFormatters.js";
@@ -155,6 +157,51 @@ describe("attendanceFormatters", () => {
       assert.strictEqual(sorted[0].name, "VeryActiveMP");
       assert.strictEqual(sorted[1].name, "RegularMP");
       assert.strictEqual(sorted[2].name, "BriefMP");
+    });
+  });
+
+  describe("bar segments", () => {
+    const member = {
+      registered_checks: 333,
+      total_checks: 536,
+      votes_voted: 649,
+      votes_not_voted: 832,
+      votes_absent: 288,
+      votes_total: 1769,
+    };
+
+    it("splits checks into registered and not registered", () => {
+      assert.deepStrictEqual(getChecksBarSegments(member), [
+        { key: "present", value: 333 },
+        { key: "absent", value: 203 },
+      ]);
+    });
+
+    it("splits votes into voted, not voted and absent", () => {
+      assert.deepStrictEqual(getVotesBarSegments(member), [
+        { key: "present", value: 649 },
+        { key: "none", value: 832 },
+        { key: "absent", value: 288 },
+      ]);
+    });
+
+    it("drops empty segments", () => {
+      assert.deepStrictEqual(getChecksBarSegments({ registered_checks: 40, total_checks: 40 }), [
+        { key: "present", value: 40 },
+      ]);
+    });
+
+    it("draws no bar for a small sample or missing item", () => {
+      assert.deepStrictEqual(getChecksBarSegments({ registered_checks: 0, total_checks: 1 }), []);
+      assert.deepStrictEqual(getVotesBarSegments({ votes_voted: 10, votes_total: 10 }), []);
+      assert.deepStrictEqual(getVotesBarSegments(null), []);
+    });
+
+    it("falls back to the session fields for checks", () => {
+      assert.deepStrictEqual(getChecksBarSegments({ present_sessions: 15, total_sessions: 30 }), [
+        { key: "present", value: 15 },
+        { key: "absent", value: 15 },
+      ]);
     });
   });
 });
