@@ -132,6 +132,16 @@ describe("Open Graph middleware helpers", () => {
         description: "Seaduseelnõu lõpphääletus",
       });
       assert.strictEqual(voteMeta.image, null);
+      assert.strictEqual(voteMeta.title, "Seaduseelnõu lõpphääletus — Riigivaade");
+
+      const draftVoteMeta = resolveOgMetadata("haaletus", "v-2", {
+        description: "Lõpphääletus",
+        related_document: { reference: "855", title: "Relvaseaduse muutmise seadus" },
+      });
+      assert.strictEqual(
+        draftVoteMeta.title,
+        "Lõpphääletus: Relvaseaduse muutmise seadus — Riigivaade"
+      );
 
       const draftMeta = resolveOgMetadata("eelnou", "d-1", {
         title: "Riigieelarve seadus",

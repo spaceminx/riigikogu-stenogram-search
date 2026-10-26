@@ -127,7 +127,10 @@ export function resolveOgMetadata(routeType, id, data) {
   }
 
   if (routeType === "haaletus") {
-    const desc = data?.description || "Hääletus";
+    // The description is usually only the step ("Lõpphääletus"); the topic is the related document
+    const step = data?.description || "Hääletus";
+    const docTitle = data?.related_document?.title;
+    const desc = docTitle ? `${step}: ${docTitle}` : step;
     const title = `${desc} — Riigivaade`;
     const description = `Riigikogu hääletuse „${desc}“ tulemused ja saadikute otsused.`;
     return {

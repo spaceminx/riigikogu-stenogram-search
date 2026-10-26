@@ -7,8 +7,10 @@ import { formatDate } from "../lib/calendarUtils";
 import {
   computeNotVoted,
   formatDecision,
+  formatDocumentReference,
   formatMajorityPosition,
   formatOvernightTime,
+  getVotingHeading,
 } from "../lib/votingUtils";
 import { usePageMeta } from "../lib/usePageMeta";
 
@@ -39,11 +41,15 @@ export function VotingView() {
     shouldRetryOnError: false,
   });
 
-  const votingTitle = voting?.description
-    ? `${voting.description} — Riigivaade`
-    : "Hääletus — Riigivaade";
-  const votingDesc = voting?.description
-    ? `Riigikogu hääletuse „${voting.description}“ tulemused, saadikute hääled ja fraktsioonide jaotus.`
+  const heading = voting ? getVotingHeading(voting) : null;
+  const headingText = heading
+    ? heading.stage
+      ? `${heading.stage}: ${heading.title}`
+      : heading.title
+    : null;
+  const votingTitle = headingText ? `${headingText} — Riigivaade` : "Hääletus — Riigivaade";
+  const votingDesc = headingText
+    ? `Riigikogu hääletuse „${headingText}“ tulemused, saadikute hääled ja fraktsioonide jaotus.`
     : "Riigikogu hääletuse tulemused ja saadikute otsused.";
   usePageMeta(votingTitle, votingDesc);
 
@@ -171,20 +177,19 @@ export function VotingView() {
           </div>
         </div>
 
-        <h1 className="voting-detail-title">{voting.description}</h1>
+        {heading.stage && <p className="voting-stage voting-detail-stage">{heading.stage}</p>}
+        <h1 className="voting-detail-title">{heading.title}</h1>
 
-        {voting.related_document && (
+        {voting.related_document?.reference && (
           <div className="voting-related-doc">
             <FileText size={16} className="voting-doc-icon" aria-hidden="true" />
             {voting.related_document.type === "DRAFT" && voting.related_document.uuid ? (
               <Link to={`/eelnou/${voting.related_document.uuid}`} className="voting-doc-link">
-                {voting.related_document.reference ? `${voting.related_document.reference} · ` : ""}
-                {voting.related_document.title}
+                {formatDocumentReference(voting.related_document)}
               </Link>
             ) : (
               <span className="voting-doc-text">
-                {voting.related_document.reference ? `${voting.related_document.reference} · ` : ""}
-                {voting.related_document.title}
+                {formatDocumentReference(voting.related_document)}
               </span>
             )}
           </div>
