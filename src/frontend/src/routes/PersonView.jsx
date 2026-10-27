@@ -130,8 +130,19 @@ export function PersonView({ theme = "light" }) {
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
+      // Keep the panel and its membership switch on screen while another membership loads
+      keepPreviousData: true,
     }
   );
+
+  // A membership can have no comparable votes (e.g. only as a non-affiliated member); the panel
+  // still has to show so the switch stays usable
+  const alignmentComparable = factionAlignment
+    ? factionAlignment.same + factionAlignment.different
+    : 0;
+  const showAlignmentPanel =
+    alignmentComparable > 0 ||
+    Boolean(factionAlignment?.by_membership?.some((m) => m.same + m.different > 0));
 
   const { data: initialDifferences, isLoading: diffsInitialLoading } = useSWR(
     uuid ? `person-faction-diffs-${uuid}-${alignmentMembership}` : null,
@@ -1000,7 +1011,7 @@ export function PersonView({ theme = "light" }) {
       )}
 
       {/* 5. Faction Majority Alignment Panel */}
-      {factionAlignment && factionAlignment.same + factionAlignment.different > 0 && (
+      {showAlignmentPanel && (
         <section className="glass-panel" aria-label="Hääletamine fraktsiooni enamusega">
           <div className="chart-header" style={{ marginBottom: "1rem" }}>
             <div>
@@ -1045,14 +1056,19 @@ export function PersonView({ theme = "light" }) {
 
           {/* Main number */}
           <div className="alignment-main-stat">
-            <span className="alignment-main-text">
-              Hääletas samamoodi kui fraktsiooni enamus:{" "}
-              <strong className="person-metric-value-primary">
-                {formatPercent(factionAlignment.share_same)}
-              </strong>{" "}
-              ({factionAlignment.same} / {factionAlignment.same + factionAlignment.different}{" "}
-              hääletust)
-            </span>
+            {alignmentComparable > 0 ? (
+              <span className="alignment-main-text">
+                Hääletas samamoodi kui fraktsiooni enamus:{" "}
+                <strong className="person-metric-value-primary">
+                  {formatPercent(factionAlignment.share_same)}
+                </strong>{" "}
+                ({factionAlignment.same} / {alignmentComparable} hääletust)
+              </span>
+            ) : (
+              <span className="alignment-main-text">
+                Selles koosseisus pole hääletusi, mida saaks fraktsiooni enamusega võrrelda.
+              </span>
+            )}
           </div>
 
           {/* Small line with excluded counts */}
@@ -1064,91 +1080,93 @@ export function PersonView({ theme = "light" }) {
           </p>
 
           {/* Differences list */}
-          <div className="alignment-diffs-container">
-            <h3
-              style={{
-                fontSize: "1rem",
-                margin: "0 0 0.75rem 0",
-                color: "var(--text-secondary)",
-              }}
-            >
-              Erinevad hääletused {totalDifferences > 0 ? `(${totalDifferences})` : ""}
-            </h3>
+          {alignmentComparable > 0 && (
+            <div className="alignment-diffs-container">
+              <h3
+                style={{
+                  fontSize: "1rem",
+                  margin: "0 0 0.75rem 0",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Erinevad hääletused {totalDifferences > 0 ? `(${totalDifferences})` : ""}
+              </h3>
 
-            {differences.length === 0 ? (
-              <p className="sidebar-empty-state">
-                {diffLoading ? "Laen erinevaid hääletusi…" : "Erinevaid hääletusi ei leitud."}
-              </p>
-            ) : (
-              <div className="alignment-diffs-list">
-                {differences.map((diff) => (
-                  <div key={diff.voting_uuid} className="alignment-diff-card">
-                    <div className="alignment-diff-header">
-                      <span className="alignment-diff-date">
-                        {diff.sitting_date ? formatDate(diff.sitting_date) : "—"}
-                      </span>
-                      <div className="alignment-diff-links">
-                        {diff.voting_uuid && (
-                          <Link
-                            to={`/haaletus/${diff.voting_uuid}`}
-                            className="alignment-session-link"
-                            title="Ava selle hääletuse detailvaade"
+              {differences.length === 0 ? (
+                <p className="sidebar-empty-state">
+                  {diffLoading ? "Laen erinevaid hääletusi…" : "Erinevaid hääletusi ei leitud."}
+                </p>
+              ) : (
+                <div className="alignment-diffs-list">
+                  {differences.map((diff) => (
+                    <div key={diff.voting_uuid} className="alignment-diff-card">
+                      <div className="alignment-diff-header">
+                        <span className="alignment-diff-date">
+                          {diff.sitting_date ? formatDate(diff.sitting_date) : "—"}
+                        </span>
+                        <div className="alignment-diff-links">
+                          {diff.voting_uuid && (
+                            <Link
+                              to={`/haaletus/${diff.voting_uuid}`}
+                              className="alignment-session-link"
+                              title="Ava selle hääletuse detailvaade"
+                            >
+                              Vaata hääletust
+                            </Link>
+                          )}
+                          {diff.sitting_date && (
+                            <Link
+                              to={`/istung/${diff.sitting_date}`}
+                              className="alignment-session-link"
+                              title="Ava selle päeva istungi stenogramm"
+                            >
+                              Vaata istungit
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                      <div className="alignment-diff-desc">{diff.description || "Hääletus"}</div>
+                      {diff.related_document_title && (
+                        <div className="alignment-diff-doc">{diff.related_document_title}</div>
+                      )}
+                      <div className="alignment-diff-comparison">
+                        <span className="alignment-diff-item">
+                          Saadiku otsus:{" "}
+                          <strong
+                            className={`alignment-decision ${diff.member_decision?.toLowerCase()}`}
                           >
-                            Vaata hääletust
-                          </Link>
-                        )}
-                        {diff.sitting_date && (
-                          <Link
-                            to={`/istung/${diff.sitting_date}`}
-                            className="alignment-session-link"
-                            title="Ava selle päeva istungi stenogramm"
+                            {formatDecision(diff.member_decision)}
+                          </strong>
+                        </span>
+                        <span className="alignment-diff-separator">•</span>
+                        <span className="alignment-diff-item">
+                          Fraktsiooni enamus{diff.faction ? ` (${diff.faction})` : ""}:{" "}
+                          <strong
+                            className={`alignment-decision ${diff.faction_position?.toLowerCase()}`}
                           >
-                            Vaata istungit
-                          </Link>
-                        )}
+                            {formatDecision(diff.faction_position)}
+                          </strong>
+                        </span>
                       </div>
                     </div>
-                    <div className="alignment-diff-desc">{diff.description || "Hääletus"}</div>
-                    {diff.related_document_title && (
-                      <div className="alignment-diff-doc">{diff.related_document_title}</div>
-                    )}
-                    <div className="alignment-diff-comparison">
-                      <span className="alignment-diff-item">
-                        Saadiku otsus:{" "}
-                        <strong
-                          className={`alignment-decision ${diff.member_decision?.toLowerCase()}`}
-                        >
-                          {formatDecision(diff.member_decision)}
-                        </strong>
-                      </span>
-                      <span className="alignment-diff-separator">•</span>
-                      <span className="alignment-diff-item">
-                        Fraktsiooni enamus{diff.faction ? ` (${diff.faction})` : ""}:{" "}
-                        <strong
-                          className={`alignment-decision ${diff.faction_position?.toLowerCase()}`}
-                        >
-                          {formatDecision(diff.faction_position)}
-                        </strong>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {hasMoreDiffs && (
-              <div className="alignment-load-more">
-                <button
-                  type="button"
-                  className="filter-search-btn"
-                  onClick={handleLoadMoreDifferences}
-                  disabled={diffLoading}
-                >
-                  {diffLoading ? "Laen…" : "Näita rohkem"}
-                </button>
-              </div>
-            )}
-          </div>
+              {hasMoreDiffs && (
+                <div className="alignment-load-more">
+                  <button
+                    type="button"
+                    className="filter-search-btn"
+                    onClick={handleLoadMoreDifferences}
+                    disabled={diffLoading}
+                  >
+                    {diffLoading ? "Laen…" : "Näita rohkem"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       )}
 
