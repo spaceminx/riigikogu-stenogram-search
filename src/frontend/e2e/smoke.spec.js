@@ -49,4 +49,41 @@ test.describe("Smoke tests for all routes", () => {
 
     mock.verifyNoErrors();
   });
+
+  test("faction alignment panel stays when a membership has no comparable votes", async ({
+    page,
+  }) => {
+    const mock = await setupApiMock(page);
+    // A member who sat in XV only as non-affiliated: nothing to compare with a faction majority
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/faction-alignment") && url.searchParams.get("membership") === "15",
+      (route) =>
+        route.fulfill({
+          json: {
+            same: 0,
+            different: 0,
+            share_same: null,
+            excluded: { absent: 0, split: 0, too_few: 0, no_faction: 668 },
+            by_membership: [
+              { membership: 15, same: 0, different: 0, share_same: null },
+              { membership: 14, same: 386, different: 116, share_same: 76.9 },
+            ],
+          },
+        })
+    );
+
+    await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
+    const panel = page.getByRole("region", { name: "Hääletamine fraktsiooni enamusega" });
+    await expect(panel).toBeVisible();
+
+    await panel.getByRole("button", { name: "XV Riigikogu" }).click();
+    await expect(panel.getByText("Selles koosseisus pole hääletusi")).toBeVisible();
+    await expect(panel.getByText("668 fraktsioonita")).toBeVisible();
+
+    await panel.getByRole("button", { name: "Kõik koosseisud" }).click();
+    await expect(panel.getByText("Hääletas samamoodi kui fraktsiooni enamus")).toBeVisible();
+
+    mock.verifyNoErrors();
+  });
 });
