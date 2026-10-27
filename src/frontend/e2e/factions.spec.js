@@ -20,31 +20,35 @@ test.describe("Factions page", () => {
     await expect(page).toHaveURL(/\/fraktsioonid$/);
     await expect(page.locator("h1")).toHaveText("Fraktsioonid");
 
-    await expect(page.getByLabel("Ainult praegu aktiivsed saadikud")).toBeChecked();
+    // Current and former members come in one request; there is no filter to switch
+    await expect(page.getByRole("checkbox")).toHaveCount(0);
     await expect
       .poll(() => factionRequests(mock).at(-1)?.queryParams)
-      .toMatchObject({ membership: "15", active_only: "true" });
+      .toEqual({ membership: "15" });
 
     await expect(page.locator(".faction-card")).toHaveCount(7);
     await expect(page.locator(".faction-card-title").first()).toHaveText("Reformierakond");
     await expect(card(page, "Reformierakond").locator(".faction-card-count")).toHaveText(
       "4 saadikut"
     );
-    await expect(card(page, "Reformierakond").locator(".faction-member")).toHaveCount(4);
+    await expect(
+      card(page, "Reformierakond").locator(":scope > .faction-member-list > .faction-member")
+    ).toHaveCount(4);
     await expect(page.locator(".factions-government-line")).toContainText("Valitsus: Michal");
     await expect(page.locator(".factions-seats-line")).toHaveText(
       "Koalitsioonis 7, opositsioonis 6, fraktsiooni mittekuuluvaid 3 · kokku 16 saadikut"
     );
-    await expect(page.locator(".faction-former")).toHaveCount(0);
-
     // Chairs and vice-chairs come first and carry their position
     const e200 = card(page, "Eesti 200");
-    await expect(e200.locator(".faction-member-name")).toHaveText([
+    await expect(e200.locator(":scope > .faction-member-list .faction-member-name")).toHaveText([
       "Diana Ingerainen",
       "Irja Lutsar",
       "Lauri Hussar",
     ]);
-    await expect(e200.locator(".faction-leader-tag")).toHaveText(["aseesimees", "aseesimees"]);
+    await expect(e200.locator(":scope > .faction-member-list .faction-leader-tag")).toHaveText([
+      "aseesimees",
+      "aseesimees",
+    ]);
     await expect(card(page, "Keskerakond").locator(".faction-leader-tag")).toHaveText(["esimees"]);
     // A past vice-chair carries no tag on the current list
     await expect(
@@ -58,18 +62,13 @@ test.describe("Factions page", () => {
     mock.verifyNoErrors();
   });
 
-  test("shows former members with dates when the filter is off", async ({ page }) => {
+  test("always offers former members in a collapsed section with dates", async ({ page }) => {
     const mock = await setupApiMock(page);
 
     await page.goto("/fraktsioonid");
-    const checkbox = page.getByLabel("Ainult praegu aktiivsed saadikud");
-    await expect(checkbox).toBeChecked();
-
-    // The state follows the URL, so wait for it instead of using uncheck()
-    await checkbox.click();
-    await expect(page).toHaveURL(/[?&]fr_active=0/);
-    await expect(checkbox).not.toBeChecked();
-    await expect.poll(() => factionRequests(mock).at(-1)?.queryParams.active_only).toBeUndefined();
+    // Factions with former members in the fixture: Reform, Eesti 200, EKRE, Keskerakond, non-affiliated
+    await expect(page.locator(".faction-former")).toHaveCount(5);
+    await expect(page.locator(".faction-former[open]")).toHaveCount(0);
 
     const reform = card(page, "Reformierakond");
     await expect(reform.locator(".faction-card-count")).toHaveText("4 saadikut");
@@ -105,13 +104,12 @@ test.describe("Factions page", () => {
     mock.verifyNoErrors();
   });
 
-  test("shows a past membership without the active filter", async ({ page }) => {
+  test("shows a past membership without government roles", async ({ page }) => {
     const mock = await setupApiMock(page);
 
     await page.goto("/fraktsioonid");
     await page.getByLabel("Periood:").selectOption("14");
 
-    await expect(page.getByLabel("Ainult praegu aktiivsed saadikud")).toHaveCount(0);
     // XIV had several governments, so the page shows no single role per faction
     await expect(page.getByLabel("Roll:")).toHaveCount(0);
     await expect(page.locator(".faction-card .faction-badge")).toHaveCount(0);
