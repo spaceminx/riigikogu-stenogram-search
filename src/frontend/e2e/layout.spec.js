@@ -71,3 +71,28 @@ test.describe("Voting summary wrapping at 390px", () => {
     mock.verifyNoErrors();
   });
 });
+
+test.describe("Header between the mobile menu and full width", () => {
+  for (const width of [641, 700, 720, 760]) {
+    test(`the four nav links fit at ${width}px`, async ({ page }) => {
+      const mock = await setupApiMock(page);
+      await page.setViewportSize({ width, height: 800 });
+
+      await page.goto("/fraktsioonid");
+      await expect(page.locator(".faction-card").first()).toBeVisible();
+
+      const tagline = page.locator(".brand-copy > span");
+      const { height, fontSize, overflow } = await tagline.evaluate((el) => ({
+        height: el.getBoundingClientRect().height,
+        fontSize: parseFloat(getComputedStyle(el).fontSize),
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      }));
+      // One line of the tagline; a wrapped one is at least two font sizes tall
+      expect(height).toBeLessThan(fontSize * 2);
+      expect(overflow).toBe(false);
+      await expect(page.locator("nav.nav-links a")).toHaveCount(4);
+
+      mock.verifyNoErrors();
+    });
+  }
+});

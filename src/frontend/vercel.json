@@ -25,6 +25,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/fraktsioonid",
+      "destination": "/index.html"
+    },
+    {
       "source": "/andmed",
       "destination": "/index.html"
     },

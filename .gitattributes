@@ -1,0 +1,4 @@
+# Recorded API responses for the E2E tests: collapsed in PR diffs and left out of language stats
+src/frontend/e2e/fixtures/*.json linguist-generated=true
+# The routing table that maps requests to those responses is edited by hand
+src/frontend/e2e/fixtures/index.json -linguist-generated

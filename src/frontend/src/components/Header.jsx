@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Sun,
   Users,
+  UsersRound,
   Vote,
 } from "lucide-react";
 import { formatDate } from "../lib/calendarUtils";
@@ -35,6 +36,7 @@ export function Header({
 
   const isVotings = pathname.startsWith("/haaletused") || pathname.startsWith("/haaletus");
   const isAttendance = pathname.startsWith("/kohalolek");
+  const isFactions = pathname.startsWith("/fraktsioonid");
   const isSearchOrDashboard = pathname === "/" || pathname.startsWith("/otsing");
 
   return (
@@ -80,6 +82,13 @@ export function Header({
         >
           Hääletused
         </Link>
+        <Link
+          to="/fraktsioonid"
+          className={`nav-btn ${isFactions ? "active" : ""}`}
+          aria-current={isFactions ? "page" : undefined}
+        >
+          Fraktsioonid
+        </Link>
       </nav>
       <details className="header-menu">
         <summary className="header-menu-trigger" aria-label="Ava andmevaate menüü">
@@ -121,6 +130,17 @@ export function Header({
             >
               <Vote aria-hidden="true" />
               <span>Hääletused</span>
+            </Link>
+            <Link
+              to="/fraktsioonid"
+              className={`menu-link ${isFactions ? "active" : ""}`}
+              onClick={() => {
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <UsersRound aria-hidden="true" />
+              <span>Fraktsioonid</span>
             </Link>
             <div className="menu-divider" />
           </div>

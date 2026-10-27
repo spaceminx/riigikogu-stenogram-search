@@ -1,0 +1,174 @@
+/* ==========================================================================
+   Factions page
+   ========================================================================== */
+
+.factions-government {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.factions-government-line,
+.factions-seats-line {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--text-field);
+}
+
+.factions-government-line strong {
+  color: var(--color-text);
+}
+
+.factions-seats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.factions-seats .vote-bar {
+  max-width: 32rem;
+}
+
+.factions-seats .att-bar-legend {
+  justify-content: flex-start;
+  margin: 0;
+}
+
+/* Seat shares: the accent for the government side and two greys, no party colours */
+.vote-bar-coalition {
+  background: var(--color-accent);
+}
+
+.vote-bar-opposition {
+  background: var(--vote-none-fill);
+}
+
+.vote-bar-nonaligned {
+  background: var(--vote-absent-fill);
+}
+
+.factions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faction-card {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
+  background: var(--color-surface);
+  min-width: 0;
+}
+
+.faction-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.faction-card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.faction-card-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.faction-card-fullname,
+.faction-card-count {
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+
+.faction-card-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.faction-member-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  columns: 15rem;
+  column-gap: 2rem;
+}
+
+.faction-member {
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0;
+  break-inside: avoid;
+}
+
+.faction-member-name {
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.faction-member-name:hover,
+.faction-member-name:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.faction-member-meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+
+.faction-card-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-field);
+}
+
+.faction-former {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.faction-former summary {
+  cursor: pointer;
+  color: var(--color-text-soft);
+  font-size: var(--text-field);
+  font-weight: 600;
+}
+
+.faction-former[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+.faction-card-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--color-accent);
+  font-size: var(--text-field);
+  text-decoration: none;
+}
+
+.faction-card-link:hover,
+.faction-card-link:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .faction-card {
+    padding: 0.85rem 1rem;
+  }
+}
