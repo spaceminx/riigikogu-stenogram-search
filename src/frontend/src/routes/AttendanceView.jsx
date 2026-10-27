@@ -30,8 +30,12 @@ export function AttendanceView({
   const attendanceMembership = attParam || defaultMembership || "";
   const selectedFaction = searchParams.get("att_faction") || "";
   const selectedRole = searchParams.get("role") || "";
-  const activeOnly =
-    searchParams.get("att_active") === "1" || searchParams.get("att_active") === "true";
+  const isCurrentMembership = Boolean(
+    defaultMembership && attendanceMembership === defaultMembership
+  );
+  // On by default for the current membership; att_active=0 in the URL turns it off
+  const activeParam = searchParams.get("att_active");
+  const activeOnly = isCurrentMembership && activeParam !== "0" && activeParam !== "false";
   const noInfotund = searchParams.get("no_infotund") === "1";
 
   const updateParam = (key, value) => {
@@ -60,7 +64,7 @@ export function AttendanceView({
     setSearchParams(next, { replace: true });
   };
   const setSelectedRole = (r) => updateParam("role", r || null);
-  const setActiveOnly = (a) => updateParam("att_active", a || null);
+  const setActiveOnly = (a) => updateParam("att_active", a ? null : "0");
   const setNoInfotund = (val) => updateParam("no_infotund", val || null);
 
   const handlePeriodChange = (newPeriod) => {
@@ -302,7 +306,7 @@ export function AttendanceView({
             </div>
           )}
 
-          {Boolean(defaultMembership && attendanceMembership === defaultMembership) && (
+          {isCurrentMembership && (
             <label className="attendance-checkbox-label">
               <input
                 type="checkbox"
