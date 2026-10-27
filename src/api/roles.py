@@ -19,6 +19,16 @@ def load_governments() -> list[dict[str, Any]]:
     return _GOVERNMENTS_CACHE
 
 
+def government_at(date: str) -> dict[str, Any] | None:
+    """Return the government period in office on the given date, or None before the first one."""
+    d = date[:10]
+    for period in load_governments():
+        p_to = period.get("to")
+        if period["from"] <= d and (p_to is None or d < p_to):
+            return period
+    return None
+
+
 def role(faction: str | None, date: str | None) -> str:
     """Determine role ("coalition", "opposition", or "none") for a faction on a given date.
 
