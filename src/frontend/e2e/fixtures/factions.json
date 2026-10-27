@@ -1,0 +1,404 @@
+{
+  "membership": "15",
+  "date": "2026-10-27",
+  "is_current_membership": true,
+  "government": {
+    "name": "Michal",
+    "from": "2025-03-11",
+    "to": null,
+    "coalition": ["Eesti Reformierakonna fraktsioon", "Eesti 200 fraktsioon"],
+    "source": [
+      "https://valitsus.ee/valitsuse-eesmargid-ja-tegevused/valitsemise-alused/koalitsioonilepe-2025-2027",
+      "https://www.err.ee/1609632832/michal-saatis-sotsid-valitsusest-valja"
+    ]
+  },
+  "factions": [
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "role": "coalition",
+      "current_count": 4,
+      "members": [
+        {
+          "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+          "full_name": "Annely Akkermann",
+          "first_name": "Annely",
+          "last_name": "Akkermann",
+          "electoral_district": "Pärnumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/98f053d5-3567-4bb1-b7ad-afad23278792/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+          "full_name": "Yoko Alender",
+          "first_name": "Yoko",
+          "last_name": "Alender",
+          "electoral_district": "Tartu linn",
+          "photo_url": "https://api.riigikogu.ee/api/files/c6b13f27-e50e-4ed5-9ec5-3f76170e8167/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": "2024-07-23"
+            },
+            {
+              "start": "2025-03-25",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "b29c93a9-f043-4b8f-b069-aa61e524f66b",
+          "full_name": "Hele Everaus",
+          "first_name": "Hele",
+          "last_name": "Everaus",
+          "electoral_district": "Tartu linn",
+          "photo_url": "https://api.riigikogu.ee/api/files/542c90f2-1ec5-4ddc-a4f0-11854fa54726/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2024-07-29",
+              "end": "2025-03-25"
+            }
+          ]
+        },
+        {
+          "uuid": "07003549-aa42-4764-8bdd-cab06cb94a92",
+          "full_name": "Anti Haugas",
+          "first_name": "Anti",
+          "last_name": "Haugas",
+          "electoral_district": "Võru-, Valga- ja Põlvamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/6c5e24e1-e727-469d-90a1-39ae0bb8dc4a/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "09500870-255e-416d-8eda-f80e9929adda",
+          "full_name": "Jüri Jaanson",
+          "first_name": "Jüri",
+          "last_name": "Jaanson",
+          "electoral_district": "Pärnumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/e9aa2b7b-6bad-4c18-a77d-03501e8c880d/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2024-09-10",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "0d906012-76b5-468c-a0c9-201f41f271a8",
+          "full_name": "Siim Kallas",
+          "first_name": "Siim",
+          "last_name": "Kallas",
+          "electoral_district": "Tallinna Kesklinna, Lasnamäe ja Pirita linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/3ae5305a-8b58-4504-ae89-7429b2fa00a6/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": "2024-09-09"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Eesti 200 fraktsioon",
+      "role": "coalition",
+      "current_count": 3,
+      "members": [
+        {
+          "uuid": "64c0141f-371b-4520-8a50-09e65231f775",
+          "full_name": "Lauri Hussar",
+          "first_name": "Lauri",
+          "last_name": "Hussar",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/7d0c867b-34af-4b55-b6c0-ec21dbcc4971/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-11",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "8946b072-80c5-436e-95b2-41f928a7c636",
+          "full_name": "Diana Ingerainen",
+          "first_name": "Diana",
+          "last_name": "Ingerainen",
+          "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/67261523-41ba-49f8-8060-9d2b6ac91bb6/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2025-03-26",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
+          "full_name": "Züleyxa Izmailova",
+          "first_name": "Züleyxa",
+          "last_name": "Izmailova",
+          "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/0e0fc1d7-4edb-4c46-8fac-1a171538b8e6/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2023-05-22",
+              "end": "2024-06-12"
+            }
+          ]
+        },
+        {
+          "uuid": "3febb869-f443-4aba-908e-7c0c30f8c4dd",
+          "full_name": "Irja Lutsar",
+          "first_name": "Irja",
+          "last_name": "Lutsar",
+          "electoral_district": "Jõgeva- ja Tartumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/6fabb82e-721f-4642-81b1-c9aec60dad70/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-11",
+              "end": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "role": "opposition",
+      "current_count": 2,
+      "members": [
+        {
+          "uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+          "full_name": "Arvo Aller",
+          "first_name": "Arvo",
+          "last_name": "Aller",
+          "electoral_district": "Ida-Virumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/b3cd8ebc-7920-4eb8-ba94-3e73165372df/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "4b96f3e5-af5e-41ce-86c9-3fdee3ce51da",
+          "full_name": "Mart Helme",
+          "first_name": "Mart",
+          "last_name": "Helme",
+          "electoral_district": "Pärnumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/9a4dfa89-e5b3-427c-9f1e-8c54af2ba833/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+          "full_name": "Henn Põlluaas",
+          "first_name": "Henn",
+          "last_name": "Põlluaas",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/5330c4bf-0d7d-4366-9a0f-4dd015a320aa/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": "2024-06-13"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "role": "opposition",
+      "current_count": 2,
+      "members": [
+        {
+          "uuid": "f6353ede-a0a5-4918-ab8b-790a1957c5cd",
+          "full_name": "Anti Allas",
+          "first_name": "Anti",
+          "last_name": "Allas",
+          "electoral_district": "Võru-, Valga- ja Põlvamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/a5d4330e-1120-4279-adc3-c02650e83239/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "c7f4f213-58a3-4b6f-a236-153644653d17",
+          "full_name": "Madis Kallas",
+          "first_name": "Madis",
+          "last_name": "Kallas",
+          "electoral_district": "Hiiu-, Lääne- ja Saaremaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/a73672c2-89ec-4718-a879-e769b3d5a339/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": "2023-04-18"
+            },
+            {
+              "start": "2024-04-17",
+              "end": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "role": "opposition",
+      "current_count": 1,
+      "members": [
+        {
+          "uuid": "1839253a-aec0-4019-995a-1c031db8fd10",
+          "full_name": "Lauri Laats",
+          "first_name": "Lauri",
+          "last_name": "Laats",
+          "electoral_district": "Tallinna Mustamäe ja Nõmme linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/8f92de80-735f-4262-9ad9-36890a0ce26c/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-11",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "87b36dbb-08e9-4048-91eb-6df699c6e27e",
+          "full_name": "Jüri Ratas",
+          "first_name": "Jüri",
+          "last_name": "Ratas",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/2fde5038-fdf3-4d57-87c0-c24d88e69e16/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2023-04-11",
+              "end": "2024-01-31"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "role": "opposition",
+      "current_count": 1,
+      "members": [
+        {
+          "uuid": "a78027e5-2480-49f2-a340-ee88daf92d53",
+          "full_name": "Urmas Reinsalu",
+          "first_name": "Urmas",
+          "last_name": "Reinsalu",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/6ee5995e-d342-43cc-a894-ee0480d9ee18/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2023-04-10",
+              "end": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "role": "none",
+      "current_count": 3,
+      "members": [
+        {
+          "uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
+          "full_name": "Peeter Ernits",
+          "first_name": "Peeter",
+          "last_name": "Ernits",
+          "electoral_district": "Jõgeva- ja Tartumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/589711d3-8e4b-4b24-9a7f-fac35a5d5b6b/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2025-04-01",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
+          "full_name": "Züleyxa Izmailova",
+          "first_name": "Züleyxa",
+          "last_name": "Izmailova",
+          "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/0e0fc1d7-4edb-4c46-8fac-1a171538b8e6/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2024-06-12",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
+          "full_name": "Henn Põlluaas",
+          "first_name": "Henn",
+          "last_name": "Põlluaas",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/5330c4bf-0d7d-4366-9a0f-4dd015a320aa/download",
+          "current": true,
+          "periods": [
+            {
+              "start": "2024-06-13",
+              "end": null
+            }
+          ]
+        },
+        {
+          "uuid": "87b36dbb-08e9-4048-91eb-6df699c6e27e",
+          "full_name": "Jüri Ratas",
+          "first_name": "Jüri",
+          "last_name": "Ratas",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/2fde5038-fdf3-4d57-87c0-c24d88e69e16/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2024-01-31",
+              "end": "2024-07-08"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

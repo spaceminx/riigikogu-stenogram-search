@@ -132,6 +132,7 @@ def test_sitemap_xml_endpoint():
     assert "<loc>https://www.riigivaade.me/</loc>" in content
     assert "<loc>https://www.riigivaade.me/haaletused</loc>" in content
     assert "<loc>https://www.riigivaade.me/kohalolek</loc>" in content
+    assert "<loc>https://www.riigivaade.me/fraktsioonid</loc>" in content
     assert "<loc>https://www.riigivaade.me/andmed</loc>" in content
 
     # Check dynamic routes exist

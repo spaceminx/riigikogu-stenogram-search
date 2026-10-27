@@ -153,6 +153,16 @@ export async function fetchFactionAttendance({
   return handleResponse(res);
 }
 
+export async function fetchFactions({ membership = null, activeOnly = false } = {}) {
+  const params = new URLSearchParams();
+  if (membership) params.append("membership", membership);
+  if (activeOnly) params.append("active_only", "true");
+
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/factions${qs ? `?${qs}` : ""}`);
+  return handleResponse(res);
+}
+
 export async function fetchFactionsList(membership = null) {
   const params = new URLSearchParams();
   if (membership) params.append("membership", membership);

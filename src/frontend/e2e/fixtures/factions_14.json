@@ -1,0 +1,342 @@
+{
+  "membership": "14",
+  "date": "2023-04-09",
+  "is_current_membership": false,
+  "government": {
+    "name": "Kallas II",
+    "from": "2022-07-18",
+    "to": "2023-04-17",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Isamaa fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": "https://www.err.ee/1608658435/riigikogu-andis-kallasele-volitused-valitsuse-moodustamiseks"
+  },
+  "factions": [
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "role": "opposition",
+      "current_count": 0,
+      "members": [
+        {
+          "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
+          "full_name": "Jaak Aab",
+          "first_name": "Jaak",
+          "last_name": "Aab",
+          "electoral_district": "Järva- ja Viljandimaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/628a5440-1825-4a60-9017-4c13069052b8/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2019-04-25"
+            },
+            {
+              "start": "2022-06-06",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "9f3d840c-3a49-43de-8c5d-d1990933b692",
+          "full_name": "Taavi Aas",
+          "first_name": "Taavi",
+          "last_name": "Aas",
+          "electoral_district": "Tallinna Mustamäe ja Nõmme linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/8e1b4a93-0e70-410e-95d3-510044521cfb/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2019-04-25"
+            },
+            {
+              "start": "2022-06-06",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "6eafafda-f117-44e5-b14b-1956d566e233",
+          "full_name": "Dmitri Dmitrijev",
+          "first_name": "Dmitri",
+          "last_name": "Dmitrijev",
+          "electoral_district": "Ida-Virumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/e48acfb6-e1b0-42ad-bb5b-0deba89c34f2/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
+      "role": "opposition",
+      "current_count": 0,
+      "members": [
+        {
+          "uuid": "d8909ed8-ac93-4223-a3ec-55e1bb4ec8a9",
+          "full_name": "Merry Aart",
+          "first_name": "Merry",
+          "last_name": "Aart",
+          "electoral_district": "Võru-, Valga- ja Põlvamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/e53bf6f6-7f64-4b58-b6ba-098c096bb304/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "6f87ce5b-aad3-4118-9649-253cfd076b53",
+          "full_name": "Riho Breivel",
+          "first_name": "Riho",
+          "last_name": "Breivel",
+          "electoral_district": "Ida-Virumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/cf2d483e-6d76-482c-98d5-c0a55bee0828/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
+          "full_name": "Peeter Ernits",
+          "first_name": "Peeter",
+          "last_name": "Ernits",
+          "electoral_district": "Jõgeva- ja Tartumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/589711d3-8e4b-4b24-9a7f-fac35a5d5b6b/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Eesti Reformierakonna fraktsioon",
+      "role": "coalition",
+      "current_count": 0,
+      "members": [
+        {
+          "uuid": "fe748f4d-3f50-4af8-8069-92a460978d2b",
+          "full_name": "Arto Aas",
+          "first_name": "Arto",
+          "last_name": "Aas",
+          "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/e750f5f9-5c33-40f9-87d7-6adbbc151997/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2019-05-21"
+            }
+          ]
+        },
+        {
+          "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+          "full_name": "Annely Akkermann",
+          "first_name": "Annely",
+          "last_name": "Akkermann",
+          "electoral_district": "Pärnumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/98f053d5-3567-4bb1-b7ad-afad23278792/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2022-10-19"
+            }
+          ]
+        },
+        {
+          "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+          "full_name": "Yoko Alender",
+          "first_name": "Yoko",
+          "last_name": "Alender",
+          "electoral_district": "Tartu linn",
+          "photo_url": "https://api.riigikogu.ee/api/files/c6b13f27-e50e-4ed5-9ec5-3f76170e8167/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Isamaa fraktsioon",
+      "role": "coalition",
+      "current_count": 0,
+      "members": [
+        {
+          "uuid": "e12f213f-f7de-4e2c-955b-e4765daa8912",
+          "full_name": "Heiki Hepner",
+          "first_name": "Heiki",
+          "last_name": "Hepner",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/ca4095b0-9da0-43b2-89fd-2f3bab41bdd3/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-29",
+              "end": "2021-01-27"
+            },
+            {
+              "start": "2021-06-02",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "ac0e1069-9bbf-4bf9-88fe-f609a671e74d",
+          "full_name": "Siim Kiisler",
+          "first_name": "Siim",
+          "last_name": "Kiisler",
+          "electoral_district": "Ida-Virumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/52d9bd24-a3b7-4130-81cb-c46bbfe48293/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-06-11",
+              "end": "2021-01-27"
+            }
+          ]
+        },
+        {
+          "uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
+          "full_name": "Aivar Kokk",
+          "first_name": "Aivar",
+          "last_name": "Kokk",
+          "electoral_district": "Jõgeva- ja Tartumaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/ef7e9a8d-f27a-401f-9b5d-6dc700107b3d/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "role": "coalition",
+      "current_count": 0,
+      "members": [
+        {
+          "uuid": "3b95eb28-aafc-4118-95e7-d9773e780890",
+          "full_name": "Jaak Juske",
+          "first_name": "Jaak",
+          "last_name": "Juske",
+          "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/d3ef1e4c-cf5f-47c6-838e-7137a4533b53/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-06-13",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "6e0b6122-249d-48f1-9582-9df8b2bb236d",
+          "full_name": "Toomas Jürgenstein",
+          "first_name": "Toomas",
+          "last_name": "Jürgenstein",
+          "electoral_district": "Tartu linn",
+          "photo_url": "https://api.riigikogu.ee/api/files/d7b8240b-146a-42e2-8c74-4fb840f20010/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2022-07-19",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "f8a410dd-4d93-4578-ba56-217bbd8ee91a",
+          "full_name": "Marina Kaljurand",
+          "first_name": "Marina",
+          "last_name": "Kaljurand",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/40962576-01b7-4aaf-85fc-cd040acbb3a9/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-04",
+              "end": "2019-06-13"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "role": "none",
+      "current_count": 0,
+      "members": [
+        {
+          "uuid": "5ea230e2-5d34-46e1-9e4c-3966903f6b15",
+          "full_name": "Monika Haukanõmm",
+          "first_name": "Monika",
+          "last_name": "Haukanõmm",
+          "electoral_district": "Tallinna Kesklinna, Lasnamäe ja Pirita linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/8a38ef4a-912f-491a-bb64-bcc46cc74426/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2022-03-31",
+              "end": "2022-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "989194b6-b6cc-4c8f-9e6a-8eb8913d103e",
+          "full_name": "Raimond Kaljulaid",
+          "first_name": "Raimond",
+          "last_name": "Kaljulaid",
+          "electoral_district": "Tallinna Haabersti, Põhja-Tallinna ja Kristiine linnaosa",
+          "photo_url": "https://api.riigikogu.ee/api/files/1da94e0b-e3ff-41d9-8d75-5b882b53e939/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2019-04-06",
+              "end": "2023-04-01"
+            }
+          ]
+        },
+        {
+          "uuid": "f8a410dd-4d93-4578-ba56-217bbd8ee91a",
+          "full_name": "Marina Kaljurand",
+          "first_name": "Marina",
+          "last_name": "Kaljurand",
+          "electoral_district": "Harju- ja Raplamaa",
+          "photo_url": "https://api.riigikogu.ee/api/files/40962576-01b7-4aaf-85fc-cd040acbb3a9/download",
+          "current": false,
+          "periods": [
+            {
+              "start": "2023-04-01",
+              "end": "2023-04-06"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

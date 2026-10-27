@@ -23,6 +23,7 @@ const DashboardView = lazy(() => import("./routes/DashboardView"));
 const SearchView = lazy(() => import("./routes/SearchView"));
 const SessionView = lazy(() => import("./routes/SessionView"));
 const AttendanceView = lazy(() => import("./routes/AttendanceView"));
+const FactionsView = lazy(() => import("./routes/FactionsView"));
 const SpeechView = lazy(() => import("./routes/SpeechView"));
 const PersonView = lazy(() => import("./routes/PersonView"));
 const PrivacyView = lazy(() => import("./routes/PrivacyView"));
@@ -73,6 +74,8 @@ function PageTitlebar({ memberships = [] }) {
   let title = "Kõnede analüüs";
   if (pathname.startsWith("/kohalolek")) {
     title = "Kohaloleku andmed";
+  } else if (pathname.startsWith("/fraktsioonid")) {
+    title = "Fraktsioonid";
   } else if (pathname.startsWith("/andmed")) {
     title = "Andmed ja privaatsus";
   } else if (pathname.startsWith("/otsing")) {
@@ -207,6 +210,12 @@ function AppContent() {
               <Route path="/kone/:id" element={<SpeechView />} />
               <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
               <Route path="/haaletused" element={<VotingsView memberships={memberships} />} />
+              <Route
+                path="/fraktsioonid"
+                element={
+                  <FactionsView memberships={memberships} membershipsLoading={membershipsLoading} />
+                }
+              />
               <Route path="/haaletus/:uuid" element={<VotingView />} />
               <Route path="/eelnou/:uuid" element={<DraftView />} />
               <Route

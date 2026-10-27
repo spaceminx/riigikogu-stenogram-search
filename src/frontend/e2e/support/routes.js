@@ -13,6 +13,7 @@ export const ROUTES = [
     contentSelector: ".person-view-container",
   },
   { path: "/haaletused", name: "Hääletused", contentSelector: ".votings-view-container" },
+  { path: "/fraktsioonid", name: "Fraktsioonid", contentSelector: ".faction-card" },
   {
     path: `/haaletus/${FIXTURE_IDS.votingUuid}`,
     name: "Hääletus",

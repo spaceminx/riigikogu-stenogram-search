@@ -480,6 +480,14 @@ input.search-input:focus-visible {
   height: 16px;
 }
 
+/* Between the mobile menu and full width the four nav links leave no room for the label;
+   the summary keeps its aria-label */
+@media (min-width: 641px) and (max-width: 760px) {
+  .header-menu-trigger > span {
+    display: none;
+  }
+}
+
 .header-menu-trigger:hover,
 .header-menu[open] .header-menu-trigger {
   border-color: var(--color-border-strong);
