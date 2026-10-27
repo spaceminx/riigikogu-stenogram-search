@@ -37,6 +37,24 @@ test.describe("Factions page", () => {
     );
     await expect(page.locator(".faction-former")).toHaveCount(0);
 
+    // Chairs and vice-chairs come first and carry their position
+    const e200 = card(page, "Eesti 200");
+    await expect(e200.locator(".faction-member-name")).toHaveText([
+      "Diana Ingerainen",
+      "Irja Lutsar",
+      "Lauri Hussar",
+    ]);
+    await expect(e200.locator(".faction-leader-tag")).toHaveText(["aseesimees", "aseesimees"]);
+    await expect(card(page, "Keskerakond").locator(".faction-leader-tag")).toHaveText(["esimees"]);
+    // A past vice-chair carries no tag on the current list
+    await expect(
+      card(page, "Reformierakond").locator(".faction-member", { hasText: "Yoko Alender" })
+    ).not.toContainText("aseesimees");
+
+    await expect(
+      card(page, "Isamaa").getByRole("link", { name: /Fraktsiooni leht riigikogu\.ee-s/ })
+    ).toHaveAttribute("href", "https://www.riigikogu.ee/riigikogu/fraktsioonid/isamaa-fraktsioon/");
+
     mock.verifyNoErrors();
   });
 
@@ -109,6 +127,12 @@ test.describe("Factions page", () => {
     await expect(card(page, "Reformierakond").locator(".faction-card-count")).toHaveText(
       "3 liiget koosseisu jooksul"
     );
+    // Positions held during the membership are shown with their dates
+    await expect(
+      card(page, "Reformierakond").locator(".faction-member", { hasText: "Arto Aas" })
+    ).toContainText("aseesimees 04.04.2019–21.05.2019");
+    // riigikogu.ee shows only the current members, so a past membership links only to attendance
+    await expect(page.getByRole("link", { name: /riigikogu\.ee-s/ })).toHaveCount(0);
     await expect(card(page, "Reformierakond").locator(".faction-card-link")).toHaveAttribute(
       "href",
       "/kohalolek?att_faction=Eesti+Reformierakonna+fraktsioon&att_membership=14"

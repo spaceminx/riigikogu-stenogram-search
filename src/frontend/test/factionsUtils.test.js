@@ -2,11 +2,14 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   filterFactionsByRole,
+  formatLeaderRoles,
   formatPeriods,
+  getOfficialFactionUrl,
   getSeatCounts,
   getSeatSegments,
   isFullTerm,
   joinedLater,
+  sortLeadersFirst,
   splitMembers,
 } from "../src/lib/factionsUtils.js";
 
@@ -112,5 +115,41 @@ describe("factionsUtils", () => {
       getSeatSegments({ coalition: 48, opposition: 53, none: 0 }).map((s) => s.key),
       ["coalition", "opposition"]
     );
+  });
+
+  it("puts the chair and vice-chairs first and keeps the rest in order", () => {
+    const members = [
+      { uuid: "a" },
+      { uuid: "b", leader_role: "aseesimees" },
+      { uuid: "c" },
+      { uuid: "d", leader_role: "esimees" },
+      { uuid: "e", leader_role: "aseesimees" },
+    ];
+    assert.deepStrictEqual(
+      sortLeadersFirst(members).map((m) => m.uuid),
+      ["d", "b", "e", "a", "c"]
+    );
+  });
+
+  it("formats role periods", () => {
+    assert.strictEqual(
+      formatLeaderRoles([
+        { role: "aseesimees", start: "2023-04-10", end: "2024-07-23" },
+        { role: "esimees", start: "2024-07-23", end: null },
+      ]),
+      "aseesimees 10.04.2023–23.07.2024, esimees alates 23.07.2024"
+    );
+  });
+
+  it("links only the current factions to riigikogu.ee", () => {
+    assert.strictEqual(
+      getOfficialFactionUrl("Isamaa fraktsioon"),
+      "https://www.riigikogu.ee/riigikogu/fraktsioonid/isamaa-fraktsioon/"
+    );
+    assert.strictEqual(
+      getOfficialFactionUrl("Fraktsiooni mittekuuluvad Riigikogu liikmed"),
+      "https://www.riigikogu.ee/riigikogu/fraktsioonid/fraktsiooni-mittekuuluvad-saadikud/"
+    );
+    assert.strictEqual(getOfficialFactionUrl("Isamaa ja Res Publica Liidu fraktsioon"), null);
   });
 });
