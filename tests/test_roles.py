@@ -12,6 +12,7 @@ KNOWN_FACTIONS = {
     "Eesti Konservatiivse Rahvaerakonna fraktsioon",
     "Eesti Reformierakonna fraktsioon",
     "Isamaa fraktsioon",
+    "Isamaa ja Res Publica Liidu fraktsioon",
     "Sotsiaaldemokraatliku Erakonna fraktsioon",
     "Eesti 200 fraktsioon",
     "Fraktsiooni mittekuuluvad Riigikogu liikmed",
@@ -69,6 +70,14 @@ def test_role_boundary_dates():
 
     # Reformierakond stayed in coalition on 2022-06-03
     assert role("Eesti Reformierakonna fraktsioon", "2022-06-03") == "coalition"
+
+
+def test_role_isamaa_before_and_after_its_rename():
+    """IRL's faction took the name Isamaa on 2018-07-31; both names were in Ratas I coalition."""
+    assert role("Isamaa ja Res Publica Liidu fraktsioon", "2018-07-30") == "coalition"
+    assert role("Isamaa fraktsioon", "2018-07-31") == "coalition"
+    # Before Ratas I, IRL had no listed government period
+    assert role("Isamaa ja Res Publica Liidu fraktsioon", "2016-11-22") == "opposition"
 
 
 def test_role_fraktsioonitud_and_empty():
