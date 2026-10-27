@@ -58,4 +58,33 @@ test.describe("Dashboard session calendar and search filters", () => {
 
     mock.verifyNoErrors();
   });
+
+  test("an example topic opens in the search box as OR blocks", async ({ page }) => {
+    const mock = await setupApiMock(page);
+    // No recorded fixture for this query; any OR search result will do
+    const orResults = fs.readFileSync(
+      path.join(__dirname, "fixtures", "search_kliima_voi_mets.json"),
+      "utf-8"
+    );
+    await page.route(
+      (url) => url.pathname === "/search" && url.searchParams.get("q")?.startsWith("tuulepark"),
+      (route) => route.fulfill({ contentType: "application/json", body: orResults })
+    );
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "Energeetika" }).click();
+
+    await expect(page).toHaveURL(/\/otsing\?q=/);
+    const box = page.locator(".search-section");
+    await expect(box.locator(".and-group-box")).toHaveCount(4);
+    await expect(box.locator(".or-divider")).toHaveCount(3);
+    await expect(box.locator(".token-pill")).toHaveText([
+      /tuulepark/,
+      /tuumajaam/,
+      /põlevkivi/,
+      /"elektri hind"/,
+    ]);
+
+    mock.verifyNoErrors();
+  });
 });

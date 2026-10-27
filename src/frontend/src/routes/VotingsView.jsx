@@ -22,9 +22,6 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
   const startDateParam = searchParams.get("start_date") || "";
   const endDateParam = searchParams.get("end_date") || "";
   const typeParam = searchParams.get("type") || "";
-  const includeTechnicalParam =
-    searchParams.get("include_technical") === "true" ||
-    searchParams.get("include_technical") === "1";
   const pageParam = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
 
   const [searchInput, setSearchInput] = useState(qParam);
@@ -37,13 +34,7 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
   const updateFilters = (updates) => {
     const nextParams = new URLSearchParams(searchParams);
     for (const [key, val] of Object.entries(updates)) {
-      if (
-        val === null ||
-        val === undefined ||
-        val === "" ||
-        (key === "page" && val === 1) ||
-        (key === "include_technical" && !val)
-      ) {
+      if (val === null || val === undefined || val === "" || (key === "page" && val === 1)) {
         nextParams.delete(key);
       } else {
         nextParams.set(key, String(val));
@@ -66,22 +57,13 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
   };
 
   const { data, error, isLoading } = useSWR(
-    [
-      "votings-list",
-      startDateParam,
-      endDateParam,
-      qParam,
-      typeParam,
-      includeTechnicalParam,
-      pageParam,
-    ],
+    ["votings-list", startDateParam, endDateParam, qParam, typeParam, pageParam],
     () =>
       fetchVotings({
         startDate: startDateParam || null,
         endDate: endDateParam || null,
         q: qParam || null,
         type: typeParam || null,
-        includeTechnical: includeTechnicalParam,
         limit: PAGE_SIZE,
         offset: (pageParam - 1) * PAGE_SIZE,
       }),
@@ -150,17 +132,6 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
               <option value="SALAJANE">Salajased</option>
             </select>
           </div>
-
-          <label className="checkbox-label votings-tech-checkbox">
-            <input
-              type="checkbox"
-              checked={includeTechnicalParam}
-              onChange={(e) =>
-                updateFilters({ include_technical: e.target.checked ? "true" : null })
-              }
-            />
-            <span>Näita tehnilisi kirjeid</span>
-          </label>
         </div>
       </div>
 

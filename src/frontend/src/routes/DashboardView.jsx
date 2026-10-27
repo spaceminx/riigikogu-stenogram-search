@@ -7,6 +7,7 @@ import ActivityChart from "../components/ActivityChart";
 import SpeakersPanel from "../components/SpeakersPanel";
 import SearchQueryInput from "../components/SearchQueryInput";
 import SearchFilters from "../components/SearchFilters";
+import { EXAMPLE_TOPICS, getTopicQuery } from "../lib/exampleTopics";
 import { usePageMeta } from "../lib/usePageMeta";
 import { fetchDashboardOverview } from "../lib/api";
 import {
@@ -173,18 +174,20 @@ export function DashboardView({
 
       <section className="topic-suggestions" aria-label="Näiteteemad otsinguks">
         <span className="topic-suggestions-label">Näiteteemad</span>
-        {["Kaitsekulud", "Riigieelarve", "Maksupoliitika", "Õpetajate palgad", "Energeetika"].map(
-          (topic) => (
+        {EXAMPLE_TOPICS.map((topic) => {
+          const query = getTopicQuery(topic);
+          return (
             <button
               className="topic-pill"
-              key={topic}
+              key={topic.label}
               type="button"
-              onClick={() => handleTopicClick(topic)}
+              title={`Otsib: ${query.replaceAll(", ", " VÕI ")}`}
+              onClick={() => handleTopicClick(query)}
             >
-              {topic}
+              {topic.label}
             </button>
-          )
-        )}
+          );
+        })}
       </section>
 
       <div className="dashboard-grid">

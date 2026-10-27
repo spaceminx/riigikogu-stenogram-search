@@ -73,21 +73,6 @@
   min-height: 36px;
 }
 
-.votings-tech-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: var(--text-field);
-  color: var(--color-text-soft);
-  cursor: pointer;
-  user-select: none;
-  margin-left: auto;
-}
-
-.votings-tech-checkbox input[type="checkbox"] {
-  accent-color: var(--color-accent-fill);
-}
-
 .votings-results-header {
   display: flex;
   justify-content: space-between;
