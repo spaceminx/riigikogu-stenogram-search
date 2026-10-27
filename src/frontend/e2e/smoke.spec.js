@@ -50,6 +50,23 @@ test.describe("Smoke tests for all routes", () => {
     mock.verifyNoErrors();
   });
 
+  test("votings list keeps technical votings, with no switch to hide them", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/haaletused");
+    await expect(page.locator(".voting-row-link").first()).toBeVisible();
+
+    // The API includes technical votings by default; the list must not ask it to drop them
+    const listRequests = mock.interceptedRequests.filter((r) => r.pathname === "/votings");
+    expect(listRequests.length).toBeGreaterThan(0);
+    for (const request of listRequests) {
+      expect(request.queryParams.include_technical).toBeUndefined();
+    }
+    await expect(page.getByText("Näita tehnilisi kirjeid")).toHaveCount(0);
+
+    mock.verifyNoErrors();
+  });
+
   test("faction alignment panel stays when a membership has no comparable votes", async ({
     page,
   }) => {

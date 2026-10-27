@@ -11,10 +11,6 @@
     min-width: 0;
   }
 
-  .votings-tech-checkbox {
-    margin-left: 0;
-  }
-
   .voting-totals-grid {
     grid-template-columns: repeat(3, 1fr);
   }
