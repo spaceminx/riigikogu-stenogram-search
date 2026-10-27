@@ -21,6 +21,7 @@ API documentation is available at:
   - `GET /attendance/stats` — Attendance statistics aggregated by member.
   - `GET /attendance/factions` — Attendance statistics aggregated by faction.
   - `GET /attendance/factions/list` — Distinct faction names for a parliamentary term.
+  - `GET /factions?membership={n}` — Members of each faction during a parliamentary term with their faction periods and the faction's government role (`active_only` keeps current members).
 - **Transcripts, Sessions & Voting:**
   - `GET /speeches/{id}` and `GET /speeches/{id}/context` — Specific speech and session context.
   - `GET /speeches/by-external-id/{id}` — Retrieve speech by Riigikogu verbatim external ID.

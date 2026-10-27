@@ -24,6 +24,7 @@ from src.api.attendance import (
     get_factions_list,
     get_person_attendance,
 )
+from src.api.factions import get_factions_overview
 from src.api.roles import load_governments
 from src.api.rss import (
     build_rss_xml,
@@ -318,6 +319,30 @@ def factions_list(
         raise HTTPException(
             status_code=500,
             detail="Fraktsioonide nimekirja päring ebaõnnestus.",
+        ) from e
+
+
+@router.get("/factions")
+def factions_overview(
+    membership: str | None = Query(None, description="Riigikogu koosseis", pattern=r"^\d+$"),
+    active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
+):
+    """Return the factions of a membership with their members and government role."""
+    if membership is None:
+        membership = latest_membership()
+    validate_membership(membership)
+    try:
+        return get_factions_overview(membership=membership, active_only=active_only)
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või saadikute tabel ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Factions overview query failed: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Fraktsioonide päring ebaõnnestus.",
         ) from e
 
 
