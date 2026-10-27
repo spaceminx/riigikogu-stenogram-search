@@ -38,6 +38,7 @@ def test_step_order_exactly_a_to_h(tmp_path, monkeypatch):
         "subprocess:download_from_b2.py",
         "subprocess:fetch_memberships.py",
         "subprocess:fetch_factions.py",
+        "subprocess:fetch_faction_leaders.py",
         "subprocess:fetch_stenograms_api.py",
         "subprocess:fetch_attendance.py",
         "subprocess:fetch_votes.py",
@@ -117,6 +118,22 @@ def test_fetch_memberships_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
 
     exit_code = dp.run_daily_pipeline()
     assert exit_code == 0
+
+
+def test_fetch_faction_leaders_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
+    """fetch_faction_leaders failure is warning-only; the previous faction_roles.json stays."""
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
+
+    def mock_run(cmd, *args, **kwargs):
+        if os.path.basename(cmd[1]) == "fetch_faction_leaders.py":
+            return subprocess.CompletedProcess(args=cmd, returncode=1)
+        return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", lambda **kw: True)
+
+    assert dp.run_daily_pipeline() == 0
 
 
 def test_fetch_agenda_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
@@ -349,7 +366,8 @@ def test_stale_integrity_report_cleared_before_verify_step(tmp_path, monkeypatch
 
 
 @pytest.mark.parametrize(
-    "script_name", ["fetch_memberships.py", "fetch_factions.py", "fetch_agenda.py"]
+    "script_name",
+    ["fetch_memberships.py", "fetch_factions.py", "fetch_faction_leaders.py", "fetch_agenda.py"],
 )
 def test_schema_change_in_warning_step_fails_run(tmp_path, monkeypatch, script_name):
     """Exit code 2 (upstream schema change) fails the run even in warning-only steps."""

@@ -21,6 +21,8 @@ from src.fetch_models import (
     PlenaryMember,
     RichMeeting,
     UpstreamSchemaError,
+    UserGroupDetail,
+    UserGroupItem,
     VerbatimAgendaItem,
     VerbatimEvent,
     VerbatimSitting,
@@ -53,6 +55,8 @@ GOLDENS_DIR = FIXTURES_DIR / "goldens"
         (RichMeeting, "meeting_2019.json", "stenogrammid.riigikogu.ee/api/meeting/{code}"),
         (AgendaPlenary, "agenda_recent.json", "/api/agenda/plenary"),
         (AgendaPlenary, "agenda_2019.json", "/api/agenda/plenary"),
+        (UserGroupItem, "usergroups_factions.json", "/api/usergroups"),
+        (UserGroupDetail, "usergroup_detail.json", "/api/usergroups/{uuid}"),
     ],
 )
 def test_fixtures_validate_successfully(model, filename, endpoint):

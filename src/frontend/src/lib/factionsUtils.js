@@ -67,3 +67,37 @@ export const ROLE_LABELS = {
   coalition: "Koalitsioonis",
   opposition: "Opositsioonis",
 };
+
+const LEADER_ORDER = { esimees: 0, aseesimees: 1 };
+
+// The chair and vice-chairs first, as on the Riigikogu faction pages; the rest keep their order
+export function sortLeadersFirst(members = []) {
+  return members
+    .map((member, index) => ({ member, index }))
+    .sort((a, b) => {
+      const ra = LEADER_ORDER[a.member.leader_role] ?? 2;
+      const rb = LEADER_ORDER[b.member.leader_role] ?? 2;
+      return ra - rb || a.index - b.index;
+    })
+    .map(({ member }) => member);
+}
+
+export function formatLeaderRoles(roles = []) {
+  return roles.map((r) => `${r.role} ${formatPeriod(r)}`).join(", ");
+}
+
+const OFFICIAL_PAGE_SLUGS = {
+  "Eesti 200 fraktsioon": "eesti-200-fraktsioon",
+  "Eesti Keskerakonna fraktsioon": "eesti-keskerakonna-fraktsioon",
+  "Eesti Konservatiivse Rahvaerakonna fraktsioon": "eesti-konservatiivse-rahvaerakonna-fraktsioon",
+  "Eesti Reformierakonna fraktsioon": "eesti-reformierakonna-fraktsioon",
+  "Isamaa fraktsioon": "isamaa-fraktsioon",
+  "Sotsiaaldemokraatliku Erakonna fraktsioon": "sotsiaaldemokraatliku-erakonna-fraktsioon",
+  [NO_FACTION]: "fraktsiooni-mittekuuluvad-saadikud",
+};
+
+// riigikogu.ee has pages only for the current factions
+export function getOfficialFactionUrl(faction) {
+  const slug = OFFICIAL_PAGE_SLUGS[faction];
+  return slug ? `https://www.riigikogu.ee/riigikogu/fraktsioonid/${slug}/` : null;
+}

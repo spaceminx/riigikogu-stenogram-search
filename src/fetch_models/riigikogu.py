@@ -282,6 +282,39 @@ class AgendaPlenary(RiigikoguBaseModel):
 
 
 # ---------------------------------------------------------------------------
+# 8. /api/usergroups?typeCode=FRAKTSIOON and /api/usergroups/{uuid}
+# ---------------------------------------------------------------------------
+class UserGroupItem(RiigikoguBaseModel):
+    uuid: str
+    name: str
+    active: bool | None = None
+
+
+class CodeValue(RiigikoguBaseModel):
+    code: str | None = None
+    value: str | None = None
+
+
+class UserGroupMembership(RiigikoguBaseModel):
+    membershipNumber: int | str | None = None
+    startDate: str | None = None
+    endDate: str | None = None
+    role: CodeValue | None = None
+
+
+class UserGroupMember(RiigikoguBaseModel):
+    uuid: str
+    fullName: str | None = None
+    membership: UserGroupMembership | None = None
+
+
+class UserGroupDetail(RiigikoguBaseModel):
+    uuid: str
+    name: str
+    members: list[UserGroupMember] | None = None
+
+
+# ---------------------------------------------------------------------------
 # Validation helper
 # ---------------------------------------------------------------------------
 def validate_response(model: type[BaseModel], data: Any, *, endpoint: str, ref: str) -> None:

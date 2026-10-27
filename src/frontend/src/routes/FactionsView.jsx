@@ -7,10 +7,13 @@ import { formatFactionName } from "../lib/formatters";
 import {
   ROLE_LABELS,
   filterFactionsByRole,
+  formatLeaderRoles,
   formatPeriods,
+  getOfficialFactionUrl,
   getSeatCounts,
   getSeatSegments,
   isFullTerm,
+  sortLeadersFirst,
   splitMembers,
 } from "../lib/factionsUtils";
 import VoteBar from "../components/VoteBar";
@@ -20,17 +23,23 @@ function memberCountText(count) {
   return `${count} ${count === 1 ? "saadik" : "saadikut"}`;
 }
 
-function MemberItem({ member, showPeriods }) {
+function MemberItem({ member, showPeriods, showRoleHistory = false }) {
   return (
     <li className="faction-member">
-      <Link to={`/saadik/${encodeURIComponent(member.uuid)}`} className="faction-member-name">
-        {member.full_name}
-      </Link>
+      <span className="faction-member-head">
+        <Link to={`/saadik/${encodeURIComponent(member.uuid)}`} className="faction-member-name">
+          {member.full_name}
+        </Link>
+        {member.leader_role && <span className="faction-leader-tag">{member.leader_role}</span>}
+      </span>
       {member.electoral_district && (
         <span className="faction-member-meta">{member.electoral_district}</span>
       )}
       {showPeriods && member.periods?.length > 0 && (
         <span className="faction-member-meta">{formatPeriods(member.periods)}</span>
+      )}
+      {showRoleHistory && member.leader_roles?.length > 0 && (
+        <span className="faction-member-meta">{formatLeaderRoles(member.leader_roles)}</span>
       )}
     </li>
   );
@@ -38,7 +47,8 @@ function MemberItem({ member, showPeriods }) {
 
 function FactionCard({ faction, isCurrentMembership, membershipInfo, attendanceLink }) {
   const { current, former } = splitMembers(faction);
-  const listed = isCurrentMembership ? current : faction.members;
+  const listed = isCurrentMembership ? sortLeadersFirst(current) : faction.members;
+  const officialUrl = isCurrentMembership ? getOfficialFactionUrl(faction.faction) : null;
   const shortName = formatFactionName(faction.faction);
   const headingId = `faction-${faction.faction.replace(/\s+/g, "-").toLowerCase()}`;
   const showsPeriods = (member) =>
@@ -70,7 +80,12 @@ function FactionCard({ faction, isCurrentMembership, membershipInfo, attendanceL
       {listed.length > 0 ? (
         <ul className="faction-member-list">
           {listed.map((member) => (
-            <MemberItem key={member.uuid} member={member} showPeriods={showsPeriods(member)} />
+            <MemberItem
+              key={member.uuid}
+              member={member}
+              showPeriods={showsPeriods(member)}
+              showRoleHistory={!isCurrentMembership}
+            />
           ))}
         </ul>
       ) : (
@@ -82,15 +97,22 @@ function FactionCard({ faction, isCurrentMembership, membershipInfo, attendanceL
           <summary>Varem selles fraktsioonis ({former.length})</summary>
           <ul className="faction-member-list">
             {former.map((member) => (
-              <MemberItem key={member.uuid} member={member} showPeriods />
+              <MemberItem key={member.uuid} member={member} showPeriods showRoleHistory />
             ))}
           </ul>
         </details>
       )}
 
-      <Link to={attendanceLink} className="faction-card-link">
-        {shortName} kohalolek &rarr;
-      </Link>
+      <div className="faction-card-links">
+        <Link to={attendanceLink} className="faction-card-link">
+          {shortName} kohalolek &rarr;
+        </Link>
+        {officialUrl && (
+          <a href={officialUrl} target="_blank" rel="noreferrer" className="faction-card-link">
+            Fraktsiooni leht riigikogu.ee-s &#8599;
+          </a>
+        )}
+      </div>
     </section>
   );
 }

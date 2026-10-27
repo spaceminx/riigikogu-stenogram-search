@@ -36,7 +36,9 @@
               "start": "2022-06-06",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "9f3d840c-3a49-43de-8c5d-d1990933b692",
@@ -55,7 +57,9 @@
               "start": "2022-06-06",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "6eafafda-f117-44e5-b14b-1956d566e233",
@@ -68,6 +72,14 @@
           "periods": [
             {
               "start": "2019-04-04",
+              "end": "2023-04-01"
+            }
+          ],
+          "leader_role": null,
+          "leader_roles": [
+            {
+              "role": "aseesimees",
+              "start": "2021-11-22",
               "end": "2023-04-01"
             }
           ]
@@ -92,7 +104,9 @@
               "start": "2019-04-04",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "6f87ce5b-aad3-4118-9649-253cfd076b53",
@@ -107,7 +121,9 @@
               "start": "2019-04-04",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
@@ -122,7 +138,9 @@
               "start": "2019-04-04",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -144,6 +162,14 @@
               "start": "2019-04-04",
               "end": "2019-05-21"
             }
+          ],
+          "leader_role": null,
+          "leader_roles": [
+            {
+              "role": "aseesimees",
+              "start": "2019-04-04",
+              "end": "2019-05-21"
+            }
           ]
         },
         {
@@ -159,7 +185,9 @@
               "start": "2019-04-04",
               "end": "2022-10-19"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
@@ -174,7 +202,9 @@
               "start": "2019-04-04",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -200,7 +230,9 @@
               "start": "2021-06-02",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "ac0e1069-9bbf-4bf9-88fe-f609a671e74d",
@@ -215,7 +247,9 @@
               "start": "2019-06-11",
               "end": "2021-01-27"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
@@ -230,7 +264,9 @@
               "start": "2019-04-04",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -252,7 +288,9 @@
               "start": "2019-06-13",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "6e0b6122-249d-48f1-9582-9df8b2bb236d",
@@ -267,7 +305,9 @@
               "start": "2022-07-19",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "f8a410dd-4d93-4578-ba56-217bbd8ee91a",
@@ -282,7 +322,9 @@
               "start": "2019-04-04",
               "end": "2019-06-13"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -304,7 +346,9 @@
               "start": "2022-03-31",
               "end": "2022-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "989194b6-b6cc-4c8f-9e6a-8eb8913d103e",
@@ -319,7 +363,9 @@
               "start": "2019-04-06",
               "end": "2023-04-01"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "f8a410dd-4d93-4578-ba56-217bbd8ee91a",
@@ -334,7 +380,9 @@
               "start": "2023-04-01",
               "end": "2023-04-06"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     }

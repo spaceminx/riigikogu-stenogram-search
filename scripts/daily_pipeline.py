@@ -4,7 +4,7 @@
 Executes under a single database/.sync.lock:
 1. download_from_b2.py (skip all later steps on failure)
 2. Snapshot processed files
-3. fetch_memberships.py, fetch_factions.py (warning-only on failure)
+3. fetch_memberships.py, fetch_factions.py, fetch_faction_leaders.py (warning-only on failure)
 4. fetch_stenograms_api.py, fetch_attendance.py, fetch_votes.py
 5. verify_pipeline_integrity.py
 6. upload_to_b2.py (skipped with --no-upload)
@@ -208,6 +208,21 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
                 print(f"Warning: fetch_factions failed ({f_err}). Continuing.")
                 if f_err == SCHEMA_CHANGE_ERROR:
                     required_failures.append("fetch_factions")
+
+            print("\n--- Step 3b: Fetch Faction Leaders ---")
+            fl_ok, fl_dur, fl_err = run_subprocess_step("scripts/fetch_faction_leaders.py")
+            step_records.append(
+                {
+                    "name": "fetch_faction_leaders",
+                    "status": "ok" if fl_ok else "failed",
+                    "duration": fl_dur,
+                    "note": warning_step_note(fl_ok, fl_err),
+                }
+            )
+            if not fl_ok:
+                print(f"Warning: fetch_faction_leaders failed ({fl_err}). Continuing.")
+                if fl_err == SCHEMA_CHANGE_ERROR:
+                    required_failures.append("fetch_faction_leaders")
 
             # Required fetch steps (continue on error, but record failure):
             print("\n--- Step 4: Fetch Stenograms API ---")

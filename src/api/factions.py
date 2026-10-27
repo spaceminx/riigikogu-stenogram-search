@@ -86,12 +86,15 @@ def build_factions_overview(
     membership_end: str,
     today: str,
     active_only: bool = False,
+    leader_roles: dict[str, list[dict]] | None = None,
 ) -> dict[str, Any]:
     """Group members into the factions they belonged to during the membership.
 
     A member is current when the membership is ongoing, the member is active and one of
     their faction periods covers today. Members who moved between factions appear in each.
+    `leader_roles` (faction_roles.json) adds the chair and vice-chair periods per faction.
     """
+    leader_roles = leader_roles or {}
     is_current_membership = membership_start <= today <= membership_end
     ref_date = min(today, membership_end)
 
@@ -122,6 +125,21 @@ def build_factions_overview(
             )
             if active_only and not current:
                 continue
+            roles = [
+                {"role": r["role"], "start": r["start"], "end": r.get("end")}
+                for r in leader_roles.get(person["uuid"], [])
+                if r.get("faction") == faction
+                and r["start"] <= membership_end
+                and (not r.get("end") or r["end"] > membership_start)
+            ]
+            current_role = next(
+                (
+                    r["role"]
+                    for r in roles
+                    if current and r["start"] <= today and (not r["end"] or today < r["end"])
+                ),
+                None,
+            )
             factions.setdefault(faction, []).append(
                 {
                     "uuid": person["uuid"],
@@ -132,6 +150,8 @@ def build_factions_overview(
                     "photo_url": person["photo_url"],
                     "current": current,
                     "periods": fac_periods,
+                    "leader_role": current_role,
+                    "leader_roles": roles,
                 }
             )
 
@@ -200,5 +220,6 @@ def get_factions_overview(membership: str, active_only: bool = False) -> dict[st
         end,
         datetime.now().strftime("%Y-%m-%d"),
         active_only=active_only,
+        leader_roles=_load_json("faction_roles.json"),
     )
     return {"membership": membership, **overview}

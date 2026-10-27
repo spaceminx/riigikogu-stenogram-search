@@ -296,6 +296,16 @@ def test_factions_endpoint(tmp_path, monkeypatch):
         ),
         encoding="utf-8",
     )
+    (tmp_path / "faction_roles.json").write_text(
+        json.dumps(
+            {
+                "fx-anna": [
+                    {"faction": REFORM, "role": "esimees", "start": "2024-07-23", "end": None}
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
     monkeypatch.setattr("src.api.factions.OUTPUT_DIR_PROCESSED", str(tmp_path))
     client = TestClient(app)
 
@@ -308,6 +318,7 @@ def test_factions_endpoint(tmp_path, monkeypatch):
         ("fx-anna", True),
         ("fx-boris", False),
     ]
+    assert [m["leader_role"] for m in data["factions"][0]["members"]] == ["esimees", None]
 
     active = client.get("/factions?membership=15&active_only=true").json()
     assert [m["uuid"] for m in active["factions"][0]["members"]] == ["fx-anna"]
@@ -315,3 +326,76 @@ def test_factions_endpoint(tmp_path, monkeypatch):
     assert client.get("/factions").status_code == 200
     assert client.get("/factions?membership=all").status_code == 422
     assert client.get("/factions?membership=99").status_code == 422
+
+
+def test_adds_chair_and_vice_chair_roles_of_the_faction():
+    persons = [_person("a", "Anna", "Aas"), _person("b", "Boris", "Bänk")]
+    periods = {
+        "a": [{"faction": REFORM, "start": "2023-04-10", "end": "2099-12-31"}],
+        "b": [{"faction": REFORM, "start": "2023-04-10", "end": "2099-12-31"}],
+    }
+    leader_roles = {
+        "a": [
+            {"faction": REFORM, "role": "aseesimees", "start": "2023-04-10", "end": "2024-07-23"},
+            {"faction": REFORM, "role": "esimees", "start": "2024-07-23", "end": None},
+            # Another faction and an earlier membership are left out
+            {"faction": EKRE, "role": "esimees", "start": "2023-04-10", "end": None},
+            {"faction": REFORM, "role": "esimees", "start": "2019-04-04", "end": "2023-04-01"},
+        ],
+        "b": [{"faction": REFORM, "role": "aseesimees", "start": "2023-04-10", "end": TODAY}],
+    }
+
+    overview = build_factions_overview(persons, periods, {}, *XV, TODAY, leader_roles=leader_roles)
+    anna, boris = _faction(overview, REFORM)["members"]
+
+    assert anna["leader_role"] == "esimees"
+    assert anna["leader_roles"] == [
+        {"role": "aseesimees", "start": "2023-04-10", "end": "2024-07-23"},
+        {"role": "esimees", "start": "2024-07-23", "end": None},
+    ]
+    # The role ended today
+    assert boris["leader_role"] is None
+    assert len(boris["leader_roles"]) == 1
+
+
+def test_past_membership_keeps_role_history_without_a_current_role():
+    persons = [_person("a", "Anna", "Aas")]
+    periods = {"a": [{"faction": REFORM, "start": "2019-04-04", "end": "2023-04-01"}]}
+    leader_roles = {
+        "a": [{"faction": REFORM, "role": "esimees", "start": "2021-01-26", "end": "2023-04-01"}]
+    }
+
+    member = _faction(
+        build_factions_overview(persons, periods, {}, *XIV, TODAY, leader_roles=leader_roles),
+        REFORM,
+    )["members"][0]
+
+    assert member["leader_role"] is None
+    assert member["leader_roles"][0]["role"] == "esimees"
+
+
+def test_members_have_no_roles_without_the_roles_file():
+    persons = [_person("a", "Anna", "Aas")]
+    periods = {"a": [{"faction": REFORM, "start": "2023-04-10", "end": "2099-12-31"}]}
+
+    member = _faction(_build(persons, periods), REFORM)["members"][0]
+
+    assert member["leader_role"] is None
+    assert member["leader_roles"] == []
+
+
+def test_a_member_who_is_not_current_has_no_current_role():
+    # Mandate suspended while the role is still open in the API
+    persons = [_person("a", "Anna", "Aas", active=False)]
+    periods = {"a": [{"faction": REFORM, "start": "2023-04-10", "end": "2099-12-31"}]}
+    leader_roles = {
+        "a": [{"faction": REFORM, "role": "esimees", "start": "2024-07-23", "end": None}]
+    }
+
+    member = _faction(
+        build_factions_overview(persons, periods, {}, *XV, TODAY, leader_roles=leader_roles),
+        REFORM,
+    )["members"][0]
+
+    assert member["leader_role"] is None
+    assert member["leader_roles"][0]["end"] is None

@@ -31,7 +31,9 @@
               "start": "2023-04-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
@@ -50,6 +52,14 @@
               "start": "2025-03-25",
               "end": null
             }
+          ],
+          "leader_role": null,
+          "leader_roles": [
+            {
+              "role": "aseesimees",
+              "start": "2023-04-10",
+              "end": "2024-07-23"
+            }
           ]
         },
         {
@@ -65,7 +75,9 @@
               "start": "2024-07-29",
               "end": "2025-03-25"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "07003549-aa42-4764-8bdd-cab06cb94a92",
@@ -80,7 +92,9 @@
               "start": "2023-04-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "09500870-255e-416d-8eda-f80e9929adda",
@@ -95,7 +109,9 @@
               "start": "2024-09-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "0d906012-76b5-468c-a0c9-201f41f271a8",
@@ -110,7 +126,9 @@
               "start": "2023-04-10",
               "end": "2024-09-09"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -132,7 +150,9 @@
               "start": "2023-04-11",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "8946b072-80c5-436e-95b2-41f928a7c636",
@@ -145,6 +165,14 @@
           "periods": [
             {
               "start": "2025-03-26",
+              "end": null
+            }
+          ],
+          "leader_role": "aseesimees",
+          "leader_roles": [
+            {
+              "role": "aseesimees",
+              "start": "2026-10-19",
               "end": null
             }
           ]
@@ -162,7 +190,9 @@
               "start": "2023-05-22",
               "end": "2024-06-12"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "3febb869-f443-4aba-908e-7c0c30f8c4dd",
@@ -175,6 +205,14 @@
           "periods": [
             {
               "start": "2023-04-11",
+              "end": null
+            }
+          ],
+          "leader_role": "aseesimees",
+          "leader_roles": [
+            {
+              "role": "aseesimees",
+              "start": "2025-04-21",
               "end": null
             }
           ]
@@ -199,7 +237,9 @@
               "start": "2023-04-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "4b96f3e5-af5e-41ce-86c9-3fdee3ce51da",
@@ -214,7 +254,9 @@
               "start": "2023-04-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
@@ -229,7 +271,9 @@
               "start": "2023-04-10",
               "end": "2024-06-13"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -251,7 +295,9 @@
               "start": "2023-04-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "c7f4f213-58a3-4b6f-a236-153644653d17",
@@ -269,6 +315,14 @@
             {
               "start": "2024-04-17",
               "end": null
+            }
+          ],
+          "leader_role": null,
+          "leader_roles": [
+            {
+              "role": "esimees",
+              "start": "2025-02-17",
+              "end": "2025-03-17"
             }
           ]
         }
@@ -292,6 +346,14 @@
               "start": "2023-04-11",
               "end": null
             }
+          ],
+          "leader_role": "esimees",
+          "leader_roles": [
+            {
+              "role": "esimees",
+              "start": "2024-03-06",
+              "end": null
+            }
           ]
         },
         {
@@ -307,7 +369,9 @@
               "start": "2023-04-11",
               "end": "2024-01-31"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -329,7 +393,9 @@
               "start": "2023-04-10",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     },
@@ -351,7 +417,9 @@
               "start": "2025-04-01",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "658c9d00-82c9-4161-8314-48ff1d67e3b7",
@@ -366,7 +434,9 @@
               "start": "2024-06-12",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "65b1d8bb-7f45-48f5-b4aa-7ba4ca459824",
@@ -381,7 +451,9 @@
               "start": "2024-06-13",
               "end": null
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         },
         {
           "uuid": "87b36dbb-08e9-4048-91eb-6df699c6e27e",
@@ -396,7 +468,9 @@
               "start": "2024-01-31",
               "end": "2024-07-08"
             }
-          ]
+          ],
+          "leader_role": null,
+          "leader_roles": []
         }
       ]
     }

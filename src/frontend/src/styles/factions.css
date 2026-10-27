@@ -114,6 +114,24 @@
   break-inside: avoid;
 }
 
+.faction-member-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.4rem;
+}
+
+/* Same quiet tag as the role badge: a position, not a ranking */
+.faction-leader-tag {
+  padding: 0 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+  color: var(--color-text-soft);
+  font-size: var(--text-label);
+  font-weight: 400;
+}
+
 .faction-member-name {
   color: var(--color-text);
   font-weight: 600;
@@ -154,9 +172,15 @@
   margin-bottom: 0.5rem;
 }
 
+.faction-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin-top: 0.75rem;
+}
+
 .faction-card-link {
   display: inline-block;
-  margin-top: 0.75rem;
   color: var(--color-accent);
   font-size: var(--text-field);
   text-decoration: none;
