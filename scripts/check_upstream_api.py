@@ -7,6 +7,7 @@ Fetches a small live sample:
 - memberships
 - plenary-members for the current membership
 - agenda for the last 14 days
+- faction user groups + 1 faction with its members
 
 Validates each response with the corresponding Pydantic models.
 Sleeps 1s between requests, with 1 retry on timeout or network error.
@@ -31,6 +32,8 @@ from src.fetch_models import (
     PlenaryMember,
     RichMeeting,
     UpstreamSchemaError,
+    UserGroupDetail,
+    UserGroupItem,
     VerbatimSitting,
     VotingDetail,
     VotingsSitting,
@@ -251,6 +254,31 @@ def run_upstream_checks() -> int:
     print(f"{status:<8} {f'{dur}ms':<8} /api/agenda/plenary (last 14 days)")
     if err:
         failures.append(err)
+
+    time.sleep(SLEEP_BETWEEN_REQUESTS_SECONDS)
+
+    # 8. Faction user groups and the members of one faction
+    status, dur, err, groups = fetch_and_validate(
+        "https://api.riigikogu.ee/api/usergroups?typeCode=FRAKTSIOON&hideInactive=true&lang=ET",
+        UserGroupItem,
+        "FRAKTSIOON",
+    )
+    print(f"{status:<8} {f'{dur}ms':<8} /api/usergroups (active factions)")
+    if err:
+        failures.append(err)
+
+    if groups and isinstance(groups, list):
+        time.sleep(SLEEP_BETWEEN_REQUESTS_SECONDS)
+        group = groups[0]
+        status, dur, err, _ = fetch_and_validate(
+            f"https://api.riigikogu.ee/api/usergroups/{group['uuid']}?lang=ET",
+            UserGroupDetail,
+            group.get("name", group["uuid"]),
+            timeout=30.0,
+        )
+        print(f"{status:<8} {f'{dur}ms':<8} /api/usergroups/{{uuid}} ({group.get('name')})")
+        if err:
+            failures.append(err)
 
     print("\n" + "=" * 80)
     if failures:

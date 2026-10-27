@@ -1,0 +1,306 @@
+{
+  "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+  "name": "Eesti Reformierakonna fraktsioon",
+  "shortName": "REF",
+  "type": {
+    "code": "FRAKTSIOON",
+    "value": "fraktsioon"
+  },
+  "colorHex": "FFC000",
+  "secretariatName": "Eesti Reformierakonna fraktsiooni sekretariaat",
+  "active": true,
+  "members": [
+    {
+      "uuid": "bdcec844-b004-4caf-bfc1-6a74c9fbd76f",
+      "fullName": "Erkki Keldo",
+      "lastName": "Keldo",
+      "firstName": "Erkki",
+      "active": false,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2023-04-10",
+        "endDate": "2024-07-23",
+        "role": {
+          "code": "ESIMEES",
+          "value": "esimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/bdcec844-b004-4caf-bfc1-6a74c9fbd76f"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/bdcec844-b004-4caf-bfc1-6a74c9fbd76f?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "8d9daaeb-dbaf-4887-8311-881b29bedfa9",
+      "fullName": "Õnne Pillak",
+      "lastName": "Pillak",
+      "firstName": "Õnne",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2024-07-23",
+        "endDate": null,
+        "role": {
+          "code": "ESIMEES",
+          "value": "esimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/8d9daaeb-dbaf-4887-8311-881b29bedfa9"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/8d9daaeb-dbaf-4887-8311-881b29bedfa9?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+      "fullName": "Yoko Alender",
+      "lastName": "Alender",
+      "firstName": "Yoko",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2023-04-10",
+        "endDate": "2024-07-23",
+        "role": {
+          "code": "ASEESIMEES",
+          "value": "aseesimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/90074aa2-4938-41a9-8275-3a6efa1cee31"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/90074aa2-4938-41a9-8275-3a6efa1cee31?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "a12ffc5c-0809-46cb-abc4-cc99a7fa3f60",
+      "fullName": "Liina Kersna",
+      "lastName": "Kersna",
+      "firstName": "Liina",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2023-04-10",
+        "endDate": "2025-04-16",
+        "role": {
+          "code": "ASEESIMEES",
+          "value": "aseesimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/a12ffc5c-0809-46cb-abc4-cc99a7fa3f60"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/a12ffc5c-0809-46cb-abc4-cc99a7fa3f60?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "1c173f0d-6c5e-445a-934f-32e7edf903db",
+      "fullName": "Mihkel Lees",
+      "lastName": "Lees",
+      "firstName": "Mihkel",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2024-07-23",
+        "endDate": null,
+        "role": {
+          "code": "ASEESIMEES",
+          "value": "aseesimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/1c173f0d-6c5e-445a-934f-32e7edf903db"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/1c173f0d-6c5e-445a-934f-32e7edf903db?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "966e7ccd-b097-4e49-923c-c8d39dae2d62",
+      "fullName": "Valdo Randpere",
+      "lastName": "Randpere",
+      "firstName": "Valdo",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2025-04-16",
+        "endDate": null,
+        "role": {
+          "code": "ASEESIMEES",
+          "value": "aseesimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/966e7ccd-b097-4e49-923c-c8d39dae2d62"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/966e7ccd-b097-4e49-923c-c8d39dae2d62?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "7655e8d3-b658-49f0-8e09-f6cbc4a2c714",
+      "fullName": "Annely Akkermann",
+      "lastName": "Akkermann",
+      "firstName": "Annely",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2023-04-10",
+        "endDate": null,
+        "role": {
+          "code": "LIIGE",
+          "value": "liige"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/7655e8d3-b658-49f0-8e09-f6cbc4a2c714"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/7655e8d3-b658-49f0-8e09-f6cbc4a2c714?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "90074aa2-4938-41a9-8275-3a6efa1cee31",
+      "fullName": "Yoko Alender",
+      "lastName": "Alender",
+      "firstName": "Yoko",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2025-03-25",
+        "endDate": null,
+        "role": {
+          "code": "LIIGE",
+          "value": "liige"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/90074aa2-4938-41a9-8275-3a6efa1cee31"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/90074aa2-4938-41a9-8275-3a6efa1cee31?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    },
+    {
+      "uuid": "00000000-0000-0000-0000-000000000000",
+      "fullName": "Fraktsiooni Töötaja",
+      "lastName": "Töötaja",
+      "firstName": "Fraktsiooni",
+      "active": true,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 15,
+        "startDate": "2025-08-11",
+        "endDate": null,
+        "role": {
+          "code": "TOOTAJA",
+          "value": "töötaja"
+        },
+        "jobTitle": {
+          "code": "PRESSINOUNIK",
+          "value": "pressinõunik"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/f2571904-47d8-4ea1-b6f9-8077be037072"
+        }
+      }
+    },
+    {
+      "uuid": "84bf9004-a454-44c9-8696-5337c74ff486",
+      "fullName": "Kristen Michal",
+      "lastName": "Michal",
+      "firstName": "Kristen",
+      "active": false,
+      "membership": {
+        "uuid": "8772fd6f-3197-6a53-2ffc-8c4d63407d1e",
+        "membershipNumber": 12,
+        "startDate": "2014-03-27",
+        "endDate": "2015-03-23",
+        "role": {
+          "code": "ESIMEES",
+          "value": "esimees"
+        },
+        "jobTitle": {
+          "code": "RIIGIKOGU_LIIGE",
+          "value": "Riigikogu liige"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.riigikogu.ee/api/contacts/84bf9004-a454-44c9-8696-5337c74ff486"
+        },
+        "details": {
+          "href": "https://api.riigikogu.ee/api/plenary-members/84bf9004-a454-44c9-8696-5337c74ff486?querySteno=true&includeInactive=false&lang=ET"
+        }
+      }
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e?lang=ET"
+    }
+  }
+}

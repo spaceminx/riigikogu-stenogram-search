@@ -63,6 +63,36 @@ def trim_rich_meeting(data: dict, max_items: int = 5) -> dict:
     return d
 
 
+def trim_usergroup_detail(data: dict) -> dict:
+    """Keep the XV leadership, a few ordinary members and staff, and one old chair; drop contacts."""
+    members = data.get("members") or []
+
+    def code(m):
+        return ((m.get("membership") or {}).get("role") or {}).get("code")
+
+    def number(m):
+        return (m.get("membership") or {}).get("membershipNumber")
+
+    picked = [m for m in members if number(m) == 15 and code(m) in ("ESIMEES", "ASEESIMEES")]
+    picked += [m for m in members if number(m) == 15 and code(m) == "LIIGE"][:2]
+    picked += [m for m in members if code(m) == "TOOTAJA"][:1]
+    picked += [m for m in members if number(m) == 12 and code(m) == "ESIMEES"][:1]
+    d = dict(data)
+    d["members"] = []
+    for m in picked:
+        trimmed = {k: v for k, v in m.items() if k not in ("email", "phone", "photo", "upn")}
+        # Staff are not MPs; keep the row shape without the person
+        if code(m) == "TOOTAJA":
+            trimmed.update(
+                uuid="00000000-0000-0000-0000-000000000000",
+                fullName="Fraktsiooni Töötaja",
+                firstName="Fraktsiooni",
+                lastName="Töötaja",
+            )
+        d["members"].append(trimmed)
+    return d
+
+
 def trim_agenda(data: dict, max_items: int = 5) -> dict:
     d = dict(data)
     if "sittings" in d and isinstance(d["sittings"], list):
@@ -145,6 +175,16 @@ def main() -> None:
             "agenda_2019.json",
             "https://api.riigikogu.ee/api/agenda/plenary?startDate=2019-04-04&endDate=2019-04-30&lang=et",
             trim_agenda,
+        ),
+        (
+            "usergroups_factions.json",
+            "https://api.riigikogu.ee/api/usergroups?typeCode=FRAKTSIOON&hideInactive=true&lang=ET",
+            None,
+        ),
+        (
+            "usergroup_detail.json",
+            "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e?lang=ET",
+            trim_usergroup_detail,
         ),
     ]
 
