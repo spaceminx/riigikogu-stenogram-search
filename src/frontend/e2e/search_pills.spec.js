@@ -117,25 +117,4 @@ test.describe("Search pills and query building", () => {
 
     mock.verifyNoErrors();
   });
-
-  test("on 390px mobile viewport, the search-bar does not break layout or overflow", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    const mock = await setupApiMock(page);
-
-    await page.goto("/otsing?q=%22kliima+muutus%22");
-    await page.waitForLoadState("domcontentloaded");
-
-    const searchRow = page.locator(".search-query-row");
-    await expect(searchRow).toBeVisible();
-
-    // Check no horizontal document scroll
-    const isOverflowing = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
-    });
-    expect(isOverflowing).toBe(false);
-
-    mock.verifyNoErrors();
-  });
 });

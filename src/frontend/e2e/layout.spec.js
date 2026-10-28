@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { setupApiMock } from "./support/api.js";
 import { ROUTES } from "./support/routes.js";
 
-test.describe("Mobile viewport 390px layout", () => {
+test.describe("Mobile viewport 390px layout", { tag: "@mobile-only" }, () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   for (const { path, name, contentSelector } of ROUTES) {
@@ -28,7 +28,7 @@ test.describe("Mobile viewport 390px layout", () => {
   }
 });
 
-test.describe("Voting summary wrapping at 390px", () => {
+test.describe("Voting summary wrapping at 390px", { tag: "@mobile-only" }, () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("a wrapped summary line never starts with the separator", async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe("Voting summary wrapping at 390px", () => {
   });
 });
 
-test.describe("Header between the mobile menu and full width", () => {
+test.describe("Header between the mobile menu and full width", { tag: "@desktop-only" }, () => {
   for (const width of [641, 700, 720, 760]) {
     test(`the four nav links fit at ${width}px`, async ({ page }) => {
       const mock = await setupApiMock(page);
