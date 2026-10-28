@@ -15,13 +15,7 @@ Database schema changes are managed via numbered migrations recorded in the `sch
 - Migrations run automatically and idempotently at API startup and during daily database sync (`apply_migrations()`).
 
 ## Production Database Migration
-When deploying updates with schema or data additions (such as the attendance `member_uuid` column):
-1. Code deployment automatically applies pending migrations and creates missing indexes upon backend initialization via `apply_migrations()` and `create_indexes()`.
-2. To populate historical attendance member UUIDs in production:
-   ```bash
-   docker compose run --rm pipeline python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-   No image rebuild or downtime is required.
+When deploying updates with schema additions, the deployment applies pending migrations and creates missing indexes upon backend initialization via `apply_migrations()` and `create_indexes()`. No image rebuild or downtime is required.
 
 ## Server Daily Pipeline
 The daily pipeline runs on the server under a single sync lock (`database/.sync.lock`, a kernel `flock` that is released if the process dies, so a leftover file never blocks the next run) inside a dedicated, one-off `pipeline` container:

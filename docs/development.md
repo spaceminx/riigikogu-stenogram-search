@@ -91,3 +91,9 @@ All external API responses from `api.riigikogu.ee` and `stenogrammid.riigikogu.e
 ```bash
 python3 scripts/check_upstream_api.py
 ```
+
+The Pydantic models are tested against small real responses in `tests/fixtures/riigikogu_api/`. To refresh them after an upstream change, run `python scripts/capture_riigikogu_fixtures.py` and review the diff (lists are trimmed to about five items and faction contact details are dropped).
+
+### Agenda link coverage
+
+`python scripts/agenda_coverage.py` reports per year how many speeches are linked to an agenda item and lists the most common unlinked agenda titles. It reads the database set by `DATABASE_URL`; run it after changing the agenda matching.

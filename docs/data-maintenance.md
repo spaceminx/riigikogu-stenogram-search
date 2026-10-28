@@ -100,7 +100,7 @@ Exact sequence:
 
 ## Maintenance & UUID Repair
 
-To resolve and maintain canonical member UUIDs across speeches and attendance records:
+To resolve and maintain canonical member UUIDs across speeches (attendance records get theirs from the API):
 
 ### Speaker UUIDs (`repair_speaker_uuids.py`)
 Resolves MP UUIDs across speeches in historical JSONL datasets and the SQLite database:
@@ -116,18 +116,6 @@ Resolves MP UUIDs across speeches in historical JSONL datasets and the SQLite da
    ```bash
    python scripts/repair_speaker_uuids.py --apply --upload --db database/riigikogu.sqlite
    ```
-
-### Attendance UUIDs (`repair_attendance_uuids.py`)
-Populates `member_uuid` across historical attendance records (`data/processed/attendance.jsonl`) and the SQLite `attendance` table:
-1. Run a dry run to inspect mapping statistics without modifying files:
-   ```bash
-   python scripts/repair_attendance_uuids.py --dry-run
-   ```
-2. Apply changes locally, upload updated `attendance.jsonl` to Backblaze B2, and migrate the database:
-   ```bash
-   python scripts/repair_attendance_uuids.py --apply --upload --db database/riigikogu.sqlite
-   ```
-   *Note:* The schema migration (`apply_migrations()`) runs automatically and idempotently on table initialization, adding column `member_uuid TEXT` and ensuring indexes if they do not yet exist.
 
 ### Ignored Sessions Removal (`remove_ignored_sessions.py`)
 Removes duplicate or ignored session verbatims (e.g. verbatim `202103250048` covering the night of 2021-03-24) from yearly JSONL datasets and the SQLite database:
