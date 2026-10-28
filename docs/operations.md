@@ -27,7 +27,7 @@ When deploying updates with schema or data additions (such as the attendance `me
 The daily pipeline runs on the server under a single sync lock (`database/.sync.lock`, a kernel `flock` that is released if the process dies, so a leftover file never blocks the next run) inside a dedicated, one-off `pipeline` container:
 `B2 download → fetch API data → integrity verification → B2 upload → in-process DB sync`.
 
-If the integrity check cannot reach the Riigikogu API, it exits with code 3: the run is marked failed and the B2 upload is skipped (the next run uploads), while the DB sync still runs. An upstream schema change (exit code 2) fails the run in every fetch step, including the otherwise warning-only memberships, factions and agenda steps.
+B2 is the source for full rebuilds, so only a run without failures uploads. If a required step fails (the stenogram, attendance or votes fetch, or the integrity check, which exits 1 for missing or truncated sessions and 3 when it cannot reach the Riigikogu API), the run is marked failed and the B2 upload is skipped, while the DB sync still runs. The local changes are not lost: the next B2 download keeps local files that changed since the last sync while B2 did not, and the next green run uploads them. An upstream schema change (exit code 2) fails the run and skips the upload in every fetch step, including the otherwise warning-only memberships, factions, faction leaders and agenda steps; their other failures are warnings only.
 
 This replaces the previous standalone `docker exec … sync_database.py` cron job.
 
@@ -56,7 +56,7 @@ docker compose run --rm pipeline python scripts/daily_pipeline.py --no-upload
 ```
 
 ### Manual GitHub Actions Fallback
-The GitHub Actions workflow (`.github/workflows/daily_pipeline.yml`) remains available as a manual fallback (`workflow_dispatch`). Any data uploaded by a manual GitHub run is automatically picked up by the server on its next scheduled run during the initial B2 download step.
+The GitHub Actions workflow (`.github/workflows/daily_pipeline.yml`) remains available as a manual fallback (`workflow_dispatch`). It runs the same `daily_pipeline.py` with `--no-sync` (there is no database in Actions), so it fails and skips the upload in the same cases as the server. Any data uploaded by a manual GitHub run is automatically picked up by the server on its next scheduled run during the initial B2 download step.
 
 ## Database Backup
 A rebuild from B2 is limited by the 1 GB/day download cap, so the database is also backed up weekly outside the WSL disk. `scripts/backup_database.py` uses only the standard library and runs with the host's `python3`: it copies the database with the SQLite online backup API, runs `PRAGMA quick_check` on the copy, writes `riigikogu-YYYY-MM-DD.sqlite.gz` and keeps the newest `--keep` files.

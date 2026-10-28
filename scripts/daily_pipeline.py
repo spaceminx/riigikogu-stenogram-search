@@ -7,9 +7,9 @@ Executes under a single database/.sync.lock:
 3. fetch_memberships.py, fetch_factions.py, fetch_faction_leaders.py (warning-only on failure)
 4. fetch_stenograms_api.py, fetch_attendance.py, fetch_votes.py
 5. verify_pipeline_integrity.py
-6. upload_to_b2.py (skipped with --no-upload)
+6. upload_to_b2.py (skipped with --no-upload, or when a required step has failed)
 7. Restore blocked_files from snapshot before DB sync
-8. sync_database(skip_download=True, skip_lock=True) in-process
+8. sync_database(skip_download=True, skip_lock=True) in-process (skipped with --no-sync)
 9. Print summary and exit (0 only if all required steps succeeded, else 1)
 """
 
@@ -144,7 +144,7 @@ def print_pipeline_summary(step_records: list[dict], overall_success: bool) -> N
     print("=" * 60)
 
 
-def run_daily_pipeline(no_upload: bool = False) -> int:
+def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
     """Run the daily pipeline. Returns exit code (0 on success, 1 on failure)."""
     step_records: list[dict] = []
     required_failures: list[str] = []
@@ -312,15 +312,17 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
                         "note": "--no-upload",
                     }
                 )
-            elif int_err == INTEGRITY_UNVERIFIED_ERROR:
-                # B2 is the rebuild source; only verified data goes there. The next run uploads.
-                print("Skipping upload_to_b2: integrity could not be verified.")
+            elif required_failures:
+                # B2 is the rebuild source, so only a run without failures uploads. download_from_b2
+                # keeps local files changed since the last sync, so the next green run uploads them.
+                failed = ", ".join(required_failures)
+                print(f"Skipping upload_to_b2: required steps failed ({failed}).")
                 step_records.append(
                     {
                         "name": "upload_to_b2",
                         "status": "skipped",
                         "duration": 0.0,
-                        "note": "integrity unverified",
+                        "note": f"failed: {failed}",
                     }
                 )
             else:
@@ -347,30 +349,41 @@ def run_daily_pipeline(no_upload: bool = False) -> int:
             # h. DB sync in-process with skip_download=True, skip_lock=True
             print("\n--- Step 10: In-Process Database Sync ---")
             t_sync_start = time.time()
-            try:
-                sync_ok = sync_database(skip_download=True, skip_lock=True)
-                sync_dur = time.time() - t_sync_start
+            if no_sync:
+                print("Skipping sync_database (--no-sync specified).")
                 step_records.append(
                     {
                         "name": "sync_database",
-                        "status": "ok" if sync_ok else "failed",
-                        "duration": sync_dur,
-                        "note": "" if sync_ok else "sync reported errors",
+                        "status": "skipped",
+                        "duration": 0.0,
+                        "note": "--no-sync",
                     }
                 )
-                if not sync_ok:
+            else:
+                try:
+                    sync_ok = sync_database(skip_download=True, skip_lock=True)
+                    sync_dur = time.time() - t_sync_start
+                    step_records.append(
+                        {
+                            "name": "sync_database",
+                            "status": "ok" if sync_ok else "failed",
+                            "duration": sync_dur,
+                            "note": "" if sync_ok else "sync reported errors",
+                        }
+                    )
+                    if not sync_ok:
+                        required_failures.append("sync_database")
+                except Exception as sync_e:
+                    sync_dur = time.time() - t_sync_start
+                    step_records.append(
+                        {
+                            "name": "sync_database",
+                            "status": "failed",
+                            "duration": sync_dur,
+                            "note": str(sync_e),
+                        }
+                    )
                     required_failures.append("sync_database")
-            except Exception as sync_e:
-                sync_dur = time.time() - t_sync_start
-                step_records.append(
-                    {
-                        "name": "sync_database",
-                        "status": "failed",
-                        "duration": sync_dur,
-                        "note": str(sync_e),
-                    }
-                )
-                required_failures.append("sync_database")
 
         finally:
             shutil.rmtree(snapshot_dir, ignore_errors=True)
@@ -387,8 +400,13 @@ def main() -> int:
         action="store_true",
         help="Skip uploading processed data to Backblaze B2",
     )
+    parser.add_argument(
+        "--no-sync",
+        action="store_true",
+        help="Skip the database sync (the GitHub Actions fallback has no database)",
+    )
     args = parser.parse_args()
-    return run_daily_pipeline(no_upload=args.no_upload)
+    return run_daily_pipeline(no_upload=args.no_upload, no_sync=args.no_sync)
 
 
 if __name__ == "__main__":
