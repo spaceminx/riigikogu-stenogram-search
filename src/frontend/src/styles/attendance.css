@@ -251,13 +251,6 @@
 }
 
 .faction-badge {
-  display: inline-block;
-  padding: 0.25rem 0.65rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-tag);
-  background: var(--color-subtle);
-  color: var(--color-text-soft);
-  font-size: 0.8rem;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;

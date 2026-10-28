@@ -123,10 +123,6 @@ select:focus-visible {
   animation: none;
 }
 
-.search-input {
-  min-height: 30px;
-}
-
 .search-input::placeholder,
 .filter-text-input::placeholder {
   color: var(--color-text-muted);
@@ -144,7 +140,6 @@ select:focus-visible {
 .logic-btn,
 .filter-select,
 .filter-text-input {
-  min-height: 34px;
   border: 1px solid var(--color-border-strong);
   background-color: var(--color-surface);
 }
@@ -208,9 +203,6 @@ select:focus-visible {
 
 .chart-header h2 {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0;
 }
 
 .chart-period,
@@ -256,10 +248,6 @@ select:focus-visible {
 
 .dashboard-rail {
   gap: 12px;
-}
-
-.members-panel {
-  padding: 15px 15px 9px;
 }
 
 .speaker-item.profile-card {
