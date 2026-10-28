@@ -58,6 +58,7 @@ export function PersonView({ theme = "light" }) {
   const [imgError, setImgError] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
+  const [contextError, setContextError] = useState(null);
 
   // imgError and other states are reset on uuid change via key={uuid} on route element
   // Read role and page from URL parameters
@@ -222,11 +223,12 @@ export function PersonView({ theme = "light" }) {
 
   // Context modal handler
   const handleOpenContext = async (speechId) => {
+    setContextError(null);
     try {
       const data = await fetchSpeechContext(speechId);
       setActiveSpeechContext(data);
-    } catch {
-      // Ignored
+    } catch (err) {
+      setContextError(err.message || "Konteksti laadimine ebaõnnestus.");
     }
   };
 
@@ -1202,6 +1204,22 @@ export function PersonView({ theme = "light" }) {
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {contextError && (
+          <div className="error-banner" style={{ marginBottom: "1rem" }}>
+            <div className="error-content">
+              <span className="error-icon">!</span>
+              <span>{contextError}</span>
+            </div>
+            <button
+              className="error-dismiss"
+              onClick={() => setContextError(null)}
+              aria-label="Sulge veateade"
+            >
+              &times;
+            </button>
           </div>
         )}
 

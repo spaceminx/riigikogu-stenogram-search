@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { setupApiMock } from "./support/api.js";
+import { FIXTURE_IDS, setupApiMock } from "./support/api.js";
 
 function fulfillJson(route, status, body) {
   return route.fulfill({
@@ -37,5 +37,46 @@ test.describe("Error states", () => {
     await page.goto("/otsing?q=kliima");
     await expect(page.locator(".error-banner")).toBeVisible();
     await expect(page.getByText("Otsingutingimustele vastavaid kõnesid ei leitud.")).toHaveCount(0);
+  });
+});
+
+test.describe("Context load errors", () => {
+  test("a failed context load on search keeps the results", async ({ page }) => {
+    await setupApiMock(page);
+    await page.route(/api\.e2e\.test\/speeches\/\d+\/context/, (route) =>
+      fulfillJson(route, 500, { detail: "Konteksti viga" })
+    );
+
+    await page.goto("/otsing?q=kliima");
+    const cards = page.locator(".speeches-list .speech-card");
+    await expect(cards.first()).toBeVisible();
+    const count = await cards.count();
+
+    await cards.first().locator(".context-btn").click();
+    const banner = page.locator(".error-banner");
+    await expect(banner).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(cards).toHaveCount(count);
+
+    await banner.getByRole("button", { name: "Sulge veateade" }).click();
+    await expect(banner).toHaveCount(0);
+    await expect(cards).toHaveCount(count);
+  });
+
+  test("a failed context load on a member page is reported", async ({ page }) => {
+    await setupApiMock(page);
+    await page.route(/api\.e2e\.test\/speeches\/\d+\/context/, (route) =>
+      fulfillJson(route, 500, { detail: "Konteksti viga" })
+    );
+
+    await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
+    const cards = page.locator(".person-speeches-list .speech-card");
+    await expect(cards.first()).toBeVisible();
+    const count = await cards.count();
+
+    await cards.first().locator(".context-btn").click();
+    await expect(page.locator(".error-banner")).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(cards).toHaveCount(count);
   });
 });

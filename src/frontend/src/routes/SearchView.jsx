@@ -137,6 +137,8 @@ export function SearchView({
   const [activityLoading, setActivityLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activityError, setActivityError] = useState(null);
+  // Kept apart from `error`, which hides the result list
+  const [contextError, setContextError] = useState(null);
 
   // Context modal state
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
@@ -186,6 +188,7 @@ export function SearchView({
       if (currentRequestId === searchRequestIdRef.current) {
         setLoading(true);
         setError(null);
+        setContextError(null);
       }
     });
 
@@ -429,13 +432,16 @@ export function SearchView({
   };
 
   const handleOpenContext = async (speechId) => {
+    setContextError(null);
     try {
       const data = await fetchSpeechContext(speechId, queryParam, !exactMatchParam);
       setActiveSpeechContext(data);
     } catch (err) {
-      setError(err.message || "Konteksti laadimine ebaõnnestus.");
+      setContextError(err.message || "Konteksti laadimine ebaõnnestus.");
     }
   };
+
+  const bannerError = error || contextError;
 
   const currentTotalCount = hasSearchQuery ? totalCount : 0;
   const currentSpeeches = hasSearchQuery ? speeches : [];
@@ -508,15 +514,18 @@ export function SearchView({
         />
       </SearchQueryInput>
 
-      {error && (
+      {bannerError && (
         <div className="error-banner">
           <div className="error-content">
             <span className="error-icon">!</span>
-            <span>{error}</span>
+            <span>{bannerError}</span>
           </div>
           <button
             className="error-dismiss"
-            onClick={() => setError(null)}
+            onClick={() => {
+              setError(null);
+              setContextError(null);
+            }}
             aria-label="Sulge veateade"
           >
             &times;
