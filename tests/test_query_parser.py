@@ -5,7 +5,6 @@ import sys
 # Ensure project root is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from scripts.fetch_stenograms_api import split_speaker_role
 from src.api.search import (
     extract_matched_words,
     fill_missing_periods,
@@ -52,16 +51,6 @@ def test_is_only_stopwords():
     assert is_only_stopwords("mets") is False
     assert is_only_stopwords("ja mets") is False
     assert is_only_stopwords("") is False
-
-
-def test_split_speaker_role():
-    name, role = split_speaker_role("Peaminister Kaja Kallas")
-    assert name == "Kaja Kallas"
-    assert role == "Peaminister"
-
-    name, role = split_speaker_role("Jüri Ratas")
-    assert name == "Jüri Ratas"
-    assert role is None
 
 
 def test_fill_missing_periods_monthly():

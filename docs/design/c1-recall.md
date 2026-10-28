@@ -244,6 +244,8 @@ Kuna andmebaasi migratsioonid käivituvad API teenuse käivitumisel (`apply_migr
 2. Indeksid registreeritakse failis `src/load/indexes.py` (`INDEXES` loendis), kus neid kontrollib ja haldab ühtne `ensure_indexes()` süsteem.
 
 ### 7.2 Seoste arvutamise skript (`scripts/build_lemma_links.py`)
+> Skript eemaldati 2026-10: igapäevane `sync_database.py` ehitab seosed niikuinii täielikult ümber (vt 7.3).
+
 Seoste genereerimiseks luuakse iseseisev käsureaskript:
 - `python scripts/build_lemma_links.py`:
   - Teostab tabeli `lemma_links` täieliku atomaarse ülesehituse ühes transaktsioonis (`DELETE FROM lemma_links` + hulgilisamine).
