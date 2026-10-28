@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from unittest.mock import MagicMock, patch
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 
 from scripts.check_live_api import check_endpoint, compare_shapes
 
@@ -87,3 +87,58 @@ def test_compare_shapes_details():
     diffs = compare_shapes({"a": 1}, {"a": "two"})
     assert len(diffs) == 1
     assert "type mismatch" in diffs[0]
+
+
+def _http_error(url: str, code: int) -> HTTPError:
+    return HTTPError(url, code, "error", hdrs=None, fp=None)
+
+
+def test_server_error_followed_by_success():
+    fixture = {"total": 100}
+    url = "https://api.riigivaade.me/test"
+
+    with (
+        patch(
+            "scripts.check_live_api.urlopen",
+            side_effect=[_http_error(url, 502), _mock_response(status=200, data=fixture)],
+        ) as mock_url,
+        patch("scripts.check_live_api.time.sleep") as mock_sleep,
+    ):
+        status_str, _duration, failure = check_endpoint(url, fixture, retry_delay=5.0)
+
+        assert status_str == "OK"
+        assert failure is None
+        assert mock_url.call_count == 2
+        mock_sleep.assert_called_once_with(5.0)
+
+
+def test_two_server_errors_result_in_failure():
+    url = "https://api.riigivaade.me/test"
+
+    with (
+        patch(
+            "scripts.check_live_api.urlopen",
+            side_effect=[_http_error(url, 503), _http_error(url, 503)],
+        ) as mock_url,
+        patch("scripts.check_live_api.time.sleep"),
+    ):
+        status_str, _duration, failure = check_endpoint(url, {"total": 100}, retry_delay=5.0)
+
+        assert status_str == "HTTP 503"
+        assert failure is not None
+        assert mock_url.call_count == 2
+
+
+def test_client_error_is_not_retried():
+    url = "https://api.riigivaade.me/test"
+
+    with (
+        patch("scripts.check_live_api.urlopen", side_effect=[_http_error(url, 404)]) as mock_url,
+        patch("scripts.check_live_api.time.sleep") as mock_sleep,
+    ):
+        status_str, _duration, failure = check_endpoint(url, {"total": 100})
+
+        assert status_str == "HTTP 404"
+        assert failure is not None
+        assert mock_url.call_count == 1
+        mock_sleep.assert_not_called()

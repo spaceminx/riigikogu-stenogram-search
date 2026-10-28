@@ -65,7 +65,8 @@ def check_endpoint(
     timeout: float = TIMEOUT_SECONDS,
     retry_delay: float = RETRY_DELAY_SECONDS,
 ) -> tuple[str, int, str | None]:
-    """Check a single endpoint against fixture_json, retrying once on network/timeout error.
+    """Check a single endpoint against fixture_json, retrying once on a network/timeout error,
+    HTTP 429 or a 5xx response (e.g. while a deploy restarts the API).
 
     Returns:
         tuple of (status_str, duration_ms, failure_message or None)
@@ -103,6 +104,9 @@ def check_endpoint(
         except HTTPError as err:
             elapsed = time.monotonic() - start_time
             duration_ms = int(elapsed * 1000)
+            if attempt == 0 and (err.code == 429 or err.code >= 500):
+                time.sleep(retry_delay)
+                continue
             return (
                 f"HTTP {err.code}",
                 duration_ms,
