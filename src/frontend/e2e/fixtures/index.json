@@ -51,14 +51,6 @@
       "method": "GET",
       "path": "/factions",
       "queryParams": {
-        "active_only": "true"
-      },
-      "fixture": "factions_active.json"
-    },
-    {
-      "method": "GET",
-      "path": "/factions",
-      "queryParams": {
         "membership": "14"
       },
       "fixture": "factions_14.json"

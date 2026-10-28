@@ -189,8 +189,6 @@ export function FactionsView({ memberships = [], membershipsLoading = false }) {
   const membership = membershipParam || defaultMembership || "";
   const membershipInfo = memberships.find((m) => String(m.id) === String(membership));
   const isCurrentMembership = Boolean(defaultMembership && membership === defaultMembership);
-  // On by default for the current membership; fr_active=0 in the URL turns it off
-  const activeOnly = isCurrentMembership && searchParams.get("fr_active") !== "0";
   // A past membership had several governments, so one role per faction would mislead
   const role = isCurrentMembership ? searchParams.get("role") || "" : "";
 
@@ -210,7 +208,6 @@ export function FactionsView({ memberships = [], membershipsLoading = false }) {
       next.delete("fr_membership");
     } else {
       next.set("fr_membership", String(newPeriod));
-      next.delete("fr_active");
       next.delete("role");
     }
     setSearchParams(next, { replace: true });
@@ -220,8 +217,8 @@ export function FactionsView({ memberships = [], membershipsLoading = false }) {
     membershipParam || (membershipsLoading ? undefined : defaultMembership || undefined);
 
   const { data, error, isLoading } = useSWR(
-    reqMembership ? ["factions", reqMembership, activeOnly ? "1" : "0"] : null,
-    () => fetchFactions({ membership: reqMembership, activeOnly }),
+    reqMembership ? ["factions", reqMembership] : null,
+    () => fetchFactions({ membership: reqMembership }),
     { revalidateOnFocus: false, shouldRetryOnError: false }
   );
 
@@ -302,17 +299,6 @@ export function FactionsView({ memberships = [], membershipsLoading = false }) {
                 <option value="opposition">Opositsioonis</option>
               </select>
             </div>
-          )}
-
-          {isCurrentMembership && (
-            <label className="attendance-checkbox-label">
-              <input
-                type="checkbox"
-                checked={activeOnly}
-                onChange={(e) => updateParam("fr_active", e.target.checked ? null : "0")}
-              />
-              <span>Ainult praegu aktiivsed saadikud</span>
-            </label>
           )}
         </div>
       </div>
