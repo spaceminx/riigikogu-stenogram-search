@@ -100,11 +100,6 @@ class _DynamicMembershipDates(dict):
 MEMBERSHIP_DATES: dict[str, tuple[str, str]] = _DynamicMembershipDates()
 
 
-def get_membership_dates() -> dict[str, tuple[str, str]]:
-    """Return dictionary of membership code -> (start_date, end_date)."""
-    return MEMBERSHIP_DATES.copy()
-
-
 def _today_str() -> str:
     return datetime.now().strftime("%Y-%m-%d")
 

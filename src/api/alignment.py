@@ -12,13 +12,14 @@ from sqlalchemy import and_, func
 from sqlalchemy.orm import aliased
 
 from src.api.lru import MISSING, LRUDict
+from src.api.roles import NO_FACTION
 from src.api.votings import format_session_source_file, is_technical_voting_clause
 from src.load.models import Person, Speech, SystemMeta, Vote, Voting
 
 logger = logging.getLogger(__name__)
 
 POSITIONS = {"POOLT", "VASTU", "ERAPOOLETU", "EI_HAALETANUD"}
-EXCLUDED_FACTIONS = {None, "", "Fraktsiooni mittekuuluvad Riigikogu liikmed"}
+EXCLUDED_FACTIONS = {None, "", NO_FACTION}
 
 ALIGNMENT_CACHE_MAX_SIZE = 64
 
@@ -162,7 +163,7 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
         cf = format_session_source_file(row.sitting_date, row.sitting_datetime)
         session_src_file = cf if cf in existing_source_files else None
 
-        if not m_fac or m_fac == "Fraktsiooni mittekuuluvad Riigikogu liikmed":
+        if m_fac in EXCLUDED_FACTIONS:
             res_type = "no_faction"
             fac_pos = None
         elif m_dec == "PUUDUB":

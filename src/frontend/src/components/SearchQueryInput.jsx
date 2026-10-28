@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { fetchSuggestions } from "../api";
+import { fetchSuggestions } from "../lib/api";
 import { mergeInputToGroups } from "../lib/formatters";
 import {
   formatSuggestionCount,
