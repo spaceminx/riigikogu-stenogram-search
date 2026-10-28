@@ -103,12 +103,15 @@ def test_download_fails_exits_1_no_fetch_upload_sync(tmp_path, monkeypatch):
 
 
 def test_fetch_memberships_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
-    """fetch_memberships failure is warning-only; pipeline exits 0 if everything else succeeds."""
+    """fetch_memberships failure is warning-only; pipeline uploads and exits 0."""
     monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
     monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
 
+    calls = []
+
     def mock_run(cmd, *args, **kwargs):
         script_name = os.path.basename(cmd[1])
+        calls.append(script_name)
         if script_name == "fetch_memberships.py":
             return subprocess.CompletedProcess(args=cmd, returncode=1)
         return subprocess.CompletedProcess(args=cmd, returncode=0)
@@ -118,6 +121,7 @@ def test_fetch_memberships_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
 
     exit_code = dp.run_daily_pipeline()
     assert exit_code == 0
+    assert "upload_to_b2.py" in calls
 
 
 def test_fetch_faction_leaders_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
@@ -154,8 +158,19 @@ def test_fetch_agenda_fails_exit_0_if_all_else_ok(tmp_path, monkeypatch):
     assert exit_code == 0
 
 
-def test_fetch_votes_fails_upload_and_sync_still_run_exits_1(tmp_path, monkeypatch):
-    """If a required fetch fails, later steps still execute, but pipeline exits 1."""
+@pytest.mark.parametrize(
+    "failing_script",
+    [
+        "fetch_stenograms_api.py",
+        "fetch_attendance.py",
+        "fetch_votes.py",
+        "verify_pipeline_integrity.py",
+    ],
+)
+def test_required_step_fails_skips_upload_still_syncs_exits_1(
+    tmp_path, monkeypatch, failing_script
+):
+    """A failed required step skips the B2 upload; later steps and the DB sync still run."""
     monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
     monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
 
@@ -164,7 +179,7 @@ def test_fetch_votes_fails_upload_and_sync_still_run_exits_1(tmp_path, monkeypat
     def mock_run(cmd, *args, **kwargs):
         script_name = os.path.basename(cmd[1])
         calls.append(script_name)
-        if script_name == "fetch_votes.py":
+        if script_name == failing_script:
             return subprocess.CompletedProcess(args=cmd, returncode=1)
         return subprocess.CompletedProcess(args=cmd, returncode=0)
 
@@ -180,11 +195,12 @@ def test_fetch_votes_fails_upload_and_sync_still_run_exits_1(tmp_path, monkeypat
 
     exit_code = dp.run_daily_pipeline()
     assert exit_code == 1
-    assert "upload_to_b2.py" in calls
+    assert "verify_pipeline_integrity.py" in calls
+    assert "upload_to_b2.py" not in calls
     assert sync_called is True
 
 
-def test_integrity_reports_blocked_file_upload_called_and_restored_before_sync(
+def test_integrity_reports_blocked_file_upload_skipped_and_restored_before_sync(
     tmp_path, monkeypatch
 ):
     """Blocked file from integrity_report is restored to pre-run snapshot before DB sync."""
@@ -231,7 +247,7 @@ def test_integrity_reports_blocked_file_upload_called_and_restored_before_sync(
 
     exit_code = dp.run_daily_pipeline()
     assert exit_code == 1  # Integrity failed
-    assert upload_called is True
+    assert upload_called is False
     assert verified_content_during_sync == "ORIGINAL_VALID_SPEECHES\n"
 
 
@@ -280,19 +296,42 @@ def test_step_timeout_recorded_as_failed_and_lock_released(tmp_path, monkeypatch
 
 
 def test_cli_main_argument_parsing(monkeypatch):
-    """Verify CLI main() dispatches --no-upload to run_daily_pipeline."""
+    """Verify CLI main() dispatches --no-upload and --no-sync to run_daily_pipeline."""
     dispatched = {}
 
-    def mock_pipeline(no_upload=False):
+    def mock_pipeline(no_upload=False, no_sync=False):
         dispatched["no_upload"] = no_upload
+        dispatched["no_sync"] = no_sync
         return 0
 
     monkeypatch.setattr(dp, "run_daily_pipeline", mock_pipeline)
     monkeypatch.setattr(dp.sys, "argv", ["daily_pipeline.py", "--no-upload"])
+    assert dp.main() == 0
+    assert dispatched == {"no_upload": True, "no_sync": False}
 
-    ret = dp.main()
-    assert ret == 0
-    assert dispatched["no_upload"] is True
+    monkeypatch.setattr(dp.sys, "argv", ["daily_pipeline.py", "--no-sync"])
+    assert dp.main() == 0
+    assert dispatched == {"no_upload": False, "no_sync": True}
+
+
+def test_no_sync_flag_uploads_but_skips_sync(tmp_path, monkeypatch):
+    """no_sync=True (the GitHub Actions fallback) still uploads but never touches the database."""
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
+
+    calls = []
+
+    def mock_run(cmd, *args, **kwargs):
+        calls.append(os.path.basename(cmd[1]))
+        return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+    mock_sync = MagicMock(return_value=True)
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", mock_sync)
+
+    assert dp.run_daily_pipeline(no_sync=True) == 0
+    assert "upload_to_b2.py" in calls
+    assert mock_sync.call_count == 0
 
 
 def test_snapshot_only_active_years_speech_files(tmp_path, monkeypatch):
@@ -370,11 +409,15 @@ def test_stale_integrity_report_cleared_before_verify_step(tmp_path, monkeypatch
     ["fetch_memberships.py", "fetch_factions.py", "fetch_faction_leaders.py", "fetch_agenda.py"],
 )
 def test_schema_change_in_warning_step_fails_run(tmp_path, monkeypatch, script_name):
-    """Exit code 2 (upstream schema change) fails the run even in warning-only steps."""
+    """Exit code 2 (upstream schema change) fails the run and skips the upload, even in
+    warning-only steps."""
     monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
     monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
 
+    calls = []
+
     def mock_run(cmd, *args, **kwargs):
+        calls.append(os.path.basename(cmd[1]))
         if os.path.basename(cmd[1]) == script_name:
             return subprocess.CompletedProcess(args=cmd, returncode=2)
         return subprocess.CompletedProcess(args=cmd, returncode=0)
@@ -383,6 +426,7 @@ def test_schema_change_in_warning_step_fails_run(tmp_path, monkeypatch, script_n
     monkeypatch.setattr(dp, "sync_database", lambda **kw: True)
 
     assert dp.run_daily_pipeline() == 1
+    assert "upload_to_b2.py" not in calls
 
 
 def test_unverified_integrity_fails_run_and_skips_upload(tmp_path, monkeypatch):
