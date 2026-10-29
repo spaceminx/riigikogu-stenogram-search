@@ -1,5 +1,5 @@
 import React from "react";
-import { MONTHS, formatDate } from "./calendarUtils";
+import { MONTHS } from "./calendarUtils";
 
 export const SHORT_MONTHS = [
   "jaan",
@@ -42,15 +42,6 @@ export function isSyncStale(isoStr, maxHours = 36) {
   } catch {
     return false;
   }
-}
-
-export function formatLatestSessionLabel(dateStr, status) {
-  if (!dateStr) return "";
-  const formatted = formatDate(dateStr);
-  if (status === "UNEDITED") {
-    return `Viimane istung: ${formatted} (esialgne stenogramm)`;
-  }
-  return `Viimane istung: ${formatted}`;
 }
 
 export function formatMonthTooltip(monthKey) {

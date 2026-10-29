@@ -107,17 +107,6 @@ def find_release_by_tag(tag: str, token: str) -> dict[str, Any] | None:
     return None
 
 
-def get_release_by_tag(tag: str, token: str) -> dict[str, Any] | None:
-    """Fetch existing release by tag name or None if 404."""
-    url = f"{API_BASE}/repos/{REPO}/releases/tags/{tag}"
-    try:
-        return github_api_request(url, token=token)
-    except RuntimeError as e:
-        if "HTTP 404" in str(e):
-            return None
-        raise
-
-
 def create_release(
     tag: str, name: str, body: str, token: str, draft: bool = True
 ) -> dict[str, Any]:

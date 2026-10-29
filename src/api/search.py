@@ -659,29 +659,6 @@ def _parse_single_group(
     return QueryGroup(terms=combined_terms, phrases=phrases, unquoted_terms=unquoted_terms)
 
 
-def _extract_group_terms(group: str) -> tuple[bool, list[list[str]]]:
-    """Extract content terms from a query group with case and hyphen expansions.
-
-    Returns (has_any_words, content_terms) where content_terms is a list of positions,
-    and each position contains a list of alternative lemmas.
-    """
-    alternatives_list = _extract_positions_with_alternatives(group)
-    if not alternatives_list:
-        return (False, [])
-
-    content_terms: list[list[str]] = []
-    seen_terms: set[tuple[str, ...]] = set()
-    for alts in alternatives_list:
-        filtered = [lemma for lemma in alts if lemma not in STOPWORDS]
-        if filtered:
-            term_tuple = tuple(sorted(filtered))
-            if term_tuple not in seen_terms:
-                seen_terms.add(term_tuple)
-                content_terms.append(list(term_tuple))
-
-    return (True, content_terms)
-
-
 MAX_QUERY_GROUPS = 10
 
 

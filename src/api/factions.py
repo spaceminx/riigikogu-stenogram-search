@@ -7,13 +7,12 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
-from src.api.roles import government_at, role
+from src.api.roles import NO_FACTION, government_at, role
 from src.load.database import SessionLocal
 from src.load.models import Person
 
 logger = logging.getLogger(__name__)
 
-NO_FACTION = "Fraktsiooni mittekuuluvad Riigikogu liikmed"
 # Riigikogu API marks a faction membership that has not ended with this date
 OPEN_END = "2099-12-31"
 # Riigikogu lists a new or returning member as non-affiliated until their faction admits

@@ -12,8 +12,10 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
+    // Tests that pin their own viewport (or need one layout) carry a tag and run in one project only
     {
       name: "desktop-chromium",
+      grepInvert: /@mobile-only/,
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 800 },
@@ -21,6 +23,7 @@ export default defineConfig({
     },
     {
       name: "mobile-chromium",
+      grepInvert: /@desktop-only/,
       use: {
         ...devices["Pixel 5"],
         viewport: { width: 390, height: 844 },

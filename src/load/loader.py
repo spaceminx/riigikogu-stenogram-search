@@ -144,13 +144,6 @@ def _ensure_schema(conn) -> None:
             conn.execute(text("ALTER TABLE attendance ADD COLUMN member_uuid TEXT;"))
 
 
-def ensure_schema(target_engine=None) -> list[str]:
-    """Deprecated compatibility alias; delegates to apply_migrations."""
-    from src.load.migrations import apply_migrations
-
-    return apply_migrations(target_engine)
-
-
 def create_tables(target_engine=None) -> list[str]:
     """Create all database tables and apply schema migrations."""
     from src.load.migrations import apply_migrations
