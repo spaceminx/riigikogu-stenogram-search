@@ -123,7 +123,9 @@ test.describe("Search pills wrapping", { tag: "@desktop-only" }, () => {
 });
 
 test.describe("Search speakers next to the timeline", { tag: "@desktop-only" }, () => {
-  test("the speaker list is as tall as the chart and scrolls inside", async ({ page }) => {
+  test("side by side, the speaker list is as tall as the chart and scrolls inside", async ({
+    page,
+  }) => {
     await setupApiMock(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/otsing?q=kliima");
@@ -132,17 +134,36 @@ test.describe("Search speakers next to the timeline", { tag: "@desktop-only" }, 
     await expect(page.locator(".speaker-item")).toHaveCount(20);
     await expect(page.locator(".search-panels-grid .recharts-surface").first()).toBeVisible();
 
-    const sizes = await page.evaluate(() => {
-      const [chart, rail] = document.querySelector(".search-panels-grid").children;
-      const list = rail.querySelector(".speakers-list");
-      return {
-        chart: chart.getBoundingClientRect().height,
-        rail: rail.getBoundingClientRect().height,
-        scrolls: list.scrollHeight > list.clientHeight,
-      };
-    });
-    expect(Math.abs(sizes.rail - sizes.chart)).toBeLessThanOrEqual(1);
-    expect(sizes.scrolls).toBe(true);
+    const measure = () =>
+      page.evaluate(() => {
+        const [chart, rail] = document.querySelector(".search-panels-grid").children;
+        const list = rail.querySelector(".speakers-list");
+        const c = chart.getBoundingClientRect();
+        const r = rail.getBoundingClientRect();
+        return {
+          sideBySide: Math.abs(c.top - r.top) < 1,
+          chart: c.height,
+          rail: r.height,
+          scrolls: list.scrollHeight > list.clientHeight,
+        };
+      });
+
+    // The grid keeps two columns down to 721 px; the old rule only applied from 1025 px
+    for (const width of [1280, 1024, 1000, 900, 721]) {
+      await page.setViewportSize({ width, height: 900 });
+      const sizes = await measure();
+      expect(sizes.sideBySide, `${width}px`).toBe(true);
+      expect(Math.abs(sizes.rail - Math.max(sizes.chart, 320)), `${width}px`).toBeLessThanOrEqual(
+        1
+      );
+      expect(sizes.scrolls, `${width}px`).toBe(true);
+    }
+
+    // Stacked under the chart, the whole list shows
+    await page.setViewportSize({ width: 720, height: 900 });
+    const stacked = await measure();
+    expect(stacked.sideBySide).toBe(false);
+    expect(stacked.scrolls).toBe(false);
   });
 });
 
