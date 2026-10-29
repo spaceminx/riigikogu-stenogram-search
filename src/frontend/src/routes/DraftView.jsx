@@ -30,7 +30,26 @@ function ReadingCard({ reading, draftUuid }) {
 
   const speechCount = reading.speech_count ?? 0;
 
-  const handleToggleSpeeches = async () => {
+  const loadSpeeches = async () => {
+    setIsLoadingSpeeches(true);
+    setSpeechError(null);
+    try {
+      const data = await fetchDraftSpeeches(draftUuid, {
+        agendaItemUuid: reading.agenda_item_uuid,
+        limit: 50,
+        offset: 0,
+      });
+      setSpeeches(data.results || []);
+      setTotalSpeeches(data.total ?? (data.results ? data.results.length : 0));
+      setHasLoaded(true);
+    } catch (err) {
+      setSpeechError(err.message || "Sõnavõttude laadimine ebaõnnestus.");
+    } finally {
+      setIsLoadingSpeeches(false);
+    }
+  };
+
+  const handleToggleSpeeches = () => {
     if (isExpanded) {
       setIsExpanded(false);
       return;
@@ -39,22 +58,7 @@ function ReadingCard({ reading, draftUuid }) {
     setIsExpanded(true);
 
     if (!hasLoaded && reading.agenda_item_uuid) {
-      setIsLoadingSpeeches(true);
-      setSpeechError(null);
-      try {
-        const data = await fetchDraftSpeeches(draftUuid, {
-          agendaItemUuid: reading.agenda_item_uuid,
-          limit: 50,
-          offset: 0,
-        });
-        setSpeeches(data.results || []);
-        setTotalSpeeches(data.total ?? (data.results ? data.results.length : 0));
-        setHasLoaded(true);
-      } catch (err) {
-        setSpeechError(err.message || "Sõnavõttude laadimine ebaõnnestus.");
-      } finally {
-        setIsLoadingSpeeches(false);
-      }
+      loadSpeeches();
     }
   };
 
@@ -136,14 +140,7 @@ function ReadingCard({ reading, draftUuid }) {
             {speechError && (
               <div className="reading-speeches-error">
                 <p>{speechError}</p>
-                <button
-                  type="button"
-                  className="retry-btn"
-                  onClick={() => {
-                    setHasLoaded(false);
-                    handleToggleSpeeches();
-                  }}
-                >
+                <button type="button" className="retry-btn" onClick={loadSpeeches}>
                   Proovi uuesti
                 </button>
               </div>
