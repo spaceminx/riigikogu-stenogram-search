@@ -47,7 +47,15 @@ function trimData(data, maxItems = 20) {
   return result;
 }
 
-async function fetchJson(endpoint) {
+// Keeps the speeches around the target, so the trimmed fixture can still highlight it
+function trimContext(context, maxItems = 20) {
+  const speeches = context.speeches || [];
+  const targetIndex = speeches.findIndex((s) => s.id === context.target_speech_id);
+  const start = Math.max(0, Math.min(targetIndex - maxItems / 2, speeches.length - maxItems));
+  return trimData({ ...context, speeches: speeches.slice(start, start + maxItems) }, maxItems);
+}
+
+async function fetchJson(endpoint, { trim = true } = {}) {
   const url = `${BASE_URL}${endpoint}`;
   console.log(`Fetching: ${url}`);
   const resp = await fetch(url, {
@@ -61,7 +69,7 @@ async function fetchJson(endpoint) {
   }
   await sleep(DELAY_MS);
   const data = await resp.json();
-  return trimData(data, 20);
+  return trim ? trimData(data, 20) : data;
 }
 
 async function main() {
@@ -123,7 +131,9 @@ async function main() {
   const attendanceStats = await fetchJson('/attendance/stats?membership=all');
   const attendanceFactions = await fetchJson('/attendance/factions?membership=all');
   const speechDetail = await fetchJson(`/speeches/${concreteSpeechId}`);
-  const speechContext = await fetchJson(`/speeches/${concreteSpeechId}/context?expand=true`);
+  const speechContext = trimContext(
+    await fetchJson(`/speeches/${concreteSpeechId}/context?expand=true`, { trim: false })
+  );
   const personDetail = await fetchJson(`/persons/${concretePersonUuid}`);
   const personStats = await fetchJson(`/persons/${concretePersonUuid}/stats`);
   const personAttendance = await fetchJson(`/persons/${concretePersonUuid}/attendance?exclude_infotund=false`);

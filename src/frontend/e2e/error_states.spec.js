@@ -28,6 +28,41 @@ test.describe("Error states", () => {
     await expect(page.getByRole("heading", { name: "Kõnet ei leitud" })).toBeVisible();
   });
 
+  test("detail pages that fail to load still have one h1", async ({ page }) => {
+    await setupApiMock(page, { allowConsoleError: true });
+    await page.route(
+      /api\.e2e\.test\/(speeches\/404404|votings\/missing|drafts\/missing|persons\/missing)/,
+      (route) => fulfillJson(route, 404, { detail: "Ei leitud" })
+    );
+
+    for (const [url, heading] of [
+      ["/kone/404404", "Kõnet ei leitud"],
+      ["/haaletus/missing", "Hääletust ei leitud"],
+      ["/eelnou/missing", "Eelnõud ei leitud"],
+      ["/saadik/missing", "Saadikut ei leitud"],
+    ]) {
+      await page.goto(url);
+      await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+      await expect(page.locator("h1")).toHaveCount(1);
+    }
+  });
+
+  test("a session page with an impossible date says so without asking the API", async ({
+    page,
+  }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/istung/2026-13-45");
+    await expect(page.getByText("Sellist kuupäeva ei ole.")).toBeVisible();
+    await expect(page.getByText("undefined")).toHaveCount(0);
+    await expect(page).toHaveTitle("Istung — Riigivaade");
+    expect(
+      mock.interceptedRequests.filter((r) => /^\/(sessions|votings)/.test(r.pathname))
+    ).toHaveLength(0);
+
+    mock.verifyNoErrors();
+  });
+
   test("a failed search shows the error, not an empty result", async ({ page }) => {
     await setupApiMock(page);
     await page.route(/api\.e2e\.test\/search\?/, (route) =>
