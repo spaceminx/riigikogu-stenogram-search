@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { fetchAttendance, fetchFactionAttendance, fetchFactionsList } from "../lib/api";
+import { NO_FACTION } from "../lib/factionsUtils";
 import { formatFactionName, sortAttendanceItems } from "../lib/formatters";
 import AttendanceMembersTable from "../components/AttendanceMembersTable";
 import AttendanceFactionsTable from "../components/AttendanceFactionsTable";
@@ -57,7 +58,7 @@ export function AttendanceView({
       next.delete("att_faction");
     } else {
       next.set("att_faction", f);
-      if (f === "Fraktsiooni mittekuuluvad Riigikogu liikmed") {
+      if (f === NO_FACTION) {
         next.delete("role");
       }
     }
@@ -174,7 +175,7 @@ export function AttendanceView({
   const handleSelectFactionDrilldown = (factionName) => {
     const next = new URLSearchParams(searchParams);
     next.set("att_faction", factionName);
-    if (factionName === "Fraktsiooni mittekuuluvad Riigikogu liikmed") {
+    if (factionName === NO_FACTION) {
       next.delete("role");
     }
     next.delete("att_tab");
@@ -288,7 +289,7 @@ export function AttendanceView({
             </div>
           )}
 
-          {selectedFaction !== "Fraktsiooni mittekuuluvad Riigikogu liikmed" && (
+          {selectedFaction !== NO_FACTION && (
             <div className="attendance-select-group">
               <label htmlFor="role-select" className="attendance-label">
                 Roll:

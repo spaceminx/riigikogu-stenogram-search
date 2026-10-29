@@ -7,6 +7,7 @@ import {
   getVotesBarSegments,
   isSmallSample,
 } from "../lib/formatters";
+import { NO_FACTION } from "../lib/factionsUtils";
 import VoteBar from "./VoteBar";
 
 export function AttendanceFactionsTable({
@@ -116,9 +117,7 @@ export function AttendanceFactionsTable({
               const votesTotal = stat.votes_total ?? 0;
               const isVotesSmall = votesTotal < 50;
               const isRowSmall = isSmallSample(stat, factionSortConfig.key);
-              const isNonAligned =
-                stat.faction === "Fraktsiooni mittekuuluvad Riigikogu liikmed" ||
-                stat.faction === "Fraktsioonita";
+              const isNonAligned = stat.faction === NO_FACTION || stat.faction === "Fraktsioonita";
               const hideForNonAligned = Boolean(role && isNonAligned);
 
               return (

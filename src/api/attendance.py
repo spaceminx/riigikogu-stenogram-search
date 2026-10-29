@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import case, func
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
-from src.api.roles import role_condition
+from src.api.roles import NO_FACTION, role_condition
 from src.api.votings import get_faction_vote_participation, get_member_vote_participation
 from src.load.database import SessionLocal
 from src.load.models import Attendance, AttendanceCheck
@@ -27,7 +27,7 @@ def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]
             for p in periods:
                 if p.get("end", "") >= today or p.get("end") == "2099-12-31":
                     active.add(member)
-                    fac = p.get("faction") or "Fraktsiooni mittekuuluvad Riigikogu liikmed"
+                    fac = p.get("faction") or NO_FACTION
                     member_factions[member] = fac
                     faction_counts[fac] = faction_counts.get(fac, 0) + 1
                     break
@@ -156,9 +156,7 @@ def get_attendance_stats(
             total_val = int(total)
 
             percentage = round((present_val / total_val) * 100, 1)
-            default_fac = (
-                "Fraktsiooni mittekuuluvad Riigikogu liikmed" if active_only else "Fraktsioonita"
-            )
+            default_fac = NO_FACTION if active_only else "Fraktsioonita"
             member_faction = faction or faction_map.get(m_key, default_fac)
 
             mv = member_votes.get(
@@ -417,15 +415,13 @@ def get_faction_attendance_stats(
                 for uid in active_uuids:
                     if uid not in latest_factions and uid not in members_with_rows:
                         continue
-                    fac = latest_factions.get(uid, "Fraktsiooni mittekuuluvad Riigikogu liikmed")
+                    fac = latest_factions.get(uid, NO_FACTION)
                     active_uuid_factions[uid] = fac
                     active_faction_counts[fac] = active_faction_counts.get(fac, 0) + 1
 
                 faction_totals: dict[str, dict[str, int]] = {}
                 for m_key, total, present in member_results:
-                    fac_name = active_uuid_factions.get(
-                        m_key, "Fraktsiooni mittekuuluvad Riigikogu liikmed"
-                    )
+                    fac_name = active_uuid_factions.get(m_key, NO_FACTION)
                     if fac_name not in faction_totals:
                         faction_totals[fac_name] = {"total": 0, "present": 0}
                     faction_totals[fac_name]["total"] += int(total) if total else 0
@@ -523,9 +519,7 @@ def get_faction_attendance_stats(
 
                 faction_totals_fallback: dict[str, dict[str, int]] = {}
                 for m_key, total, present in member_results:
-                    fac_name = active_member_factions.get(
-                        m_key, "Fraktsiooni mittekuuluvad Riigikogu liikmed"
-                    )
+                    fac_name = active_member_factions.get(m_key, NO_FACTION)
                     if fac_name not in faction_totals_fallback:
                         faction_totals_fallback[fac_name] = {"total": 0, "present": 0}
                     faction_totals_fallback[fac_name]["total"] += int(total) if total else 0

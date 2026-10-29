@@ -576,12 +576,6 @@ def load_persons_metadata(
         return set(), {}, {}
 
 
-def load_persons_name_map(processed_dir: str = OUTPUT_DIR_PROCESSED) -> dict[str, str]:
-    """Compatibility wrapper returning name -> uuid map."""
-    _, name_map, _ = load_persons_metadata(processed_dir=processed_dir)
-    return name_map
-
-
 def parse_meeting_speeches(
     rich_meeting: dict | None,
     verbatim: dict | None,

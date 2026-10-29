@@ -56,10 +56,6 @@ export function getVotingSummaryParts(totals) {
   ];
 }
 
-export function formatVotingSummary(totals) {
-  return getVotingSummaryParts(totals).join(" · ");
-}
-
 // The voting description is usually only the procedural step ("Lõpphääletus"); the topic is the
 // related document. Votings without a document ("Päevakorra kinnitamine") keep the description.
 export function getVotingHeading(voting, { showDocument = true } = {}) {

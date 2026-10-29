@@ -7,7 +7,7 @@ import {
   computeNotVoted,
   formatTimeHHMM,
   formatOvernightTime,
-  formatVotingSummary,
+  getVotingSummaryParts,
   getVotingHeading,
   formatDocumentReference,
   getVoteBarSegments,
@@ -79,7 +79,7 @@ test("voting utilities", async (t) => {
     );
   });
 
-  await t.test("formatVotingSummary", () => {
+  await t.test("getVotingSummaryParts", () => {
     const totals = {
       present: 81,
       in_favor: 54,
@@ -88,11 +88,14 @@ test("voting utilities", async (t) => {
       absent: 20,
     };
     // Ei hääletanud = 81 - 54 - 22 - 0 = 5
-    assert.equal(
-      formatVotingSummary(totals),
-      "Poolt 54 · Vastu 22 · Erapooletu 0 · Ei hääletanud 5 · Puudus 20"
-    );
-    assert.equal(formatVotingSummary(null), "");
+    assert.deepEqual(getVotingSummaryParts(totals), [
+      "Poolt 54",
+      "Vastu 22",
+      "Erapooletu 0",
+      "Ei hääletanud 5",
+      "Puudus 20",
+    ]);
+    assert.deepEqual(getVotingSummaryParts(null), []);
   });
 
   await t.test("getVotingHeading puts the document first and keeps the step as a label", () => {

@@ -9,6 +9,8 @@ from sqlalchemy import and_, case, or_
 _GOVERNMENTS_FILE = Path(__file__).resolve().parent.parent / "data" / "governments.json"
 _GOVERNMENTS_CACHE: list[dict[str, Any]] | None = None
 
+NO_FACTION = "Fraktsiooni mittekuuluvad Riigikogu liikmed"
+
 
 def load_governments() -> list[dict[str, Any]]:
     """Load government periods from governments.json with memory caching."""
@@ -36,7 +38,7 @@ def role(faction: str | None, date: str | None) -> str:
     - "coalition" if the faction was part of the government coalition on that date.
     - "opposition" otherwise.
     """
-    if not faction or faction == "Fraktsiooni mittekuuluvad Riigikogu liikmed" or not date:
+    if not faction or faction == NO_FACTION or not date:
         return "none"
 
     d = date[:10]
@@ -79,7 +81,7 @@ def role_expression(faction_col, date_col):
             or_(
                 faction_col.is_(None),
                 faction_col == "",
-                faction_col == "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+                faction_col == NO_FACTION,
             ),
             "none",
         ),
