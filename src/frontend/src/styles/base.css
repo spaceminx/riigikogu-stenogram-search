@@ -134,6 +134,12 @@ h3,
   margin-bottom: 1rem;
 }
 
+/* The h1 of a detail page that failed to load, sized like the section headings */
+.detail-error-title {
+  font-size: 1.5em;
+  margin: 0.83em 0 0.5rem;
+}
+
 .dashboard-grid {
   display: grid;
 }

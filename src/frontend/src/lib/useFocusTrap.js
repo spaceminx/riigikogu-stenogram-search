@@ -25,6 +25,13 @@ const FOCUSABLE_SELECTOR = [
 export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
   const containerRef = useRef(null);
   const previousActiveElementRef = useRef(null);
+  // Callers pass an inline onClose; reading it from a ref keeps a parent re-render from
+  // re-running the effect, which would move focus back to the first control
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -47,10 +54,10 @@ export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        if (onClose) {
+        if (onCloseRef.current) {
           event.preventDefault();
           event.stopPropagation();
-          onClose();
+          onCloseRef.current();
         }
         return;
       }
@@ -110,7 +117,7 @@ export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
         }
       }
     };
-  }, [isOpen, onClose, initialFocusRef]);
+  }, [isOpen, initialFocusRef]);
 
   return containerRef;
 }

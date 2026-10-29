@@ -1397,3 +1397,83 @@ def test_technical_votings():
         session.query(Person).filter(Person.uuid == person_uuid).delete()
         session.commit()
         session.close()
+
+
+def test_secret_voting_never_exposes_member_votes():
+    """Even if member rows of a secret voting reach the database, the API does not publish them."""
+    session = SessionLocal()
+    person_uuid = "person-test-uuid-secret"
+    v_secret_uuid = "v-secret-with-rows"
+    v_public_uuid = "v-public-with-rows"
+    test_uuids = [v_secret_uuid, v_public_uuid]
+
+    def voting(uuid, number, voting_type):
+        return Voting(
+            uuid=uuid,
+            voting_number=number,
+            type=voting_type,
+            description="Hääletus",
+            date="2026-10-02",
+            start_time=f"2026-10-02T1{number % 10}:00:00",
+            sitting_date="2026-10-02",
+            sitting_datetime="2026-10-02T10:00:00",
+            membership=15,
+            present=101,
+            absent=0,
+            in_favor=60,
+            against=30,
+            neutral=0,
+            abstained=11,
+        )
+
+    try:
+        session.add(
+            Person(
+                uuid=person_uuid,
+                first_name="Salajane",
+                last_name="Testija",
+                full_name="Salajane Testija",
+                active=1,
+            )
+        )
+        session.add_all(
+            [
+                voting(v_secret_uuid, 99911, "SALAJANE"),
+                voting(v_public_uuid, 99912, "AVALIK"),
+                Vote(
+                    voting_uuid=v_secret_uuid,
+                    member_uuid=person_uuid,
+                    faction="Testfraktsioon",
+                    decision="VASTU",
+                ),
+                Vote(
+                    voting_uuid=v_public_uuid,
+                    member_uuid=person_uuid,
+                    faction="Testfraktsioon",
+                    decision="POOLT",
+                ),
+            ]
+        )
+        session.commit()
+
+        secret = client.get(f"/votings/{v_secret_uuid}").json()
+        assert secret["votes"] == []
+        assert secret["by_faction"] == []
+        assert secret["totals"]["in_favor"] == 60
+
+        public = client.get(f"/votings/{v_public_uuid}").json()
+        assert [v["decision"] for v in public["votes"]] == ["POOLT"]
+
+        person = client.get(f"/persons/{person_uuid}/votes").json()
+        assert person["summary"]["total"] == 1
+        assert person["summary"]["against"] == 0
+        assert [r["voting_uuid"] for r in person["results"]] == [v_public_uuid]
+    finally:
+        session.rollback()
+        session.query(Vote).filter(Vote.voting_uuid.in_(test_uuids)).delete(
+            synchronize_session=False
+        )
+        session.query(Voting).filter(Voting.uuid.in_(test_uuids)).delete(synchronize_session=False)
+        session.query(Person).filter(Person.uuid == person_uuid).delete()
+        session.commit()
+        session.close()

@@ -329,7 +329,7 @@ td.person-stats-col-num {
 
 .person-not-found-title {
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin: 0.83em 0 1rem;
 }
 
 .person-not-found-desc {
