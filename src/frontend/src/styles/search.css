@@ -13,11 +13,6 @@
 
 .filter-select {
   background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text);
-  padding: 0.4rem 2rem 0.4rem 0.85rem;
-  border-radius: var(--radius-control);
-  font-size: var(--text-field);
   font-family: inherit;
   cursor: pointer;
   outline: none;
@@ -29,11 +24,6 @@
 }
 
 .filter-select:hover,
-.filter-select:focus {
-  border-color: var(--color-text-muted);
-  background-color: var(--color-surface);
-}
-
 .filter-group-item.speaker-filter-item {
   flex: 1;
   min-width: 0;
@@ -48,26 +38,12 @@
 .filter-text-input {
   width: 100%;
   background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text);
-  padding: 0.4rem 1.8rem 0.4rem 0.85rem;
-  border-radius: var(--radius-control);
-  font-size: var(--text-field);
   font-family: inherit;
   outline: none;
   transition: all 0.2s;
 }
 
 .filter-text-input:hover,
-.filter-text-input:focus {
-  border-color: var(--color-text-muted);
-  background-color: var(--color-surface);
-}
-
-.filter-text-input::placeholder {
-  color: var(--color-text-muted);
-}
-
 .filter-clear-icon-btn {
   position: absolute;
   right: 0.5rem;

@@ -127,23 +127,11 @@
   flex-wrap: wrap;
 }
 
-.speaker-role-tag {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  background: var(--color-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-tag);
-  color: var(--color-text-soft);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
 .context-btn {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-accent);
   padding: 0.45rem 0.9rem;
-  border-radius: var(--radius-control);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;

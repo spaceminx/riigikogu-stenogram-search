@@ -32,7 +32,6 @@ select {
 }
 
 .section-kicker {
-  display: inline-flex;
   align-items: center;
   gap: 9px;
   color: var(--color-text-muted);
@@ -45,14 +44,6 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-}
-
-.chart-header h2 {
-  margin: 5px 0 0;
-  font-size: 17px;
-  font-weight: 550;
-  letter-spacing: -0.025em;
 }
 
 .token-pill button {
@@ -209,12 +200,6 @@ select {
   }
   .dashboard-rail {
     gap: 12px;
-  }
-  .timeline-panel {
-    padding: 17px 14px;
-  }
-  .members-panel {
-    padding: 17px 14px 10px;
   }
 }
 
