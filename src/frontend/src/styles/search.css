@@ -134,3 +134,29 @@
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
+
+/* Next to the timeline the speaker list is as tall as the chart and scrolls inside, instead of
+   leaving empty space under the chart */
+@media (min-width: 1025px) {
+  .dashboard-grid.search-panels-grid {
+    align-items: stretch;
+  }
+
+  .search-panels-grid > .dashboard-rail {
+    position: relative;
+    min-height: 320px;
+  }
+
+  .search-panels-grid > .dashboard-rail > .members-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .search-panels-grid .speakers-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

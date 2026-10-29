@@ -557,7 +557,7 @@ export function SearchView({
       {hasSearchQuery && (showTimeline || showSpeakers) && (
         <div className="search-collapsible-panels">
           {showTimeline && showSpeakers ? (
-            <div className="dashboard-grid" style={{ marginBottom: "1.5rem" }}>
+            <div className="dashboard-grid search-panels-grid" style={{ marginBottom: "1.5rem" }}>
               <ActivityChart
                 activity={currentActivity}
                 interval={intervalParam}

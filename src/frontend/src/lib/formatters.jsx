@@ -178,6 +178,20 @@ export function formatFactionName(name) {
   return fallbackMap[clean] || clean;
 }
 
+// Soft hyphens at the compound boundary, so a narrow cell can break a long one-word name
+// ("Sotsiaal-demokraadid") instead of letting it run under the next column
+const SOFT_HYPHENATED = {
+  Sotsiaaldemokraadid: "Sotsiaal\u00addemokraadid",
+  Reformierakond: "Reformi\u00aderakond",
+  Keskerakond: "Kesk\u00aderakond",
+  "Fraktsiooni mittekuuluvad": "Fraktsiooni mitte\u00adkuuluvad",
+};
+
+export function formatFactionNameBreakable(name) {
+  const short = formatFactionName(name);
+  return SOFT_HYPHENATED[short] || short;
+}
+
 export const SPEECH_TYPE_LABELS = {
   SMALL_SPEECH: "Küsimus/repliik",
   PROCEDURAL: "Protseduuriline",

@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  formatFactionName,
+  formatFactionNameBreakable,
   formatMetricRatio,
   formatVoteSplit,
   getChecksBarSegments,
@@ -137,7 +137,9 @@ export function AttendanceFactionsTable({
                       title={`Klõpsa, et vaadata ${stat.faction} saadikuid`}
                       aria-label={`Vaata fraktsiooni ${stat.faction} saadikuid`}
                     >
-                      <span className="faction-title">{formatFactionName(stat.faction)}</span>
+                      <span className="faction-title">
+                        {formatFactionNameBreakable(stat.faction)}
+                      </span>
                       <span className="drilldown-hint" aria-hidden="true">
                         Vaata saadikuid &rarr;
                       </span>
