@@ -10,7 +10,7 @@
 
 ## What's on the site
 
-Each screenshot opens the same page on the live site.
+Each screenshot opens the same page on the live site. The screenshots show data of the Riigikogu ([api.riigikogu.ee](https://api.riigikogu.ee), CC BY-SA 3.0) and are shared under the same licence; member photos are left out, because the Riigikogu photo terms do not allow passing on copies.
 
 ### Speech search
 
@@ -125,4 +125,4 @@ riigikogu-stenogram-search/
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
+The code is available under the [MIT License](LICENSE). The data and the screenshots in `docs/images/` are under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), source: Riigikogu.

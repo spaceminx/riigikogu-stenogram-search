@@ -9,6 +9,9 @@
  * The examples are chosen to stay impartial: a general search topic, the Speaker of the
  * Riigikogu as the member example, and a broadly supported final vote. Change them here.
  *
+ * Member photos are blocked, so the page shows its no-photo placeholder: the Riigikogu photo
+ * terms allow use on the site but not redistributing copies, which a screenshot in the repo is.
+ *
  * Usage: node scripts/capture_readme_screenshots.mjs
  */
 
@@ -82,6 +85,7 @@ async function main() {
   const browser = await chromium.launch();
   const context = await browser.newContext({ deviceScaleFactor: 1 });
   await context.addInitScript(() => localStorage.setItem('theme', 'light'));
+  await context.route('https://api.riigikogu.ee/api/files/**', (route) => route.abort());
   const converter = await context.newPage();
 
   for (const shot of SHOTS) {

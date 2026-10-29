@@ -10,7 +10,7 @@
 
 ## Mis lehel on
 
-Iga pilt avab sama lehe päris saidil.
+Iga pilt avab sama lehe päris saidil. Piltidel on Riigikogu andmed ([api.riigikogu.ee](https://api.riigikogu.ee), CC BY-SA 3.0) ja pildid on sama litsentsi all; saadikute fotosid piltidel pole, sest Riigikogu fotode kasutustingimused ei luba koopiaid edasi anda.
 
 ### Kõneotsing
 
@@ -127,4 +127,4 @@ riigikogu-stenogram-search/
 
 ## Litsents
 
-See projekt on avatud lähtekoodiga ja litsentseeritud [MIT litsentsi](LICENSE) alusel.
+Kood on [MIT litsentsi](LICENSE) all. Andmed ja kaustas `docs/images/` olevad pildid on [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.et) litsentsi all, allikas: Riigikogu.
