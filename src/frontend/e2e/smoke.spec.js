@@ -104,3 +104,20 @@ test.describe("Smoke tests for all routes", () => {
     mock.verifyNoErrors();
   });
 });
+
+test.describe("Site icons", { tag: "@desktop-only" }, () => {
+  test("every icon linked from the page exists as an image", async ({ page, request }) => {
+    await setupApiMock(page);
+    await page.goto("/");
+    const hrefs = await page
+      .locator('link[rel="icon"], link[rel="apple-touch-icon"]')
+      .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+    expect(hrefs).toHaveLength(2);
+
+    for (const href of hrefs) {
+      const response = await request.get(href);
+      expect(response.status(), href).toBe(200);
+      expect(response.headers()["content-type"], href).toMatch(/^image\//);
+    }
+  });
+});
