@@ -370,14 +370,16 @@ export function PersonView({ theme = "light" }) {
 
   if (personError) {
     const isNotFound =
-      personError.message?.includes("404") || personError.message?.includes("Isikut ei leitud");
+      personError.status === 404 ||
+      personError.message?.includes("404") ||
+      personError.message?.includes("Isikut ei leitud");
 
     return (
       <div className="person-view-container" style={{ padding: "3rem 1rem" }}>
         <div className="glass-panel person-not-found-card">
-          <h2 className="person-not-found-title">
+          <h1 className="person-not-found-title">
             {isNotFound ? "Saadikut ei leitud" : "Päringu viga"}
-          </h2>
+          </h1>
           <p className="person-not-found-desc">
             {isNotFound
               ? "Otsitud identifikaatoriga saadikut Riigikogu arhiivis ei eksisteeri."

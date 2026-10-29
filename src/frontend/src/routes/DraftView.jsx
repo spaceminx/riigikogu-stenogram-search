@@ -241,9 +241,9 @@ export function DraftView() {
         className="glass-panel"
         style={{ padding: "3rem 1.5rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <h2 style={{ marginBottom: "0.5rem" }}>
+        <h1 className="detail-error-title">
           {is404 ? "Eelnõud ei leitud" : "Eelnõu laadimine ebaõnnestus."}
-        </h2>
+        </h1>
         <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
           {error?.message ||
             (is404

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   getQuickPresets,
   getPresetRange,
+  isValidDateKey,
   QUICK_PRESETS,
   visibleMemberships,
 } from "../src/lib/calendarUtils.js";
@@ -105,5 +106,30 @@ describe("visible memberships", () => {
   it("handles missing data", () => {
     assert.deepStrictEqual(visibleMemberships(undefined), []);
     assert.deepStrictEqual(visibleMemberships(null), []);
+  });
+});
+
+describe("date keys", () => {
+  it("accepts real calendar days", () => {
+    for (const value of ["2026-10-21", "2024-02-29", "2019-04-04"]) {
+      assert.equal(isValidDateKey(value), true, value);
+    }
+  });
+
+  it("rejects impossible days and other formats", () => {
+    for (const value of [
+      "2026-13-45",
+      "2026-02-29",
+      "2026-04-31",
+      "2026-00-10",
+      "2026-1-5",
+      "21.10.2026",
+      "abc",
+      "",
+      null,
+      undefined,
+    ]) {
+      assert.equal(isValidDateKey(value), false, String(value));
+    }
   });
 });

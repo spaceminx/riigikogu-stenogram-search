@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
-import { ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { fetchPlenarySession, fetchVotings } from "../lib/api";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 import SpeechCard from "../components/SpeechCard";
 import VotingRow from "../components/VotingRow";
-import { formatDate } from "../lib/calendarUtils";
+import { formatDate, isValidDateKey } from "../lib/calendarUtils";
 import { usePageMeta } from "../lib/usePageMeta";
 
 export function SessionView() {
@@ -17,7 +17,8 @@ export function SessionView() {
   const [showAllVotings, setShowAllVotings] = useState(false);
   const [openVideoSpeechId, setOpenVideoSpeechId] = useState(null);
 
-  const formattedDate = date ? formatDate(date) : "";
+  const isValidDate = isValidDateKey(date);
+  const formattedDate = isValidDate ? formatDate(date) : "";
   const pageTitle = formattedDate ? `Istung ${formattedDate} — Riigivaade` : "Istung — Riigivaade";
   const pageDesc = formattedDate
     ? `Riigikogu ${formattedDate} täiskogu istungi stenogramm, päevakord ja hääletused.`
@@ -29,13 +30,13 @@ export function SessionView() {
     data: sessionData,
     error,
     isLoading: loading,
-  } = useSWR(date ? `session-${date}` : null, () => fetchPlenarySession(date), {
+  } = useSWR(isValidDate ? `session-${date}` : null, () => fetchPlenarySession(date), {
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
 
   const { data: votingsData } = useSWR(
-    date ? `session-votings-${date}` : null,
+    isValidDate ? `session-votings-${date}` : null,
     () => fetchVotings({ sittingDate: date, limit: 100 }),
     {
       revalidateOnFocus: false,
@@ -69,6 +70,32 @@ export function SessionView() {
     : null;
 
   const speeches = sessionData?.results || [];
+
+  if (!isValidDate) {
+    return (
+      <div
+        className="glass-panel"
+        style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
+      >
+        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+          Sellist kuupäeva ei ole. Istungi aadress on kujul /istung/AAAA-KK-PP.
+        </p>
+        <Link
+          to="/"
+          className="search-button"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            textDecoration: "none",
+          }}
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>Tagasi avalehele</span>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div style={{ marginTop: "0.5rem" }}>

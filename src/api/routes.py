@@ -1264,12 +1264,16 @@ def get_person_votes(
         if not person:
             raise HTTPException(status_code=404, detail="Saadikut ei leitud.")
 
+        # Secret votings have no public member votes
+        is_public = or_(Voting.type.is_(None), Voting.type != "SALAJANE")
+
         # Summary counts - excluding technical votings
         is_tech_sql = is_technical_voting_clause()
         dec_query = (
             session.query(Vote.decision, func.count(Vote.decision))
             .join(Voting, Vote.voting_uuid == Voting.uuid)
             .filter(Vote.member_uuid == person_uuid)
+            .filter(is_public)
             .filter(~is_tech_sql)
         )
         if membership and membership != "all":
@@ -1279,6 +1283,7 @@ def get_person_votes(
             session.query(func.count(Vote.decision))
             .join(Voting, Vote.voting_uuid == Voting.uuid)
             .filter(Vote.member_uuid == person_uuid)
+            .filter(is_public)
             .filter(is_tech_sql)
         )
         if membership and membership != "all":
@@ -1314,6 +1319,7 @@ def get_person_votes(
             session.query(Vote, Voting)
             .join(Voting, Vote.voting_uuid == Voting.uuid)
             .filter(Vote.member_uuid == person_uuid)
+            .filter(is_public)
         )
         if membership and membership != "all":
             q_results = q_results.filter(Voting.membership == int(membership))
@@ -1758,8 +1764,11 @@ def get_voting_detail(voting_uuid: str):
             if ch_row:
                 chairman_name = ch_row[0]
 
+        # A secret voting has no public member votes; never publish rows that reached the DB
         votes_data = (
-            session.query(Vote, Person.full_name)
+            []
+            if voting.type == "SALAJANE"
+            else session.query(Vote, Person.full_name)
             .outerjoin(Person, Vote.member_uuid == Person.uuid)
             .filter(Vote.voting_uuid == voting_uuid)
             .order_by(Person.full_name.asc(), Vote.member_uuid.asc())

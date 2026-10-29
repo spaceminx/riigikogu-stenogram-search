@@ -78,9 +78,9 @@ export function SpeechView() {
         className="glass-panel"
         style={{ padding: "3rem 1.5rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <h2 style={{ marginBottom: "0.5rem" }}>
+        <h1 className="detail-error-title">
           {notFound ? "Kõnet ei leitud" : "Kõne laadimine ebaõnnestus"}
-        </h2>
+        </h1>
         <p style={{ color: "var(--text-secondary, #64748b)", marginBottom: "1.5rem" }}>
           {notFound
             ? "Kõnet sellise identifikaatoriga ei leitud."
