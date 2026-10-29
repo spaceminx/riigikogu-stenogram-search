@@ -10,18 +10,56 @@
 
 ## Mis lehel on
 
+Iga pilt avab sama lehe päris saidil.
+
+### Kõneotsing
+
+[![Kõneotsing sõnale „eelarve“ koos ajajoone ja kõnelejatega](docs/images/search.webp)](https://www.riigivaade.me/otsing?q=eelarve)
+
+Otsib sõnade algvormide (lemmade) järgi, nii et „eelarve“ leiab ka „eelarvest“. Ühe ploki sõnad peavad kõik esinema, plokid on alternatiivid (`+ JA`, `+ VÕI`) ja mitmesõnaline plokk on täpne fraas. Filtrid: koosseis, fraktsioon, kuupäevad, esineja ja sõnavõtu liik, soovi korral ilma istungi juhatajata või ilma liitsõnadeta. Lisapaneelid näitavad mainimisi ajas (päev, nädal või kuu; arv või osakaal) ja saadikuid, kes teemat kõige rohkem mainivad. Iga tulemuse saab avada istungi kontekstis, tulemused saab alla laadida CSV või JSON failina ja igal otsingul on RSS-voog.
+
+### Istung
+
+[![26. oktoobri 2026 istungi stenogramm](docs/images/sitting.webp)](https://www.riigivaade.me/istung/2026-10-26)
+
+Istungi kogu stenogramm järjekorras, istungi hääletused, iga kõne video ja link allikale. Igal kõnel on ka oma leht püsilingiga (`/kone/<id>`).
+
+### Saadik
+
+[![Riigikogu esimehe Lauri Hussari leht](docs/images/member.webp)](https://www.riigivaade.me/saadik/64c0141f-371b-4520-8a50-09e65231f775)
+
+Aktiivsus ja osalus, kõned saadiku, ministri või istungi juhatajana, kohalolek ja hääletamine koalitsioonis ja opositsioonis olles, kõned aastate kaupa, kohalolek koosseisude kaupa, kui sageli saadik hääletas fraktsiooni enamusega (koos erinevate hääletustega) ning saadiku kõned koos RSS-vooga.
+
+### Kohalolek
+
+[![XV Riigikogu kohalolek fraktsioonide kaupa](docs/images/attendance.webp)](https://www.riigivaade.me/kohalolek?att_tab=factions)
+
+Kohalolekukontrollides registreerumine ja hääletustel osalemine saadikute või fraktsioonide kaupa, koosseisu, fraktsiooni ja rolli järgi, soovi korral ilma infotunnita.
+
+### Hääletused
+
+[![Taimekaitseseaduse muutmise seaduse lõpphääletus](docs/images/vote.webp)](https://www.riigivaade.me/haaletus/f00ae6f6-bc70-4be6-8e1f-9e000b5d4f0f)
+
+Kõik täiskogu hääletused, otsitavad pealkirja või eelnõu järgi ja filtreeritavad kuupäeva ning liigi järgi. Hääletuse lehel on tulemus, iga fraktsiooni tulemus ja iga saadiku hääl; salajastel hääletustel ainult koondtulemus.
+
+### Eelnõu
+
+[![Taimekaitseseaduse muutmise seaduse eelnõu lugemised](docs/images/bill.webp)](https://www.riigivaade.me/eelnou/1fdf1be7-b35c-44bf-9ed8-ab5d309838fd)
+
+Eelnõu lugemised ja arutelud koos hääletuste ja sõnavõttudega.
+
+### Fraktsioonid
+
+[![XV Riigikogu fraktsioonid](docs/images/factions.webp)](https://www.riigivaade.me/fraktsioonid)
+
+Iga fraktsiooni liikmed koosseisude kaupa, kohad koalitsioonis ja opositsioonis, esimehed ja aseesimehed ning endised liikmed.
+
+### Lisaks
+
 - **Avaleht** (`/`): näidisteemad, sõnavõtud kuude kaupa, viimased istungid, kõige aktiivsemad kõnelejad ja kalender, kust saab avada mis tahes istungi.
-- **Kõneotsing** (`/otsing`): otsib sõnade algvormide (lemmade) järgi, nii et „eelarve“ leiab ka „eelarvest“. Ühe ploki sõnad peavad kõik esinema, plokid on alternatiivid (`+ JA`, `+ VÕI`) ja mitmesõnaline plokk on täpne fraas. Filtrid: koosseis, fraktsioon, kuupäevad, esineja ja sõnavõtu liik, soovi korral ilma istungi juhatajata või ilma liitsõnadeta. Lisapaneelid näitavad mainimisi ajas (päev, nädal või kuu; arv või osakaal) ja saadikuid, kes teemat kõige rohkem mainivad. Iga tulemuse saab avada istungi kontekstis, tulemused saab alla laadida CSV või JSON failina ja igal otsingul on RSS-voog.
-- **Istung** (`/istung/<kuupäev>`): istungi kogu stenogramm järjekorras, istungi hääletused, iga kõne video ja link allikale.
-- **Kõne** (`/kone/<id>`): üks kõne püsilingiga, kõneleja, päevakorrapunkt, video ja allikas.
-- **Saadik** (`/saadik/<id>`): aktiivsus ja osalus, kõned saadiku, ministri või istungi juhatajana, kohalolek ja hääletamine koalitsioonis ja opositsioonis olles, kõned aastate kaupa, kohalolek koosseisude kaupa, kui sageli saadik hääletas fraktsiooni enamusega (koos erinevate hääletustega) ning saadiku kõned koos RSS-vooga.
-- **Kohalolek** (`/kohalolek`): kohalolekukontrollides registreerumine ja hääletustel osalemine saadikute või fraktsioonide kaupa, koosseisu, fraktsiooni ja rolli järgi, soovi korral ilma infotunnita.
-- **Hääletused** (`/haaletused`, `/haaletus/<id>`): kõik täiskogu hääletused, otsitavad pealkirja või eelnõu järgi ja filtreeritavad kuupäeva ning liigi järgi. Hääletuse lehel on tulemus, iga fraktsiooni tulemus ja iga saadiku hääl; salajastel hääletustel ainult koondtulemus.
-- **Eelnõu** (`/eelnou/<id>`): eelnõu lugemised ja arutelud koos hääletuste ja sõnavõttudega.
-- **Fraktsioonid** (`/fraktsioonid`): iga fraktsiooni liikmed koosseisude kaupa, kohad koalitsioonis ja opositsioonis, esimehed ja aseesimehed ning endised liikmed.
 - **Andmed ja privaatsus** (`/andmed`): kes lehte haldab, mida külastajate kohta kogutakse, avaandmete allalaadimine ja erapooletuse põhimõtted. Metoodika on avatav igalt lehelt.
 
-Andmed avaldatakse ka igakuise avaandmete väljalaskena [GitHub Releasesis](https://github.com/spaceminx/riigikogu-stenogram-search/releases) (vt [docs/open-data.md](docs/open-data.md)).
+Andmed avaldatakse ka igakuise avaandmete väljalaskena [GitHub Releasesis](https://github.com/spaceminx/riigikogu-stenogram-search/releases) (vt [docs/open-data.md](docs/open-data.md)). Pildid tehakse käsuga `node scripts/capture_readme_screenshots.mjs`.
 
 ---
 
@@ -64,7 +102,7 @@ Tehniline dokumentatsioon on inglise keeles:
 ```text
 riigikogu-stenogram-search/
 ├── .github/            # CI, paigalduse, live API kontrolli ja varu-andmetoru töövood; Dependabot
-├── docs/               # Arenduse, käituse, andmete hoolduse, avaandmete ja API dokumentatsioon
+├── docs/               # Arenduse, käituse, andmete hoolduse, avaandmete ja API dokumentatsioon; README pildid
 ├── scripts/            # Andmetoru, allalaadijad, B2 sünkroniseerimine, parandused, väljalasked, varundus
 ├── src/
 │   ├── api/            # FastAPI rakendus, marsruudid, otsingu ja kohaloleku päringud

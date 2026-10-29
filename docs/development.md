@@ -50,6 +50,13 @@ npm run dev
 ```
 Open `http://localhost:5173` in your browser.
 
+### README screenshots
+The screenshots in `docs/images/` come from the live site in the light theme. Refresh them after visible changes:
+```bash
+node scripts/capture_readme_screenshots.mjs
+```
+The examples (search topic, member, vote, bill, sitting) are set at the top of the script; keep them impartial.
+
 ## Testing & Code Quality
 
 The codebase uses Ruff for Python, ESLint + Prettier for frontend, and Pytest for automated testing.
