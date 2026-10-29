@@ -127,10 +127,10 @@ body {
   background: transparent !important;
 }
 
-.and-group-box:has(.search-input),
+/* The last group holds the input: its words and the input wrap like the other pills, so a
+   word never ends up above a narrow input inside its own box */
 .search-groups-container > .and-group-box:last-of-type {
-  flex: 1;
-  min-width: 220px;
+  display: contents;
 }
 
 .token-pill {

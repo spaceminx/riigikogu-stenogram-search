@@ -96,3 +96,76 @@ test.describe("Header between the mobile menu and full width", { tag: "@desktop-
     });
   }
 });
+
+test.describe("Search pills wrapping", { tag: "@desktop-only" }, () => {
+  test("the input never sits under a word of its own group", async ({ page }) => {
+    await setupApiMock(page, { allowConsoleError: true });
+    await page.goto("/otsing?q=" + encodeURIComponent("käibemaks, tulumaks, automaks, maksuküür"));
+    await expect(page.locator(".token-pill")).toHaveCount(4);
+
+    // The old layout put the last word above a narrow input around 1000–1024 px and at 390 px
+    for (const width of [1100, 1024, 1010, 1000, 900, 800, 600, 390, 320]) {
+      await page.setViewportSize({ width, height: 900 });
+      const layout = await page.evaluate(() => {
+        const pills = [...document.querySelectorAll(".token-pill")];
+        const word = pills[pills.length - 1].getBoundingClientRect();
+        const input = document.querySelector("input.search-input").getBoundingClientRect();
+        const box = document.querySelector(".search-groups-container").getBoundingClientRect();
+        return {
+          sameLine: Math.abs(input.top - word.top) < 6,
+          // On its own line the input starts at the left edge and takes the full width
+          ownLine: input.top >= word.bottom && input.left - box.left < 20,
+        };
+      });
+      expect(layout.sameLine || layout.ownLine, `${width}px`).toBe(true);
+    }
+  });
+});
+
+test.describe("Search speakers next to the timeline", { tag: "@desktop-only" }, () => {
+  test("the speaker list is as tall as the chart and scrolls inside", async ({ page }) => {
+    await setupApiMock(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/otsing?q=kliima");
+    await page.getByRole("button", { name: "Näita ajajoont" }).click();
+    await page.getByRole("button", { name: "Näita kõnelejaid" }).click();
+    await expect(page.locator(".speaker-item")).toHaveCount(20);
+    await expect(page.locator(".search-panels-grid .recharts-surface").first()).toBeVisible();
+
+    const sizes = await page.evaluate(() => {
+      const [chart, rail] = document.querySelector(".search-panels-grid").children;
+      const list = rail.querySelector(".speakers-list");
+      return {
+        chart: chart.getBoundingClientRect().height,
+        rail: rail.getBoundingClientRect().height,
+        scrolls: list.scrollHeight > list.clientHeight,
+      };
+    });
+    expect(Math.abs(sizes.rail - sizes.chart)).toBeLessThanOrEqual(1);
+    expect(sizes.scrolls).toBe(true);
+  });
+});
+
+test.describe("Attendance faction names on phones", { tag: "@mobile-only" }, () => {
+  test("long faction names stay inside their column", async ({ page }) => {
+    await setupApiMock(page);
+    await page.goto("/kohalolek?att_tab=factions");
+    const table = page.getByRole("region", { name: "Fraktsioonide kohaloleku koondtabel" });
+    await expect(table.locator(".faction-title").first()).toBeVisible();
+
+    for (const width of [430, 393, 360, 320]) {
+      await page.setViewportSize({ width, height: 850 });
+      const overflowing = await table.evaluate((region) =>
+        [...region.querySelectorAll("td.att-col-name")]
+          .filter((cell) => {
+            const range = document.createRange();
+            range.selectNodeContents(cell.querySelector(".faction-title"));
+            const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
+            return right > cell.getBoundingClientRect().right;
+          })
+          .map((cell) => cell.querySelector(".faction-title").textContent)
+      );
+      expect(overflowing, `${width}px`).toEqual([]);
+    }
+  });
+});
