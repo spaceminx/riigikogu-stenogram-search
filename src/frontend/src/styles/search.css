@@ -137,7 +137,8 @@
 
 /* Next to the timeline the speaker list is as tall as the chart and scrolls inside, instead of
    leaving empty space under the chart */
-@media (min-width: 1025px) {
+/* The grid has two columns down to 721 px (light-theme.css) */
+@media (min-width: 721px) {
   .dashboard-grid.search-panels-grid {
     align-items: stretch;
   }
