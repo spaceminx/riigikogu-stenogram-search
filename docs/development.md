@@ -1,5 +1,55 @@
 # Development
 
+## Running Locally
+
+### Prerequisites
+- Python 3.10+ (Python 3.13 recommended)
+- Node.js 24 & npm
+- Docker (optional, for containerized run)
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/spaceminx/riigikogu-stenogram-search.git
+cd riigikogu-stenogram-search
+```
+
+### 2. Backend Setup
+```bash
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 3. Build the Database
+Build the full SQLite database (downloads data from B2, lemmatizes speeches with multiprocessing, builds term indexes):
+```bash
+python scripts/build_full_database.py
+```
+
+Rebuilding the production database, history backfills and repair scripts are described in [data-maintenance.md](data-maintenance.md).
+
+### 4. Start the FastAPI Backend Server
+```bash
+uvicorn src.api.main:app --reload --port 8000
+```
+API documentation is available at:
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- Redoc: `http://127.0.0.1:8000/redoc`
+
+Key endpoints are listed in [api.md](api.md).
+
+### 5. Frontend Setup & Run
+In a separate terminal:
+```bash
+cd src/frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
 ## Testing & Code Quality
 
 The codebase uses Ruff for Python, ESLint + Prettier for frontend, and Pytest for automated testing.

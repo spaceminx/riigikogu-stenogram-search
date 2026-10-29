@@ -1,31 +1,36 @@
-# Riigikogu Stenogram Search
+# Riigivaade – Riigikogu Stenogram Search
 
 [![CI](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/ci.yml/badge.svg)](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/ci.yml)
 
 [Eestikeelne README](README.et.md)
 
-A fast, full-text search and analytical web application for Estonian Parliament (Riigikogu) stenograms and transcripts (data from 2019 to present).
-
-Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and lemmatization), and SQLite.
+[Riigivaade](https://www.riigivaade.me) is an impartial public site about the Estonian Parliament (Riigikogu): full-text search of plenary stenograms, sittings, members' activity and attendance, votes, bills and factions. The data comes from the Riigikogu open data API (CC BY-SA), covers the XIV and XV Riigikogu (from April 2019) and is updated daily.
 
 ---
 
-## Features
+## What's on the site
 
-- **Intelligent Lemma-Based Search:** Searches across base word forms (lemmas) powered by EstNLTK.
-- **Advanced Query Logic:**
-  - Multi-word `AND` queries: `tartu ülikool`
-  - Comma-separated `OR` queries: `kliima, ilm`
-  - Combined `AND`/`OR` logic: `kliima muutus, taastuv energia`
-- **Activity Over Time:** Visualizes keyword mentions by month, week, or day with continuous timeline smoothing.
-- **Top Speakers:** Identifies members of parliament who speak most about given topics.
-- **Attendance & Voting Stats:** Cross-references transcripts with MP attendance records.
-- **Persistent MP UUIDs & Permalinks:** All MP speeches are linked to canonical member UUIDs (with raw `ems_id` tracking and minister-to-MP resolution), stable `speech_key` identifiers, and permanent link aliases (`speech_aliases`) that resolve historical IDs after transcripts are officially edited.
-- **Dynamic Parliamentary Memberships:** Automatically synchronizes membership dates and terms directly from the Riigikogu API with dynamic runtime reloading.
-- **Pipeline Integrity & Statistics Verification:** Daily pipeline verifies transcripts directly against Riigikogu API verbatims (`verify_pipeline_integrity.py`), supports on-demand cross-checks against official statistics (`verify_statistics.py`), and reports health via `/system/status`.
-- **Methodology & Transparency:** Clear user-facing methodology modal detailing attendance controls, speech typologies, and verbatim vs edited transcripts.
-- **Modern UI:** Responsive single-page application with Dark / Light mode toggle.
-- **Automated Daily Pipeline:** Daily server pipeline fetches new transcripts, validates integrity, syncs to Backblaze B2, and updates the database under a unified lock (with manual GitHub Actions fallback).
+- **Dashboard** (`/`): example topics, speeches per month, the latest sittings, the most active speakers and a calendar for opening any sitting.
+- **Speech search** (`/otsing`): searches base word forms (lemmas), so "eelarve" also finds "eelarvest". Words in one block must all occur, blocks are alternatives (`+ JA`, `+ VÕI`), and a multi-word block is an exact phrase. Filters: membership, faction, dates, speaker and speech type, optionally without the chair of the sitting or without compound words. Optional panels show mentions over time (day, week or month; count or share) and the members who mention the topic most. Every result opens in the context of its sitting; results download as CSV or JSON and every search has an RSS feed.
+- **Sitting** (`/istung/<date>`): the whole stenogram of a sitting in order, with its votes, the video of each speech and a link to the source.
+- **Speech** (`/kone/<id>`): one speech with a permanent link, the speaker, the agenda item, the video and the source.
+- **Member** (`/saadik/<id>`): activity and participation, speeches as a member, minister or chair, attendance and voting while in the coalition and in opposition, speeches per year, attendance per membership, how often the member voted with the faction majority (with the votes that differed) and the member's speeches, with an RSS feed.
+- **Attendance** (`/kohalolek`): registration in attendance checks and participation in votes per member or per faction, by membership, faction and role, optionally without question time.
+- **Votes** (`/haaletused`, `/haaletus/<id>`): every plenary vote, searchable by title or bill and filterable by date and type. A vote shows the result, the result of each faction and every member's vote; secret votes show only the totals.
+- **Bill** (`/eelnou/<id>`): the readings and debates of a bill with their votes and speeches.
+- **Factions** (`/fraktsioonid`): the members of each faction per membership, the seats in the coalition and in opposition, the chairs and vice-chairs, and its former members.
+- **Data and privacy** (`/andmed`): who runs the site, what is collected about visitors, the open data downloads and the impartiality principles. The methodology is available from every page.
+
+The data is also published as a monthly open data release on [GitHub Releases](https://github.com/spaceminx/riigikogu-stenogram-search/releases) (see [docs/open-data.md](docs/open-data.md)).
+
+---
+
+## Under the hood
+
+- **Lemma index:** speeches are lemmatised with EstNLTK; search runs on a lemma index with query expansion and phrase matching.
+- **Daily pipeline:** a server job fetches new stenograms, votes, attendance and agenda, checks them against the Riigikogu API, backs them up to Backblaze B2 and updates the database under one lock.
+- **Permanent links:** speeches keep stable keys and aliases, so links keep working after the Riigikogu edits a stenogram.
+- **Transparency:** `/system/status` reports the data's freshness, and the methodology explains how attendance, speech types and unedited stenograms are counted.
 
 ---
 
@@ -36,67 +41,15 @@ Powered by FastAPI, React + Vite, EstNLTK (Estonian morphological analysis and l
 | **Frontend** | React 19, Vite, Recharts, ESLint 10, Prettier |
 | **Backend & API** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
 | **NLP & Lemmatization** | EstNLTK, NLTK |
-| **Data Pipelines & Storage** | GitHub Actions, Backblaze B2, Requests |
+| **Data Pipelines & Storage** | Server cron, Backblaze B2, Requests, GitHub Actions |
 | **Deployment & Containers** | Docker, Docker Compose, Cloudflare Tunnel |
 | **Code Quality & CI** | Ruff (Python), ESLint + Prettier (JS/React), Pytest, Dependabot, GitHub Actions CI |
 
 ---
 
-## Getting Started
-
-### Prerequisites
-- Python 3.10+ (Python 3.13 recommended)
-- Node.js 24 & npm
-- Docker (optional, for containerized run)
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/spaceminx/riigikogu-stenogram-search.git
-cd riigikogu-stenogram-search
-```
-
-### 2. Backend Setup
-```bash
-# Create and activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 3. Build the Database
-Build the full SQLite database (downloads data from B2, lemmatizes speeches with multiprocessing, builds term indexes):
-```bash
-python scripts/build_full_database.py
-```
-
-Rebuilding the production database, history backfills and repair scripts are described in [docs/data-maintenance.md](docs/data-maintenance.md).
-
-### 4. Start the FastAPI Backend Server
-```bash
-uvicorn src.api.main:app --reload --port 8000
-```
-API documentation is available at:
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- Redoc: `http://127.0.0.1:8000/redoc`
-
-Key endpoints are listed in [docs/api.md](docs/api.md).
-
-### 5. Frontend Setup & Run
-In a separate terminal:
-```bash
-cd src/frontend
-npm install
-npm run dev
-```
-Open `http://localhost:5173` in your browser.
-
----
-
 ## Documentation
 
-- [Development](docs/development.md): tests, linting, Python dependency updates, E2E tests, live and upstream API checks
+- [Development](docs/development.md): running locally, tests, linting, Python dependency updates, E2E tests, live and upstream API checks
 - [Deployment & Operations](docs/operations.md): deploy, schema changes, server daily pipeline, cron, database backup
 - [Data Maintenance](docs/data-maintenance.md): database rebuild, history backfill, voting initial load, UUID repair, B2 sync
 - [Open Data](docs/open-data.md): building, publishing and the monthly release

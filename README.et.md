@@ -1,31 +1,36 @@
-# Riigikogu stenogrammide otsing
+# Riigivaade – Riigikogu stenogrammide otsing
 
 [![CI](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/ci.yml/badge.svg)](https://github.com/spaceminx/riigikogu-stenogram-search/actions/workflows/ci.yml)
 
 [English README](README.md)
 
-Kiire täistekstotsingu ja analüütika veebirakendus Eesti Riigikogu stenogrammidele ja istungite protokollidele (andmed alates 2019. aastast).
-
-Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline analüüs ja lemmatiseerimine) ning SQLite.
+[Riigivaade](https://www.riigivaade.me) on erapooletu avalik leht Riigikogu kohta: täiskogu stenogrammide täistekstotsing, istungid, saadikute aktiivsus ja kohalolek, hääletused, eelnõud ja fraktsioonid. Andmed pärinevad Riigikogu avaandmete API-st (CC BY-SA), hõlmavad XIV ja XV koosseisu (alates 2019. aasta aprillist) ning uuenevad iga päev.
 
 ---
 
-## Funktsionaalsus
+## Mis lehel on
 
-- **Morfanalüüsil põhinev otsing:** Otsib sõnade algvormide (lemmade) järgi EstNLTK abil.
-- **Paindlik otsinguloogika:**
-  - Mitmesõnaline `AND` otsing: `tartu ülikool` (leiab kõned, kus esinevad mõlemad sõnad)
-  - Komaga eraldatud `OR` otsing: `kliima, ilm` (leiab kõned, kus esineb vähemalt üks märksõna)
-  - Kombineeritud päringud: `kliima muutus, taastuv energia` -> `(kliima AND muutus) OR (taastuv AND energia)`
-- **Aktiivsus ajas:** Visualiseerib märksõnade sagedust kuude, nädalate või päevade lõikes pideva graafikuna.
-- **Top kõnelejad:** Kuvab saadikud, kes on valitud märksõnu enim kasutanud.
-- **Kohaloleku ja fraktsioonide seosed:** Seob stenogrammid saadikute kohalolekukontrolli andmetega.
-- **Püsivad isikud ja püsilingid:** Kõik saadikute kõned on seotud ametlike UUID-dega (koos `ems_id` talletamise ja ministrite-saadikute lahendamisega), stabiilse `speech_key` tunnusega ning püsilingi aliastabeliga (`speech_aliases`), mis suunab toimetamata kõnede vanad Riigikogu ID-d toimetatud versiooni avalikustamisel uuele kõnele.
-- **Dünaamilised koosseisud:** Koosseisude kuupäevad ja valikud laetakse automaatselt Riigikogu ametlikust API-st koos jooksva dünaamilise uuendamisega.
-- **Andmetoru terviklikkus ja statistika verifitseerimine:** Andmetoru kontrollib igaöiselt istungite täielikkust otse Riigikogu API vastu (`verify_pipeline_integrity.py`), toetab kõnede mahu pistelist kontrolli ametliku statistikaga (`verify_statistics.py`) ja monitoorib süsteemi tervist (`/system/status`).
-- **Läbipaistev metoodika:** Kasutajaliideses on selgitatud kohaloleku, kõnede ja toimetamata tekstide arvestuse põhimõtted.
-- **Kasutajaliides:** Reageeriv React rakendus Dark / Light režiimi toega.
-- **Automaatne andmetoru:** Serveri igapäevane andmetoru laeb uued stenogrammid, kontrollib andmete terviklikkust, sünkroniseerib Backblaze B2 pilvesalvestusega ning uuendab andmebaasi ühtse luku all (koos käsitsi käivitatava GitHub Actions varuvariandiga).
+- **Avaleht** (`/`): näidisteemad, sõnavõtud kuude kaupa, viimased istungid, kõige aktiivsemad kõnelejad ja kalender, kust saab avada mis tahes istungi.
+- **Kõneotsing** (`/otsing`): otsib sõnade algvormide (lemmade) järgi, nii et „eelarve“ leiab ka „eelarvest“. Ühe ploki sõnad peavad kõik esinema, plokid on alternatiivid (`+ JA`, `+ VÕI`) ja mitmesõnaline plokk on täpne fraas. Filtrid: koosseis, fraktsioon, kuupäevad, esineja ja sõnavõtu liik, soovi korral ilma istungi juhatajata või ilma liitsõnadeta. Lisapaneelid näitavad mainimisi ajas (päev, nädal või kuu; arv või osakaal) ja saadikuid, kes teemat kõige rohkem mainivad. Iga tulemuse saab avada istungi kontekstis, tulemused saab alla laadida CSV või JSON failina ja igal otsingul on RSS-voog.
+- **Istung** (`/istung/<kuupäev>`): istungi kogu stenogramm järjekorras, istungi hääletused, iga kõne video ja link allikale.
+- **Kõne** (`/kone/<id>`): üks kõne püsilingiga, kõneleja, päevakorrapunkt, video ja allikas.
+- **Saadik** (`/saadik/<id>`): aktiivsus ja osalus, kõned saadiku, ministri või istungi juhatajana, kohalolek ja hääletamine koalitsioonis ja opositsioonis olles, kõned aastate kaupa, kohalolek koosseisude kaupa, kui sageli saadik hääletas fraktsiooni enamusega (koos erinevate hääletustega) ning saadiku kõned koos RSS-vooga.
+- **Kohalolek** (`/kohalolek`): kohalolekukontrollides registreerumine ja hääletustel osalemine saadikute või fraktsioonide kaupa, koosseisu, fraktsiooni ja rolli järgi, soovi korral ilma infotunnita.
+- **Hääletused** (`/haaletused`, `/haaletus/<id>`): kõik täiskogu hääletused, otsitavad pealkirja või eelnõu järgi ja filtreeritavad kuupäeva ning liigi järgi. Hääletuse lehel on tulemus, iga fraktsiooni tulemus ja iga saadiku hääl; salajastel hääletustel ainult koondtulemus.
+- **Eelnõu** (`/eelnou/<id>`): eelnõu lugemised ja arutelud koos hääletuste ja sõnavõttudega.
+- **Fraktsioonid** (`/fraktsioonid`): iga fraktsiooni liikmed koosseisude kaupa, kohad koalitsioonis ja opositsioonis, esimehed ja aseesimehed ning endised liikmed.
+- **Andmed ja privaatsus** (`/andmed`): kes lehte haldab, mida külastajate kohta kogutakse, avaandmete allalaadimine ja erapooletuse põhimõtted. Metoodika on avatav igalt lehelt.
+
+Andmed avaldatakse ka igakuise avaandmete väljalaskena [GitHub Releasesis](https://github.com/spaceminx/riigikogu-stenogram-search/releases) (vt [docs/open-data.md](docs/open-data.md)).
+
+---
+
+## Tehniliselt
+
+- **Lemmaindeks:** kõned lemmatiseeritakse EstNLTK-ga; otsing kasutab lemmaindeksit koos päringu laiendamise ja fraasiotsinguga.
+- **Igapäevane andmetoru:** serveri töö laeb uued stenogrammid, hääletused, kohaloleku ja päevakorra, kontrollib neid Riigikogu API vastu, varundab Backblaze B2-sse ja uuendab andmebaasi ühe luku all.
+- **Püsilingid:** kõnedel on stabiilsed võtmed ja aliased, nii et lingid töötavad ka pärast seda, kui Riigikogu stenogrammi toimetab.
+- **Läbipaistvus:** `/system/status` näitab andmete värskust ning metoodika selgitab, kuidas kohalolekut, sõnavõtu liike ja toimetamata stenogramme arvestatakse.
 
 ---
 
@@ -42,63 +47,11 @@ Tehnoloogiline virn: FastAPI, React + Vite, EstNLTK (eesti keele morfoloogiline 
 
 ---
 
-## Paigaldus ja käivitamine
-
-### Eeltingimused
-- Python 3.10+ (soovitatav Python 3.13)
-- Node.js 24 & npm
-- Docker (valikuline, konteineris käivitamiseks)
-
-### 1. Projekti allalaadimine
-```bash
-git clone https://github.com/spaceminx/riigikogu-stenogram-search.git
-cd riigikogu-stenogram-search
-```
-
-### 2. Backendi seadistus
-```bash
-# Loo virtuaalkeskkond ja aktiveeri see
-python3 -m venv .venv
-source .venv/bin/activate  # Windowsis: .venv\Scripts\activate
-
-# Paigalda vajalikud teegid
-pip install -r requirements.txt
-```
-
-### 3. Andmebaasi loomine ja andmete ettevalmistus
-Käivita täielik andmebaasi ehitamise skript (laeb vajadusel B2-st andmed, lemmatiseerib tekstid paralleelselt ja loob SQLite indeksid):
-```bash
-python scripts/build_full_database.py
-```
-
-Tootmisandmebaasi uuesti ehitamine, ajaloo tagasitäitmine ja parandusskriptid: [docs/data-maintenance.md](docs/data-maintenance.md).
-
-### 4. FastAPI serveri käivitamine
-```bash
-uvicorn src.api.main:app --reload --port 8000
-```
-API dokumentatsiooniga saab tutvuda aadressidel:
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- Redoc: `http://127.0.0.1:8000/redoc`
-
-Peamised endpointid: [docs/api.md](docs/api.md).
-
-### 5. Frontendi käivitamine
-Ava uus terminaliaken:
-```bash
-cd src/frontend
-npm install
-npm run dev
-```
-Ava brauseris `http://localhost:5173`.
-
----
-
 ## Dokumentatsioon
 
 Tehniline dokumentatsioon on inglise keeles:
 
-- [Arendus](docs/development.md): testid, koodikontroll, Pythoni sõltuvuste uuendamine, E2E testid, live ja upstream API kontrollid
+- [Arendus](docs/development.md): kohalik käivitamine, testid, koodikontroll, Pythoni sõltuvuste uuendamine, E2E testid, live ja upstream API kontrollid
 - [Paigaldus ja käitus](docs/operations.md): paigaldus, skeemimuudatused, serveri igapäevane andmetoru, cron, andmebaasi varundus
 - [Andmete hooldus](docs/data-maintenance.md): andmebaasi uuesti ehitamine, ajaloo tagasitäitmine, hääletuste esmane laadimine, UUID parandused, B2 sünkroniseerimine
 - [Avaandmed](docs/open-data.md): väljalaske ehitamine, avaldamine ja igakuine väljalase
