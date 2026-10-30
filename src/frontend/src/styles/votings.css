@@ -242,6 +242,10 @@
   background: var(--color-accent);
 }
 
+.vote-bar-voted {
+  background: var(--vote-bar-voted);
+}
+
 .voting-row-summary-part {
   white-space: nowrap;
 }

@@ -44,6 +44,7 @@
   --vote-abstain-fill: #8a6a00;
   --vote-none-fill: #6b7080;
   --vote-absent-fill: #c4c8d0;
+  --vote-bar-voted: #2e6f56;
 }
 
 html[data-theme="dark"] {
@@ -74,4 +75,5 @@ html[data-theme="dark"] {
   --vote-abstain-fill: #d9b44a;
   --vote-none-fill: #6b7080;
   --vote-absent-fill: #3e4350;
+  --vote-bar-voted: #10b981;
 }

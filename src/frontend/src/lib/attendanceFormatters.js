@@ -186,7 +186,7 @@ export function getChecksBarSegments(item) {
 export function getVotesBarSegments(item) {
   if (!item || isSmallSample(item)) return [];
   return [
-    { key: "present", value: item.votes_voted ?? 0 },
+    { key: "voted", value: item.votes_voted ?? 0 },
     { key: "none", value: item.votes_not_voted ?? 0 },
     { key: "absent", value: item.votes_absent ?? 0 },
   ].filter((segment) => segment.value > 0);
