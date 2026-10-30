@@ -179,7 +179,7 @@ describe("attendanceFormatters", () => {
 
     it("splits votes into voted, not voted and absent", () => {
       assert.deepStrictEqual(getVotesBarSegments(member), [
-        { key: "present", value: 649 },
+        { key: "voted", value: 649 },
         { key: "none", value: 832 },
         { key: "absent", value: 288 },
       ]);

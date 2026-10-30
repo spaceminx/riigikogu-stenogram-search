@@ -345,8 +345,12 @@ export function AttendanceView({
       {!loading && (
         <div className="att-bar-legend" aria-hidden="true">
           <span className="att-bar-legend-item">
+            <span className="att-bar-legend-swatch vote-bar-voted" />
+            Osales hääletustel
+          </span>
+          <span className="att-bar-legend-item">
             <span className="att-bar-legend-swatch vote-bar-present" />
-            Osales / registreerus
+            Registreerus kontrollides
           </span>
           <span className="att-bar-legend-item">
             <span className="att-bar-legend-swatch vote-bar-none" />
