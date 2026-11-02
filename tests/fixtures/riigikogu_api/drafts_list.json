@@ -1,0 +1,160 @@
+{
+  "_embedded": {
+    "content": [
+      {
+        "uuid": "1b270619-ebf5-4651-a644-d7b75cacfb11",
+        "title": "Riigikogu otsus \"Peaministrikandidaadile JĆ¼ri Ratasele Vabariigi Valitsuse moodustamiseks volituste andmine\"",
+        "mark": 1,
+        "copyOrOriginal": "ORIGINAL",
+        "membership": 14,
+        "draftTypeCode": "OE",
+        "activeDraftStage": "VASTU_VOETUD",
+        "activeDraftStatus": "AVALDATUD_RIIGITEATAJAS",
+        "proceedingStatus": "PROCESSED",
+        "activeDraftStatusDate": "2019-04-23",
+        "leadingCommittee": null,
+        "initiated": "2019-04-17",
+        "amendmentsDeadline": null,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/volumes/drafts/1b270619-ebf5-4651-a644-d7b75cacfb11"
+          }
+        }
+      },
+      {
+        "uuid": "571a549d-3e09-4c1d-bafa-358c7e6dfbd8",
+        "title": "Riigikogu otsus \"Ettepanek Vabariigi Valitsusele Eesti alus- ja koolihariduse Ć¼htseks ja eestikeelseks muutmiseks\"",
+        "mark": 2,
+        "copyOrOriginal": "ORIGINAL",
+        "membership": 14,
+        "draftTypeCode": "OE",
+        "activeDraftStage": "TAGASI_LYKATUD",
+        "activeDraftStatus": "TAGASI_LYKATUD",
+        "proceedingStatus": "PROCESSED",
+        "activeDraftStatusDate": "2019-09-10",
+        "leadingCommittee": {
+          "uuid": "d8e4e49e-c184-7536-6e62-7ae3a4089893",
+          "name": "Kultuurikomisjon",
+          "type": "usergroup",
+          "active": true,
+          "user": null,
+          "role": null,
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/usergroups/d8e4e49e-c184-7536-6e62-7ae3a4089893?lang=ET"
+            }
+          }
+        },
+        "initiated": "2019-04-18",
+        "amendmentsDeadline": "2019-05-06T17:15:00",
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/volumes/drafts/571a549d-3e09-4c1d-bafa-358c7e6dfbd8"
+          }
+        }
+      },
+      {
+        "uuid": "f3c90017-e736-48bf-acfe-f084ef42c307",
+        "title": "Riigikogu otsus \"Eesti keele Ćµppe arengu probleemkomisjoni moodustamine\"",
+        "mark": 3,
+        "copyOrOriginal": "ORIGINAL",
+        "membership": 14,
+        "draftTypeCode": "OE",
+        "activeDraftStage": "VASTU_VOETUD",
+        "activeDraftStatus": "AVALDATUD_RIIGITEATAJAS",
+        "proceedingStatus": "PROCESSED",
+        "activeDraftStatusDate": "2019-06-07",
+        "leadingCommittee": {
+          "uuid": "38144a73-dde6-fd5e-68db-63e2736c85e2",
+          "name": "PĆµhiseaduskomisjon",
+          "type": "usergroup",
+          "active": true,
+          "user": null,
+          "role": null,
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/usergroups/38144a73-dde6-fd5e-68db-63e2736c85e2?lang=ET"
+            }
+          }
+        },
+        "initiated": "2019-04-30",
+        "amendmentsDeadline": "2019-05-28T09:00:00",
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/volumes/drafts/f3c90017-e736-48bf-acfe-f084ef42c307"
+          }
+        }
+      },
+      {
+        "uuid": "792f08a1-bf34-48af-96a6-6c2561d34994",
+        "title": "Riigikogu otsus \"Rahvastikukriisi lahendamise probleemkomisjoni moodustamine\"",
+        "mark": 4,
+        "copyOrOriginal": "ORIGINAL",
+        "membership": 14,
+        "draftTypeCode": "OE",
+        "activeDraftStage": "VASTU_VOETUD",
+        "activeDraftStatus": "AVALDATUD_RIIGITEATAJAS",
+        "proceedingStatus": "PROCESSED",
+        "activeDraftStatusDate": "2019-06-07",
+        "leadingCommittee": {
+          "uuid": "38144a73-dde6-fd5e-68db-63e2736c85e2",
+          "name": "PĆµhiseaduskomisjon",
+          "type": "usergroup",
+          "active": true,
+          "user": null,
+          "role": null,
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/usergroups/38144a73-dde6-fd5e-68db-63e2736c85e2?lang=ET"
+            }
+          }
+        },
+        "initiated": "2019-04-30",
+        "amendmentsDeadline": "2019-05-28T09:00:00",
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/volumes/drafts/792f08a1-bf34-48af-96a6-6c2561d34994"
+          }
+        }
+      },
+      {
+        "uuid": "6985792c-48b9-4db7-ba14-5d67ccdd35cf",
+        "title": "Riigikogu otsus \"Kai Kullerkupu Riigikohtu liikmeks nimetamine\"",
+        "mark": 5,
+        "copyOrOriginal": "ORIGINAL",
+        "membership": 14,
+        "draftTypeCode": "OE",
+        "activeDraftStage": "VASTU_VOETUD",
+        "activeDraftStatus": "AVALDATUD_RIIGITEATAJAS",
+        "proceedingStatus": "PROCESSED",
+        "activeDraftStatusDate": "2019-05-29",
+        "leadingCommittee": {
+          "uuid": "38144a73-dde6-fd5e-68db-63e2736c85e2",
+          "name": "PĆµhiseaduskomisjon",
+          "type": "usergroup",
+          "active": true,
+          "user": null,
+          "role": null,
+          "_links": {
+            "self": {
+              "href": "https://api.riigikogu.ee/api/usergroups/38144a73-dde6-fd5e-68db-63e2736c85e2?lang=ET"
+            }
+          }
+        },
+        "initiated": "2019-05-02",
+        "amendmentsDeadline": null,
+        "_links": {
+          "self": {
+            "href": "https://api.riigikogu.ee/api/volumes/drafts/6985792c-48b9-4db7-ba14-5d67ccdd35cf"
+          }
+        }
+      }
+    ]
+  },
+  "page": {
+    "size": 5,
+    "totalElements": 778,
+    "totalPages": 156,
+    "number": 0
+  }
+}

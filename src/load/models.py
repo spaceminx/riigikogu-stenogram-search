@@ -169,6 +169,23 @@ class AgendaItem(Base):
     match_method = Column(Text, nullable=True)
 
 
+class Draft(Base):
+    __tablename__ = "drafts"
+
+    uuid = Column(Text, primary_key=True)
+    membership = Column(Integer, nullable=False)
+    mark = Column(Integer, nullable=False)
+    type_code = Column(Text, nullable=True)
+    title = Column(Text, nullable=False)
+    stage = Column(Text, nullable=True)
+    status = Column(Text, nullable=True)
+    status_date = Column(Text, nullable=True)
+    proceeding_status = Column(Text, nullable=True)
+    initiated = Column(Text, nullable=True)
+    leading_committee_uuid = Column(Text, nullable=True)
+    leading_committee = Column(Text, nullable=True)
+
+
 class LemmaLink(Base):
     __tablename__ = "lemma_links"
 

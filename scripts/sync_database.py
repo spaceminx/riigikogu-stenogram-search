@@ -20,6 +20,7 @@ from src.load.loader import (
     load_agenda_items_to_database,
     load_attendance_checks_to_database,
     load_attendance_to_database,
+    load_drafts_to_database,
     load_persons_to_database,
     load_votes_to_database,
 )
@@ -307,12 +308,18 @@ def _sync_database_body(skip_download: bool = False) -> bool:
         print(f"Error: {err_msg}")
         errors.append(err_msg)
 
-    # 9. Agenda items
-    print("\n[9/10] Loading agenda items...")
+    # 9. Agenda items and drafts
+    print("\n[9/10] Loading agenda items and drafts...")
     try:
         load_agenda_items_to_database()
     except Exception as e:
         err_msg = f"Agenda items loading failed: {e}"
+        print(f"Error: {err_msg}")
+        errors.append(err_msg)
+    try:
+        load_drafts_to_database()
+    except Exception as e:
+        err_msg = f"Drafts loading failed: {e}"
         print(f"Error: {err_msg}")
         errors.append(err_msg)
 

@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from src.fetch_models import (
     AgendaPlenary,
+    DraftsPage,
     MembershipItem,
     PlenaryMember,
     RichMeeting,
@@ -279,6 +280,19 @@ def run_upstream_checks() -> int:
         print(f"{status:<8} {f'{dur}ms':<8} /api/usergroups/{{uuid}} ({group.get('name')})")
         if err:
             failures.append(err)
+
+    time.sleep(SLEEP_BETWEEN_REQUESTS_SECONDS)
+
+    # 9. Drafts of the current membership (one page)
+    status, dur, err, _ = fetch_and_validate(
+        "https://api.riigikogu.ee/api/volumes/drafts?membership=15&size=20&page=0&sort=mark,asc&lang=ET",
+        DraftsPage,
+        "membership 15",
+        timeout=30.0,
+    )
+    print(f"{status:<8} {f'{dur}ms':<8} /api/volumes/drafts (membership 15)")
+    if err:
+        failures.append(err)
 
     print("\n" + "=" * 80)
     if failures:

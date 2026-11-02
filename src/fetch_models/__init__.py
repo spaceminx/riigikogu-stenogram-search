@@ -2,6 +2,7 @@
 
 from src.fetch_models.riigikogu import (
     AgendaPlenary,
+    DraftsPage,
     MeetingSpeech,
     MemberPhoto,
     MembershipItem,
@@ -21,6 +22,7 @@ from src.fetch_models.riigikogu import (
 
 __all__ = [
     "AgendaPlenary",
+    "DraftsPage",
     "MeetingSpeech",
     "MemberPhoto",
     "MembershipItem",

@@ -52,7 +52,7 @@ def _verify_0001_baseline(conn: Connection) -> None:
         row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
     }
     for table_name, table in Base.metadata.tables.items():
-        if table_name in {"agenda_items", "lemma_links", "attendance_checks"}:
+        if table_name in {"agenda_items", "lemma_links", "attendance_checks", "drafts"}:
             continue
         if table_name not in tables:
             raise RuntimeError(f"Migration verification failed: missing table '{table_name}'")
@@ -276,6 +276,57 @@ def _verify_0007_attendance_checks(conn: Connection) -> None:
             )
 
 
+DRAFTS_COLUMNS = [
+    "uuid",
+    "membership",
+    "mark",
+    "type_code",
+    "title",
+    "stage",
+    "status",
+    "status_date",
+    "proceeding_status",
+    "initiated",
+    "leading_committee_uuid",
+    "leading_committee",
+]
+
+
+def _up_0008_drafts(conn: Connection) -> None:
+    conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS drafts (
+                uuid TEXT PRIMARY KEY,
+                membership INTEGER NOT NULL,
+                mark INTEGER NOT NULL,
+                type_code TEXT,
+                title TEXT NOT NULL,
+                stage TEXT,
+                status TEXT,
+                status_date TEXT,
+                proceeding_status TEXT,
+                initiated TEXT,
+                leading_committee_uuid TEXT,
+                leading_committee TEXT
+            );
+            """
+        )
+    )
+
+
+def _verify_0008_drafts(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "drafts" not in tables:
+        raise RuntimeError("Migration verification failed: missing table 'drafts'")
+    existing_cols = {row[1] for row in conn.execute(text("PRAGMA table_info(drafts)"))}
+    for col in DRAFTS_COLUMNS:
+        if col not in existing_cols:
+            raise RuntimeError(f"Migration verification failed: missing column 'drafts.{col}'")
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
@@ -286,6 +337,7 @@ MIGRATIONS: list[MigrationTuple] = [
     ("0005", "lemma_df", _up_0005_lemma_df, _verify_0005_lemma_df),
     ("0006", "lemma_pos", _up_0006_lemma_pos, _verify_0006_lemma_pos),
     ("0007", "attendance_checks", _up_0007_attendance_checks, _verify_0007_attendance_checks),
+    ("0008", "drafts", _up_0008_drafts, _verify_0008_drafts),
 ]
 
 

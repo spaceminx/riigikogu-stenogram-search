@@ -24,6 +24,7 @@ from src.api.attendance import (
     get_factions_list,
     get_person_attendance,
 )
+from src.api.drafts import SORTS, STATUS_GROUPS, filter_drafts, get_draft_index, status_group
 from src.api.factions import get_factions_overview
 from src.api.roles import load_governments
 from src.api.rss import (
@@ -56,6 +57,7 @@ from src.load.database import SessionLocal
 from src.load.models import (
     AgendaItem,
     Attendance,
+    Draft,
     Person,
     Speech,
     SpeechAlias,
@@ -2083,6 +2085,49 @@ def _agenda_voting_uuids(item) -> list[str]:
     return []
 
 
+@router.get("/drafts")
+def list_drafts(
+    membership: str | None = None,
+    type: str | None = Query(None, description="Eelnõu liik (nt SE, OE)", pattern=r"^[A-Z]{2}$"),
+    status: str | None = Query(
+        None,
+        description="Menetluse seis: " + ", ".join(STATUS_GROUPS),
+        pattern="^(" + "|".join(STATUS_GROUPS) + ")$",
+    ),
+    committee: str | None = Query(None, description="Juhtivkomisjoni UUID", max_length=64),
+    q: str | None = Query(None, description="Pealkiri või märgis (nt 919 SE)", max_length=200),
+    sort: str = Query("recent", pattern="^(" + "|".join(SORTS) + ")$"),
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=1_000_000),
+):
+    """List drafts with their stage, plenary readings, votings and speech counts."""
+    validate_membership(membership)
+    session = SessionLocal()
+    try:
+        items = get_draft_index(session)
+        return filter_drafts(
+            items,
+            membership=int(membership) if membership and membership != "all" else None,
+            type_code=type,
+            status=status,
+            committee=committee,
+            q=sanitize_query(q),
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Andmebaas või eelnõude tabelid ei ole initsialiseeritud.",
+        ) from e
+    except SQLAlchemyError as e:
+        logger.error("Draft list query failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Eelnõude päring ebaõnnestus.") from e
+    finally:
+        session.close()
+
+
 @router.get("/drafts/{draft_uuid}")
 def get_draft(draft_uuid: str):
     """Return draft details, including readings and votings."""
@@ -2106,7 +2151,8 @@ def get_draft(draft_uuid: str):
             .all()
         )
 
-        if not agenda_items and not votings:
+        draft = session.get(Draft, draft_uuid)
+        if not agenda_items and not votings and draft is None:
             raise HTTPException(status_code=404, detail="Eelnõud ei leitud.")
 
         # Some votings (e.g. a motion to reject) point to a reading document rather than the
@@ -2119,8 +2165,8 @@ def get_draft(draft_uuid: str):
             votings += session.query(Voting).filter(Voting.uuid.in_(agenda_only_uuids)).all()
             votings.sort(key=lambda v: (v.sitting_date or "", v.start_time or "", v.uuid))
 
-        mark = None
-        title = None
+        mark = str(draft.mark) if draft else None
+        title = draft.title if draft else None
         for item in agenda_items:
             if not mark and item.draft_mark:
                 mark = item.draft_mark
@@ -2210,6 +2256,19 @@ def get_draft(draft_uuid: str):
             "uuid": draft_uuid,
             "mark": mark,
             "title": title,
+            "membership": draft.membership if draft else None,
+            "type_code": draft.type_code if draft else None,
+            "stage": draft.stage if draft else None,
+            "status": draft.status if draft else None,
+            "status_date": draft.status_date if draft else None,
+            "proceeding_status": draft.proceeding_status if draft else None,
+            "status_group": status_group(draft.proceeding_status, draft.stage) if draft else None,
+            "initiated": draft.initiated if draft else None,
+            "leading_committee": (
+                {"uuid": draft.leading_committee_uuid, "name": draft.leading_committee}
+                if draft and draft.leading_committee
+                else None
+            ),
             "readings": readings,
             "votings": formatted_votings,
         }
@@ -2249,6 +2308,7 @@ def get_draft_speeches(
             is not None
             or session.query(Voting.uuid).filter(Voting.related_document_uuid == draft_uuid).first()
             is not None
+            or session.get(Draft, draft_uuid) is not None
         )
         if not draft_exists:
             raise HTTPException(status_code=404, detail="Eelnõud ei leitud.")
@@ -2383,6 +2443,11 @@ def _generate_sitemap_xml(session) -> str:
                 d_str and (not draft_dates[d_uuid] or d_str > str(draft_dates[d_uuid]))
             ):
                 draft_dates[d_uuid] = d_str
+
+    # Drafts that have not reached the plenary have a page too
+    for d_uuid, status_date in session.query(Draft.uuid, Draft.status_date):
+        if d_uuid not in draft_dates:
+            draft_dates[d_uuid] = status_date
 
     for d_uuid in sorted(draft_dates.keys()):
         add_url(f"{base_url}/eelnou/{d_uuid}", lastmod=draft_dates[d_uuid])

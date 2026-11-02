@@ -315,6 +315,42 @@ class UserGroupDetail(RiigikoguBaseModel):
 
 
 # ---------------------------------------------------------------------------
+# 9. /api/volumes/drafts?membership=...
+# ---------------------------------------------------------------------------
+class DraftCommittee(RiigikoguBaseModel):
+    uuid: str | None = None
+    name: str | None = None
+
+
+class DraftListItem(RiigikoguBaseModel):
+    uuid: str
+    title: str
+    mark: int | str
+    membership: int | str
+    draftTypeCode: str | None = None
+    activeDraftStage: str | None = None
+    activeDraftStatus: str | None = None
+    activeDraftStatusDate: str | None = None
+    proceedingStatus: str | None = None
+    initiated: str | None = None
+    leadingCommittee: DraftCommittee | None = None
+
+
+class DraftsPageContent(RiigikoguBaseModel):
+    content: list[DraftListItem]
+
+
+class DraftsPageInfo(RiigikoguBaseModel):
+    totalElements: int
+    totalPages: int
+
+
+class DraftsPage(RiigikoguBaseModel):
+    embedded: DraftsPageContent = Field(alias="_embedded")
+    page: DraftsPageInfo
+
+
+# ---------------------------------------------------------------------------
 # Validation helper
 # ---------------------------------------------------------------------------
 def validate_response(model: type[BaseModel], data: Any, *, endpoint: str, ref: str) -> None:

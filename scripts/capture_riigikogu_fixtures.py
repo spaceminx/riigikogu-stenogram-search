@@ -186,6 +186,11 @@ def main() -> None:
             "https://api.riigikogu.ee/api/usergroups/8772fd6f-3197-6a53-2ffc-8c4d63407d1e?lang=ET",
             trim_usergroup_detail,
         ),
+        (
+            "drafts_list.json",
+            "https://api.riigikogu.ee/api/volumes/drafts?membership=14&size=5&page=0&sort=mark,asc&lang=ET",
+            None,
+        ),
     ]
 
     for fname, url, trimmer in endpoints:
