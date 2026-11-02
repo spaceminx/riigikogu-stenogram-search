@@ -15,6 +15,7 @@ from scripts.fetch_stenograms_api import parse_meeting_speeches
 from scripts.fetch_votes import parse_and_validate_voting
 from src.fetch_models import (
     AgendaPlenary,
+    DraftsPage,
     MeetingSpeech,
     MemberPhoto,
     MembershipItem,
@@ -57,6 +58,7 @@ GOLDENS_DIR = FIXTURES_DIR / "goldens"
         (AgendaPlenary, "agenda_2019.json", "/api/agenda/plenary"),
         (UserGroupItem, "usergroups_factions.json", "/api/usergroups"),
         (UserGroupDetail, "usergroup_detail.json", "/api/usergroups/{uuid}"),
+        (DraftsPage, "drafts_list.json", "/api/volumes/drafts"),
     ],
 )
 def test_fixtures_validate_successfully(model, filename, endpoint):

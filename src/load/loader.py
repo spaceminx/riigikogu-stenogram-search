@@ -13,6 +13,7 @@ from src.load.models import (
     AgendaItem,
     Attendance,
     AttendanceCheck,
+    Draft,
     Person,
     Speech,
     SpeechAlias,
@@ -481,11 +482,12 @@ def load_jsonl_to_database(batch_size: int = 2000) -> None:
 
     session.close()
 
-    # Also load attendance, persons, votes, and agenda_items records if files are present
+    # Also load attendance, persons, votes, agenda items and drafts if files are present
     load_attendance_to_database(batch_size=batch_size)
     load_persons_to_database()
     load_votes_to_database(batch_size=batch_size)
     load_agenda_items_to_database(batch_size=batch_size)
+    load_drafts_to_database()
 
 
 def load_votes_to_database(years: list[int | str] | None = None, batch_size: int = 2000) -> int:
@@ -747,6 +749,40 @@ def load_agenda_items_to_database(batch_size: int = 2000) -> int:
         session.close()
 
     return total_added
+
+
+def load_drafts_to_database() -> int:
+    """Replace the drafts table with data/processed/drafts.json.
+
+    The file is a full snapshot of the upstream draft list, so drafts missing from it are removed.
+    """
+    from src.load.migrations import DRAFTS_COLUMNS, apply_migrations
+
+    apply_migrations()
+    fpath = Path(OUTPUT_DIR_PROCESSED) / "drafts.json"
+    if not fpath.exists():
+        print(f"Warning: {fpath} does not exist. Skipping drafts loading.")
+        return 0
+
+    with open(fpath, encoding="utf-8") as f:
+        records = json.load(f)
+    if not isinstance(records, list) or not records:
+        raise ValueError(f"{fpath.name} has no drafts")
+
+    rows = [{col: record.get(col) for col in DRAFTS_COLUMNS} for record in records]
+    session = SessionLocal()
+    try:
+        session.query(Draft).delete(synchronize_session=False)
+        session.bulk_insert_mappings(Draft, rows)
+        session.commit()
+        print(f"Done loading drafts ({len(rows)} drafts).")
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    return len(rows)
 
 
 def classify_sitting_type(title: str | None) -> str:
