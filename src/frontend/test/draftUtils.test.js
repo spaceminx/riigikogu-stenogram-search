@@ -7,6 +7,10 @@ import {
   groupVotingsByReading,
   getOtherVotings,
   getRiigikoguDraftUrl,
+  formatDraftMark,
+  formatDraftStage,
+  formatDraftStatus,
+  formatDraftType,
 } from "../src/lib/draftUtils.js";
 
 test("draft utilities", async (t) => {
@@ -132,5 +136,42 @@ test("draft utilities", async (t) => {
     );
     assert.equal(getRiigikoguDraftUrl(""), "");
     assert.equal(getRiigikoguDraftUrl(null), "");
+  });
+});
+
+test("draft list labels", async (t) => {
+  await t.test("formatDraftMark adds the type when it is known", () => {
+    assert.equal(formatDraftMark(919, "SE"), "919 SE");
+    assert.equal(formatDraftMark(783, null), "783");
+    assert.equal(formatDraftMark(null, "SE"), "");
+  });
+
+  await t.test("formatDraftType uses the Riigikogu type names", () => {
+    assert.equal(formatDraftType("SE"), "Seadus");
+    assert.equal(formatDraftType("XX"), "XX");
+    assert.equal(formatDraftType(null), "");
+  });
+
+  await t.test("formatDraftStage names every stage and spells out unknown codes", () => {
+    assert.equal(formatDraftStage("VASTU_VOETUD"), "Vastu võetud");
+    assert.equal(
+      formatDraftStage("VALJA_LANGENUD_KOOSEISU_LOPPEMISEGA"),
+      "Välja langenud koosseisu lõppemisega"
+    );
+    assert.equal(formatDraftStage("UUS_ETAPP"), "Uus etapp");
+    assert.equal(formatDraftStage(null), "");
+  });
+
+  await t.test("formatDraftStatus is shown only when it differs from the stage", () => {
+    assert.equal(
+      formatDraftStatus("I_LUGEMINE_LOPETATUD", "TEINE_LUGEMINE"),
+      "I lugemine lõpetatud"
+    );
+    assert.equal(formatDraftStatus("TAGASI_LYKATUD", "TAGASI_LYKATUD"), "");
+    assert.equal(
+      formatDraftStatus("AVALDATUD_RIIGITEATAJAS", "VASTU_VOETUD"),
+      "Avaldatud Riigi Teatajas"
+    );
+    assert.equal(formatDraftStatus(null, "VASTU_VOETUD"), "");
   });
 });

@@ -130,6 +130,11 @@
     },
     {
       "method": "GET",
+      "path": "/drafts",
+      "fixture": "drafts_list.json"
+    },
+    {
+      "method": "GET",
       "path": "/drafts/c6ccd71d-8bd6-4400-bf17-830ea1913485",
       "fixture": "draft_detail.json"
     },

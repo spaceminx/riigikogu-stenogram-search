@@ -4,6 +4,7 @@ import {
   Activity,
   CalendarDays,
   Database,
+  Files,
   ExternalLink,
   FileText,
   Info,
@@ -35,6 +36,7 @@ export function Header({
   const pathname = location.pathname;
 
   const isVotings = pathname.startsWith("/haaletused") || pathname.startsWith("/haaletus");
+  const isDrafts = pathname.startsWith("/eelnou");
   const isAttendance = pathname.startsWith("/kohalolek");
   const isFactions = pathname.startsWith("/fraktsioonid");
   const isSearchOrDashboard = pathname === "/" || pathname.startsWith("/otsing");
@@ -81,6 +83,13 @@ export function Header({
           aria-current={isVotings ? "page" : undefined}
         >
           Hääletused
+        </Link>
+        <Link
+          to="/eelnoud"
+          className={`nav-btn ${isDrafts ? "active" : ""}`}
+          aria-current={isDrafts ? "page" : undefined}
+        >
+          Eelnõud
         </Link>
         <Link
           to="/fraktsioonid"
@@ -130,6 +139,17 @@ export function Header({
             >
               <Vote aria-hidden="true" />
               <span>Hääletused</span>
+            </Link>
+            <Link
+              to="/eelnoud"
+              className={`menu-link ${isDrafts ? "active" : ""}`}
+              onClick={() => {
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <Files aria-hidden="true" />
+              <span>Eelnõud</span>
             </Link>
             <Link
               to="/fraktsioonid"

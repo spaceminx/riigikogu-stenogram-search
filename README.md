@@ -42,11 +42,11 @@ Registration in attendance checks and participation in votes per member or per f
 
 Every plenary vote, searchable by title or bill and filterable by date and type. A vote shows the result, the result of each faction and every member's vote; secret votes show only the totals.
 
-### Bill
+### Bills
 
 [![The readings of the Plant Protection Act amendment](docs/images/bill.webp)](https://www.riigivaade.me/eelnou/1fdf1be7-b35c-44bf-9ed8-ab5d309838fd)
 
-The readings and debates of a bill with their votes and speeches.
+Every bill of the XIV and XV Riigikogu (`/eelnoud`), searchable by title or number (e.g. 919 SE) and filterable by membership, stage of proceedings, type and leading committee. A bill's page has its type, stage and leading committee, and its readings and debates with their votes and speeches.
 
 ### Factions
 

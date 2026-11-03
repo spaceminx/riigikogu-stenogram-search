@@ -42,11 +42,11 @@ Kohalolekukontrollides registreerumine ja hääletustel osalemine saadikute või
 
 Kõik täiskogu hääletused, otsitavad pealkirja või eelnõu järgi ja filtreeritavad kuupäeva ning liigi järgi. Hääletuse lehel on tulemus, iga fraktsiooni tulemus ja iga saadiku hääl; salajastel hääletustel ainult koondtulemus.
 
-### Eelnõu
+### Eelnõud
 
 [![Taimekaitseseaduse muutmise seaduse eelnõu lugemised](docs/images/bill.webp)](https://www.riigivaade.me/eelnou/1fdf1be7-b35c-44bf-9ed8-ab5d309838fd)
 
-Eelnõu lugemised ja arutelud koos hääletuste ja sõnavõttudega.
+XIV ja XV koosseisu kõik eelnõud (`/eelnoud`), otsitavad pealkirja või numbri järgi (nt 919 SE) ja filtreeritavad koosseisu, menetluse seisu, liigi ja juhtivkomisjoni järgi. Eelnõu lehel on liik, menetlusetapp ja juhtivkomisjon ning lugemised ja arutelud koos hääletuste ja sõnavõttudega.
 
 ### Fraktsioonid
 

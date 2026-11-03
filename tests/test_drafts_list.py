@@ -110,7 +110,8 @@ def drafts_data():
             _agenda("dl-a2", IN_PROCESS, "2026-10-21", "Eelnõu 919 teine lugemine", ["dl-v1"])
         )
         session.merge(_agenda("dl-a3", ADOPTED, "2026-10-27", "Otsuse 12 arutelu"))
-        session.merge(_agenda("dl-a4", AGENDA_ONLY, "2019-05-29", "Eelnõu 783", mark="783 SE"))
+        # Agenda marks are bare numbers, as in the real data
+        session.merge(_agenda("dl-a4", AGENDA_ONLY, "2019-05-29", "Eelnõu 783", mark="783"))
         session.merge(
             Voting(
                 uuid="dl-v1",
@@ -188,7 +189,7 @@ def test_a_draft_known_only_from_the_agenda_takes_its_mark_and_membership_from_t
     data = _list(membership="14")
     assert [d["uuid"] for d in data["results"]] == [AGENDA_ONLY]
     item = data["results"][0]
-    assert (item["mark"], item["type_code"], item["membership"]) == (783, "SE", 14)
+    assert (item["mark"], item["type_code"], item["membership"]) == (783, None, 14)
     assert item["status_group"] is None
     assert item["title"] == f"{WORD} varasemast koosseisust"
 
@@ -211,6 +212,17 @@ def test_filters_and_sort(params, expected):
 def test_query_finds_a_draft_by_its_mark(q):
     resp = client.get("/drafts", params={"q": q, "membership": "15"})
     assert IN_PROCESS in [d["uuid"] for d in resp.json()["results"]]
+
+
+@pytest.mark.parametrize("q", ["783", "783 SE"])
+def test_a_typed_mark_finds_a_draft_whose_type_is_unknown(q):
+    resp = client.get("/drafts", params={"q": q, "membership": "14"})
+    assert AGENDA_ONLY in [d["uuid"] for d in resp.json()["results"]]
+
+
+def test_a_typed_mark_skips_a_draft_of_another_type():
+    resp = client.get("/drafts", params={"q": "919 OE", "membership": "15"})
+    assert IN_PROCESS not in [d["uuid"] for d in resp.json()["results"]]
 
 
 def test_query_words_may_come_in_any_order():
@@ -264,7 +276,7 @@ def test_draft_page_works_for_a_draft_that_has_not_reached_the_plenary():
     resp = client.get(f"/drafts/{NOT_IN_PLENARY}")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["mark"] == "1070"
+    assert data["mark"] == 1070
     assert data["type_code"] == "SE"
     assert data["status_group"] == "in_process"
     assert data["leading_committee"]["name"] == "Rahanduskomisjon"
@@ -278,8 +290,16 @@ def test_draft_page_works_for_a_draft_that_has_not_reached_the_plenary():
 
 def test_draft_page_prefers_the_draft_list_title_and_mark():
     data = client.get(f"/drafts/{IN_PROCESS}").json()
-    assert (data["mark"], data["title"]) == ("919", f"{WORD} nr 919")
+    assert (data["mark"], data["title"]) == (919, f"{WORD} nr 919")
     assert len(data["readings"]) == 2
+
+
+@pytest.mark.parametrize("uuid", [IN_PROCESS, NOT_IN_PLENARY, AGENDA_ONLY])
+def test_draft_page_summary_matches_the_list(uuid):
+    listed = next(d for d in _list(limit=100)["results"] if d["uuid"] == uuid)
+    detail = client.get(f"/drafts/{uuid}").json()
+    fields = ["mark", "type_code", "membership", "title", "status_group", "leading_committee"]
+    assert {f: detail[f] for f in fields} == {f: listed[f] for f in fields}
 
 
 def test_sitemap_lists_drafts_that_have_not_reached_the_plenary():
