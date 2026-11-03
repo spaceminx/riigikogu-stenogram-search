@@ -77,7 +77,7 @@ The data is also published as a monthly open data release on [GitHub Releases](h
 | Layer | Technologies |
 | :--- | :--- |
 | **Frontend** | React 19, Vite, Recharts, ESLint 10, Prettier |
-| **Backend & API** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
+| **Backend & API** | Python 3.13+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
 | **NLP & Lemmatization** | EstNLTK, NLTK |
 | **Data Pipelines & Storage** | Server cron, Backblaze B2, Requests, GitHub Actions |
 | **Deployment & Containers** | Docker, Docker Compose, Cloudflare Tunnel |

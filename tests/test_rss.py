@@ -1,7 +1,7 @@
 import os
 import sys
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 # Ensure project root is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -206,7 +206,7 @@ def test_rss_cache_invalidation_on_last_sync_at():
     """Verify that RSS cache invalidates when system_meta last_sync_at changes."""
     session = SessionLocal()
     try:
-        now1 = datetime.now(timezone.utc).isoformat()
+        now1 = datetime.now(UTC).isoformat()
         meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
         if meta:
             meta.value = now1
@@ -219,7 +219,7 @@ def test_rss_cache_invalidation_on_last_sync_at():
         assert res1.status_code == 200
 
         # Change last_sync_at
-        now2 = datetime.now(timezone.utc).isoformat() + "_updated"
+        now2 = datetime.now(UTC).isoformat() + "_updated"
         meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
         meta.value = now2
         session.commit()

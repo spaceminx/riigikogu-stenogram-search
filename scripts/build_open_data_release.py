@@ -18,7 +18,7 @@ import sqlite3
 import subprocess
 import sys
 from collections.abc import Iterable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -827,7 +827,7 @@ def build_open_data_release(
             if old_file.is_file():
                 old_file.unlink()
     out_dir.mkdir(parents=True, exist_ok=True)
-    date_str = release_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    date_str = release_date or datetime.now(UTC).strftime("%Y-%m-%d")
 
     # Open SQLite read-only URI
     abs_db = db_path.resolve()
@@ -922,7 +922,7 @@ def build_open_data_release(
     manifest_data = {
         "version": date_str,
         "git_commit": get_git_commit(commit_override),
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "date_range": {
             "speeches": {
                 "start": min_speech_date,
@@ -983,7 +983,7 @@ def main() -> None:
         print(f"Error: Database file not found: {args.db}", file=sys.stderr)
         sys.exit(1)
 
-    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    date_str = datetime.now(UTC).strftime("%Y-%m-%d")
     out_dir = args.out or (PROJECT_ROOT / "data" / "release" / date_str)
 
     print(f"Exporting open data release from {args.db} to {out_dir}...")

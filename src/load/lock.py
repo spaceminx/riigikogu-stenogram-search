@@ -1,7 +1,7 @@
 import os
 import sys
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from config import DATABASE_DIR
@@ -71,7 +71,7 @@ def sync_lock(database_dir: str | None = None):
             )
         os.ftruncate(fd, 0)
         os.lseek(fd, 0, os.SEEK_SET)
-        os.write(fd, f"{os.getpid()}\n{datetime.now(timezone.utc).isoformat()}\n".encode())
+        os.write(fd, f"{os.getpid()}\n{datetime.now(UTC).isoformat()}\n".encode())
         yield lock_file
     finally:
         if os.name == "nt":

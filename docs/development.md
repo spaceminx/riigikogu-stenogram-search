@@ -3,7 +3,7 @@
 ## Running Locally
 
 ### Prerequisites
-- Python 3.10+ (Python 3.13 recommended)
+- Python 3.13+
 - Node.js 24 & npm
 - Docker (optional, for containerized run)
 
