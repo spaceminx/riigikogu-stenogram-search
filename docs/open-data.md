@@ -1,6 +1,6 @@
 # Open Data
 
-The project periodically exports and releases public machine-readable datasets (gzipped JSONL) under CC BY-SA 3.0 on [GitHub Releases](https://github.com/spaceminx/riigikogu-stenogram-search/releases). The release includes speeches, votings, individual votes, attendance records, agenda items, and member details (including birth year, while excluding exact birth dates and email addresses).
+The project periodically exports and releases public machine-readable datasets (gzipped JSONL) under CC BY-SA 3.0 on [GitHub Releases](https://github.com/spaceminx/riigikogu-stenogram-search/releases). The release includes speeches, votings, individual votes, attendance records, agenda items, drafts (bills, with their stage and leading committee), and member details (including birth year, while excluding exact birth dates and email addresses).
 
 ## Building a release
 

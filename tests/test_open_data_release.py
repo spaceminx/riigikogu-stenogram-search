@@ -227,6 +227,58 @@ def sample_sqlite_db(tmp_path: Path) -> Path:
         """
     )
 
+    cur.execute(
+        """
+        CREATE TABLE drafts (
+            uuid TEXT PRIMARY KEY,
+            membership INTEGER NOT NULL,
+            mark INTEGER NOT NULL,
+            type_code TEXT,
+            title TEXT NOT NULL,
+            stage TEXT,
+            status TEXT,
+            status_date TEXT,
+            proceeding_status TEXT,
+            initiated TEXT,
+            leading_committee_uuid TEXT,
+            leading_committee TEXT
+        )
+        """
+    )
+    cur.executemany(
+        "INSERT INTO drafts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            (
+                "draft-1",
+                15,
+                123,
+                "SE",
+                "Eelnõu 1",
+                "TEINE_LUGEMINE",
+                "I_LUGEMINE_LOPETATUD",
+                "2023-05-15",
+                "IN_PROCESS",
+                "2023-04-20",
+                "com-1",
+                "Õiguskomisjon",
+            ),
+            (
+                "draft-0",
+                14,
+                900,
+                "OE",
+                "Eelnõu 0",
+                "VASTU_VOETUD",
+                "VASTU_VOETUD",
+                "2022-12-01",
+                "PROCESSED",
+                "2022-10-01",
+                None,
+                None,
+            ),
+        ],
+    )
+
     conn.commit()
     conn.close()
     return db_path
@@ -245,6 +297,7 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
     assert files["attendance_checks.jsonl.gz"]["count"] == 1
     assert files["persons.jsonl.gz"]["count"] == 1
     assert files["agenda_items.jsonl.gz"]["count"] == 1
+    assert files["drafts.jsonl.gz"]["count"] == 2
 
     # Check that speech files by year exist
     s2023 = out_dir / "speeches_2023.jsonl.gz"
@@ -289,12 +342,35 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
         assert "is_technical" in voting
         assert voting["is_technical"] is False
 
+    # Check drafts: ordered by membership and mark, mark stays a number
+    with gzip.open(out_dir / "drafts.jsonl.gz", "rt", encoding="utf-8") as f:
+        drafts = [json.loads(line) for line in f]
+    assert [d["uuid"] for d in drafts] == ["draft-0", "draft-1"]
+    assert drafts[1] == {
+        "uuid": "draft-1",
+        "membership": 15,
+        "mark": 123,
+        "type_code": "SE",
+        "title": "Eelnõu 1",
+        "stage": "TEINE_LUGEMINE",
+        "status": "I_LUGEMINE_LOPETATUD",
+        "status_date": "2023-05-15",
+        "proceeding_status": "IN_PROCESS",
+        "initiated": "2023-04-20",
+        "leading_committee_uuid": "com-1",
+        "leading_committee": "Õiguskomisjon",
+    }
+    assert "### 8. `drafts.jsonl.gz`" in (out_dir / "DATA_DICTIONARY.md").read_text(
+        encoding="utf-8"
+    )
+
     # Check SHA256SUMS file
     checksums_file = out_dir / "SHA256SUMS"
     assert checksums_file.exists()
     checksums = checksums_file.read_text(encoding="utf-8")
     assert "speeches_2023.jsonl.gz" in checksums
     assert "persons.jsonl.gz" in checksums
+    assert "drafts.jsonl.gz" in checksums
     assert "manifest.json" in checksums
 
     # Check determinism: with fixed created_at time mock, run build again to another dir and verify identical SHA256SUMS
@@ -461,3 +537,17 @@ def test_build_open_data_release_clears_previous_build(sample_sqlite_db: Path, t
     with pytest.raises(ValueError, match="not a release"):
         build_open_data_release(sample_sqlite_db, other_dir, release_date="2026-10-22")
     assert (other_dir / "notes.txt").exists()
+
+
+def test_build_open_data_release_without_drafts_table(sample_sqlite_db: Path, tmp_path: Path):
+    """A database from before the drafts migration builds a release without drafts.jsonl.gz."""
+    conn = sqlite3.connect(sample_sqlite_db)
+    conn.execute("DROP TABLE drafts")
+    conn.commit()
+    conn.close()
+
+    out_dir = tmp_path / "no_drafts"
+    summary = build_open_data_release(sample_sqlite_db, out_dir, release_date="2026-10-22")
+    assert "drafts.jsonl.gz" not in summary["files"]
+    assert not (out_dir / "drafts.jsonl.gz").exists()
+    assert "drafts.jsonl.gz" not in (out_dir / "SHA256SUMS").read_text(encoding="utf-8")
