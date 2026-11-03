@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from datetime import datetime
 from pathlib import Path
 
-from config import OUTPUT_DIR_PROCESSED
+from config import OUTPUT_DIR_PROCESSED, START_DATE
 from scripts.download_all_from_b2 import download_all_from_b2
 from src.load.indexes import create_indexes
 from src.load.loader import (
@@ -27,7 +27,7 @@ def get_expected_dataset_files(
     now: datetime | None = None,
     current_year: int | None = None,
 ) -> list[str]:
-    """Calculate expected dataset files (2019 to current year, persons, person_factions, attendance, votes).
+    """Calculate expected dataset files (START_DATE year to current year, persons, person_factions, attendance, votes).
 
     - attendance.jsonl is always an expected file.
     - votes_{YYYY}.jsonl files are expected for all years.
@@ -42,8 +42,9 @@ def get_expected_dataset_files(
 
     year = now.year
     end_year = year if (now.month > 1 or now.day >= 15) else (year - 1)
-    files = [f"{y}.jsonl" for y in range(2019, end_year + 1)]
-    files.extend([f"votes_{y}.jsonl" for y in range(2019, end_year + 1)])
+    first_year = int(START_DATE[:4])
+    files = [f"{y}.jsonl" for y in range(first_year, end_year + 1)]
+    files.extend([f"votes_{y}.jsonl" for y in range(first_year, end_year + 1)])
     files.extend(["persons.json", "person_factions.json", "attendance.jsonl"])
     return files
 

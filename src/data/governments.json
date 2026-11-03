@@ -1,5 +1,32 @@
 [
   {
+    "from": "2014-03-26",
+    "to": "2015-04-09",
+    "government": "Rõivas I",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon"
+    ],
+    "source": [
+      "https://valitsus.ee/en/news/government-lead-prime-minister-taavi-roivas-assumed-office",
+      "https://news.err.ee/119795/taavi-roivas-serves-as-prime-minister-for-974-days"
+    ]
+  },
+  {
+    "from": "2015-04-09",
+    "to": "2016-11-23",
+    "government": "Rõivas II",
+    "coalition": [
+      "Eesti Reformierakonna fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "Isamaa ja Res Publica Liidu fraktsioon"
+    ],
+    "source": [
+      "https://valitsus.ee/en/news/government-prime-minister-taavi-roivas-assumed-office",
+      "https://news.err.ee/119795/taavi-roivas-serves-as-prime-minister-for-974-days"
+    ]
+  },
+  {
     "from": "2016-11-23",
     "to": "2019-04-29",
     "government": "Ratas I",

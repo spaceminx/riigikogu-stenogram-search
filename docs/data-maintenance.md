@@ -98,6 +98,49 @@ Exact sequence:
 >   - 2025: 402 votes → ~34 min
 >   - 2026: 312 votes → ~27 min
 
+## XIII Riigikogu Backfill (One-Off)
+
+`config.START_DATE` is the first day of the XIII Riigikogu (2015-03-30). The daily pipeline keeps fetching only recent days, but it already reads every membership from the XIII on for persons and factions (`fetch_factions.py`), faction leaders (`fetch_faction_leaders.py`, including the inactive IRL and Vabaerakond factions) and drafts (`fetch_drafts.py`). The XIII speeches, agenda items, votes and attendance are loaded once on the server. Upstream has XIII verbatims up to 2019-02-21 and no video links before 2018-01.
+
+Run every step outside the 07:00 daily run: steps 3 and 5 rewrite `agenda_items.jsonl` and `attendance.jsonl`, which the daily pipeline also writes.
+
+1. Make sure the 2019 files are local (the XIII sittings of January–February 2019 go into `2019.jsonl` and `votes_2019.jsonl`):
+   ```bash
+   docker compose run --rm pipeline python scripts/download_from_b2.py --year 2019
+   ```
+2. Speeches, year by year, uploaded to B2:
+   ```bash
+   for y in 2015 2016 2017 2018; do
+     docker compose run --rm pipeline python scripts/backfill_history.py --year $y --upload
+   done
+   docker compose run --rm pipeline python scripts/backfill_history.py --start-date 2019-01-01 --end-date 2019-04-03 --upload
+   ```
+3. Agenda items (links speeches and votes to drafts):
+   ```bash
+   docker compose run --rm pipeline python scripts/fetch_agenda.py --start-date 2015-03-30 --end-date 2019-04-03 --upload
+   ```
+4. Votes, year by year (~5.1 s per vote; 2015: 262 → ~22 min, 2016: 555 → ~47 min, 2017: 403 → ~34 min, 2018: 329 → ~28 min, 2019: 91 → ~8 min):
+   ```bash
+   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2015-03-30 --end-date 2015-12-31 --upload
+   for y in 2016 2017 2018; do
+     docker compose run --rm pipeline python scripts/fetch_votes.py --start-date ${y}-01-01 --end-date ${y}-12-31 --upload
+   done
+   docker compose run --rm pipeline python scripts/fetch_votes.py --start-date 2019-01-01 --end-date 2019-04-03 --upload
+   ```
+5. Attendance checks (702 checks, ~60 min). A rerun skips the checks already saved; the next daily run uploads `attendance.jsonl` and `attendance_checks.jsonl` to B2, or upload them right away:
+   ```bash
+   docker compose run --rm pipeline python scripts/fetch_attendance.py --start-date 2015-03-30 --end-date 2019-04-03
+   docker compose run --rm pipeline python scripts/upload_to_b2.py
+   ```
+6. Rebuild the database as in "Note on historical data updates" above (the daily sync loads only the active years). `build_full_database.py` now expects `2015.jsonl` … and `votes_2015.jsonl` …, so it stops with a missing-files error until steps 2 and 4 are done.
+7. Verify:
+   ```bash
+   curl http://127.0.0.1:8000/system/status
+   curl "http://127.0.0.1:8000/votings?membership=13&limit=1"
+   curl "http://127.0.0.1:8000/attendance/factions?membership=13"
+   ```
+   Expected from upstream: 576 verbatim sittings, 2,342 votings (702 attendance checks, 11 secret), 154 members.
+
 ## Maintenance & UUID Repair
 
 To resolve and maintain canonical member UUIDs across speeches (attendance records get theirs from the API):

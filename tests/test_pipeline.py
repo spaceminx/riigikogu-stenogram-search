@@ -438,6 +438,18 @@ def test_get_expected_dataset_files_january_cutoff():
     assert "2026.jsonl" in files_oct
 
 
+def test_get_expected_dataset_files_start_with_the_xiii_riigikogu():
+    from datetime import datetime
+
+    from scripts.build_full_database import get_expected_dataset_files
+
+    files = get_expected_dataset_files(now=datetime(2026, 11, 3))
+    years = sorted(int(f[:4]) for f in files if f[:4].isdigit())
+    assert years[0] == 2015
+    assert years == list(range(2015, 2027))
+    assert "votes_2015.jsonl" in files
+
+
 def test_fetch_factions_and_persons_with_mock(tmp_path, monkeypatch):
     import requests
 

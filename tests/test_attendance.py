@@ -674,3 +674,12 @@ def test_methodology_attendance_two_metrics_text():
     assert "Kohalolekut näidatakse kahe mõõdikuna." in att_methodology
     assert "Registreerus kohalolekukontrollis" in att_methodology
     assert "Osales hääletustel" in att_methodology
+
+
+def test_fetch_attendance_cli_takes_a_date_range():
+    """A past membership is fetched with explicit dates (e.g. the XIII Riigikogu backfill)."""
+    from scripts.fetch_attendance import parse_args
+
+    args = parse_args(["--start-date", "2015-03-30", "--end-date", "2019-04-03"])
+    assert (args.start_date, args.end_date) == ("2015-03-30", "2019-04-03")
+    assert (parse_args([]).start_date, parse_args([]).end_date) == (None, None)

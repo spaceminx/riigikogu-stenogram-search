@@ -140,3 +140,48 @@ def test_a_changed_response_shape_raises(tmp_path, monkeypatch, no_sleep):
     with pytest.raises(UpstreamSchemaError):
         fl.fetch_faction_leaders()
     assert not (tmp_path / "faction_roles.json").exists()
+
+
+def test_reads_the_inactive_factions_members_of_the_site_sat_in(tmp_path, monkeypatch, no_sleep):
+    """Inactive groups go back to 1992; only those in factions_map.json are read (XIII: IRL, Vabaerakond)."""
+    monkeypatch.setattr(fl, "OUTPUT_DIR_PROCESSED", str(tmp_path))
+    (tmp_path / "factions_map.json").write_text(
+        json.dumps(
+            {
+                "Andres Herkel": [
+                    {"faction": "Eesti Vabaerakonna fraktsioon", "start": "2015-03-30", "end": None}
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    groups = [
+        GROUPS[0],
+        {"uuid": "vaba", "name": "Eesti Vabaerakonna fraktsioon", "active": False},
+        {"uuid": "vene", "name": "Vene fraktsioon", "active": False},
+    ]
+    requested = []
+
+    def fake_get(url, timeout=None):
+        requested.append(url)
+        if "typeCode=FRAKTSIOON" in url:
+            return FakeResponse(200, groups)
+        return FakeResponse(200, DETAIL)
+
+    monkeypatch.setattr(fl.requests, "get", fake_get)
+
+    assert fl.fetch_faction_leaders() is True
+    assert "hideInactive=false" in requested[0]
+    assert requested[1:] == [
+        f"{fl.API_BASE}/{GROUPS[0]['uuid']}?lang=ET",
+        f"{fl.API_BASE}/vaba?lang=ET",
+    ]
+
+
+def test_reads_every_group_without_a_factions_map():
+    groups = [
+        {"uuid": "a", "name": "Isamaa fraktsioon", "active": True},
+        {"uuid": "b", "name": "Vene fraktsioon", "active": False},
+    ]
+    assert fl.select_groups(groups, None) == groups
+    assert fl.select_groups(groups, {"Isamaa fraktsioon"}) == groups[:1]
