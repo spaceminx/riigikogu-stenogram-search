@@ -102,7 +102,7 @@ export function PrivacyView({ onOpenMethodology }) {
           <section>
             <h2 style={{ fontSize: "1.15rem", marginBottom: "0.5rem" }}>Avaandmed</h2>
             <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-              Kogu Riigivaate andmestik (kõned, hääletused, kohalolek, päevakorrapunktid ja
+              Kogu Riigivaate andmestik (kõned, hääletused, kohalolek, päevakorrapunktid, eelnõud ja
               saadikute põhiandmed) avaldatakse perioodiliselt masinloetaval kujul (tihendatud JSONL
               failidena) vabaks taaskasutuseks litsentsi{" "}
               <a

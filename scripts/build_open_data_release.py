@@ -539,6 +539,60 @@ def export_agenda_items(conn: sqlite3.Connection, out_dir: Path) -> dict[str, An
     return {"count": count, "size": size, "sha256": sha256}
 
 
+def export_drafts(conn: sqlite3.Connection, out_dir: Path) -> dict[str, Any] | None:
+    """Export drafts.jsonl.gz (the Riigikogu draft list of every membership)."""
+    has_table = (
+        conn.execute(
+            "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='drafts'"
+        ).fetchone()[0]
+        > 0
+    )
+    if not has_table:
+        return None
+
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT
+        uuid,
+        membership,
+        mark,
+        type_code,
+        title,
+        stage,
+        status,
+        status_date,
+        proceeding_status,
+        initiated,
+        leading_committee_uuid,
+        leading_committee
+    FROM drafts
+    ORDER BY membership ASC, mark ASC, uuid ASC
+    """)
+
+    rows = []
+    for r in cursor.fetchall():
+        rows.append(
+            {
+                "uuid": r[0],
+                "membership": r[1],
+                "mark": r[2],
+                "type_code": r[3],
+                "title": r[4],
+                "stage": r[5],
+                "status": r[6],
+                "status_date": r[7],
+                "proceeding_status": r[8],
+                "initiated": r[9],
+                "leading_committee_uuid": r[10],
+                "leading_committee": r[11],
+            }
+        )
+
+    file_name = "drafts.jsonl.gz"
+    count, size, sha256 = write_deterministic_jsonl_gz(out_dir / file_name, rows)
+    return {"count": count, "size": size, "sha256": sha256}
+
+
 def export_reference_json_files(out_dir: Path) -> dict[str, dict[str, Any]]:
     """Copy/export memberships.json and governments.json."""
     results: dict[str, dict[str, Any]] = {}
@@ -602,7 +656,7 @@ Kohustuslik viitamine / Required attribution:
 
 ### Mis see on? / About this dataset
 
-Käesolev andmestik koondab struktureeritud kujul Riigikogu XIV ja XV koosseisu (alates 2019. aastast) kõned, hääletused, saadikute hääled, kohalolekukontrollid, saadikute metaandmed ja valitsuskoalitsioonide perioodid.
+Käesolev andmestik koondab struktureeritud kujul Riigikogu XIV ja XV koosseisu (alates 2019. aastast) kõned, hääletused, saadikute hääled, kohalolekukontrollid, päevakorrapunktid, eelnõud, saadikute metaandmed ja valitsuskoalitsioonide perioodid.
 
 Kõik andmefailid on pakitud gzip-vormingus JSON Lines (`.jsonl.gz`) või JSON (`.json`) failidena ning kodeeritud UTF-8 vormingus.
 
@@ -615,7 +669,7 @@ Andmestikust on teadlikult eemaldatud ebavajalikud isikuandmed nagu sünnikuupä
 4. **Koalitsiooniperioodid:** Valitsuste koalitsiooni ja opositsiooni kuuluvused (`governments.json`) on kontrollitud ametlike allikate (valitsus.ee, ERR) põhjal ja käsitsi hooldatud.
 
 ### English Summary
-This open dataset provides structured transcripts, votes, voting results, attendance records, MP profiles, agenda items, and parliamentary metadata of the Estonian Parliament (Riigikogu) since 2019.
+This open dataset provides structured transcripts, votes, voting results, attendance records, MP profiles, agenda items, bills (drafts), and parliamentary metadata of the Estonian Parliament (Riigikogu) since 2019.
 Licensed under CC BY-SA 3.0 with source attribution to Riigikogu Kantselei (api.riigikogu.ee) and Riigivaade (https://www.riigivaade.me).
 """
 
@@ -661,7 +715,7 @@ Täiskogu hääletused.
 - `sitting_uuid` (string | null): Istungi UUID.
 - `sitting_title` (string | null): Istungi ametlik pealkiri.
 - `related_document_uuid` (string | null): Seotud eelnõu või dokumendi UUID.
-- `related_document_reference` (string | null): Dokumendi viitekood (nt "123 SE").
+- `related_document_reference` (string | null): Dokumendi viitekood; eelnõu puhul ainult number ilma liigita (nt "919").
 - `related_document_title` (string | null): Dokumendi pealkiri.
 - `related_document_type` (string | null): Dokumendi liik (DRAFT jne).
 - `chairman_uuid` (string | null): Hääletuse ajal istungit juhatanud saadiku UUID.
@@ -723,20 +777,35 @@ Istungite päevakorrapunktid ja seosed seaduseelnõudega.
 - `steno_title` (string | null): Pealkiri stenogrammis.
 - `api_title` (string | null): Pealkiri avaandmete API-s.
 - `document_type` (string | null): Dokumendi liik.
-- `type_code` (string | null): Eelnõu tüübikood.
+- `type_code` (string | null): Päevakorrapunkti liik (nt EELNOU).
 - `stage` (string | null): Menetlusjärk (nt ESIMENE_LUGEMINE).
 - `decision_code` (string | null): Otsuse kood.
 - `decision_value` (string | null): Otsuse tekst.
 - `draft_uuid` (string | null): Seaduseelnõu UUID.
-- `draft_mark` (string | null): Eelnõu tähis (nt "123 SE").
+- `draft_mark` (string | null): Eelnõu number ilma liigita (nt "919"); liik on failis `drafts.jsonl.gz`.
 - `draft_title` (string | null): Eelnõu pealkiri.
 - `voting_uuids` (string | null): Seotud hääletuste identifikaatorid.
 - `match_method` (string | null): Tuvastusmeetod.
 
-### 8. `memberships.json`
+### 8. `drafts.jsonl.gz`
+Riigikogu eelnõude nimekiri iga koosseisu kohta, ka eelnõud, mis pole täiskokku jõudnud. Eelnõuga seotud päevakorrapunktid, hääletused ja kõned leiab välja `uuid` järgi (`agenda_items.draft_uuid`, `votings.related_document_uuid`, `speeches_<year>.draft_uuid`).
+- `uuid` (string): Eelnõu UUID.
+- `membership` (int): Riigikogu koosseisu number (14 või 15).
+- `mark` (int): Eelnõu number koosseisu sees; koos liigiga on see eelnõu tähis (nt 919 ja SE → "919 SE").
+- `type_code` (string | null): Eelnõu liik Riigikogu klassifikaatori `eelnouLiik` järgi (SE seadus, OE otsus, AE avaldus, PE pöördumine, UA uuesti arutamine jne).
+- `title` (string): Eelnõu pealkiri.
+- `stage` (string | null): Praegune menetlusetapp Riigikogu klassifikaatori `menetlusetapid` järgi (nt ALGATATUD, TEINE_LUGEMINE, VASTU_VOETUD).
+- `status` (string | null): Praegune menetlusseis Riigikogu koodina (nt I_LUGEMINE_LOPETATUD); võib kattuda etapiga.
+- `status_date` (string | null, YYYY-MM-DD): Praeguse menetlusseisu kuupäev.
+- `proceeding_status` (string | null): Kas menetlus käib (IN_PROCESS) või on lõppenud (PROCESSED).
+- `initiated` (string | null, YYYY-MM-DD): Algatamise kuupäev.
+- `leading_committee_uuid` (string | null): Juhtivkomisjoni UUID.
+- `leading_committee` (string | null): Juhtivkomisjoni nimi.
+
+### 9. `memberships.json`
 Riigikogu koosseisude algus- ja lõpukuupäevad. `endDate` on volituste lõpp (järgmise koosseisu kokkuastumisele eelnev päev); kehtival koosseisul on see `2099-12-31`. `sessionEndDate` on viimase korralise istungjärgu lõpp.
 
-### 9. `governments.json`
+### 10. `governments.json`
 Vabariigi Valitsuste koosseisude ja koalitsioonierakondade ametlikud perioodid.
 """
 
@@ -798,7 +867,12 @@ def build_open_data_release(
         if agenda_res:
             manifest_files["agenda_items.jsonl.gz"] = agenda_res
 
-        # 8. Reference json files
+        # 8. Drafts
+        drafts_res = export_drafts(conn, out_dir)
+        if drafts_res:
+            manifest_files["drafts.jsonl.gz"] = drafts_res
+
+        # 9. Reference json files
         ref_res = export_reference_json_files(out_dir)
         manifest_files.update(ref_res)
 
@@ -829,7 +903,7 @@ def build_open_data_release(
     finally:
         conn.close()
 
-    # 9. README.md & DATA_DICTIONARY.md
+    # 10. README.md & DATA_DICTIONARY.md
     readme_text = generate_readme(date_str)
     readme_size, readme_sha256 = write_text_file(out_dir / "README.md", readme_text)
     manifest_files["README.md"] = {
@@ -844,7 +918,7 @@ def build_open_data_release(
         "sha256": dict_sha256,
     }
 
-    # 10. manifest.json
+    # 11. manifest.json
     manifest_data = {
         "version": date_str,
         "git_commit": get_git_commit(commit_override),
@@ -866,7 +940,7 @@ def build_open_data_release(
         out_dir / "manifest.json", manifest_data
     )
 
-    # 11. SHA256SUMS (for all files in directory except SHA256SUMS itself)
+    # 12. SHA256SUMS (for all files in directory except SHA256SUMS itself)
     sha_lines = []
     for file_name in sorted(os.listdir(out_dir)):
         if file_name == "SHA256SUMS":
