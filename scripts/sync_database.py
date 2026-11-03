@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Add project root to sys.path
@@ -338,7 +338,7 @@ def _sync_database_body(skip_download: bool = False) -> bool:
     if len(errors) == 0:
         meta_session = SessionLocal()
         try:
-            now_utc = datetime.now(timezone.utc).isoformat()
+            now_utc = datetime.now(UTC).isoformat()
             row = meta_session.query(SystemMeta).filter_by(key="last_sync_at").first()
             if row:
                 row.value = now_utc

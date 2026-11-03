@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "e2e": "playwright test",
     "e2e:build": "vite build",
-    "og-image": "node scripts/build_og_image.mjs"
+    "og-image": "node scripts/build_og_image.mjs",
+    "favicon-ico": "node scripts/build_favicon_ico.mjs"
   },
   "dependencies": {
     "@fontsource-variable/source-code-pro": "5.3.1",

@@ -11,11 +11,6 @@ FROM python:3.13-slim@sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55
 
 WORKDIR /app
 
-# Only runtime curl needed for healthcheck (no build-essential)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy installed Python packages from builder stage
 COPY --from=builder /install /usr/local
 
@@ -39,7 +34,8 @@ USER appuser
 
 EXPOSE 8000
 
+# urlopen raises on a connection error or an HTTP error status, so no curl (or apt) is needed
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/ || exit 1
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=4)"]
 
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

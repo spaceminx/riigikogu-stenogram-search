@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 # Ensure project root is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -950,7 +950,7 @@ def test_system_status():
 
 def test_system_status_metadata_and_stale_warning():
     session = SessionLocal()
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
     meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
     if meta:
         meta.value = now_iso
@@ -980,7 +980,7 @@ def test_system_status_metadata_and_stale_warning():
         assert data["data_as_of"] == "2099-01-01"
 
         # Stale warning test (>36h ago)
-        stale_iso = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+        stale_iso = (datetime.now(UTC) - timedelta(hours=48)).isoformat()
         session = SessionLocal()
         meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
         meta.value = stale_iso
@@ -1003,8 +1003,8 @@ def test_system_status_no_warning_when_session_is_10_days_old():
 
     _STATUS_CACHE["data"] = None
 
-    ten_days_ago = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
-    now_iso = datetime.now(timezone.utc).isoformat()
+    ten_days_ago = (datetime.now(UTC) - timedelta(days=10)).strftime("%Y-%m-%d")
+    now_iso = datetime.now(UTC).isoformat()
 
     session = SessionLocal()
     meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
@@ -1050,7 +1050,7 @@ def test_system_status_and_overview_cache_invalidates_on_last_sync_at():
     _OVERVIEW_CACHE["data"] = None
 
     session = SessionLocal()
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
     meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
     if meta:
         meta.value = now_iso
@@ -1093,7 +1093,7 @@ def test_system_status_and_overview_cache_invalidates_on_last_sync_at():
         assert ov2 is ov1
 
         # Now update last_sync_at in system_meta
-        new_sync_iso = (datetime.now(timezone.utc) + timedelta(seconds=10)).isoformat()
+        new_sync_iso = (datetime.now(UTC) + timedelta(seconds=10)).isoformat()
         session = SessionLocal()
         meta = session.query(SystemMeta).filter_by(key="last_sync_at").first()
         meta.value = new_sync_iso

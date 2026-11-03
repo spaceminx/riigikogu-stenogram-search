@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Annotated
 from urllib.parse import quote
 
@@ -2010,8 +2010,8 @@ def system_status():
             try:
                 sync_dt = datetime.fromisoformat(last_sync_at)
                 if sync_dt.tzinfo is None:
-                    sync_dt = sync_dt.replace(tzinfo=timezone.utc)
-                if (datetime.now(timezone.utc) - sync_dt).total_seconds() > 36 * 3600:
+                    sync_dt = sync_dt.replace(tzinfo=UTC)
+                if (datetime.now(UTC) - sync_dt).total_seconds() > 36 * 3600:
                     sync_warning = "Automaatne sünkroonimine võib olla peatunud."
             except Exception:
                 pass

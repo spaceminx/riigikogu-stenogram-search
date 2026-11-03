@@ -3,11 +3,11 @@ name = "riigikogu-stenogram-search"
 version = "0.1.0"
 description = "Riigikogu stenogrammide otsing ja analüütika"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 
 [tool.ruff]
 # Target Python version
-target-version = "py310"
+target-version = "py313"
 
 # Set line length
 line-length = 100

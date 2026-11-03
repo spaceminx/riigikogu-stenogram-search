@@ -11,7 +11,7 @@ conflict.
 """
 
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
@@ -391,7 +391,7 @@ def apply_migrations(engine: Engine | None = None) -> list[str]:
                 up_fn(conn)
                 verify_fn(conn)
 
-                now_utc = datetime.now(timezone.utc).isoformat()
+                now_utc = datetime.now(UTC).isoformat()
                 conn.execute(
                     text(
                         "INSERT INTO schema_migrations (version, name, applied_at) VALUES (:version, :name, :applied_at)"

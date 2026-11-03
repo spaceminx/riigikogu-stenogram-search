@@ -20,7 +20,7 @@ import shutil
 import sqlite3
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Ensure project root is on sys.path
@@ -154,7 +154,7 @@ def run_monthly_release(
     load_env_pipeline(PROJECT_ROOT)
     token = os.environ.get("GITHUB_RELEASE_TOKEN")
 
-    today_str = release_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_str = release_date or datetime.now(UTC).strftime("%Y-%m-%d")
     tag = f"data-{today_str}"
     print(f"Target release tag: {tag}")
 

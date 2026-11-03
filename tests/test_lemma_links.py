@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import patch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -450,7 +450,7 @@ def test_expansion_cache_invalidation():
     # Update system_meta last_sync_at to simulate sync finishing
     session = SessionLocal()
     try:
-        now_str = datetime.now(timezone.utc).isoformat()
+        now_str = datetime.now(UTC).isoformat()
         row = session.query(SystemMeta).filter_by(key="last_sync_at").first()
         if not row:
             row = SystemMeta(key="last_sync_at", value=now_str)

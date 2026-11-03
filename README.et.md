@@ -77,7 +77,7 @@ Andmed avaldatakse ka igakuise avaandmete väljalaskena [GitHub Releasesis](http
 | Kiht | Tehnoloogiad |
 | :--- | :--- |
 | **Frontend** | React 19, Vite, Recharts, ESLint 10, Prettier |
-| **Backend & API** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
+| **Backend & API** | Python 3.13+, FastAPI, Uvicorn, SQLAlchemy, SQLite |
 | **Keeletöötlus (NLP)** | EstNLTK, NLTK |
 | **Andmetorud & pilv** | Serveri cron, Backblaze B2, Requests, GitHub Actions |
 | **Paigaldus & konteinerid** | Docker, Docker Compose, Cloudflare Tunnel |

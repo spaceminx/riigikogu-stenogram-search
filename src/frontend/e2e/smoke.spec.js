@@ -120,4 +120,13 @@ test.describe("Site icons", { tag: "@desktop-only" }, () => {
       expect(response.headers()["content-type"], href).toMatch(/^image\//);
     }
   });
+
+  test("/favicon.ico exists for clients that do not read the page", async ({ request }) => {
+    const response = await request.get("/favicon.ico");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toMatch(/^image\//);
+    // ICO header: reserved 0, type 1 (icon), then the image count
+    const body = await response.body();
+    expect([body.readUInt16LE(0), body.readUInt16LE(2), body.readUInt16LE(4)]).toEqual([0, 1, 3]);
+  });
 });
