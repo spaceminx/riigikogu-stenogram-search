@@ -10,9 +10,9 @@ asttokens==3.0.2
     # via stack-data
 beautifulsoup4==4.15.0
     # via bs4
-boto3==1.43.115
+boto3==1.43.123
     # via -r requirements.in
-botocore==1.43.118
+botocore==1.43.123
     # via
     #   boto3
     #   s3transfer
@@ -30,10 +30,6 @@ click==8.5.0
     #   uvicorn
 cloudpickle==3.1.2
     # via joblib
-colorama==0.4.6 ; sys_platform == 'win32'
-    # via
-    #   ipython
-    #   tqdm
 conllu==6.0.0
     # via estnltk
 contourpy==1.4.0
@@ -48,7 +44,7 @@ estnltk-core==1.7.5
     # via estnltk
 executing==2.3.0
     # via stack-data
-fastapi==0.153.0
+fastapi==0.162.0
     # via -r requirements.in
 fonttools==4.67.0
     # via matplotlib
@@ -104,25 +100,25 @@ pandas==3.1.0
     #   estnltk-core
 parso==0.8.7
     # via jedi
-pexpect==4.9.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
+pexpect==4.9.0
     # via ipython
 pillow==13.0.0
     # via matplotlib
 prompt-toolkit==3.0.53
     # via ipython
-psutil==7.2.2 ; sys_platform != 'cygwin' and sys_platform != 'emscripten'
+psutil==7.2.2
     # via ipython
-ptyprocess==0.7.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
+ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.4
     # via stack-data
 pyahocorasick==2.3.1
     # via estnltk
-pydantic==2.14.1
+pydantic==2.14.2
     # via
     #   -r requirements.in
     #   fastapi
-pydantic-core==2.50.1
+pydantic-core==2.50.2
     # via pydantic
 pygments==2.21.0
     # via
@@ -156,7 +152,7 @@ six==1.17.0
     #   python-dateutil
 soupsieve==3.0.4
     # via beautifulsoup4
-sqlalchemy==2.1.4
+sqlalchemy==2.1.6
     # via -r requirements.in
 stack-data==0.6.3
     # via ipython
@@ -185,8 +181,6 @@ typing-inspection==0.4.4
     # via
     #   fastapi
     #   pydantic
-tzdata==2026.5 ; sys_platform == 'emscripten' or sys_platform == 'win32'
-    # via pandas
 urllib3==2.8.0
     # via
     #   botocore
