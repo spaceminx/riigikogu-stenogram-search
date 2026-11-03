@@ -24,7 +24,15 @@ from src.api.attendance import (
     get_factions_list,
     get_person_attendance,
 )
-from src.api.drafts import SORTS, STATUS_GROUPS, filter_drafts, get_draft_index, status_group
+from src.api.drafts import (
+    SORTS,
+    STATUS_GROUPS,
+    filter_drafts,
+    get_draft_index,
+    membership_on,
+    parse_mark,
+    status_group,
+)
 from src.api.factions import get_factions_overview
 from src.api.roles import load_governments
 from src.api.rss import (
@@ -2165,24 +2173,34 @@ def get_draft(draft_uuid: str):
             votings += session.query(Voting).filter(Voting.uuid.in_(agenda_only_uuids)).all()
             votings.sort(key=lambda v: (v.sitting_date or "", v.start_time or "", v.uuid))
 
-        mark = str(draft.mark) if draft else None
+        # Same summary fields as GET /drafts: the draft list first, else the agenda and votings
+        raw_mark = None
         title = draft.title if draft else None
         for item in agenda_items:
-            if not mark and item.draft_mark:
-                mark = item.draft_mark
+            if not raw_mark and item.draft_mark:
+                raw_mark = item.draft_mark
             if not title and item.draft_title:
                 title = item.draft_title
-            if mark and title:
+            if raw_mark and title:
                 break
 
-        if not mark or not title:
+        if not raw_mark or not title:
             for v in votings:
-                if not mark and v.related_document_reference:
-                    mark = v.related_document_reference
+                if not raw_mark and v.related_document_reference:
+                    raw_mark = v.related_document_reference
                 if not title and v.related_document_title:
                     title = v.related_document_title
-                if mark and title:
+                if raw_mark and title:
                     break
+
+        if draft:
+            mark, type_code, membership = draft.mark, draft.type_code, draft.membership
+        else:
+            mark, type_code = parse_mark(raw_mark)
+            dates = [i.sitting_date for i in agenda_items if i.sitting_date] + [
+                v.sitting_date or v.date for v in votings if v.sitting_date or v.date
+            ]
+            membership = membership_on(min(dates)) if dates else None
 
         pairs = {
             (item.source_file, item.steno_title)
@@ -2256,8 +2274,8 @@ def get_draft(draft_uuid: str):
             "uuid": draft_uuid,
             "mark": mark,
             "title": title,
-            "membership": draft.membership if draft else None,
-            "type_code": draft.type_code if draft else None,
+            "membership": membership,
+            "type_code": type_code,
             "stage": draft.stage if draft else None,
             "status": draft.status if draft else None,
             "status_date": draft.status_date if draft else None,
@@ -2392,6 +2410,7 @@ def _generate_sitemap_xml(session) -> str:
     # 1. Static routes
     add_url(f"{base_url}/")
     add_url(f"{base_url}/haaletused")
+    add_url(f"{base_url}/eelnoud")
     add_url(f"{base_url}/kohalolek")
     add_url(f"{base_url}/fraktsioonid")
     add_url(f"{base_url}/andmed")

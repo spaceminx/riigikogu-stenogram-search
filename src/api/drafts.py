@@ -50,13 +50,22 @@ def status_group(proceeding_status: str | None, stage: str | None) -> str | None
     return _STAGE_GROUPS.get(stage, "other")
 
 
-def _membership_on(day: str | None) -> int | None:
+def membership_on(day: str | None) -> int | None:
+    """The membership sitting on a day, for drafts missing from the upstream list."""
     if not day:
         return None
     for number, (start, end) in MEMBERSHIP_DATES.items():
         if start <= day <= end and str(number).isdigit():
             return int(number)
     return None
+
+
+def parse_mark(raw: str | None) -> tuple[int | None, str | None]:
+    """Split an agenda or voting mark ("919" or "919 SE") into the number and the type."""
+    match = _AGENDA_MARK.match(str(raw or ""))
+    if not match:
+        return None, None
+    return int(match.group(1)), match.group(2)
 
 
 def _voting_uuids(raw: str | None) -> list[str]:
@@ -128,12 +137,12 @@ def build_draft_index(session) -> list[dict[str, Any]]:
             }
         else:
             # A draft of an earlier membership discussed in this one, or no drafts.json yet
-            match = _AGENDA_MARK.match(str(e["mark"] or ""))
+            mark, type_code = parse_mark(e["mark"])
             item = {
                 "uuid": uuid,
-                "membership": _membership_on(dates[0] if dates else None),
-                "mark": int(match.group(1)) if match else None,
-                "type_code": match.group(2) if match else None,
+                "membership": membership_on(dates[0] if dates else None),
+                "mark": mark,
+                "type_code": type_code,
                 "title": e["title"],
                 "stage": None,
                 "status": None,
@@ -175,7 +184,9 @@ def clear_draft_cache() -> None:
 def _matches_query(item: dict, q: str) -> bool:
     mark = _MARK_QUERY.fullmatch(q)
     if mark and item["mark"] == int(mark.group(1)):
-        if not mark.group(2) or (item["type_code"] or "").upper() == mark.group(2).upper():
+        # Agenda marks carry no type, so a draft of unknown type matches on the number alone
+        wanted = (mark.group(2) or "").upper()
+        if not wanted or not item["type_code"] or item["type_code"].upper() == wanted:
             return True
     title = (item["title"] or "").casefold()
     return all(word in title for word in q.casefold().split())

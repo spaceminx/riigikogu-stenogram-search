@@ -29,6 +29,7 @@ const PersonView = lazy(() => import("./routes/PersonView"));
 const PrivacyView = lazy(() => import("./routes/PrivacyView"));
 const VotingsView = lazy(() => import("./routes/VotingsView"));
 const VotingView = lazy(() => import("./routes/VotingView"));
+const DraftsView = lazy(() => import("./routes/DraftsView"));
 const DraftView = lazy(() => import("./routes/DraftView"));
 const NotFoundView = lazy(() => import("./routes/NotFoundView"));
 
@@ -90,6 +91,8 @@ function PageTitlebar({ memberships = [] }) {
     title = "Hääletused";
   } else if (pathname.startsWith("/haaletus")) {
     title = "Hääletus";
+  } else if (pathname.startsWith("/eelnoud")) {
+    title = "Eelnõud";
   } else if (pathname.startsWith("/eelnou")) {
     title = "Eelnõu";
   }
@@ -217,6 +220,7 @@ function AppContent() {
                 }
               />
               <Route path="/haaletus/:uuid" element={<VotingView />} />
+              <Route path="/eelnoud" element={<DraftsView memberships={memberships} />} />
               <Route path="/eelnou/:uuid" element={<DraftView />} />
               <Route
                 path="/andmed"

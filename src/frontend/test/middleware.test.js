@@ -148,6 +148,16 @@ describe("Open Graph middleware helpers", () => {
       });
       assert.strictEqual(draftMeta.image, null);
 
+      const markedDraftMeta = resolveOgMetadata("eelnou", "d-2", {
+        title: "Taimekaitseseaduse muutmise seadus",
+        mark: 919,
+        type_code: "SE",
+      });
+      assert.strictEqual(
+        markedDraftMeta.description,
+        "Riigikogu eelnõu 919 SE „Taimekaitseseaduse muutmise seadus“ lugemised ja hääletused."
+      );
+
       const sessionMeta = resolveOgMetadata("istung", "2024-02-10", null);
       assert.strictEqual(sessionMeta.image, null);
       assert.strictEqual(sessionMeta.title, "Istung 10.02.2024 — Riigivaade");

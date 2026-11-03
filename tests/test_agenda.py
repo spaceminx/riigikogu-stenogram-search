@@ -468,7 +468,7 @@ def test_api_draft_and_speeches_endpoints():
         assert resp.status_code == 200
         data = resp.json()
         assert data["uuid"] == draft_uuid
-        assert data["mark"] == "100 SE"
+        assert (data["mark"], data["type_code"]) == (100, "SE")
         assert data["title"] == "Maksuseaduse muutmise seadus"
         assert len(data["readings"]) == 2
         assert data["readings"][0]["agenda_item_uuid"] == agenda_uuid_1

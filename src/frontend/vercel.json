@@ -29,6 +29,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/eelnoud",
+      "destination": "/index.html"
+    },
+    {
       "source": "/andmed",
       "destination": "/index.html"
     },

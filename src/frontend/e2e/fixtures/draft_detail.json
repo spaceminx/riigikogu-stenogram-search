@@ -1,7 +1,19 @@
 {
   "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
-  "mark": "980",
+  "mark": 980,
   "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+  "membership": 15,
+  "type_code": "SE",
+  "stage": "TEINE_LUGEMINE",
+  "status": "I_LUGEMINE_LOPETATUD",
+  "status_date": "2026-10-21",
+  "proceeding_status": "IN_PROCESS",
+  "status_group": "in_process",
+  "initiated": "2026-06-18",
+  "leading_committee": {
+    "uuid": "44584179-67a8-ce54-da37-569f1a480919",
+    "name": "Sotsiaalkomisjon"
+  },
   "readings": [
     {
       "agenda_item_uuid": "34149feb-a62c-4381-9921-894a5cbed030",

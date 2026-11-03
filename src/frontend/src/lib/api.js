@@ -284,6 +284,29 @@ export async function fetchVoting(uuid) {
   return handleResponse(res);
 }
 
+export async function fetchDrafts({
+  membership = null,
+  type = null,
+  status = null,
+  committee = null,
+  q = null,
+  sort = null,
+  limit = 50,
+  offset = 0,
+} = {}) {
+  const params = new URLSearchParams();
+  if (membership && membership !== "all") params.append("membership", membership);
+  if (type) params.append("type", type);
+  if (status) params.append("status", status);
+  if (committee) params.append("committee", committee);
+  if (q && q.trim()) params.append("q", q.trim());
+  if (sort && sort !== "recent") params.append("sort", sort);
+  params.append("limit", String(limit));
+  params.append("offset", String(offset));
+  const res = await fetch(`${BASE_URL}/drafts?${params.toString()}`);
+  return handleResponse(res);
+}
+
 export async function fetchDraft(uuid) {
   const res = await fetch(`${BASE_URL}/drafts/${encodeURIComponent(uuid)}`);
   return handleResponse(res);

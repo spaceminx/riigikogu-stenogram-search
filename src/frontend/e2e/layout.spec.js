@@ -74,7 +74,7 @@ test.describe("Voting summary wrapping at 390px", { tag: "@mobile-only" }, () =>
 
 test.describe("Header between the mobile menu and full width", { tag: "@desktop-only" }, () => {
   for (const width of [641, 700, 720, 760]) {
-    test(`the four nav links fit at ${width}px`, async ({ page }) => {
+    test(`the five nav links fit at ${width}px`, async ({ page }) => {
       const mock = await setupApiMock(page);
       await page.setViewportSize({ width, height: 800 });
 
@@ -87,10 +87,16 @@ test.describe("Header between the mobile menu and full width", { tag: "@desktop-
         fontSize: parseFloat(getComputedStyle(el).fontSize),
         overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
       }));
-      // One line of the tagline; a wrapped one is at least two font sizes tall
+      // The tagline is hidden or on one line; a wrapped one is at least two font sizes tall
       expect(height).toBeLessThan(fontSize * 2);
       expect(overflow).toBe(false);
-      await expect(page.locator("nav.nav-links a")).toHaveCount(4);
+      await expect(page.locator("nav.nav-links a")).toHaveCount(5);
+      // The last link ends before the menu button
+      const [linkRight, menuLeft] = await page.evaluate(() => [
+        [...document.querySelectorAll("nav.nav-links a")].pop().getBoundingClientRect().right,
+        document.querySelector(".header-menu").getBoundingClientRect().left,
+      ]);
+      expect(linkRight).toBeLessThanOrEqual(menuLeft);
 
       mock.verifyNoErrors();
     });

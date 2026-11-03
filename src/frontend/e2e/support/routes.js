@@ -19,6 +19,7 @@ export const ROUTES = [
     name: "Hääletus",
     contentSelector: ".voting-detail-container",
   },
+  { path: "/eelnoud", name: "Eelnõud", contentSelector: ".draft-row-link" },
   { path: `/eelnou/${FIXTURE_IDS.draftUuid}`, name: "Eelnõu", contentSelector: ".reading-card" },
   { path: "/andmed", name: "Andmed", contentSelector: "h1:has-text('Andmed ja privaatsus')" },
 ];

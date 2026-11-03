@@ -145,7 +145,7 @@ export function resolveOgMetadata(routeType, id, data) {
   if (routeType === "eelnou") {
     const titleRaw = data?.title || "Eelnõu";
     const title = `${titleRaw} — Riigivaade`;
-    const mark = data?.mark ? `${data.mark} ` : "";
+    const mark = data?.mark ? `${data.mark}${data.type_code ? ` ${data.type_code}` : ""} ` : "";
     const description = `Riigikogu eelnõu ${mark}„${titleRaw}“ lugemised ja hääletused.`;
     return {
       title,

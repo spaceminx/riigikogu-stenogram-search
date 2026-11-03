@@ -5,6 +5,10 @@ import { ArrowLeft, Calendar, ExternalLink } from "lucide-react";
 import { fetchDraft, fetchDraftSpeeches } from "../lib/api";
 import { formatDate } from "../lib/calendarUtils";
 import {
+  formatDraftMark,
+  formatDraftStage,
+  formatDraftStatus,
+  formatDraftType,
   formatStageLabel,
   getOtherVotings,
   getRiigikoguDraftUrl,
@@ -13,6 +17,7 @@ import {
 } from "../lib/draftUtils";
 import VotingRow from "../components/VotingRow";
 import SpeechCard from "../components/SpeechCard";
+import { toRoman } from "../lib/formatters";
 import { usePageMeta } from "../lib/usePageMeta";
 
 function ReadingCard({ reading, draftUuid }) {
@@ -193,15 +198,16 @@ export function DraftView() {
     shouldRetryOnError: false,
   });
 
+  const draftMark = formatDraftMark(draft?.mark, draft?.type_code);
   const draftTitle = draft?.title ? `${draft.title} — Riigivaade` : "Eelnõu — Riigivaade";
   const draftDesc = draft?.title
-    ? `Riigikogu eelnõu ${draft.mark ? `${draft.mark} ` : ""}„${draft.title}“ lugemised, arutelud ja seotud hääletused.`
+    ? `Riigikogu eelnõu ${draftMark ? `${draftMark} ` : ""}„${draft.title}“ lugemised, arutelud ja seotud hääletused.`
     : "Riigikogu eelnõu käik, lugemised ja seotud hääletused.";
   usePageMeta(draftTitle, draftDesc);
 
   const handleBack = () => {
     if (location.key === "default" || window.history.length <= 1) {
-      navigate("/haaletused");
+      navigate("/eelnoud");
     } else {
       navigate(-1);
     }
@@ -251,18 +257,34 @@ export function DraftView() {
               : "Eelnõu andmete laadimine ebaõnnestus.")}
         </p>
         <Link
-          to="/haaletused"
+          to="/eelnoud"
           className="search-button"
           style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
         >
           <ArrowLeft size={16} aria-hidden="true" />
-          Tagasi hääletuste nimekirja
+          Tagasi eelnõude nimekirja
         </Link>
       </div>
     );
   }
 
   const externalUrl = getRiigikoguDraftUrl(draft.uuid);
+  const stage = formatDraftStage(draft.stage);
+  const status = formatDraftStatus(draft.status, draft.stage);
+  const facts = [
+    draft.type_code && { label: "Liik", value: formatDraftType(draft.type_code) },
+    draft.membership && { label: "Koosseis", value: `${toRoman(draft.membership)} koosseis` },
+    stage && {
+      label: "Menetlusetapp",
+      value: [stage, status].filter(Boolean).join(" · "),
+    },
+    draft.status_date && { label: "Seis alates", value: formatDate(draft.status_date) },
+    draft.initiated && { label: "Algatatud", value: formatDate(draft.initiated) },
+    draft.leading_committee?.name && {
+      label: "Juhtivkomisjon",
+      value: draft.leading_committee.name,
+    },
+  ].filter(Boolean);
 
   return (
     <div className="draft-detail-container">
@@ -271,10 +293,21 @@ export function DraftView() {
           <button type="button" className="back-nav-btn" onClick={handleBack}>
             &larr; Tagasi
           </button>
-          {draft.mark && <span className="draft-mark-badge">{draft.mark}</span>}
+          {draftMark && <span className="draft-mark-badge">{draftMark}</span>}
         </div>
 
         <h1 className="draft-detail-title">{draft.title}</h1>
+
+        {facts.length > 0 && (
+          <dl className="draft-facts">
+            {facts.map((fact) => (
+              <div key={fact.label} className="draft-fact">
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
 
         <div className="draft-meta-row">
           {externalUrl && (

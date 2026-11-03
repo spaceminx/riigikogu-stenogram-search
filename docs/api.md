@@ -31,7 +31,7 @@ API documentation is available at:
   - `GET /votings/{uuid}` — Specific voting details and individual member votes.
 - **Drafts (eelnõud):**
   - `GET /drafts` — Drafts of every membership with their stage, leading committee and plenary activity (readings, votings, speeches). Filters: `membership`, `type` (`SE`, `OE`, …), `status` (`in_process`, `adopted`, `rejected`, `withdrawn`, `lapsed`, `other`), `committee` (UUID) and `q` (title words or a mark such as `919 SE`); `sort=recent|initiated`. `facets` counts each filter's values under the other filters.
-  - `GET /drafts/{uuid}` and `GET /drafts/{uuid}/speeches` — A draft's readings, votings and speeches; also drafts that have not reached the plenary.
+  - `GET /drafts/{uuid}` and `GET /drafts/{uuid}/speeches` — A draft's readings, votings and speeches; also drafts that have not reached the plenary. The summary fields (`mark` as a number, `type_code`, `membership`, stage and committee) are the same as in `GET /drafts`.
 - **System Info & Overview:**
   - `GET /overview` — Platform summary metrics, active MPs, and recent speech count.
   - `GET /system/status` and `GET /memberships` — System health, data bounds, and parliamentary memberships.
