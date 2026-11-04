@@ -683,3 +683,95 @@ def test_fetch_attendance_cli_takes_a_date_range():
     args = parse_args(["--start-date", "2015-03-30", "--end-date", "2019-04-03"])
     assert (args.start_date, args.end_date) == ("2015-03-30", "2019-04-03")
     assert (parse_args([]).start_date, parse_args([]).end_date) == (None, None)
+
+
+def test_renamed_faction_is_counted_and_filtered_under_its_later_name():
+    from src.api.attendance import get_factions_list
+    from src.api.votings import clear_vote_participation_cache
+    from src.load.models import Vote, Voting
+
+    irl = "Isamaa ja Res Publica Liidu fraktsioon"
+    isamaa = "Isamaa fraktsioon"
+    create_tables()
+    session = SessionLocal()
+    rows = [
+        Attendance(
+            session_date="2016-02-01T10:00:00",
+            voting_uuid="check-irl",
+            member_uuid="uuid-irl-member",
+            member_name="Ilmar Isa",
+            faction=irl,
+            status="KOHAL",
+        ),
+        Attendance(
+            session_date="2018-10-01T10:00:00",
+            voting_uuid="check-isamaa",
+            member_uuid="uuid-irl-member",
+            member_name="Ilmar Isa",
+            faction=isamaa,
+            status="PUUDUB",
+        ),
+        Voting(
+            uuid="vote-irl",
+            type="AVALIK",
+            date="2016-02-01",
+            sitting_date="2016-02-01",
+            membership=13,
+            in_favor=50,
+            against=10,
+            neutral=0,
+        ),
+        Voting(
+            uuid="vote-isamaa",
+            type="AVALIK",
+            date="2018-10-01",
+            sitting_date="2018-10-01",
+            membership=13,
+            in_favor=50,
+            against=10,
+            neutral=0,
+        ),
+    ]
+    session.add_all(rows)
+    session.flush()
+    votes = [
+        Vote(voting_uuid="vote-irl", member_uuid="uuid-irl-member", faction=irl, decision="POOLT"),
+        Vote(
+            voting_uuid="vote-isamaa",
+            member_uuid="uuid-irl-member",
+            faction=isamaa,
+            decision="PUUDUB",
+        ),
+    ]
+    session.add_all(votes)
+    session.commit()
+    clear_vote_participation_cache()
+
+    try:
+        assert get_factions_list(membership="13") == [isamaa]
+
+        factions = get_faction_attendance_stats(membership="13")
+        assert [f["faction"] for f in factions] == [isamaa]
+        assert factions[0]["member_count"] == 1
+        assert factions[0]["total_sessions"] == 2
+        assert factions[0]["present_sessions"] == 1
+        assert factions[0]["votes_total"] == 2
+        assert factions[0]["votes_voted"] == 1
+
+        members = get_attendance_stats(membership="13", faction=isamaa)
+        assert [(m["member_uuid"], m["faction"], m["total_sessions"]) for m in members] == [
+            ("uuid-irl-member", isamaa, 2)
+        ]
+        assert members[0]["votes_total"] == 2
+        # The earlier name filters the same rows
+        assert get_attendance_stats(membership="13", faction=irl)[0]["total_sessions"] == 2
+
+        # A role filter still uses the name of the day: IRL was in the Rõivas II coalition
+        coalition = get_faction_attendance_stats(membership="13", role="coalition")
+        assert [(f["faction"], f["total_sessions"]) for f in coalition] == [(isamaa, 2)]
+    finally:
+        for row in votes + rows:
+            session.delete(row)
+        session.commit()
+        session.close()
+        clear_vote_participation_cache()

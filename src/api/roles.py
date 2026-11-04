@@ -11,6 +11,30 @@ _GOVERNMENTS_CACHE: list[dict[str, Any]] | None = None
 
 NO_FACTION = "Fraktsiooni mittekuuluvad Riigikogu liikmed"
 
+# Factions that went on under a new name: {earlier name: later name}. The data keeps the name
+# used at the time (and governments.json lists it), while lists, filters and totals show the
+# faction once under its later name. Upstream moved the IRL members to Isamaa on 2018-07-31.
+FACTION_RENAMES = {"Isamaa ja Res Publica Liidu fraktsioon": "Isamaa fraktsioon"}
+
+
+def canonical_faction(faction: str | None) -> str | None:
+    """Return the later name of a renamed faction, or the name itself."""
+    return FACTION_RENAMES.get(faction, faction)
+
+
+def faction_names(faction: str) -> list[str]:
+    """Return every name a faction has had, for filtering rows saved under an earlier name."""
+    canonical = canonical_faction(faction)
+    return [canonical, *(old for old, new in FACTION_RENAMES.items() if new == canonical)]
+
+
+def canonical_faction_expression(faction_col):
+    """SQL counterpart of canonical_faction(), for grouping rows by faction."""
+    return case(
+        *((faction_col == old, new) for old, new in FACTION_RENAMES.items()),
+        else_=faction_col,
+    )
+
 
 def load_governments() -> list[dict[str, Any]]:
     """Load government periods from governments.json with memory caching."""

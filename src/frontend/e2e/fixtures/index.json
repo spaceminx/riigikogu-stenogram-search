@@ -58,6 +58,14 @@
     {
       "method": "GET",
       "path": "/factions",
+      "queryParams": {
+        "membership": "13"
+      },
+      "fixture": "factions_13.json"
+    },
+    {
+      "method": "GET",
+      "path": "/factions",
       "fixture": "factions.json"
     },
     {

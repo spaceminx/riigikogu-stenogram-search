@@ -399,3 +399,51 @@ def test_a_member_who_is_not_current_has_no_current_role():
 
     assert member["leader_role"] is None
     assert member["leader_roles"][0]["end"] is None
+
+
+IRL = "Isamaa ja Res Publica Liidu fraktsioon"
+ISAMAA = "Isamaa fraktsioon"
+XIII = ("2015-03-30", "2019-04-03")
+
+
+def test_renamed_faction_is_one_entry_under_its_later_name():
+    persons = [_person("a", "Anna", "Aas"), _person("b", "Boris", "Bänk")]
+    periods = {
+        # Upstream ends the IRL membership on 2018-07-30 and starts Isamaa the next day
+        "a": [
+            {"faction": IRL, "start": "2015-03-30", "end": "2018-07-30"},
+            {"faction": ISAMAA, "start": "2018-07-31", "end": "2019-03-30"},
+        ],
+        # Left before the rename
+        "b": [{"faction": IRL, "start": "2015-03-30", "end": "2017-06-13"}],
+    }
+    leader_roles = {
+        "a": [{"faction": IRL, "role": "esimees", "start": "2016-01-01", "end": "2018-07-30"}],
+    }
+
+    overview = build_factions_overview(
+        persons, periods, {}, *XIII, TODAY, leader_roles=leader_roles
+    )
+
+    assert [f["faction"] for f in overview["factions"]] == [ISAMAA]
+    isamaa = overview["factions"][0]
+    assert isamaa["former_names"] == [{"faction": IRL, "until": "2018-07-30"}]
+    assert isamaa["role"] == "coalition"
+    anna, boris = isamaa["members"]
+    assert anna["periods"] == [{"start": "2015-03-30", "end": "2019-03-30"}]
+    assert anna["leader_roles"] == [{"role": "esimees", "start": "2016-01-01", "end": "2018-07-30"}]
+    assert boris["periods"] == [{"start": "2015-03-30", "end": "2017-06-13"}]
+
+
+def test_former_names_are_empty_outside_the_renamed_membership():
+    persons = [_person("a", "Anna", "Aas")]
+    periods = {
+        "a": [
+            {"faction": IRL, "start": "2015-03-30", "end": "2018-07-30"},
+            {"faction": ISAMAA, "start": "2018-07-31", "end": "2099-12-31"},
+        ]
+    }
+
+    overview = _build(persons, periods, membership=XIV)
+
+    assert _faction(overview, ISAMAA)["former_names"] == []

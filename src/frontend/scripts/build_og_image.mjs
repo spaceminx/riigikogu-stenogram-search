@@ -57,7 +57,7 @@ html, body { margin: 0; }
     <div class="brand">${mark}<span class="wordmark">Riigivaade</span></div>
     <div>
       <p class="headline">Riigikogu kõned, hääletused ja kohalolek ühes kohas</p>
-      <div class="footer">STENOGRAMMID 2019– · RIIGIVAADE.ME</div>
+      <div class="footer">STENOGRAMMID 2015– · RIIGIVAADE.ME</div>
     </div>
   </div>
 </body>

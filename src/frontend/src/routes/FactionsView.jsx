@@ -64,6 +64,12 @@ function FactionCard({ faction, isCurrentMembership, membershipInfo, attendanceL
           {shortName !== faction.faction && (
             <span className="faction-card-fullname">{faction.faction}</span>
           )}
+          {/* A renamed faction is one card under its later name (e.g. IRL → Isamaa) */}
+          {faction.former_names?.map((former) => (
+            <span key={former.faction} className="faction-card-fullname">
+              Kuni {formatDate(former.until)} nimega {former.faction}
+            </span>
+          ))}
         </div>
         <div className="faction-card-facts">
           {isCurrentMembership && ROLE_LABELS[faction.role] && (

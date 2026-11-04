@@ -15,8 +15,8 @@ import {
   mergeInputToGroups,
   normalizeSourceUrl,
   serializeGroupsToQuery,
-  toRoman,
 } from "../lib/formatters";
+import { archiveStartYear } from "../lib/calendarUtils";
 
 export function DashboardView({
   dashboardOverview: propOverview,
@@ -54,16 +54,14 @@ export function DashboardView({
     systemStatus?.total_persons ??
     systemStatus?.totals?.persons;
   const memText =
-    memberships && memberships.length > 0
-      ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
-      : null;
+    memberships && memberships.length > 0 ? `alates ${archiveStartYear(memberships)}` : null;
 
   const statItems = [];
   if (totalSpeeches !== undefined && totalSpeeches !== null) {
     statItems.push(`${Number(totalSpeeches).toLocaleString("et-EE")} kõnet`);
   }
   if (activePersons !== undefined && activePersons !== null) {
-    statItems.push(`${activePersons} saadikut (XIV–XV)`);
+    statItems.push(`${activePersons} saadikut`);
   }
   if (memText) {
     statItems.push(memText);

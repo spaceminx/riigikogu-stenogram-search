@@ -11,8 +11,7 @@ import {
 } from "react-router-dom";
 import useSWR from "swr";
 import { fetchMemberships, fetchSystemStatus } from "./lib/api";
-import { toRoman } from "./lib/formatters";
-import { visibleMemberships } from "./lib/calendarUtils";
+import { archiveStartYear, visibleMemberships } from "./lib/calendarUtils";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -97,9 +96,7 @@ function PageTitlebar({ memberships = [] }) {
     title = "Eelnõu";
   }
   const memText =
-    memberships && memberships.length > 0
-      ? memberships.map((m) => toRoman(m.number || m.id)).join(" ja ") + " koosseis"
-      : null;
+    memberships && memberships.length > 0 ? `alates ${archiveStartYear(memberships)}` : null;
 
   // Detail views render their own <h1> (person, speech, vote, bill, privacy page), so the
   // section label here must not be a second one.

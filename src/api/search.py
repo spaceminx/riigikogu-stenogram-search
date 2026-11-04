@@ -13,6 +13,7 @@ from sqlalchemy import and_, func, literal, or_, select
 
 from config import MEMBERSHIP_DATES, STOPWORDS
 from src.api.lru import MISSING, LRUDict
+from src.api.roles import faction_names
 from src.load.database import SessionLocal
 from src.load.models import (
     AgendaItem,
@@ -853,7 +854,7 @@ def build_speech_filters(
         filters.append(Speech.date <= end_bound)
 
     if faction:
-        filters.append(Speech.speaker_faction == faction)
+        filters.append(Speech.speaker_faction.in_(faction_names(faction)))
 
     if speaker and speaker.strip():
         filters.append(Speech.speaker.ilike(f"%{speaker.strip()}%"))

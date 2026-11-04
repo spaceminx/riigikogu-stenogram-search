@@ -3,7 +3,7 @@
 from sqlalchemy import and_, case, func
 
 from src.api.lru import MISSING, LRUDict
-from src.api.roles import role_condition
+from src.api.roles import canonical_faction_expression, faction_names, role_condition
 from src.load.models import SystemMeta, Vote, Voting
 
 
@@ -139,7 +139,8 @@ def get_member_vote_participation(
 ) -> dict[str, dict]:
     """Calculate vote participation per member on public, non-technical votings.
 
-    With faction, only ballots cast as a member of that faction (Vote.faction) are counted.
+    With faction, only ballots cast as a member of that faction (Vote.faction, under any of its
+    names) are counted.
 
     Returns mapping from member_uuid to:
         {"voted": int, "not_voted": int, "absent": int, "total": int, "voted_pct": float | None}
@@ -185,7 +186,7 @@ def get_member_vote_participation(
         query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
 
     if faction:
-        query = query.filter(Vote.faction == faction)
+        query = query.filter(Vote.faction.in_(faction_names(faction)))
 
     results = query.group_by(Vote.member_uuid).all()
 
@@ -215,7 +216,8 @@ def get_faction_vote_participation(
 ) -> dict[str, dict]:
     """Calculate vote participation per faction on public, non-technical votings.
 
-    Faction is determined by per-ballot Vote.faction.
+    Faction is determined by per-ballot Vote.faction; a renamed faction is counted under its
+    later name.
     Returns mapping from faction name to:
         {"voted": int, "not_voted": int, "absent": int, "total": int, "voted_pct": float | None}
     """
@@ -232,9 +234,10 @@ def get_faction_vote_participation(
 
     cache_key_mem, role_filter = cache_key
     is_tech_sql = is_technical_voting_clause()
+    faction_key = canonical_faction_expression(Vote.faction)
     query = (
         session.query(
-            Vote.faction,
+            faction_key,
             func.count(Vote.voting_uuid).label("total"),
             func.sum(case((Vote.decision.in_(["POOLT", "VASTU", "ERAPOOLETU"]), 1), else_=0)).label(
                 "voted"
@@ -261,7 +264,7 @@ def get_faction_vote_participation(
     if role_filter:
         query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
 
-    results = query.group_by(Vote.faction).all()
+    results = query.group_by(faction_key).all()
 
     stats: dict[str, dict] = {}
     for faction, total, voted, not_voted, absent in results:

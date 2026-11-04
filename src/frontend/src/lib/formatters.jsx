@@ -159,6 +159,9 @@ export function formatFactionName(name) {
     "Eesti Konservatiivse Rahvaerakonna fraktsioon": "EKRE",
     "Eesti 200 fraktsioon": "Eesti 200",
     "Isamaa fraktsioon": "Isamaa",
+    // Went on as the Isamaa faction from 2018-07-31, so both are shown as one faction
+    "Isamaa ja Res Publica Liidu fraktsioon": "Isamaa",
+    "Eesti Vabaerakonna fraktsioon": "Vabaerakond",
     "Sotsiaaldemokraatliku Erakonna fraktsioon": "Sotsiaaldemokraadid",
     "Fraktsiooni mittekuuluvad Riigikogu liikmed": "Fraktsiooni mittekuuluvad",
   };
