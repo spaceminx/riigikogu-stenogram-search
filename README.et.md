@@ -4,7 +4,7 @@
 
 [English README](README.md)
 
-[Riigivaade](https://www.riigivaade.me) on erapooletu avalik leht Riigikogu kohta: täiskogu stenogrammide täistekstotsing, istungid, saadikute aktiivsus ja kohalolek, hääletused, eelnõud ja fraktsioonid. Andmed pärinevad Riigikogu avaandmete API-st (CC BY-SA), hõlmavad XIV ja XV koosseisu (alates 2019. aasta aprillist) ning uuenevad iga päev.
+[Riigivaade](https://www.riigivaade.me) on erapooletu avalik leht Riigikogu kohta: täiskogu stenogrammide täistekstotsing, istungid, saadikute aktiivsus ja kohalolek, hääletused, eelnõud ja fraktsioonid. Andmed pärinevad Riigikogu avaandmete API-st (CC BY-SA), hõlmavad XIII, XIV ja XV koosseisu (alates 2015. aasta märtsist) ning uuenevad iga päev.
 
 ---
 
@@ -46,7 +46,7 @@ Kõik täiskogu hääletused, otsitavad pealkirja või eelnõu järgi ja filtree
 
 [![Taimekaitseseaduse muutmise seaduse eelnõu lugemised](docs/images/bill.webp)](https://www.riigivaade.me/eelnou/1fdf1be7-b35c-44bf-9ed8-ab5d309838fd)
 
-XIV ja XV koosseisu kõik eelnõud (`/eelnoud`), otsitavad pealkirja või numbri järgi (nt 919 SE) ja filtreeritavad koosseisu, menetluse seisu, liigi ja juhtivkomisjoni järgi. Eelnõu lehel on liik, menetlusetapp ja juhtivkomisjon ning lugemised ja arutelud koos hääletuste ja sõnavõttudega.
+XIII, XIV ja XV koosseisu kõik eelnõud (`/eelnoud`), otsitavad pealkirja või numbri järgi (nt 919 SE) ja filtreeritavad koosseisu, menetluse seisu, liigi ja juhtivkomisjoni järgi. Eelnõu lehel on liik, menetlusetapp ja juhtivkomisjon ning lugemised ja arutelud koos hääletuste ja sõnavõttudega.
 
 ### Fraktsioonid
 

@@ -1,0 +1,122 @@
+{
+  "membership": "13",
+  "date": "2019-04-03",
+  "is_current_membership": false,
+  "government": {
+    "name": "Ratas I",
+    "from": "2016-11-23",
+    "to": "2019-04-29",
+    "coalition": [
+      "Eesti Keskerakonna fraktsioon",
+      "Sotsiaaldemokraatliku Erakonna fraktsioon",
+      "Isamaa ja Res Publica Liidu fraktsioon",
+      "Isamaa fraktsioon"
+    ],
+    "source": "https://valitsus.ee/en/news/government-led-juri-ratas-has-resigned-will-continue-its-activities-until-new-government-0"
+  },
+  "factions": [
+    {
+      "faction": "Isamaa fraktsioon",
+      "role": "coalition",
+      "current_count": 0,
+      "former_names": [
+        {
+          "faction": "Isamaa ja Res Publica Liidu fraktsioon",
+          "until": "2018-07-30"
+        }
+      ],
+      "members": [
+        {
+          "uuid": "e2e-xiii-isamaa-1",
+          "full_name": "Anna Aas",
+          "first_name": "Anna",
+          "last_name": "Aas",
+          "electoral_district": "Valimisringkond nr 1",
+          "photo_url": null,
+          "current": false,
+          "periods": [
+            {
+              "start": "2015-03-30",
+              "end": "2019-04-03"
+            }
+          ],
+          "leader_role": null,
+          "leader_roles": [
+            {
+              "role": "esimees",
+              "start": "2016-01-11",
+              "end": "2018-07-30"
+            }
+          ]
+        },
+        {
+          "uuid": "e2e-xiii-isamaa-2",
+          "full_name": "Boris Bänk",
+          "first_name": "Boris",
+          "last_name": "Bänk",
+          "electoral_district": "Valimisringkond nr 2",
+          "photo_url": null,
+          "current": false,
+          "periods": [
+            {
+              "start": "2015-03-30",
+              "end": "2017-06-13"
+            }
+          ],
+          "leader_role": null,
+          "leader_roles": []
+        }
+      ]
+    },
+    {
+      "faction": "Eesti Keskerakonna fraktsioon",
+      "role": "coalition",
+      "current_count": 0,
+      "former_names": [],
+      "members": [
+        {
+          "uuid": "e2e-xiii-kesk-1",
+          "full_name": "Cecilia Cee",
+          "first_name": "Cecilia",
+          "last_name": "Cee",
+          "electoral_district": "Valimisringkond nr 3",
+          "photo_url": null,
+          "current": false,
+          "periods": [
+            {
+              "start": "2015-03-30",
+              "end": "2019-04-03"
+            }
+          ],
+          "leader_role": null,
+          "leader_roles": []
+        }
+      ]
+    },
+    {
+      "faction": "Eesti Vabaerakonna fraktsioon",
+      "role": "opposition",
+      "current_count": 0,
+      "former_names": [],
+      "members": [
+        {
+          "uuid": "e2e-xiii-vaba-1",
+          "full_name": "Daniel Dee",
+          "first_name": "Daniel",
+          "last_name": "Dee",
+          "electoral_district": "Valimisringkond nr 4",
+          "photo_url": null,
+          "current": false,
+          "periods": [
+            {
+              "start": "2015-03-30",
+              "end": "2017-12-31"
+            }
+          ],
+          "leader_role": null,
+          "leader_roles": []
+        }
+      ]
+    }
+  ]
+}

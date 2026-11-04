@@ -7,7 +7,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
-from src.api.roles import NO_FACTION, government_at, role
+from src.api.roles import NO_FACTION, canonical_faction, government_at, role
 from src.load.database import SessionLocal
 from src.load.models import Person
 
@@ -40,12 +40,13 @@ def _shift(day: str, days: int) -> str:
 def normalize_periods(periods: list[dict]) -> list[dict]:
     """Drop the non-affiliated waiting time before joining a faction and join split periods.
 
-    Periods end on the day the next one starts, so `end` is treated as exclusive.
+    Periods end on the day the next one starts, so `end` is treated as exclusive. A renamed
+    faction's periods are joined under its later name.
     """
     items = sorted(
         (
             {
-                "faction": p.get("faction") or NO_FACTION,
+                "faction": canonical_faction(p.get("faction")) or NO_FACTION,
                 "start": p["start"],
                 "end": p.get("end") or OPEN_END,
             }
@@ -92,16 +93,29 @@ def build_factions_overview(
     A member is current when the membership is ongoing, the member is active and one of
     their faction periods covers today. Members who moved between factions appear in each.
     `leader_roles` (faction_roles.json) adds the chair and vice-chair periods per faction.
+    A renamed faction is one entry under its later name; `former_names` lists the earlier
+    names its members had during the membership and the last day of each.
     """
     leader_roles = leader_roles or {}
     is_current_membership = membership_start <= today <= membership_end
     ref_date = min(today, membership_end)
 
     factions: dict[str, list[dict[str, Any]]] = {}
+    former_names: dict[str, dict[str, str]] = {}
     for person in persons:
         periods = periods_by_uuid.get(person["uuid"]) or periods_by_name.get(
             person["full_name"], []
         )
+        for p in periods:
+            name = p.get("faction")
+            later = canonical_faction(name)
+            end = p.get("end") or OPEN_END
+            if later == name or not p.get("start"):
+                continue
+            if p["start"] > membership_end or end <= membership_start:
+                continue
+            names = former_names.setdefault(later, {})
+            names[name] = max(names.get(name, ""), end)
         by_faction: dict[str, list[dict]] = {}
         for p in normalize_periods(periods):
             start, end = p["start"], p["end"]
@@ -127,7 +141,7 @@ def build_factions_overview(
             roles = [
                 {"role": r["role"], "start": r["start"], "end": r.get("end")}
                 for r in leader_roles.get(person["uuid"], [])
-                if r.get("faction") == faction
+                if canonical_faction(r.get("faction")) == faction
                 and r["start"] <= membership_end
                 and (not r.get("end") or r["end"] > membership_start)
             ]
@@ -162,6 +176,12 @@ def build_factions_overview(
                 "faction": faction,
                 "role": role(faction, ref_date),
                 "current_count": sum(1 for m in members if m["current"]),
+                "former_names": [
+                    {"faction": name, "until": until}
+                    for name, until in sorted(
+                        former_names.get(faction, {}).items(), key=lambda x: x[1]
+                    )
+                ],
                 "members": members,
             }
         )

@@ -4,7 +4,7 @@
 
 [Eestikeelne README](README.et.md)
 
-[Riigivaade](https://www.riigivaade.me) is an impartial public site about the Estonian Parliament (Riigikogu): full-text search of plenary stenograms, sittings, members' activity and attendance, votes, bills and factions. The data comes from the Riigikogu open data API (CC BY-SA), covers the XIV and XV Riigikogu (from April 2019) and is updated daily.
+[Riigivaade](https://www.riigivaade.me) is an impartial public site about the Estonian Parliament (Riigikogu): full-text search of plenary stenograms, sittings, members' activity and attendance, votes, bills and factions. The data comes from the Riigikogu open data API (CC BY-SA), covers the XIII, XIV and XV Riigikogu (from March 2015) and is updated daily.
 
 ---
 
@@ -46,7 +46,7 @@ Every plenary vote, searchable by title or bill and filterable by date and type.
 
 [![The readings of the Plant Protection Act amendment](docs/images/bill.webp)](https://www.riigivaade.me/eelnou/1fdf1be7-b35c-44bf-9ed8-ab5d309838fd)
 
-Every bill of the XIV and XV Riigikogu (`/eelnoud`), searchable by title or number (e.g. 919 SE) and filterable by membership, stage of proceedings, type and leading committee. A bill's page has its type, stage and leading committee, and its readings and debates with their votes and speeches.
+Every bill of the XIII, XIV and XV Riigikogu (`/eelnoud`), searchable by title or number (e.g. 919 SE) and filterable by membership, stage of proceedings, type and leading committee. A bill's page has its type, stage and leading committee, and its readings and debates with their votes and speeches.
 
 ### Factions
 

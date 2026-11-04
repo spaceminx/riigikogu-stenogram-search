@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import DateRangeCalendar from "../DateRangeCalendar";
 import { formatFactionName } from "../lib/formatters";
 import { fetchFactionsList } from "../lib/api";
+import { archiveStartYear } from "../lib/calendarUtils";
 
 export function SearchFilters({
   searchMembership,
@@ -57,7 +58,7 @@ export function SearchFilters({
           value={searchMembership}
           onChange={(e) => setSearchMembership(e.target.value)}
         >
-          <option value="all">Kõik (2019–praegu)</option>
+          <option value="all">Kõik ({archiveStartYear(memberships)}–praegu)</option>
           {memberships.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name || `${m.id}. Riigikogu`}

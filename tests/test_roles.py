@@ -5,7 +5,13 @@ from datetime import date, timedelta
 import pytest
 from sqlalchemy import create_engine, literal, select
 
-from src.api.roles import load_governments, role, role_expression
+from src.api.roles import (
+    canonical_faction,
+    faction_names,
+    load_governments,
+    role,
+    role_expression,
+)
 
 KNOWN_FACTIONS = {
     "Eesti Keskerakonna fraktsioon",
@@ -180,3 +186,13 @@ def test_role_expression_matches_role_on_boundary_dates():
             for d in dates:
                 sql_role = conn.execute(select(role_expression(literal(fac), literal(d)))).scalar()
                 assert sql_role == role(fac, d), (fac, d)
+
+
+def test_renamed_faction_has_its_later_name_and_both_names_for_filters():
+    irl = "Isamaa ja Res Publica Liidu fraktsioon"
+    assert canonical_faction(irl) == "Isamaa fraktsioon"
+    assert canonical_faction("Eesti 200 fraktsioon") == "Eesti 200 fraktsioon"
+    assert canonical_faction(None) is None
+    assert faction_names("Isamaa fraktsioon") == ["Isamaa fraktsioon", irl]
+    assert faction_names(irl) == ["Isamaa fraktsioon", irl]
+    assert faction_names("Eesti 200 fraktsioon") == ["Eesti 200 fraktsioon"]

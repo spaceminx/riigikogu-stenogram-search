@@ -138,4 +138,36 @@ test.describe("Factions page", () => {
 
     mock.verifyNoErrors();
   });
+
+  test("shows IRL and Isamaa of the XIII as one faction with its earlier name", async ({
+    page,
+  }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/fraktsioonid");
+    await page.getByLabel("Periood:").selectOption("13");
+    await expect
+      .poll(() => factionRequests(mock).at(-1)?.queryParams)
+      .toMatchObject({ membership: "13" });
+
+    await expect(page.locator(".factions-government-line")).toContainText(
+      "Valitsus koosseisu viimasel päeval (03.04.2019): Ratas I"
+    );
+    await expect(page.locator(".faction-card-title")).toHaveText([
+      "Isamaa",
+      "Keskerakond",
+      "Vabaerakond",
+    ]);
+    const isamaa = card(page, "Isamaa");
+    await expect(isamaa.locator(".faction-card-fullname")).toHaveText([
+      "Isamaa fraktsioon",
+      "Kuni 30.07.2018 nimega Isamaa ja Res Publica Liidu fraktsioon",
+    ]);
+    await expect(isamaa.locator(".faction-card-count")).toHaveText("2 liiget koosseisu jooksul");
+    await expect(
+      card(page, "Keskerakond").locator(".faction-card-fullname", { hasText: "Kuni" })
+    ).toHaveCount(0);
+
+    mock.verifyNoErrors();
+  });
 });

@@ -5,7 +5,13 @@ from datetime import datetime
 from sqlalchemy import case, func
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
-from src.api.roles import NO_FACTION, role_condition
+from src.api.roles import (
+    NO_FACTION,
+    canonical_faction,
+    canonical_faction_expression,
+    faction_names,
+    role_condition,
+)
 from src.api.votings import get_faction_vote_participation, get_member_vote_participation
 from src.load.database import SessionLocal
 from src.load.models import Attendance, AttendanceCheck
@@ -27,7 +33,7 @@ def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]
             for p in periods:
                 if p.get("end", "") >= today or p.get("end") == "2099-12-31":
                     active.add(member)
-                    fac = p.get("faction") or NO_FACTION
+                    fac = canonical_faction(p.get("faction")) or NO_FACTION
                     member_factions[member] = fac
                     faction_counts[fac] = faction_counts.get(fac, 0) + 1
                     break
@@ -85,7 +91,9 @@ def get_attendance_stats(
                 )
             )
         f_rows = f_query.group_by(member_key).all()
-        faction_map = {r[0]: r[1] for r in f_rows}
+        faction_map = {r[0]: canonical_faction(r[1]) for r in f_rows}
+        if faction:
+            faction = canonical_faction(faction)
 
         query = session.query(
             func.max(Attendance.member_name).label("member_name"),
@@ -135,7 +143,7 @@ def get_attendance_stats(
                 else:
                     query = query.filter(Attendance.member_name.in_(active_members))
         elif faction:
-            query = query.filter(Attendance.faction == faction)
+            query = query.filter(Attendance.faction.in_(faction_names(faction)))
 
         results = query.group_by(member_key).all()
 
@@ -381,7 +389,9 @@ def get_faction_attendance_stats(
                             Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
                         )
                     )
-                latest_factions = {r[0]: r[1] for r in f_query.group_by(member_key).all()}
+                latest_factions = {
+                    r[0]: canonical_faction(r[1]) for r in f_query.group_by(member_key).all()
+                }
 
                 query = session.query(
                     member_key,
@@ -552,8 +562,9 @@ def get_faction_attendance_stats(
                 stats.sort(key=lambda x: x["attendance_percentage"], reverse=True)
                 return stats
 
+        faction_key = canonical_faction_expression(Attendance.faction)
         query = session.query(
-            Attendance.faction,
+            faction_key,
             func.count(func.distinct(member_key)).label("member_count"),
             func.count(Attendance.id).label("total_sessions"),
             func.sum(case((Attendance.status == "KOHAL", 1), else_=0)).label("present_sessions"),
@@ -576,7 +587,7 @@ def get_faction_attendance_stats(
                 )
             )
 
-        results = query.group_by(Attendance.faction).all()
+        results = query.group_by(faction_key).all()
 
         faction_votes = get_faction_vote_participation(session, membership=membership, role=role)
 
@@ -619,13 +630,17 @@ def get_faction_attendance_stats(
 
 
 def get_factions_list(membership: str | None = None) -> list[str]:
-    """Return distinct faction names available for a parliamentary membership."""
+    """Return distinct faction names available for a parliamentary membership.
+
+    A renamed faction is listed once, under its later name.
+    """
     if membership is None:
         membership = latest_membership()
     session = SessionLocal()
     try:
+        faction_key = canonical_faction_expression(Attendance.faction)
         query = (
-            session.query(Attendance.faction)
+            session.query(faction_key)
             .filter(Attendance.faction != "", Attendance.faction.isnot(None))
             .distinct()
         )
@@ -637,6 +652,6 @@ def get_factions_list(membership: str | None = None) -> list[str]:
                 Attendance.session_date <= f"{end_d}T23:59:59",
             )
 
-        return [r[0] for r in query.order_by(Attendance.faction).all()]
+        return [r[0] for r in query.order_by(faction_key).all()]
     finally:
         session.close()

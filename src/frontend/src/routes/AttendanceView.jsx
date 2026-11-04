@@ -7,6 +7,7 @@ import { formatFactionName, sortAttendanceItems } from "../lib/formatters";
 import AttendanceMembersTable from "../components/AttendanceMembersTable";
 import AttendanceFactionsTable from "../components/AttendanceFactionsTable";
 import { usePageMeta } from "../lib/usePageMeta";
+import { archiveStartYear } from "../lib/calendarUtils";
 
 export function AttendanceView({
   memberships = [],
@@ -213,7 +214,9 @@ export function AttendanceView({
               const years = startYear && endYear ? `, ${startYear}–${endYear}` : "";
               return `(${m.name}${years})`;
             }
-            return attendanceMembership === "all" ? "(2019–praegu)" : "";
+            return attendanceMembership === "all"
+              ? `(${archiveStartYear(memberships)}–praegu)`
+              : "";
           })()}
         </h2>
       </div>
@@ -264,7 +267,7 @@ export function AttendanceView({
                   {m.name || `${m.id}. Riigikogu`}
                 </option>
               ))}
-              <option value="all">Kõik kokku (2019–praegu)</option>
+              <option value="all">Kõik kokku ({archiveStartYear(memberships)}–praegu)</option>
             </select>
           </div>
 

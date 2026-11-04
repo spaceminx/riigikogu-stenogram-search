@@ -16,15 +16,20 @@ export const MONTHS = [
   "detsember",
 ];
 export const currentYear = new Date().getFullYear();
+// First day of the XIII Riigikogu, where the archive starts (config.START_DATE in the backend)
+export const ARCHIVE_START_DATE = "2015-03-30";
+export const FIRST_MEMBERSHIP = 13;
+const FIRST_YEAR = Number(ARCHIVE_START_DATE.slice(0, 4));
 export const YEARS = Array.from(
-  { length: Math.max(8, currentYear - 2019 + 2) },
-  (_, index) => 2019 + index
+  { length: Math.max(8, currentYear - FIRST_YEAR + 2) },
+  (_, index) => FIRST_YEAR + index
 );
-export const CALENDAR_MIN_MONTH = new Date(2019, 0, 1);
+export const CALENDAR_MIN_MONTH = new Date(FIRST_YEAR, 0, 1);
 export const CALENDAR_MAX_MONTH = new Date(currentYear + 1, 11, 1);
 export const QUICK_PRESETS = [
   { id: "xv", label: "XV Riigikogu (2023–praegu)" },
   { id: "xiv", label: "XIV Riigikogu (2019–2023)" },
+  { id: "xiii", label: "XIII Riigikogu (2015–2019)" },
   { id: "year", label: "Viimane aasta" },
   { id: "archive", label: "Kogu arhiiv" },
 ];
@@ -81,12 +86,23 @@ export function monthTitle(date) {
   return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-// Memberships the site covers (XIV onwards) that have already convened. A newly elected
+// Memberships the site covers (XIII onwards) that have already convened. A newly elected
 // membership is listed upstream before it convenes and must not show up in filters yet.
 export function visibleMemberships(memberships, today = new Date()) {
   if (!Array.isArray(memberships)) return [];
   const todayKey = typeof today === "string" ? today : toDateKey(today);
-  return memberships.filter((m) => m.number >= 14 && m.start_date && m.start_date <= todayKey);
+  return memberships.filter(
+    (m) => m.number >= FIRST_MEMBERSHIP && m.start_date && m.start_date <= todayKey
+  );
+}
+
+// Year the archive starts, from the first covered membership ("alates 2015")
+export function archiveStartYear(memberships) {
+  const starts = (memberships || [])
+    .map((m) => m.start_date || m.startDate)
+    .filter(Boolean)
+    .sort();
+  return (starts[0] || ARCHIVE_START_DATE).slice(0, 4);
 }
 
 export function getQuickPresets(memberships, today = new Date()) {
@@ -96,14 +112,13 @@ export function getQuickPresets(memberships, today = new Date()) {
   }
   const started = memberships.filter((m) => {
     const start = m.start_date || m.startDate;
-    return Boolean(start && start <= todayKey);
+    return Number(m.number || m.id) >= FIRST_MEMBERSHIP && Boolean(start && start <= todayKey);
   });
   if (started.length === 0) {
     return QUICK_PRESETS;
   }
   const sorted = [...started].sort((a, b) => Number(b.number || b.id) - Number(a.number || a.id));
-  const topTwo = sorted.slice(0, 2);
-  const presets = topTwo.map((m, index) => {
+  const presets = sorted.map((m, index) => {
     const start = m.start_date || m.startDate;
     const end = m.end_date || m.endDate;
     const startYear = start ? start.slice(0, 4) : "";
@@ -144,6 +159,7 @@ export function getPresetRange(presetId, dates, memberships = null, today = new 
 
   if (presetId === "xv") return { startDate: "2023-04-10", endDate: todayKey };
   if (presetId === "xiv") return { startDate: "2019-04-04", endDate: "2023-04-09" };
+  if (presetId === "xiii") return { startDate: ARCHIVE_START_DATE, endDate: "2019-04-03" };
   if (presetId === "year") {
     const yearDate = typeof today === "string" ? fromDateKey(today) : new Date(today);
     const yearAgo = new Date(yearDate);
@@ -152,7 +168,7 @@ export function getPresetRange(presetId, dates, memberships = null, today = new 
   }
   const orderedDates = [...(dates || [])].sort();
   return {
-    startDate: orderedDates[0] || "2019-01-01",
+    startDate: orderedDates[0] || ARCHIVE_START_DATE,
     endDate: orderedDates.at(-1) || todayKey,
   };
 }
