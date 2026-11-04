@@ -66,18 +66,37 @@ def extract_leader_roles(group: dict) -> dict[str, list[dict]]:
     return roles
 
 
-def fetch_faction_leaders() -> bool:
-    """Fetch the leadership of the active factions; keep the previous file if any request fails.
+def load_site_faction_names() -> set[str] | None:
+    """Faction names in the members' faction history (factions_map.json from fetch_factions.py)."""
+    try:
+        with open(os.path.join(OUTPUT_DIR_PROCESSED, "factions_map.json"), encoding="utf-8") as f:
+            factions_map = json.load(f)
+    except (OSError, ValueError):
+        return None
+    return {e["faction"] for entries in factions_map.values() for e in entries if e.get("faction")}
 
-    The active factions cover every membership the site shows (XIV and XV).
+
+def select_groups(groups: list[dict], site_factions: set[str] | None) -> list[dict]:
+    """Keep the active factions and the inactive ones a member of the site's memberships sat in.
+
+    Inactive groups go back to 1992 (about 45 of them); only a few matter here, e.g. the XIII
+    Vabaerakond and IRL factions. Without factions_map.json every group is read, so no role is lost.
     """
+    if site_factions is None:
+        return groups
+    return [g for g in groups if g.get("active") is not False or g["name"] in site_factions]
+
+
+def fetch_faction_leaders() -> bool:
+    """Fetch the faction leadership for the site's memberships; keep the previous file if any request fails."""
     out_file = os.path.join(OUTPUT_DIR_PROCESSED, "faction_roles.json")
 
-    groups = _get_json(f"{API_BASE}?typeCode=FRAKTSIOON&hideInactive=true&lang=ET")
+    groups = _get_json(f"{API_BASE}?typeCode=FRAKTSIOON&hideInactive=false&lang=ET")
     if groups is None:
         print("Warning: Could not fetch the faction list. Keeping the existing faction_roles.json.")
         return False
     validate_response(UserGroupItem, groups, endpoint="/api/usergroups", ref="FRAKTSIOON")
+    groups = select_groups(groups, load_site_faction_names())
 
     roles: dict[str, list[dict]] = {}
     for group in groups:

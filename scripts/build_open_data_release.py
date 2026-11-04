@@ -605,6 +605,7 @@ def export_reference_json_files(out_dir: Path) -> dict[str, dict[str, Any]]:
     else:
         # Fallback to standard memberships if file not found in test env
         mems_data = [
+            {"id": 13, "number": 13, "start_date": "2015-03-30", "end_date": "2019-04-04"},
             {"id": 14, "number": 14, "start_date": "2019-04-04", "end_date": "2023-04-10"},
             {"id": 15, "number": 15, "start_date": "2023-04-10", "end_date": None},
         ]
@@ -641,8 +642,36 @@ def export_reference_json_files(out_dir: Path) -> dict[str, dict[str, Any]]:
     return results
 
 
-def generate_readme(date_str: str) -> str:
+def to_roman(number: int) -> str:
+    """Roman numeral of a membership number (XIII, XIV, ...)."""
+    numeral = ""
+    for value, symbol in ((10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")):
+        while number >= value:
+            numeral += symbol
+            number -= value
+    return numeral
+
+
+def describe_coverage(memberships: list[int], first_year: int | None) -> tuple[str, str]:
+    """Estonian and English phrases for the memberships and years in the release."""
+    numerals = [to_roman(m) for m in sorted(memberships)]
+    if len(numerals) > 1:
+        names = f"{', '.join(numerals[:-1])} ja {numerals[-1]}"
+        et = f"Riigikogu {names} koosseisu"
+    elif numerals:
+        et = f"Riigikogu {numerals[0]} koosseisu"
+    else:
+        et = "Riigikogu"
+    if first_year:
+        return f"{et} (alates {first_year}. aastast)", f"since {first_year}"
+    return et, "for the memberships listed in memberships.json"
+
+
+def generate_readme(
+    date_str: str, memberships: list[int] | None = None, first_year: int | None = None
+) -> str:
     """Generate README.md for the open data release."""
+    coverage_et, coverage_en = describe_coverage(memberships or [], first_year)
     return f"""# Riigikogu kõnede ja avaandmete andmestik (Riigivaade Open Data)
 
 - **Versioon / kuupäev:** {date_str}
@@ -656,7 +685,7 @@ Kohustuslik viitamine / Required attribution:
 
 ### Mis see on? / About this dataset
 
-Käesolev andmestik koondab struktureeritud kujul Riigikogu XIV ja XV koosseisu (alates 2019. aastast) kõned, hääletused, saadikute hääled, kohalolekukontrollid, päevakorrapunktid, eelnõud, saadikute metaandmed ja valitsuskoalitsioonide perioodid.
+Käesolev andmestik koondab struktureeritud kujul {coverage_et} kõned, hääletused, saadikute hääled, kohalolekukontrollid, päevakorrapunktid, eelnõud, saadikute metaandmed ja valitsuskoalitsioonide perioodid.
 
 Kõik andmefailid on pakitud gzip-vormingus JSON Lines (`.jsonl.gz`) või JSON (`.json`) failidena ning kodeeritud UTF-8 vormingus.
 
@@ -669,7 +698,7 @@ Andmestikust on teadlikult eemaldatud ebavajalikud isikuandmed nagu sünnikuupä
 4. **Koalitsiooniperioodid:** Valitsuste koalitsiooni ja opositsiooni kuuluvused (`governments.json`) on kontrollitud ametlike allikate (valitsus.ee, ERR) põhjal ja käsitsi hooldatud.
 
 ### English Summary
-This open dataset provides structured transcripts, votes, voting results, attendance records, MP profiles, agenda items, bills (drafts), and parliamentary metadata of the Estonian Parliament (Riigikogu) since 2019.
+This open dataset provides structured transcripts, votes, voting results, attendance records, MP profiles, agenda items, bills (drafts), and parliamentary metadata of the Estonian Parliament (Riigikogu) {coverage_en}.
 Licensed under CC BY-SA 3.0 with source attribution to Riigikogu Kantselei (api.riigikogu.ee) and Riigivaade (https://www.riigivaade.me).
 """
 
@@ -711,7 +740,7 @@ Täiskogu hääletused.
 - `end_time` (string, ISO datetime): Hääletuse lõpuaeg.
 - `sitting_date` (string, YYYY-MM-DD): Istungi kuupäev.
 - `sitting_datetime` (string, ISO datetime): Istungi algusaeg.
-- `membership` (int): Riigikogu koosseisu number (14 või 15).
+- `membership` (int): Riigikogu koosseisu number (nt 15 = XV Riigikogu; vt `memberships.json`).
 - `sitting_uuid` (string | null): Istungi UUID.
 - `sitting_title` (string | null): Istungi ametlik pealkiri.
 - `related_document_uuid` (string | null): Seotud eelnõu või dokumendi UUID.
@@ -790,7 +819,7 @@ Istungite päevakorrapunktid ja seosed seaduseelnõudega.
 ### 8. `drafts.jsonl.gz`
 Riigikogu eelnõude nimekiri iga koosseisu kohta, ka eelnõud, mis pole täiskokku jõudnud. Eelnõuga seotud päevakorrapunktid, hääletused ja kõned leiab välja `uuid` järgi (`agenda_items.draft_uuid`, `votings.related_document_uuid`, `speeches_<year>.draft_uuid`).
 - `uuid` (string): Eelnõu UUID.
-- `membership` (int): Riigikogu koosseisu number (14 või 15).
+- `membership` (int): Riigikogu koosseisu number (nt 15 = XV Riigikogu; vt `memberships.json`).
 - `mark` (int): Eelnõu number koosseisu sees; koos liigiga on see eelnõu tähis (nt 919 ja SE → "919 SE").
 - `type_code` (string | null): Eelnõu liik Riigikogu klassifikaatori `eelnouLiik` järgi (SE seadus, OE otsus, AE avaldus, PE pöördumine, UA uuesti arutamine jne).
 - `title` (string): Eelnõu pealkiri.
@@ -883,6 +912,11 @@ def build_open_data_release(
         min_voting_date, max_voting_date = conn.execute(
             "SELECT min(date), max(date) FROM votings"
         ).fetchone()
+        memberships = sorted(
+            int(r[0])
+            for r in conn.execute("SELECT DISTINCT membership FROM votings")
+            if str(r[0]).isdigit()
+        )
 
         # Schema migrations
         has_migrations = (
@@ -904,7 +938,8 @@ def build_open_data_release(
         conn.close()
 
     # 10. README.md & DATA_DICTIONARY.md
-    readme_text = generate_readme(date_str)
+    first_year = int(min_speech_date[:4]) if min_speech_date else None
+    readme_text = generate_readme(date_str, memberships, first_year)
     readme_size, readme_sha256 = write_text_file(out_dir / "README.md", readme_text)
     manifest_files["README.md"] = {
         "size": readme_size,

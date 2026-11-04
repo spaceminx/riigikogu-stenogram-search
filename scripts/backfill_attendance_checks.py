@@ -1,6 +1,6 @@
 """Backfill attendance check metadata (sitting_uuid, sitting_title, sitting_datetime, sitting_type).
 
-Queries the Riigikogu votings list API month by month starting from 2019-04-01,
+Queries the Riigikogu votings list API month by month starting from config.START_DATE,
 classifies sitting titles into standard sitting types (infotund, korraline,
 lisaistung, erakorraline, muu), and upserts records into
 data/processed/attendance_checks.jsonl.
@@ -18,7 +18,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from config import OUTPUT_DIR_PROCESSED
+from config import OUTPUT_DIR_PROCESSED, START_DATE
 from src.load.loader import classify_sitting_type, upsert_attendance_checks_jsonl
 
 
@@ -86,7 +86,7 @@ def fetch_attendance_checks_for_period(
 
 
 def backfill_attendance_checks(
-    start_date: str = "2019-04-01",
+    start_date: str = START_DATE,
     end_date: str | None = None,
     upload: bool = False,
 ) -> bool:
@@ -145,7 +145,7 @@ def backfill_attendance_checks(
 
 def main():
     parser = argparse.ArgumentParser(description="Backfill attendance checks metadata.")
-    parser.add_argument("--start-date", default="2019-04-01", help="Start date (YYYY-MM-DD)")
+    parser.add_argument("--start-date", default=START_DATE, help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end-date", default=None, help="End date (YYYY-MM-DD)")
     parser.add_argument(
         "--upload", action="store_true", help="Upload attendance_checks.jsonl to Backblaze B2"

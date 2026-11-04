@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -234,9 +235,22 @@ def fetch_attendance(start_date: str = None, end_date: str = None) -> bool:
     return True
 
 
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Fetch attendance checks into attendance.jsonl.")
+    parser.add_argument(
+        "--start-date",
+        default=None,
+        help="Start date (YYYY-MM-DD, default: 30 days back, or a week before the newest saved "
+        "check if that is earlier)",
+    )
+    parser.add_argument("--end-date", default=None, help="End date (YYYY-MM-DD, default: today)")
+    return parser.parse_args(args)
+
+
 if __name__ == "__main__":
+    cli = parse_args()
     try:
-        success = fetch_attendance()
+        success = fetch_attendance(start_date=cli.start_date, end_date=cli.end_date)
     except UpstreamSchemaError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(2)

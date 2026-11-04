@@ -1,4 +1,4 @@
-"""History backfill script for enriching historical Riigikogu transcripts (2019-2026).
+"""History backfill script for enriching historical Riigikogu transcripts (from config.START_DATE on).
 
 Fetches rich meeting details (external_id, ems_id, speech_type, start_time, duration, etc.)
 from https://stenogrammid.riigikogu.ee/api/meeting/{code} and updates local yearly JSONL datasets.
@@ -568,7 +568,7 @@ def run_backfill(
 def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """CLI arguments parser."""
     parser = argparse.ArgumentParser(
-        description="Backfill rich metadata for historical Riigikogu stenograms (2019-2026)."
+        description=f"Backfill rich metadata for historical Riigikogu stenograms (from {START_DATE})."
     )
     parser.add_argument(
         "--start-date",

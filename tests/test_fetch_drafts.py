@@ -58,6 +58,9 @@ def test_site_memberships_start_from_the_archive_start(monkeypatch):
             "14": ("2019-04-04", "2023-04-09"),
         },
     )
+    # The archive starts with the XIII Riigikogu
+    assert fd.site_memberships() == [13, 14, 15]
+    monkeypatch.setattr(fd, "START_DATE", "2019-04-04")
     assert fd.site_memberships() == [14, 15]
 
 

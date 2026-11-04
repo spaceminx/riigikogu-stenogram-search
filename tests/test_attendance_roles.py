@@ -148,7 +148,7 @@ def test_get_governments_endpoint():
     data = response.json()
     assert isinstance(data, list)
     assert len(data) >= 8
-    assert data[0]["government"] == "Ratas I"
+    assert data[0]["government"] == "Rõivas I"
     assert data[-1]["government"] == "Michal"
     assert data[-1]["to"] is None
 

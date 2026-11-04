@@ -3,7 +3,7 @@
 Validation layer only - fetchers continue using raw dicts downstream.
 
 Field presence rule:
-required = always present in real data (verified on a 2019–2026 sample);
+required = always present in real data (verified on a 2015–2026 sample);
 optional = legitimately missing.
 """
 

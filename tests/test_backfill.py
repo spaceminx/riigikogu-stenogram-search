@@ -723,6 +723,7 @@ def test_upload_to_b2_updates_etag_and_subsequent_upload_succeeds(tmp_path, monk
 
 def test_backfill_year_2019_respects_archive_start_date(tmp_path, monkeypatch, capsys):
     """When running --year 2019, meetings prior to config.START_DATE (2019-04-04) are not processed."""
+    monkeypatch.setattr("config.START_DATE", "2019-04-04")
     monkeypatch.setattr("config.OUTPUT_DIR_PROCESSED", str(tmp_path))
     monkeypatch.setattr("scripts.backfill_history.OUTPUT_DIR_PROCESSED", str(tmp_path))
     seed_metadata(tmp_path)

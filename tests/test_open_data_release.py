@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from scripts.build_open_data_release import build_open_data_release
+from scripts.build_open_data_release import build_open_data_release, describe_coverage
 from scripts.publish_open_data_release import (
     load_env_pipeline,
     publish_release,
@@ -105,7 +105,7 @@ def sample_sqlite_db(tmp_path: Path) -> Path:
             date TEXT,
             start_time TEXT,
             end_time TEXT,
-            membership TEXT,
+            membership INTEGER,
             sitting_uuid TEXT,
             sitting_title TEXT,
             related_document_uuid TEXT,
@@ -128,7 +128,7 @@ def sample_sqlite_db(tmp_path: Path) -> Path:
         """
         INSERT INTO votings VALUES (
             'v-1', 1, 'AVALIK', 'Hääletus eelnõu kohta', '2023-05-15', '12:00:00', '12:01:00',
-            'XV', 'sit-1', 'Istung 1', 'draft-1', '123 SE', 'Eelnõu 1', 'DRAFT',
+            15, 'sit-1', 'Istung 1', 'draft-1', '123 SE', 'Eelnõu 1', 'DRAFT',
             'chair-1', 87, 10, 55, 30, 2, 4, '2023-05-15', '2023-05-15T12:00:00'
         )
         """
@@ -363,6 +363,10 @@ def test_build_open_data_release(sample_sqlite_db: Path, tmp_path: Path):
     assert "### 8. `drafts.jsonl.gz`" in (out_dir / "DATA_DICTIONARY.md").read_text(
         encoding="utf-8"
     )
+    # The README names the memberships and the first year found in the data
+    readme = (out_dir / "README.md").read_text(encoding="utf-8")
+    assert "Riigikogu XV koosseisu (alates 2023. aastast) kõned" in readme
+    assert "(Riigikogu) since 2023." in readme
 
     # Check SHA256SUMS file
     checksums_file = out_dir / "SHA256SUMS"
@@ -551,3 +555,14 @@ def test_build_open_data_release_without_drafts_table(sample_sqlite_db: Path, tm
     assert "drafts.jsonl.gz" not in summary["files"]
     assert not (out_dir / "drafts.jsonl.gz").exists()
     assert "drafts.jsonl.gz" not in (out_dir / "SHA256SUMS").read_text(encoding="utf-8")
+
+
+def test_describe_coverage_lists_every_membership():
+    assert describe_coverage([14, 15], 2019) == (
+        "Riigikogu XIV ja XV koosseisu (alates 2019. aastast)",
+        "since 2019",
+    )
+    assert describe_coverage([15, 13, 14], 2015)[0] == (
+        "Riigikogu XIII, XIV ja XV koosseisu (alates 2015. aastast)"
+    )
+    assert describe_coverage([16], None)[0] == "Riigikogu XVI koosseisu"

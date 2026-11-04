@@ -24,7 +24,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DATABASE_PATH}")
 B2_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL", "https://s3.eu-central-003.backblazeb2.com")
 B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "riigikogu-stenograms")
 
-START_DATE = "2019-04-04"
+# First day of the XIII Riigikogu; the archive covers every membership from it on
+START_DATE = "2015-03-30"
 
 IGNORED_VERBATIMS: dict[str, str] = {
     "202103250048": "Duplicate night verbatim of 2021-03-24 14:00 session",

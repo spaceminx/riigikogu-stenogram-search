@@ -76,8 +76,9 @@ def test_role_isamaa_before_and_after_its_rename():
     """IRL's faction took the name Isamaa on 2018-07-31; both names were in Ratas I coalition."""
     assert role("Isamaa ja Res Publica Liidu fraktsioon", "2018-07-30") == "coalition"
     assert role("Isamaa fraktsioon", "2018-07-31") == "coalition"
-    # Before Ratas I, IRL had no listed government period
-    assert role("Isamaa ja Res Publica Liidu fraktsioon", "2016-11-22") == "opposition"
+    # IRL was in Rõivas II before Ratas I too
+    assert role("Isamaa ja Res Publica Liidu fraktsioon", "2016-11-22") == "coalition"
+    assert role("Isamaa ja Res Publica Liidu fraktsioon", "2015-04-08") == "opposition"
 
 
 def test_role_fraktsioonitud_and_empty():
@@ -108,8 +109,7 @@ TRANSITIONS = [
 ]
 
 
-@pytest.mark.parametrize("start, entering, leaving", TRANSITIONS)
-def test_role_switches_on_transition_start_date(start, entering, leaving):
+def assert_role_switches_on(start, entering, leaving):
     """The role changes on the start date of the new period, not a day earlier or later."""
     day_before = (date.fromisoformat(start) - timedelta(days=1)).isoformat()
     for fac in entering:
@@ -120,18 +120,59 @@ def test_role_switches_on_transition_start_date(start, entering, leaving):
         assert role(fac, start) == "opposition", (fac, start)
 
 
+@pytest.mark.parametrize("start, entering, leaving", TRANSITIONS)
+def test_role_switches_on_transition_start_date(start, entering, leaving):
+    assert_role_switches_on(start, entering, leaving)
+
+
+IRL = "Isamaa ja Res Publica Liidu fraktsioon"
+VABA = "Eesti Vabaerakonna fraktsioon"
+
+# Government changes in the XIII Riigikogu (2015-03-30 → 2019-04-03), sources in governments.json
+XIII_TRANSITIONS = [
+    ("2015-04-09", {IRL}, set()),  # Rõivas II
+    ("2016-11-23", {KESK}, {REF}),  # Ratas I
+]
+
+
+@pytest.mark.parametrize("start, entering, leaving", XIII_TRANSITIONS)
+def test_role_switches_on_xiii_transition_start_date(start, entering, leaving):
+    assert_role_switches_on(start, entering, leaving)
+
+
+def test_xiii_starts_under_the_outgoing_roivas_i_government():
+    """The XIII convened on 2015-03-30 while Rõivas I (Reform + SDE) was still in office."""
+    assert role(REF, "2015-03-30") == "coalition"
+    assert role(SDE, "2015-03-30") == "coalition"
+    for faction in (IRL, KESK, EKRE, VABA):
+        assert role(faction, "2015-03-30") == "opposition", faction
+    # Vabaerakond was never in a government
+    for start, _, _ in XIII_TRANSITIONS:
+        assert role(VABA, start) == "opposition"
+
+
 def test_transition_table_matches_governments_json():
-    """TRANSITIONS lists every period change in governments.json since XIV started."""
-    starts = [g["from"] for g in load_governments() if g["from"] >= "2019-04-04"]
-    assert starts == [t[0] for t in TRANSITIONS]
+    """The transition tables list every period change in governments.json since XIII started."""
+    starts = [g["from"] for g in load_governments() if g["from"] >= "2015-03-30"]
+    assert starts == [t[0] for t in XIII_TRANSITIONS + TRANSITIONS]
 
 
 def test_role_expression_matches_role_on_boundary_dates():
     """The SQL CASE used in queries agrees with role() on both sides of every boundary."""
     engine = create_engine("sqlite://")
-    factions = [KESK, EKRE, REF, ISAMAA, SDE, E200, "Fraktsiooni mittekuuluvad Riigikogu liikmed"]
+    factions = [
+        KESK,
+        EKRE,
+        REF,
+        ISAMAA,
+        IRL,
+        SDE,
+        E200,
+        VABA,
+        "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+    ]
     dates = []
-    for start, _, _ in TRANSITIONS:
+    for start, _, _ in XIII_TRANSITIONS + TRANSITIONS:
         dates.append((date.fromisoformat(start) - timedelta(days=1)).isoformat())
         dates.append(start)
     with engine.connect() as conn:
