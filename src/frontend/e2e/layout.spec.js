@@ -73,7 +73,7 @@ test.describe("Voting summary wrapping at 390px", { tag: "@mobile-only" }, () =>
 });
 
 test.describe("Header between the mobile menu and full width", { tag: "@desktop-only" }, () => {
-  for (const width of [641, 700, 720, 760]) {
+  for (const width of [641, 700, 720, 721, 736, 760, 761, 785, 800, 801]) {
     test(`the five nav links fit at ${width}px`, async ({ page }) => {
       const mock = await setupApiMock(page);
       await page.setViewportSize({ width, height: 800 });
