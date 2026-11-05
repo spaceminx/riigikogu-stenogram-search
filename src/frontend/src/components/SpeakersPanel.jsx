@@ -6,6 +6,7 @@ export function SpeakersPanel({
   speakers = [],
   showingArchiveSpeakers = false,
   overviewError = false,
+  emptyMessage = "Kõnelejate andmed laaditakse arhiivist.",
 }) {
   const maxCount = Math.max(...speakers.map((s) => Number(s.count || 0)), 1);
 
@@ -67,9 +68,7 @@ export function SpeakersPanel({
         </div>
       ) : (
         <p className="sidebar-empty-state">
-          {overviewError
-            ? "Kõnelejate koondandmed pole praegu kättesaadavad."
-            : "Kõnelejate andmed laaditakse arhiivist."}
+          {overviewError ? "Kõnelejate koondandmed pole praegu kättesaadavad." : emptyMessage}
         </p>
       )}
     </section>

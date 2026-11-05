@@ -67,8 +67,6 @@ export function SearchView({
   const [filterExcludeChair, setFilterExcludeChair] = useState(excludeChairParam);
   const [filterSpeechCategory, setFilterSpeechCategory] = useState(speechCategoryParam);
   const [filterExactMatch, setFilterExactMatch] = useState(exactMatchParam);
-  const [showTimeline, setShowTimeline] = useState(false);
-  const [showSpeakers, setShowSpeakers] = useState(false);
 
   // Sync draft filters during render if URL changes externally (e.g. Back/Forward)
   const urlFiltersKey = `${membershipParam}|${factionParam}|${speakerParam}|${speakerUuidParam}|${startDateParam}|${endDateParam}|${excludeChairParam}|${speechCategoryParam}|${exactMatchParam}`;
@@ -105,6 +103,8 @@ export function SearchView({
   const [totalCount, setTotalCount] = useState(0);
   const [activity, setActivity] = useState([]);
   const [speakers, setSpeakers] = useState([]);
+  const [speakersLoading, setSpeakersLoading] = useState(false);
+  const [speakersError, setSpeakersError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -206,11 +206,10 @@ export function SearchView({
     hasSearchQuery,
   ]);
 
-  // The timeline and speaker panels are hidden by default: fetch their data only when shown,
-  // and only again when the query or filters change (not on paging or sorting).
-  const loadedActivityKeyRef = useRef(null);
+  // The timeline and speaker panels fetch again only when the query or filters change
+  // (not on paging or sorting).
   useEffect(() => {
-    if (!hasSearchQuery || !showTimeline || loadedActivityKeyRef.current === panelDataKey) {
+    if (!hasSearchQuery) {
       return;
     }
     if (activityAbortRef.current) {
@@ -234,7 +233,6 @@ export function SearchView({
         if (currentRequestId !== activityRequestIdRef.current) return;
         setActivity(data.activity || []);
         setActivityError(null);
-        loadedActivityKeyRef.current = panelDataKey;
       })
       .catch((err) => {
         if (err.name === "AbortError") return;
@@ -252,35 +250,37 @@ export function SearchView({
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelDataKey, showTimeline, hasSearchQuery]);
+  }, [panelDataKey, hasSearchQuery]);
 
-  const speakersAbortRef = useRef(null);
-  const loadedSpeakersKeyRef = useRef(null);
   useEffect(() => {
-    if (!hasSearchQuery || !showSpeakers || loadedSpeakersKeyRef.current === panelDataKey) {
+    if (!hasSearchQuery) {
       return;
     }
-    if (speakersAbortRef.current) {
-      speakersAbortRef.current.abort();
-    }
     const abortController = new AbortController();
-    speakersAbortRef.current = abortController;
+    Promise.resolve().then(() => {
+      if (abortController.signal.aborted) return;
+      setSpeakersLoading(true);
+      setSpeakersError(false);
+    });
 
     fetchSpeakers({ ...filterParams, limit: 20 }, 20, abortController.signal)
       .then((data) => {
         setSpeakers(data.speakers || []);
-        loadedSpeakersKeyRef.current = panelDataKey;
       })
       .catch((err) => {
         if (err.name === "AbortError") return;
         setSpeakers([]);
+        setSpeakersError(true);
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) setSpeakersLoading(false);
       });
 
     return () => {
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelDataKey, showSpeakers, hasSearchQuery]);
+  }, [panelDataKey, hasSearchQuery]);
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
@@ -418,7 +418,7 @@ export function SearchView({
   const currentTotalCount = hasSearchQuery ? totalCount : 0;
   const currentSpeeches = hasSearchQuery ? speeches : [];
   const currentActivity = hasSearchQuery ? activity : [];
-  const currentSpeakers = hasSearchQuery ? speakers : [];
+  const currentSpeakers = hasSearchQuery && !speakersLoading ? speakers : [];
 
   const totalPages = Math.max(1, Math.ceil(currentTotalCount / PAGE_SIZE));
 
@@ -506,62 +506,27 @@ export function SearchView({
       )}
 
       {hasSearchQuery && (
-        <div className="search-summary-bar">
-          <button
-            type="button"
-            className={`search-summary-toggle ${showTimeline ? "is-active" : ""}`}
-            aria-pressed={showTimeline}
-            onClick={() => setShowTimeline((prev) => !prev)}
-          >
-            {showTimeline ? "Peida ajajoon" : "Näita ajajoont"}
-          </button>
-          <button
-            type="button"
-            className={`search-summary-toggle ${showSpeakers ? "is-active" : ""}`}
-            aria-pressed={showSpeakers}
-            onClick={() => setShowSpeakers((prev) => !prev)}
-          >
-            {showSpeakers ? "Peida kõnelejad" : "Näita kõnelejaid"}
-          </button>
-        </div>
-      )}
-
-      {hasSearchQuery && (showTimeline || showSpeakers) && (
-        <div className="search-collapsible-panels">
-          {showTimeline && showSpeakers ? (
-            <div className="dashboard-grid search-panels-grid" style={{ marginBottom: "1.5rem" }}>
-              <ActivityChart
-                activity={currentActivity}
-                interval={intervalParam}
-                onIntervalChange={handleIntervalChange}
-                scale={scaleParam}
-                onScaleChange={handleScaleChange}
-                loading={activityLoading}
-                error={activityError}
-                theme={theme}
-              />
-              <aside className="dashboard-rail">
-                <SpeakersPanel speakers={currentSpeakers} showingArchiveSpeakers={false} />
-              </aside>
-            </div>
-          ) : showTimeline ? (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <ActivityChart
-                activity={currentActivity}
-                interval={intervalParam}
-                onIntervalChange={handleIntervalChange}
-                scale={scaleParam}
-                onScaleChange={handleScaleChange}
-                loading={activityLoading}
-                error={activityError}
-                theme={theme}
-              />
-            </div>
-          ) : (
-            <div style={{ marginBottom: "1.5rem" }}>
-              <SpeakersPanel speakers={currentSpeakers} showingArchiveSpeakers={false} />
-            </div>
-          )}
+        <div className="dashboard-grid search-panels-grid">
+          <ActivityChart
+            activity={currentActivity}
+            interval={intervalParam}
+            onIntervalChange={handleIntervalChange}
+            scale={scaleParam}
+            onScaleChange={handleScaleChange}
+            loading={activityLoading}
+            error={activityError}
+            theme={theme}
+          />
+          <aside className="dashboard-rail">
+            <SpeakersPanel
+              speakers={currentSpeakers}
+              showingArchiveSpeakers={false}
+              overviewError={speakersError}
+              emptyMessage={
+                speakersLoading ? "Laen kõnelejaid…" : "Otsingule vastavaid kõnelejaid ei leitud."
+              }
+            />
+          </aside>
         </div>
       )}
 

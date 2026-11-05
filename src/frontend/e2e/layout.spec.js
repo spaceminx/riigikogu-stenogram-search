@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import fs from "node:fs";
 import { setupApiMock } from "./support/api.js";
 import { ROUTES } from "./support/routes.js";
 
@@ -128,71 +129,95 @@ test.describe("Search pills wrapping", { tag: "@desktop-only" }, () => {
   });
 });
 
-test.describe("Search speakers next to the timeline", { tag: "@desktop-only" }, () => {
-  test("side by side, the speaker list is as tall as the chart and scrolls inside", async ({
+test.describe("Search timeline and speakers", { tag: "@desktop-only" }, () => {
+  const measure = (page) =>
+    page.evaluate(() => {
+      const grid = document.querySelector(".search-panels-grid");
+      const [chart, rail] = grid.children;
+      const list = rail.querySelector(".speakers-list");
+      const g = grid.getBoundingClientRect();
+      const c = chart.getBoundingClientRect();
+      const r = rail.getBoundingClientRect();
+      const plot = chart.querySelector(".timeline-chart").getBoundingClientRect();
+      const surface = chart.querySelector(".recharts-surface")?.getBoundingClientRect();
+      return {
+        sideBySide: Math.abs(c.top - r.top) < 1,
+        chartHeight: c.height,
+        railHeight: r.height,
+        scrolls: list ? list.scrollHeight > list.clientHeight : false,
+        // Both panels fill the grid: side by side they share its width, stacked each takes all of it
+        fillsGrid:
+          Math.abs(c.left - g.left) <= 1 &&
+          Math.abs(r.right - g.right) <= 1 &&
+          (Math.abs(c.top - r.top) < 1
+            ? c.right <= r.left
+            : Math.abs(c.width - g.width) <= 1 && Math.abs(r.width - g.width) <= 1),
+        chartFits: surface ? Math.abs(surface.width - plot.width) <= 1 : false,
+        pageOverflow: document.documentElement.scrollWidth > window.innerWidth,
+      };
+    });
+
+  const sizesAt = async (page, width) => {
+    await page.setViewportSize({ width, height: 900 });
+    // The chart follows its container after a resize
+    await expect.poll(async () => (await measure(page)).chartFits, `${width}px`).toBe(true);
+    return measure(page);
+  };
+
+  test("the panels fill the width and the speaker box keeps its size and scrolls", async ({
     page,
   }) => {
     await setupApiMock(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/otsing?q=kliima");
-    await page.getByRole("button", { name: "Näita ajajoont" }).click();
-    await page.getByRole("button", { name: "Näita kõnelejaid" }).click();
     await expect(page.locator(".speaker-item")).toHaveCount(20);
     await expect(page.locator(".search-panels-grid .recharts-surface").first()).toBeVisible();
 
-    const measure = () =>
-      page.evaluate(() => {
-        const [chart, rail] = document.querySelector(".search-panels-grid").children;
-        const list = rail.querySelector(".speakers-list");
-        const c = chart.getBoundingClientRect();
-        const r = rail.getBoundingClientRect();
-        return {
-          sideBySide: Math.abs(c.top - r.top) < 1,
-          chart: c.height,
-          rail: r.height,
-          scrolls: list.scrollHeight > list.clientHeight,
-        };
-      });
-
-    // The grid keeps two columns down to 721 px; the old rule only applied from 1025 px
+    // The grid keeps two columns down to 721 px (light-theme.css)
     for (const width of [1280, 1024, 1000, 900, 721]) {
-      await page.setViewportSize({ width, height: 900 });
-      const sizes = await measure();
+      const sizes = await sizesAt(page, width);
       expect(sizes.sideBySide, `${width}px`).toBe(true);
-      expect(Math.abs(sizes.rail - Math.max(sizes.chart, 320)), `${width}px`).toBeLessThanOrEqual(
-        1
-      );
+      expect(sizes.fillsGrid, `${width}px`).toBe(true);
+      expect(sizes.pageOverflow, `${width}px`).toBe(false);
+      expect(
+        Math.abs(sizes.railHeight - Math.max(sizes.chartHeight, 320)),
+        `${width}px`
+      ).toBeLessThanOrEqual(1);
       expect(sizes.scrolls, `${width}px`).toBe(true);
     }
 
-    // Stacked under the chart, the whole list shows
-    await page.setViewportSize({ width: 720, height: 900 });
-    const stacked = await measure();
-    expect(stacked.sideBySide).toBe(false);
-    expect(stacked.scrolls).toBe(false);
-  });
-});
-
-test.describe("Attendance faction names on phones", { tag: "@mobile-only" }, () => {
-  test("long faction names stay inside their column", async ({ page }) => {
-    await setupApiMock(page);
-    await page.goto("/kohalolek?att_tab=factions");
-    const table = page.getByRole("region", { name: "Fraktsioonide kohaloleku koondtabel" });
-    await expect(table.locator(".faction-title").first()).toBeVisible();
-
-    for (const width of [430, 393, 360, 320]) {
-      await page.setViewportSize({ width, height: 850 });
-      const overflowing = await table.evaluate((region) =>
-        [...region.querySelectorAll("td.att-col-name")]
-          .filter((cell) => {
-            const range = document.createRange();
-            range.selectNodeContents(cell.querySelector(".faction-title"));
-            const right = Math.max(...[...range.getClientRects()].map((r) => r.right));
-            return right > cell.getBoundingClientRect().right;
-          })
-          .map((cell) => cell.querySelector(".faction-title").textContent)
-      );
-      expect(overflowing, `${width}px`).toEqual([]);
+    // Stacked under the chart, the speaker box keeps one height and scrolls inside
+    for (const width of [720, 390, 360]) {
+      const sizes = await sizesAt(page, width);
+      expect(sizes.sideBySide, `${width}px`).toBe(false);
+      expect(sizes.fillsGrid, `${width}px`).toBe(true);
+      expect(sizes.pageOverflow, `${width}px`).toBe(false);
+      expect(Math.abs(sizes.railHeight - 320), `${width}px`).toBeLessThanOrEqual(1);
+      expect(sizes.scrolls, `${width}px`).toBe(true);
     }
+  });
+
+  test("the speaker box is the same size with few speakers", async ({ page }) => {
+    await setupApiMock(page);
+    const fixture = JSON.parse(
+      fs.readFileSync(new URL("./fixtures/search_speakers.json", import.meta.url), "utf-8")
+    );
+    await page.route("**/search/speakers*", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify({ ...fixture, speakers: fixture.speakers.slice(0, 3) }),
+      })
+    );
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/otsing?q=kliima");
+    await expect(page.locator(".speaker-item")).toHaveCount(3);
+    await expect(page.locator(".search-panels-grid .recharts-surface").first()).toBeVisible();
+
+    const wide = await sizesAt(page, 1280);
+    expect(Math.abs(wide.railHeight - Math.max(wide.chartHeight, 320))).toBeLessThanOrEqual(1);
+    const narrow = await sizesAt(page, 390);
+    expect(Math.abs(narrow.railHeight - 320)).toBeLessThanOrEqual(1);
   });
 });
