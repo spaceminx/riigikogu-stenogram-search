@@ -17,6 +17,24 @@ export function formatActivityShare(share, decimals = 1) {
 }
 
 /**
+ * Format an MP's speaking time (e.g. "24 h 27 min"). Durations exist only from
+ * duration.available_from on, so a person whose speeches all predate it has no known time.
+ *
+ * @param {{mp_seconds?: number|null, available_from?: string}|null|undefined} duration
+ * @param {string|null|undefined} lastSpeechDate
+ * @returns {string|null} null when the speaking time is not known
+ */
+export function formatSpeakingTime(duration, lastSpeechDate) {
+  if (duration?.mp_seconds == null) return null;
+  if (duration.available_from && lastSpeechDate && lastSpeechDate < duration.available_from) {
+    return null;
+  }
+  const hours = Math.floor(duration.mp_seconds / 3600);
+  const minutes = Math.floor((duration.mp_seconds % 3600) / 60);
+  return `${hours} h ${minutes} min`;
+}
+
+/**
  * Check whether a timeline period had no plenary sittings (share is null).
  *
  * @param {object|null|undefined} item

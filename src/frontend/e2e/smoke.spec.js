@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { test, expect } from "@playwright/test";
 import { setupApiMock, FIXTURE_IDS } from "./support/api.js";
 import { ROUTES } from "./support/routes.js";
@@ -46,6 +47,36 @@ test.describe("Smoke tests for all routes", () => {
     await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
     await expect(page.locator("img.person-photo")).toBeVisible();
     await expect(page.locator(".person-photo-caption")).toHaveText("Foto: Riigikogu");
+
+    mock.verifyNoErrors();
+  });
+
+  test("person page shows no speaking time when every speech predates the durations", async ({
+    page,
+  }) => {
+    const mock = await setupApiMock(page);
+    await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
+    const card = page.locator(".person-metric-card", { hasText: "Kõneaeg saadikuna" });
+    await expect(card.locator(".person-metric-value")).toHaveText("24 h 27 min");
+
+    // A XIII-only member: the source has no start times before 2020-09-14
+    const stats = JSON.parse(
+      fs.readFileSync(new URL("./fixtures/person_stats.json", import.meta.url))
+    );
+    await page.route(
+      (url) => url.pathname.endsWith(`/persons/${FIXTURE_IDS.personUuid}/stats`),
+      (route) =>
+        route.fulfill({
+          json: {
+            ...stats,
+            duration: { ...stats.duration, mp_seconds: 0 },
+            last_speech_date: "2016-11-16",
+          },
+        })
+    );
+    await page.reload();
+    await expect(card.locator(".person-metric-value")).toHaveText("—");
+    await expect(card).toContainText("Kõneaeg on teada alates 14.09.2020");
 
     mock.verifyNoErrors();
   });

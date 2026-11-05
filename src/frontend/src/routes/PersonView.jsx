@@ -20,6 +20,7 @@ import {
   fetchPersonStats,
   fetchSpeechContext,
 } from "../lib/api";
+import { formatSpeakingTime } from "../lib/activityUtils";
 import { formatDate } from "../lib/calendarUtils";
 import { formatMetricRatio, formatPercent, formatVoteSplit, toRoman } from "../lib/formatters";
 import { SpeechCard } from "../components/SpeechCard";
@@ -438,15 +439,11 @@ export function PersonView({ theme = "light" }) {
     return val;
   };
 
-  let formattedDuration = "—";
-  if (statsLoading) {
-    formattedDuration = "…";
-  } else if (stats && !statsError && stats.duration?.mp_seconds != null) {
-    const mpDurationSec = stats.duration.mp_seconds;
-    const mpHours = Math.floor(mpDurationSec / 3600);
-    const mpMinutes = Math.floor((mpDurationSec % 3600) / 60);
-    formattedDuration = `${mpHours} h ${mpMinutes} min`;
-  }
+  const speakingTime =
+    stats && !statsError ? formatSpeakingTime(stats.duration, stats.last_speech_date) : null;
+  const formattedDuration = statsLoading ? "…" : (speakingTime ?? "—");
+  // Every speech predates the durations in the source
+  const durationPredatesData = Boolean(stats && !statsError && !speakingTime);
 
   let formattedAttendance = "—";
   if (attendanceLoading) {
@@ -641,7 +638,9 @@ export function PersonView({ theme = "light" }) {
           <div className="glass-panel person-metric-card">
             <span className="person-metric-label">Kõneaeg saadikuna</span>
             <strong className="person-metric-value">{formattedDuration}</strong>
-            <span className="person-metric-desc">alates 14.09.2020</span>
+            <span className="person-metric-desc">
+              {durationPredatesData ? "Kõneaeg on teada alates 14.09.2020" : "alates 14.09.2020"}
+            </span>
           </div>
 
           <div className="glass-panel person-metric-card">
