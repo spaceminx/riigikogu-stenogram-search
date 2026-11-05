@@ -28,7 +28,6 @@ import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
 import { usePageMeta } from "../lib/usePageMeta";
 import { chartColors } from "../lib/chartColors";
-import { Rss } from "lucide-react";
 
 const SPEECHES_PER_PAGE = 20;
 
@@ -207,20 +206,7 @@ export function PersonView({ theme = "light" }) {
     ? `Riigikogu saadiku ${person.full_name} kõned, hääletused, kohalolek ja fraktsiooniline kuuluvus.`
     : "Riigikogu saadiku profiil, kõned, hääletused ja kohalolek.";
 
-  const rssUrl = uuid ? `https://www.riigivaade.me/rss/saadik/${uuid}` : null;
-
-  usePageMeta(
-    personTitle,
-    personDesc,
-    rssUrl
-      ? {
-          rss: {
-            href: rssUrl,
-            title: `Riigivaade: ${person?.full_name || "saadiku"} kõned`,
-          },
-        }
-      : {}
-  );
+  usePageMeta(personTitle, personDesc);
 
   // Context modal handler
   const handleOpenContext = async (speechId) => {
@@ -543,19 +529,6 @@ export function PersonView({ theme = "light" }) {
                   Otsi
                 </button>
               </form>
-
-              {uuid && (
-                <a
-                  href={`/rss/saadik/${uuid}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rss-feed-link"
-                  title="Telli selle saadiku kõnede RSS-voog"
-                >
-                  <Rss size={13} aria-hidden="true" />
-                  <span>Telli RSS-voog</span>
-                </a>
-              )}
             </div>
           </div>
         </div>

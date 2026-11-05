@@ -16,7 +16,7 @@ Iga pilt avab sama lehe päris saidil. Piltidel on Riigikogu andmed ([api.riigik
 
 [![Kõneotsing sõnale „eelarve“ koos ajajoone ja kõnelejatega](docs/images/search.webp)](https://www.riigivaade.me/otsing?q=eelarve)
 
-Otsib sõnade algvormide (lemmade) järgi, nii et „eelarve“ leiab ka „eelarvest“. Ühe ploki sõnad peavad kõik esinema, plokid on alternatiivid (`+ JA`, `+ VÕI`) ja mitmesõnaline plokk on täpne fraas. Filtrid: koosseis, fraktsioon, kuupäevad, esineja ja sõnavõtu liik, soovi korral ilma istungi juhatajata või ilma liitsõnadeta. Lisapaneelid näitavad mainimisi ajas (päev, nädal või kuu; arv või osakaal) ja saadikuid, kes teemat kõige rohkem mainivad. Iga tulemuse saab avada istungi kontekstis, tulemused saab alla laadida CSV või JSON failina ja igal otsingul on RSS-voog.
+Otsib sõnade algvormide (lemmade) järgi, nii et „eelarve“ leiab ka „eelarvest“. Ühe ploki sõnad peavad kõik esinema, plokid on alternatiivid (`+ JA`, `+ VÕI`) ja mitmesõnaline plokk on täpne fraas. Filtrid: koosseis, fraktsioon, kuupäevad, esineja ja sõnavõtu liik, soovi korral ilma istungi juhatajata või ilma liitsõnadeta. Lisapaneelid näitavad mainimisi ajas (päev, nädal või kuu; arv või osakaal) ja saadikuid, kes teemat kõige rohkem mainivad. Iga tulemuse saab avada istungi kontekstis ja tulemused saab alla laadida CSV või JSON failina.
 
 ### Istung
 
@@ -28,7 +28,7 @@ Istungi kogu stenogramm järjekorras, istungi hääletused, iga kõne video ja l
 
 [![Riigikogu esimehe Lauri Hussari leht](docs/images/member.webp)](https://www.riigivaade.me/saadik/64c0141f-371b-4520-8a50-09e65231f775)
 
-Aktiivsus ja osalus, kõned saadiku, ministri või istungi juhatajana, kohalolek ja hääletamine koalitsioonis ja opositsioonis olles, kõned aastate kaupa, kohalolek koosseisude kaupa, kui sageli saadik hääletas fraktsiooni enamusega (koos erinevate hääletustega) ning saadiku kõned koos RSS-vooga.
+Aktiivsus ja osalus, kõned saadiku, ministri või istungi juhatajana, kohalolek ja hääletamine koalitsioonis ja opositsioonis olles, kõned aastate kaupa, kohalolek koosseisude kaupa, kui sageli saadik hääletas fraktsiooni enamusega (koos erinevate hääletustega) ning saadiku kõned.
 
 ### Kohalolek
 

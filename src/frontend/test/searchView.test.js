@@ -6,7 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import { createServer } from "vite";
 
 describe("SearchView SSR regression tests", () => {
-  it("renders /otsing?q=eelarve without throwing and displays the RSS feed link", async () => {
+  it("renders /otsing?q=eelarve without throwing and offers no RSS feed", async () => {
     const server = await createServer({
       server: { middlewareMode: true },
       appType: "custom",
@@ -56,11 +56,8 @@ describe("SearchView SSR regression tests", () => {
       });
 
       assert.ok(html.length > 0, "Rendered output should not be empty");
-      assert.ok(html.includes("Telli RSS-voog"), "Rendered output should include 'Telli RSS-voog'");
-      assert.ok(
-        html.includes("/rss/search?q=eelarve"),
-        "Rendered output should include RSS link with query param"
-      );
+      assert.ok(html.includes("Leitud stenogrammid"), "Rendered output should include the results");
+      assert.ok(!html.includes("/rss/"), "Rendered output should not link to an RSS feed");
     } finally {
       await server.close();
     }
