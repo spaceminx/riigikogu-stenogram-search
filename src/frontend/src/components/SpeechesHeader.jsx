@@ -1,14 +1,7 @@
 import React from "react";
-import { Rss } from "lucide-react";
 import { getExportUrl } from "../lib/api";
 
-export function SpeechesHeader({
-  totalCount,
-  sortParam,
-  onSortChange,
-  exportParams,
-  rssUrl = null,
-}) {
+export function SpeechesHeader({ totalCount, sortParam, onSortChange, exportParams }) {
   return (
     <div className="chart-header speeches-header-bar">
       <div className="speeches-header-heading">
@@ -21,19 +14,6 @@ export function SpeechesHeader({
       </div>
 
       <div className="speeches-header-controls">
-        {rssUrl && (
-          <a
-            href={rssUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rss-feed-link"
-            title="Telli selle otsingu RSS-voog"
-          >
-            <Rss size={13} aria-hidden="true" />
-            <span>Telli RSS-voog</span>
-          </a>
-        )}
-
         <div className="sort-control-wrap">
           <label htmlFor="search-sort-select" className="sort-label">
             Järjestus:

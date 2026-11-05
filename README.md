@@ -16,7 +16,7 @@ Each screenshot opens the same page on the live site. The screenshots show data 
 
 [![Speech search for "eelarve" with the timeline and the top speakers](docs/images/search.webp)](https://www.riigivaade.me/otsing?q=eelarve)
 
-Searches base word forms (lemmas), so "eelarve" also finds "eelarvest". Words in one block must all occur, blocks are alternatives (`+ JA`, `+ VÕI`) and a multi-word block is an exact phrase. Filters: membership, faction, dates, speaker and speech type, optionally without the chair of the sitting or without compound words. Optional panels show mentions over time (day, week or month; count or share) and the members who mention the topic most. Every result opens in the context of its sitting; results download as CSV or JSON, and every search has an RSS feed.
+Searches base word forms (lemmas), so "eelarve" also finds "eelarvest". Words in one block must all occur, blocks are alternatives (`+ JA`, `+ VÕI`) and a multi-word block is an exact phrase. Filters: membership, faction, dates, speaker and speech type, optionally without the chair of the sitting or without compound words. Optional panels show mentions over time (day, week or month; count or share) and the members who mention the topic most. Every result opens in the context of its sitting; results download as CSV or JSON.
 
 ### Sitting
 
@@ -28,7 +28,7 @@ The whole stenogram of a sitting in order, with its votes, the video of each spe
 
 [![The page of Lauri Hussar, Speaker of the Riigikogu](docs/images/member.webp)](https://www.riigivaade.me/saadik/64c0141f-371b-4520-8a50-09e65231f775)
 
-Activity and participation, speeches as a member, minister or chair, attendance and voting while in the coalition and in opposition, speeches per year, attendance per membership, how often the member voted with the faction majority (with the votes that differed) and the member's speeches, with an RSS feed.
+Activity and participation, speeches as a member, minister or chair, attendance and voting while in the coalition and in opposition, speeches per year, attendance per membership, how often the member voted with the faction majority (with the votes that differed) and the member's speeches.
 
 ### Attendance
 
