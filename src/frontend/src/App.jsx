@@ -135,12 +135,22 @@ function AppContent() {
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    const root = document.documentElement;
+    // Switch every color at once: hover transitions would otherwise make small controls lag
+    root.classList.add("theme-switching");
+    root.dataset.theme = theme;
+    // Force a layout so the new colors apply while transitions are off
+    void document.body.offsetHeight;
+    const timer = setTimeout(() => root.classList.remove("theme-switching"), 0);
     try {
       localStorage.setItem("theme", theme);
     } catch {
       // Ignore write errors in private mode
     }
+    return () => {
+      clearTimeout(timer);
+      root.classList.remove("theme-switching");
+    };
   }, [theme]);
 
   const {

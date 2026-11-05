@@ -480,9 +480,9 @@ input.search-input:focus-visible {
   height: 16px;
 }
 
-/* Between the mobile menu and full width the four nav links leave no room for the label;
-   the summary keeps its aria-label */
-@media (min-width: 641px) and (max-width: 760px) {
+/* Between the mobile menu and full width the nav links leave no room for the label (with it the
+   header overflows up to 785px); the summary keeps its aria-label */
+@media (min-width: 641px) and (max-width: 800px) {
   .header-menu-trigger > span {
     display: none;
   }

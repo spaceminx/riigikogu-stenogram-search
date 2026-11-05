@@ -35,6 +35,37 @@ test.describe("Theme toggle and contrast check", () => {
     mock.verifyNoErrors();
   });
 
+  test("switches every element's colors at once, without per-element transitions", async ({
+    page,
+  }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/otsing?q=kliima");
+    const select = page.locator(".filter-select").first();
+    await expect(select).toBeVisible();
+
+    await page.locator(".header-menu-trigger").click();
+    await page.locator("button.menu-action[aria-pressed]").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+    // Read right after the switch, then again once any transition would have ended
+    const readColors = () =>
+      select.evaluate((el) => {
+        const style = window.getComputedStyle(el);
+        return [style.backgroundColor, style.color, style.borderTopColor];
+      });
+    const right = await readColors();
+    await page.waitForTimeout(500);
+    expect(right).toEqual(await readColors());
+    // Hover transitions come back after the switch
+    await expect(page.locator("html")).not.toHaveClass(/theme-switching/);
+    expect(await select.evaluate((el) => window.getComputedStyle(el).transitionDuration)).not.toBe(
+      "0s"
+    );
+
+    mock.verifyNoErrors();
+  });
+
   test("dark mode key elements pass WCAG AA contrast check (>= 4.5 or >= 3 for large/bold text)", async ({
     page,
   }) => {

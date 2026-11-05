@@ -429,14 +429,15 @@ select:focus-visible {
 }
 
 /* Five nav links fit next to the brand from the mobile menu breakpoint up only without the
-   tagline; at most 720px the page is 580px wide, so the links also lose some padding */
+   tagline; up to 760px the links also lose some padding (with full padding the header overflows
+   from 721px to 736px) */
 @media (min-width: 641px) and (max-width: 860px) {
   .brand-copy > span {
     display: none;
   }
 }
 
-@media (min-width: 641px) and (max-width: 720px) {
+@media (min-width: 641px) and (max-width: 760px) {
   .nav-btn {
     padding: 7px 6px;
   }

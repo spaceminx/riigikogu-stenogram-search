@@ -104,39 +104,25 @@
   color: var(--color-text);
 }
 
-/* "Näita ajajoont" / "Näita kõnelejaid" above the results */
-.search-summary-bar {
+/* The speaker box keeps one size whatever the results: the list scrolls inside it */
+.search-panels-grid {
+  margin-bottom: 1.5rem;
+}
+
+.search-panels-grid .members-panel {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0;
+  flex-direction: column;
+  height: 320px;
 }
 
-.search-summary-toggle {
-  min-height: 32px;
-  padding: 6px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+.search-panels-grid .speakers-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
-.search-summary-toggle:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-subtle);
-}
-
-.search-summary-toggle.is-active {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-
-/* Next to the timeline the speaker list is as tall as the chart and scrolls inside, instead of
-   leaving empty space under the chart */
+/* Next to the timeline the speaker box is as tall as the chart, instead of leaving empty space
+   under the chart */
 /* The grid has two columns down to 721 px (light-theme.css) */
 @media (min-width: 721px) {
   .dashboard-grid.search-panels-grid {
@@ -151,13 +137,6 @@
   .search-panels-grid > .dashboard-rail > .members-panel {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .search-panels-grid .speakers-list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    height: auto;
   }
 }
