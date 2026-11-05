@@ -3,12 +3,28 @@ import assert from "node:assert/strict";
 import {
   formatActivityShare,
   formatActivityTooltip,
+  formatSpeakingTime,
   isNullPeriod,
   parseScaleParam,
   updateScaleParam,
 } from "../src/lib/activityUtils.js";
 
 describe("activityUtils", () => {
+  describe("speaking time", () => {
+    const duration = { mp_seconds: 88077, available_from: "2020-09-14" };
+
+    it("formats hours and minutes", () => {
+      assert.strictEqual(formatSpeakingTime(duration, "2026-10-21"), "24 h 27 min");
+      assert.strictEqual(formatSpeakingTime({ ...duration, mp_seconds: 0 }, null), "0 h 0 min");
+    });
+
+    it("is not known when every speech predates the durations", () => {
+      assert.strictEqual(formatSpeakingTime({ ...duration, mp_seconds: 0 }, "2016-11-16"), null);
+      assert.strictEqual(formatSpeakingTime({ mp_seconds: null }, "2026-10-21"), null);
+      assert.strictEqual(formatSpeakingTime(undefined, "2026-10-21"), null);
+    });
+  });
+
   describe("share formatting", () => {
     it("formats 0.035 to Estonian comma percentage '3,5%'", () => {
       assert.strictEqual(formatActivityShare(0.035), "3,5%");
