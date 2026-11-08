@@ -172,6 +172,10 @@ test("draft list labels", async (t) => {
       formatDraftStatus("AVALDATUD_RIIGITEATAJAS", "VASTU_VOETUD"),
       "Avaldatud Riigi Teatajas"
     );
+    assert.equal(
+      formatDraftStatus("VALJAKUULUTATUD", "VASTU_VOETUD"),
+      "Väljakuulutatud"
+    );
     assert.equal(formatDraftStatus(null, "VASTU_VOETUD"), "");
   });
 });
