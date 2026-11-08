@@ -21,7 +21,7 @@ test.describe("Drafts list", () => {
     const rows = page.locator(".draft-row-link");
     await expect(rows).toHaveCount(list.results.length);
     await expect(page.locator(".results-badge")).toHaveText(
-      `${list.total.toLocaleString("et-EE")} eelnõu`
+      `${list.total.toLocaleString("et-EE")} eelnõud`
     );
 
     const first = list.results[0];
