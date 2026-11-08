@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { formatDate } from "../lib/calendarUtils";
-import { formatDraftMark, formatDraftStage, formatDraftStatus } from "../lib/draftUtils";
+import { formatDraftMark, formatDraftStage } from "../lib/draftUtils";
 
 function countLabel(count, one, many) {
   return `${count.toLocaleString("et-EE")} ${count === 1 ? one : many}`;
@@ -11,8 +11,7 @@ export function DraftRow({ draft }) {
   if (!draft) return null;
 
   const mark = formatDraftMark(draft.mark, draft.type_code);
-  const stage = formatDraftStage(draft.stage);
-  const status = formatDraftStatus(draft.status, draft.stage);
+  const stage = formatDraftStage(draft.stage, draft.status);
   // Drafts missing from the upstream list have no stage; their last plenary sitting dates them
   const date = draft.stage ? draft.status_date : draft.last_plenary_date;
   const facts = [
@@ -33,7 +32,6 @@ export function DraftRow({ draft }) {
             {stage}
           </span>
         )}
-        {status && <span className="draft-row-status">{status}</span>}
         {date && <span className="draft-row-date">{formatDate(date)}</span>}
       </div>
       <div className="draft-row-title">{draft.title}</div>

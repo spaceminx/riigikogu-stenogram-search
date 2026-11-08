@@ -32,9 +32,8 @@ test.describe("Drafts list", () => {
     );
     await expect(firstRow.locator(".draft-stage-badge")).toHaveText("Algatatud");
 
-    // Stage and status differ: both are shown
-    const secondReading = rows.filter({ hasText: "I lugemine lõpetatud" }).first();
-    await expect(secondReading.locator(".draft-stage-badge")).toHaveText("Teine lugemine");
+    // Stage is shown cleanly as a single badge
+    await expect(rows.nth(7).locator(".draft-stage-badge")).toHaveText("Teine lugemine");
 
     const withCommittee = list.results.findIndex((d) => d.leading_committee);
     await expect(rows.nth(withCommittee).locator(".draft-row-facts")).toContainText(
@@ -121,7 +120,7 @@ test.describe("Drafts list", () => {
     const facts = page.locator(".draft-facts");
     await expect(facts).toContainText("Seadus");
     await expect(facts).toContainText("XV koosseis");
-    await expect(facts).toContainText("Teine lugemine · I lugemine lõpetatud");
+    await expect(facts).toContainText("Teine lugemine");
     await expect(facts).toContainText(draft.leading_committee.name);
 
     await page.getByRole("button", { name: "← Tagasi" }).click();

@@ -9,7 +9,6 @@ import {
   getRiigikoguDraftUrl,
   formatDraftMark,
   formatDraftStage,
-  formatDraftStatus,
   formatDraftType,
 } from "../src/lib/draftUtils.js";
 
@@ -152,27 +151,27 @@ test("draft list labels", async (t) => {
     assert.equal(formatDraftType(null), "");
   });
 
-  await t.test("formatDraftStage names every stage and spells out unknown codes", () => {
-    assert.equal(formatDraftStage("VASTU_VOETUD"), "Vastu võetud");
-    assert.equal(
-      formatDraftStage("VALJA_LANGENUD_KOOSEISU_LOPPEMISEGA"),
-      "Välja langenud koosseisu lõppemisega"
-    );
-    assert.equal(formatDraftStage("UUS_ETAPP"), "Uus etapp");
-    assert.equal(formatDraftStage(null), "");
-  });
-
-  await t.test("formatDraftStatus is shown only when it differs from the stage", () => {
-    assert.equal(
-      formatDraftStatus("I_LUGEMINE_LOPETATUD", "TEINE_LUGEMINE"),
-      "I lugemine lõpetatud"
-    );
-    assert.equal(formatDraftStatus("TAGASI_LYKATUD", "TAGASI_LYKATUD"), "");
-    assert.equal(
-      formatDraftStatus("AVALDATUD_RIIGITEATAJAS", "VASTU_VOETUD"),
-      "Avaldatud Riigi Teatajas"
-    );
-    assert.equal(formatDraftStatus("VALJAKUULUTATUD", "VASTU_VOETUD"), "Väljakuulutatud");
-    assert.equal(formatDraftStatus(null, "VASTU_VOETUD"), "");
-  });
+  await t.test(
+    "formatDraftStage names every stage and specializes VASTU_VOETUD with status",
+    () => {
+      assert.equal(formatDraftStage("VASTU_VOETUD"), "Vastu võetud");
+      assert.equal(formatDraftStage("VASTU_VOETUD", "VASTU_VOETUD"), "Vastu võetud");
+      assert.equal(formatDraftStage("VASTU_VOETUD", "VALJAKUULUTATUD"), "Väljakuulutatud");
+      assert.equal(
+        formatDraftStage("VASTU_VOETUD", "SAADETUD_VABARIIGI_PRESIDENDILE"),
+        "Saadetud Vabariigi Presidendile"
+      );
+      assert.equal(
+        formatDraftStage("VASTU_VOETUD", "AVALDATUD_RIIGITEATAJAS"),
+        "Avaldatud Riigi Teatajas"
+      );
+      assert.equal(formatDraftStage("TEINE_LUGEMINE", "I_LUGEMINE_LOPETATUD"), "Teine lugemine");
+      assert.equal(
+        formatDraftStage("VALJA_LANGENUD_KOOSEISU_LOPPEMISEGA"),
+        "Välja langenud koosseisu lõppemisega"
+      );
+      assert.equal(formatDraftStage("UUS_ETAPP"), "Uus etapp");
+      assert.equal(formatDraftStage(null), "");
+    }
+  );
 });

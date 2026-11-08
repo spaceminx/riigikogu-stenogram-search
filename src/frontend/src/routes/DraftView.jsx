@@ -7,7 +7,6 @@ import { formatDate } from "../lib/calendarUtils";
 import {
   formatDraftMark,
   formatDraftStage,
-  formatDraftStatus,
   formatDraftType,
   formatStageLabel,
   getOtherVotings,
@@ -269,15 +268,11 @@ export function DraftView() {
   }
 
   const externalUrl = getRiigikoguDraftUrl(draft.uuid);
-  const stage = formatDraftStage(draft.stage);
-  const status = formatDraftStatus(draft.status, draft.stage);
+  const stage = formatDraftStage(draft.stage, draft.status);
   const facts = [
     draft.type_code && { label: "Liik", value: formatDraftType(draft.type_code) },
     draft.membership && { label: "Koosseis", value: `${toRoman(draft.membership)} koosseis` },
-    stage && {
-      label: "Menetlusetapp",
-      value: [stage, status].filter(Boolean).join(" · "),
-    },
+    stage && { label: "Menetlusetapp", value: stage },
     draft.status_date && { label: "Seis alates", value: formatDate(draft.status_date) },
     draft.initiated && { label: "Algatatud", value: formatDate(draft.initiated) },
     draft.leading_committee?.name && {
