@@ -152,7 +152,7 @@ six==1.17.0
     #   python-dateutil
 soupsieve==3.0.4
     # via beautifulsoup4
-sqlalchemy==2.1.6
+sqlalchemy==2.1.8
     # via -r requirements.in
 stack-data==0.6.3
     # via ipython
