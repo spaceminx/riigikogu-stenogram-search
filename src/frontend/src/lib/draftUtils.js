@@ -136,7 +136,7 @@ export const DRAFT_STATUS_LABELS = {
   TAGASI_VOETUD_TAISKOGUL_MENETLEMATA: "Tagasi võetud täiskogul menetlemata",
   TAGASI_LYKATUD: "Tagasi lükatud",
   SAADETUD_VABARIIGI_PRESIDENDILE: "Saadetud Vabariigi Presidendile",
-  VALJAKUULUTATUD: "Väljakuulutatud",
+  VALJAKUULUTATUD: "Välja kuulutatud",
   AVALDATUD_RIIGITEATAJAS: "Avaldatud Riigi Teatajas",
   UUESTI_ARUTAMINE: "Uuesti arutamine",
   TEISTKORDNE_MENETLEMINE: "Teistkordne menetlemine",

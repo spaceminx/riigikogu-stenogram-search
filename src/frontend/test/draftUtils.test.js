@@ -159,7 +159,7 @@ test("draft list labels", async (t) => {
     () => {
       assert.equal(formatDraftStage("VASTU_VOETUD"), "Vastu võetud");
       assert.equal(formatDraftStage("VASTU_VOETUD", "VASTU_VOETUD"), "Vastu võetud");
-      assert.equal(formatDraftStage("VASTU_VOETUD", "VALJAKUULUTATUD"), "Väljakuulutatud");
+      assert.equal(formatDraftStage("VASTU_VOETUD", "VALJAKUULUTATUD"), "Välja kuulutatud");
       assert.equal(
         formatDraftStage("VASTU_VOETUD", "SAADETUD_VABARIIGI_PRESIDENDILE"),
         "Saadetud Vabariigi Presidendile"
