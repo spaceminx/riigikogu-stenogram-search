@@ -204,5 +204,9 @@ h3,
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  /* Not padding: the header breakpoints change it, and animating it overflows the page */
+  transition:
+    color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
 }
