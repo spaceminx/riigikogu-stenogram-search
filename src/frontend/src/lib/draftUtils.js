@@ -25,7 +25,7 @@ export function formatStageLabel(stage, decisionValue) {
 }
 
 /**
- * Sort readings chronologically by sitting date and order.
+ * Sort readings in reverse chronological order: newest sitting date and order first.
  */
 export function sortReadingsByDate(readings = []) {
   if (!Array.isArray(readings)) return [];
@@ -33,9 +33,9 @@ export function sortReadingsByDate(readings = []) {
     const dateA = a.sitting_date || "";
     const dateB = b.sitting_date || "";
     if (dateA !== dateB) {
-      return dateA.localeCompare(dateB);
+      return dateB.localeCompare(dateA);
     }
-    return (a.order || 0) - (b.order || 0);
+    return (b.order || 0) - (a.order || 0);
   });
 }
 
