@@ -248,11 +248,7 @@ export function DraftsView({ memberships = [] }) {
       <div className="votings-results-header">
         <h2 className="votings-heading">
           Eelnõud
-          {data && (
-            <span className="results-badge">
-              {total.toLocaleString("et-EE")} {total === 1 ? "eelnõu" : "eelnõud"}
-            </span>
-          )}
+          {data && <span className="results-badge">{total.toLocaleString("et-EE")} eelnõu</span>}
         </h2>
       </div>
 
