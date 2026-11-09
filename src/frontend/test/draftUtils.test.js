@@ -42,21 +42,24 @@ test("draft utilities", async (t) => {
     assert.equal(formatStageLabel("", ""), "");
   });
 
-  await t.test("sortReadingsByDate sorts readings chronologically", () => {
-    const readings = [
-      { sitting_date: "2026-10-14", order: 2 },
-      { sitting_date: "2024-05-29", order: 1 },
-      { sitting_date: "2026-10-14", order: 1 },
-      { sitting_date: "2025-06-17", order: 1 },
-    ];
-    const sorted = sortReadingsByDate(readings);
-    assert.deepEqual(
-      sorted.map((r) => `${r.sitting_date}#${r.order}`),
-      ["2024-05-29#1", "2025-06-17#1", "2026-10-14#1", "2026-10-14#2"]
-    );
-    assert.deepEqual(sortReadingsByDate([]), []);
-    assert.deepEqual(sortReadingsByDate(null), []);
-  });
+  await t.test(
+    "sortReadingsByDate sorts readings in reverse chronological order (newest first)",
+    () => {
+      const readings = [
+        { sitting_date: "2026-10-14", order: 2 },
+        { sitting_date: "2024-05-29", order: 1 },
+        { sitting_date: "2026-10-14", order: 1 },
+        { sitting_date: "2025-06-17", order: 1 },
+      ];
+      const sorted = sortReadingsByDate(readings);
+      assert.deepEqual(
+        sorted.map((r) => `${r.sitting_date}#${r.order}`),
+        ["2026-10-14#2", "2026-10-14#1", "2025-06-17#1", "2024-05-29#1"]
+      );
+      assert.deepEqual(sortReadingsByDate([]), []);
+      assert.deepEqual(sortReadingsByDate(null), []);
+    }
+  );
 
   await t.test("groupVotingsByReading assigns votings to readings by voting_uuids", () => {
     const readings = [
