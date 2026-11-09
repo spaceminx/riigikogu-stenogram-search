@@ -175,10 +175,17 @@ export function formatDraftType(typeCode) {
   return DRAFT_TYPE_LABELS[typeCode] || typeCode;
 }
 
-export function formatDraftStage(stage, status) {
-  if (stage === "VASTU_VOETUD" && status && status !== "VASTU_VOETUD") {
-    return DRAFT_STATUS_LABELS[status] || humanizeCode(status);
-  }
+export function formatDraftStage(stage) {
   if (!stage) return "";
   return DRAFT_STAGE_LABELS[stage] || humanizeCode(stage);
+}
+
+/**
+ * The status only when it says more than the stage: "Avaldatud Riigi Teatajas" for an adopted
+ * draft, "I lugemine lõpetatud" for one waiting for its second reading.
+ */
+export function formatDraftStatus(status, stage) {
+  if (!status || status === stage) return "";
+  const label = DRAFT_STATUS_LABELS[status] || humanizeCode(status);
+  return label === formatDraftStage(stage) ? "" : label;
 }

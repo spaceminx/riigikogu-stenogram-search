@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { formatDate } from "../lib/calendarUtils";
-import { formatDraftMark, formatDraftStage } from "../lib/draftUtils";
+import { formatDraftMark, formatDraftStage, formatDraftStatus } from "../lib/draftUtils";
 
 function countLabel(count, one, many) {
   return `${count.toLocaleString("et-EE")} ${count === 1 ? one : many}`;
@@ -11,7 +11,9 @@ export function DraftRow({ draft }) {
   if (!draft) return null;
 
   const mark = formatDraftMark(draft.mark, draft.type_code);
-  const stage = formatDraftStage(draft.stage, draft.status);
+  // One badge, the stage the status filter groups by; the status says what happened on the date
+  const stage = formatDraftStage(draft.stage);
+  const status = formatDraftStatus(draft.status, draft.stage);
   // Drafts missing from the upstream list have no stage; their last plenary sitting dates them
   const date = draft.stage ? draft.status_date : draft.last_plenary_date;
   const facts = [
@@ -32,7 +34,13 @@ export function DraftRow({ draft }) {
             {stage}
           </span>
         )}
-        {date && <span className="draft-row-date">{formatDate(date)}</span>}
+        {(status || date) && (
+          <span className="draft-row-state">
+            {status}
+            {status && date && " "}
+            {date && <span className="draft-row-date">{formatDate(date)}</span>}
+          </span>
+        )}
       </div>
       <div className="draft-row-title">{draft.title}</div>
       {facts.length > 0 && (
