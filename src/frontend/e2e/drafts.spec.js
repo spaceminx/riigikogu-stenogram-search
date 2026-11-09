@@ -32,8 +32,14 @@ test.describe("Drafts list", () => {
     );
     await expect(firstRow.locator(".draft-stage-badge")).toHaveText("Algatatud");
 
-    // Stage is shown cleanly as a single badge
-    await expect(rows.nth(7).locator(".draft-stage-badge")).toHaveText("Teine lugemine");
+    // One badge per row: the stage, or for an adopted draft its status
+    const indexOf = (stage, status) =>
+      list.results.findIndex((d) => d.stage === stage && d.status === status);
+    const inSecondReading = rows.nth(indexOf("TEINE_LUGEMINE", "I_LUGEMINE_LOPETATUD"));
+    await expect(inSecondReading.locator(".draft-stage-badge")).toHaveText("Teine lugemine");
+    await expect(inSecondReading).not.toContainText("I lugemine lõpetatud");
+    const adopted = rows.nth(indexOf("VASTU_VOETUD", "AVALDATUD_RIIGITEATAJAS"));
+    await expect(adopted.locator(".draft-stage-badge")).toHaveText("Avaldatud Riigi Teatajas");
 
     const withCommittee = list.results.findIndex((d) => d.leading_committee);
     await expect(rows.nth(withCommittee).locator(".draft-row-facts")).toContainText(
