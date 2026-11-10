@@ -383,10 +383,14 @@
   background: transparent;
 }
 
-.draft-row-date {
+.draft-row-state {
   color: var(--color-text-muted);
-  font-family: var(--font-mono);
   font-size: var(--text-label);
+}
+
+.draft-row-date {
+  font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
 .draft-row-title {

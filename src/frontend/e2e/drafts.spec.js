@@ -32,14 +32,29 @@ test.describe("Drafts list", () => {
     );
     await expect(firstRow.locator(".draft-stage-badge")).toHaveText("Algatatud");
 
-    // One badge per row: the stage, or for an adopted draft its status
+    // One badge per row, the stage the status filter groups by; the status dates the row
     const indexOf = (stage, status) =>
       list.results.findIndex((d) => d.stage === stage && d.status === status);
-    const inSecondReading = rows.nth(indexOf("TEINE_LUGEMINE", "I_LUGEMINE_LOPETATUD"));
+    const rowFor = (stage, status) => rows.nth(indexOf(stage, status));
+    const dateOf = (stage, status) => {
+      const [y, m, d] = list.results[indexOf(stage, status)].status_date.split("-");
+      return `${d}.${m}.${y}`;
+    };
+    const inSecondReading = rowFor("TEINE_LUGEMINE", "I_LUGEMINE_LOPETATUD");
     await expect(inSecondReading.locator(".draft-stage-badge")).toHaveText("Teine lugemine");
-    await expect(inSecondReading).not.toContainText("I lugemine lõpetatud");
-    const adopted = rows.nth(indexOf("VASTU_VOETUD", "AVALDATUD_RIIGITEATAJAS"));
-    await expect(adopted.locator(".draft-stage-badge")).toHaveText("Avaldatud Riigi Teatajas");
+    await expect(inSecondReading.locator(".draft-row-state")).toHaveText(
+      `I lugemine lõpetatud ${dateOf("TEINE_LUGEMINE", "I_LUGEMINE_LOPETATUD")}`
+    );
+    const adopted = rowFor("VASTU_VOETUD", "AVALDATUD_RIIGITEATAJAS");
+    await expect(adopted.locator(".draft-stage-badge")).toHaveText("Vastu võetud");
+    await expect(adopted.locator(".draft-row-state")).toHaveText(
+      `Avaldatud Riigi Teatajas ${dateOf("VASTU_VOETUD", "AVALDATUD_RIIGITEATAJAS")}`
+    );
+    // Status and stage alike: only the date
+    const rejected = rowFor("TAGASI_LYKATUD", "TAGASI_LYKATUD");
+    await expect(rejected.locator(".draft-row-state")).toHaveText(
+      dateOf("TAGASI_LYKATUD", "TAGASI_LYKATUD")
+    );
 
     const withCommittee = list.results.findIndex((d) => d.leading_committee);
     await expect(rows.nth(withCommittee).locator(".draft-row-facts")).toContainText(
@@ -127,6 +142,7 @@ test.describe("Drafts list", () => {
     await expect(facts).toContainText("Seadus");
     await expect(facts).toContainText("XV koosseis");
     await expect(facts).toContainText("Teine lugemine");
+    await expect(facts).toContainText("I lugemine lõpetatud, 21.10.2026");
     await expect(facts).toContainText(draft.leading_committee.name);
 
     await page.getByRole("button", { name: "← Tagasi" }).click();
