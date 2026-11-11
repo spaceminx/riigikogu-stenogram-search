@@ -53,10 +53,27 @@ def compare_shapes(live: object, fixture: object, path: str = "$") -> list[str]:
             if len(live) == 0:
                 diffs.append(f"{path}: fixture has {len(fixture)} items but live response is empty")
             else:
-                # Check first item structure
-                diffs.extend(compare_shapes(live[0], fixture[0], f"{path}[0]"))
+                diffs.extend(_compare_with_best_item(live, fixture[0], path))
 
     return diffs
+
+
+def _compare_with_best_item(live: list, fixture_item: object, path: str) -> list[str]:
+    """Compare fixture_item with the live item it matches best.
+
+    Live lists come in their own order (e.g. factions by size), and nested lists such as
+    leader_roles or former_names are legitimately empty for many items, so the first live
+    item need not have the shape the fixture shows. Any live item matching is enough; if
+    none does, report the diffs of the closest one.
+    """
+    best: list[str] | None = None
+    for index, item in enumerate(live):
+        item_diffs = compare_shapes(item, fixture_item, f"{path}[{index}]")
+        if not item_diffs:
+            return []
+        if best is None or len(item_diffs) < len(best):
+            best = item_diffs
+    return best or []
 
 
 def check_endpoint(
