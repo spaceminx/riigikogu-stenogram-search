@@ -89,6 +89,51 @@ def test_compare_shapes_details():
     assert "type mismatch" in diffs[0]
 
 
+def test_compare_shapes_list_matches_any_live_item():
+    # The factions?membership=13 case: the fixture's first faction has former_names and a
+    # leader, prod lists that faction later and its first member has no leader role.
+    fixture = {
+        "factions": [
+            {
+                "former_names": [{"faction": "IRL", "until": "2018-07-30"}],
+                "members": [{"name": "A", "leader_roles": [{"role": "esimees"}]}],
+            }
+        ]
+    }
+    live = {
+        "factions": [
+            {"former_names": [], "members": [{"name": "B", "leader_roles": []}]},
+            {
+                "former_names": [{"faction": "IRL", "until": "2018-07-30"}],
+                "members": [
+                    {"name": "C", "leader_roles": []},
+                    {"name": "D", "leader_roles": [{"role": "aseesimees"}]},
+                ],
+            },
+        ]
+    }
+    assert compare_shapes(live, fixture) == []
+
+
+def test_compare_shapes_list_reports_closest_item_when_none_matches():
+    fixture = [{"a": 1, "b": [{"c": 1}]}]
+    live = [{"a": "x"}, {"a": 1, "b": []}]  # [0] has two diffs, [1] one
+    diffs = compare_shapes(live, fixture)
+    assert diffs == ["$[1].b: fixture has 1 items but live response is empty"]
+
+
+def test_compare_shapes_nested_list_empty_everywhere_still_fails():
+    fixture = {"factions": [{"leader_roles": [{"role": "esimees"}]}]}
+    live = {"factions": [{"leader_roles": []}, {"leader_roles": []}]}
+    diffs = compare_shapes(live, fixture)
+    assert len(diffs) == 1
+    assert "live response is empty" in diffs[0]
+
+
+def test_compare_shapes_empty_live_list_fails():
+    assert compare_shapes([], [{"a": 1}]) == ["$: fixture has 1 items but live response is empty"]
+
+
 def _http_error(url: str, code: int) -> HTTPError:
     return HTTPError(url, code, "error", hdrs=None, fp=None)
 
