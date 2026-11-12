@@ -18,7 +18,7 @@ from urllib.request import Request, urlopen
 LIVE_BASE_URL = "https://api.riigivaade.me"
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "src" / "frontend" / "e2e" / "fixtures"
 INDEX_PATH = FIXTURES_DIR / "index.json"
-TIMEOUT_SECONDS = 10.0
+TIMEOUT_SECONDS = 30.0
 SLEEP_BETWEEN_REQUESTS_SECONDS = 1.0
 RETRY_DELAY_SECONDS = 5.0
 
