@@ -24,6 +24,24 @@ test.describe("Attendance active-members filter", () => {
     mock.verifyNoErrors();
   });
 
+  test("factions tab explains the member count for the active filter", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto("/kohalolek?att_tab=factions");
+    const note = page.locator(".att-table-note");
+    await expect(note).toContainText("arvestatud oma viimase fraktsiooni alla");
+
+    await page.getByLabel(/Ainult praegused aktiivsed saadikud/).click();
+    await expect(page).toHaveURL(/[?&]att_active=0/);
+    await expect(note).toContainText("See ei ole fraktsiooni kohtade arv.");
+    await expect(note).not.toContainText("viimase fraktsiooni");
+
+    await page.getByRole("button", { name: "Saadikute vaade" }).click();
+    await expect(page.locator(".att-table-note")).toHaveCount(0);
+
+    mock.verifyNoErrors();
+  });
+
   test("does not apply to a past membership", async ({ page }) => {
     const mock = await setupApiMock(page);
 
