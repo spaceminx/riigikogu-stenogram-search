@@ -3,11 +3,11 @@
   "full_name": "Jaak Aab",
   "totals": {
     "mp": {
-      "speeches": 437,
-      "questions": 367,
+      "speeches": 442,
+      "questions": 379,
       "procedural": 22,
       "unclassified": 27,
-      "total": 853
+      "total": 870
     },
     "chair": {
       "speeches": 0,
@@ -17,11 +17,11 @@
       "total": 0
     },
     "minister": {
-      "speeches": 304,
+      "speeches": 399,
       "questions": 2,
       "procedural": 0,
       "unclassified": 5,
-      "total": 311
+      "total": 406
     },
     "candidate": {
       "speeches": 0,
@@ -43,11 +43,11 @@
     {
       "year": "2026",
       "mp": {
-        "speeches": 56,
-        "questions": 76,
+        "speeches": 61,
+        "questions": 88,
         "procedural": 1,
         "unclassified": 4,
-        "total": 137
+        "total": 154
       },
       "chair": 0,
       "minister": 0,
@@ -167,17 +167,49 @@
       "other": 0,
       "other_roles_total": 31,
       "director": 0
+    },
+    {
+      "year": "2018",
+      "mp": {
+        "speeches": 0,
+        "questions": 0,
+        "procedural": 0,
+        "unclassified": 0,
+        "total": 0
+      },
+      "chair": 0,
+      "minister": 28,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 28,
+      "director": 0
+    },
+    {
+      "year": "2017",
+      "mp": {
+        "speeches": 0,
+        "questions": 0,
+        "procedural": 0,
+        "unclassified": 0,
+        "total": 0
+      },
+      "chair": 0,
+      "minister": 67,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 67,
+      "director": 0
     }
   ],
   "by_membership": [
     {
       "membership": "15",
       "mp": {
-        "speeches": 295,
-        "questions": 329,
+        "speeches": 300,
+        "questions": 341,
         "procedural": 20,
         "unclassified": 27,
-        "total": 671
+        "total": 688
       },
       "chair": 0,
       "minister": 0,
@@ -201,12 +233,28 @@
       "other": 0,
       "other_roles_total": 311,
       "director": 0
+    },
+    {
+      "membership": "13",
+      "mp": {
+        "speeches": 0,
+        "questions": 0,
+        "procedural": 0,
+        "unclassified": 0,
+        "total": 0
+      },
+      "chair": 0,
+      "minister": 95,
+      "candidate": 0,
+      "other": 0,
+      "other_roles_total": 95,
+      "director": 0
     }
   ],
   "duration": {
-    "mp_seconds": 88077,
+    "mp_seconds": 89887,
     "available_from": "2020-09-14"
   },
-  "first_speech_date": "2019-09-24",
-  "last_speech_date": "2026-10-21"
+  "first_speech_date": "2017-06-12",
+  "last_speech_date": "2026-11-11"
 }

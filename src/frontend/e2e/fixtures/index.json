@@ -1,10 +1,10 @@
 {
   "ids": {
-    "date": "2026-10-21",
+    "date": "2026-11-12",
     "personUuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
-    "speechId": 211341,
-    "votingUuid": "3943e6d1-4259-4435-bb44-644bc6ce6105",
-    "draftUuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485"
+    "speechId": 291144,
+    "votingUuid": "e1d00318-97c8-4c2a-b9cd-34232dad5b22",
+    "draftUuid": "69d7eeac-a478-4f29-935b-5a79beb0f0db"
   },
   "endpoints": [
     {
@@ -49,27 +49,6 @@
     },
     {
       "method": "GET",
-      "path": "/factions",
-      "queryParams": {
-        "membership": "14"
-      },
-      "fixture": "factions_14.json"
-    },
-    {
-      "method": "GET",
-      "path": "/factions",
-      "queryParams": {
-        "membership": "13"
-      },
-      "fixture": "factions_13.json"
-    },
-    {
-      "method": "GET",
-      "path": "/factions",
-      "fixture": "factions.json"
-    },
-    {
-      "method": "GET",
       "path": "/persons",
       "fixture": "persons_list.json"
     },
@@ -105,7 +84,7 @@
     },
     {
       "method": "GET",
-      "path": "/sessions/2026-10-21",
+      "path": "/sessions/2026-11-12",
       "fixture": "session_detail.json"
     },
     {
@@ -113,7 +92,7 @@
       "path": "/votings",
       "fixture": "session_votings.json",
       "queryParams": {
-        "sitting_date": "2026-10-21"
+        "sitting_date": "2026-11-12"
       }
     },
     {
@@ -123,32 +102,27 @@
     },
     {
       "method": "GET",
-      "path": "/votings/3943e6d1-4259-4435-bb44-644bc6ce6105",
+      "path": "/votings/e1d00318-97c8-4c2a-b9cd-34232dad5b22",
       "fixture": "voting_detail.json"
     },
     {
       "method": "GET",
-      "path": "/speeches/211341",
+      "path": "/speeches/291144",
       "fixture": "speech_detail.json"
     },
     {
       "method": "GET",
-      "path": "/speeches/211341/context",
+      "path": "/speeches/291144/context",
       "fixture": "speech_context.json"
     },
     {
       "method": "GET",
-      "path": "/drafts",
-      "fixture": "drafts_list.json"
-    },
-    {
-      "method": "GET",
-      "path": "/drafts/c6ccd71d-8bd6-4400-bf17-830ea1913485",
+      "path": "/drafts/69d7eeac-a478-4f29-935b-5a79beb0f0db",
       "fixture": "draft_detail.json"
     },
     {
       "method": "GET",
-      "path": "/drafts/c6ccd71d-8bd6-4400-bf17-830ea1913485/speeches",
+      "path": "/drafts/69d7eeac-a478-4f29-935b-5a79beb0f0db/speeches",
       "fixture": "draft_speeches.json"
     },
     {
@@ -214,6 +188,32 @@
       "queryParams": {
         "q": "riigikogu"
       }
+    },
+    {
+      "method": "GET",
+      "path": "/factions",
+      "fixture": "factions_14.json",
+      "queryParams": {
+        "membership": "14"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/factions",
+      "fixture": "factions_13.json",
+      "queryParams": {
+        "membership": "13"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/factions",
+      "fixture": "factions.json"
+    },
+    {
+      "method": "GET",
+      "path": "/drafts",
+      "fixture": "drafts_list.json"
     }
   ]
 }

@@ -4,49 +4,40 @@
       "speaker": "Peeter Ernits",
       "speaker_uuid": "f8a770b2-916c-4172-84b3-005ba9906a18",
       "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
-      "count": 3295
-    },
-    {
-      "speaker": "Kalle Grünthal",
-      "speaker_uuid": "db532de2-5abd-4b6d-a82c-2d9a75fd9d18",
-      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
-      "count": 3055
+      "count": 4495
     },
     {
       "speaker": "Aivar Kokk",
       "speaker_uuid": "2dcb35ed-acbc-4bcf-9e9d-9da681842d6d",
       "faction": "Isamaa fraktsioon",
-      "count": 2712
+      "count": 3164
     },
     {
-      "speaker": "Helle-Moonika Helme",
-      "speaker_uuid": "f4e5d00e-19d1-428a-ba5e-5ce9ae4ef2c2",
+      "speaker": "Kalle Grünthal",
+      "speaker_uuid": "db532de2-5abd-4b6d-a82c-2d9a75fd9d18",
+      "faction": "Fraktsiooni mittekuuluvad Riigikogu liikmed",
+      "count": 3091
+    },
+    {
+      "speaker": "Mart Helme",
+      "speaker_uuid": "4b96f3e5-af5e-41ce-86c9-3fdee3ce51da",
       "faction": "Eesti Konservatiivse Rahvaerakonna fraktsioon",
-      "count": 2545
+      "count": 3080
     }
   ],
   "sessions": [
     {
-      "date": "2026-10-21",
-      "source_url": "https://stenogrammid.riigikogu.ee/et/202610211400",
-      "topics": ["laps", "eelnõu", "tervis"]
+      "date": "2026-11-12",
+      "source_url": "https://stenogrammid.riigikogu.ee/et/202611121000",
+      "topics": ["automaks", "auto", "sots"]
     },
     {
-      "date": "2026-10-21",
-      "source_url": "https://stenogrammid.riigikogu.ee/et/202610211200",
-      "topics": ["kodakondsus", "raudtee", "küsimus"]
-    },
-    {
-      "date": "2026-10-20",
-      "source_url": "https://stenogrammid.riigikogu.ee/et/202610201000",
-      "topics": ["eelarve", "aasta", "riik"]
+      "date": "2026-11-11",
+      "source_url": "https://stenogrammid.riigikogu.ee/et/202611111400",
+      "topics": ["muudatusettepanek", "eelarve", "aasta"]
     }
   ],
   "activity": [
-    {
-      "month": "2024-11",
-      "count": 3083
-    },
     {
       "month": "2024-12",
       "count": 2485
@@ -122,6 +113,10 @@
     {
       "month": "2026-06",
       "count": 3993
+    },
+    {
+      "month": "2026-07",
+      "count": 0
     }
   ]
 }

@@ -11,9 +11,11 @@ const draft = readFixture("draft_detail.json");
 const firstPage = readFixture("draft_speeches.json");
 const reading = draft.readings.find((r) => r.speech_count > 0);
 
-// The fixture holds the first 20 speeches; the next page reuses them with new ids
+// The fixture holds the first 20 speeches; the mock serves two pages at most, the second one
+// reusing them with new ids, so the test does not depend on the captured draft's total
+const total = Math.min(firstPage.total, 2 * firstPage.results.length - 6);
 const secondPageResults = firstPage.results
-  .slice(0, firstPage.total - firstPage.results.length)
+  .slice(0, total - firstPage.results.length)
   .map((s) => ({ ...s, id: s.id + 1_000_000, speech_key: `${s.speech_key}-2` }));
 
 function serveDraftSpeeches(page, { failFirst = false } = {}) {
@@ -35,6 +37,7 @@ function serveDraftSpeeches(page, { failFirst = false } = {}) {
       const offset = Number(url.searchParams.get("offset"));
       return json(200, {
         ...firstPage,
+        total,
         offset,
         results: offset === 0 ? firstPage.results : secondPageResults,
       });
@@ -67,7 +70,7 @@ test.describe("Draft readings", () => {
 
     const more = card.getByRole("button", { name: "Näita rohkem" });
     await more.click();
-    await expect(cards).toHaveCount(firstPage.total);
+    await expect(cards).toHaveCount(total);
     expect(requests[1].searchParams.get("offset")).toBe(String(firstPage.results.length));
     await expect(more).toHaveCount(0);
 
@@ -77,7 +80,7 @@ test.describe("Draft readings", () => {
     await hide.click();
     await expect(cards).toHaveCount(0);
     await toggle.click();
-    await expect(cards).toHaveCount(firstPage.total);
+    await expect(cards).toHaveCount(total);
     expect(requests).toHaveLength(2);
 
     mock.verifyNoErrors();

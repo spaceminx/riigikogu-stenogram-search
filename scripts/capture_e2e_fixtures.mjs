@@ -23,6 +23,15 @@ const BASE_URL = 'https://api.riigivaade.me';
 const USER_AGENT = 'riigivaade-e2e-capture';
 const DELAY_MS = 600;
 
+// Hand-curated fixtures: this script never rewrites them, because their tests assert specific
+// members and rows (factions.spec.js, drafts.spec.js). Keep their index entries on every capture.
+const CURATED_ENDPOINTS = [
+  { method: 'GET', path: '/factions', fixture: 'factions_14.json', queryParams: { membership: '14' } },
+  { method: 'GET', path: '/factions', fixture: 'factions_13.json', queryParams: { membership: '13' } },
+  { method: 'GET', path: '/factions', fixture: 'factions.json' },
+  { method: 'GET', path: '/drafts', fixture: 'drafts_list.json' },
+];
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -234,6 +243,7 @@ async function main() {
       { method: 'GET', path: '/search', fixture: 'search_kliima_voi_mets.json', queryParams: { q: 'kliima, mets' } },
       { method: 'GET', path: '/search', fixture: 'search_kliima.json', queryParams: { q: 'kliima' } },
       { method: 'GET', path: '/search', fixture: 'search_sample.json', queryParams: { q: 'riigikogu' } },
+      ...CURATED_ENDPOINTS,
     ],
   };
 
@@ -243,7 +253,10 @@ async function main() {
     'utf-8'
   );
 
-  console.log(`Successfully captured ${fixtures.length} fixtures and index.json!`);
+  console.log(
+    `Successfully captured ${fixtures.length} fixtures and index.json ` +
+      `(kept ${CURATED_ENDPOINTS.length} hand-curated entries)!`
+  );
 }
 
 main().catch((err) => {

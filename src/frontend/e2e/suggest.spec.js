@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test, expect } from "@playwright/test";
 import { setupApiMock } from "./support/api.js";
+import { formatSuggestionCount } from "../src/lib/suggestHelpers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const suggestions = JSON.parse(
@@ -25,7 +26,9 @@ test.describe("Search suggestions", () => {
     const options = listbox.getByRole("option");
     await expect(options).toHaveCount(suggestions.length);
     await expect(options.first().locator(".suggestion-term")).toHaveText(suggestions[0].term);
-    await expect(options.first().locator(".suggestion-count")).toHaveText("6 574 kõnet");
+    await expect(options.first().locator(".suggestion-count")).toHaveText(
+      formatSuggestionCount(suggestions[0].df)
+    );
     await expect(input).toHaveAttribute("aria-expanded", "true");
 
     expect(suggestRequests(mock)).toHaveLength(1);
