@@ -6,7 +6,7 @@ import {
   formatMajorityPosition,
   computeNotVoted,
   formatTimeHHMM,
-  formatOvernightTime,
+  getVotingTimeParts,
   getVotingSummaryParts,
   getVotingHeading,
   formatDocumentReference,
@@ -65,18 +65,67 @@ test("voting utilities", async (t) => {
     assert.equal(formatTimeHHMM(null), "");
   });
 
-  await t.test("formatOvernightTime", () => {
-    // Same day
-    assert.equal(formatOvernightTime("10:15:00", "2026-10-14", "2026-10-14"), "10:15");
+  await t.test("getVotingTimeParts", () => {
+    const sameDay = {
+      date: "2026-11-11",
+      sitting_date: "2026-11-11",
+      start_time: "2026-11-11T16:05:12.1",
+    };
+    assert.deepEqual(getVotingTimeParts(sameDay), {
+      label: "11.11.2026 16:05",
+      time: "16:05",
+      voteDate: "2026-11-11",
+      isOvernight: false,
+      sittingLabel: "",
+    });
+    assert.equal(getVotingTimeParts(sameDay, { withDate: false }).label, "16:05");
 
-    // Overnight: sitting_date 2026-10-14, vote date 2026-10-15
-    assert.equal(formatOvernightTime("00:43:00", "2026-10-14", "2026-10-15"), "00:43 (15.10.2026)");
+    // The 11.11.2026 sitting ran until the next morning: the vote happened on 12.11
+    const overnight = {
+      date: "2026-11-12",
+      sitting_date: "2026-11-11",
+      start_time: "2026-11-12T03:40:58.373",
+    };
+    assert.deepEqual(getVotingTimeParts(overnight), {
+      label: "12.11.2026 03:40",
+      time: "03:40",
+      voteDate: "2026-11-12",
+      isOvernight: true,
+      sittingLabel: "11.11. istung",
+    });
+    assert.equal(getVotingTimeParts(overnight, { withDate: false }).label, "12.11. kell 03:40");
 
-    // With ISO string
+    // Without `date` the vote date comes from start_time; a bare time falls back to the sitting
     assert.equal(
-      formatOvernightTime("2026-10-15T01:22:00", "2026-10-14", "2026-10-15"),
-      "01:22 (15.10.2026)"
+      getVotingTimeParts({ sitting_date: "2026-11-11", start_time: "2026-11-12T00:43:00" })
+        .sittingLabel,
+      "11.11. istung"
     );
+    assert.deepEqual(
+      getVotingTimeParts(
+        { sitting_date: "2026-11-11", start_time: "10:15:00" },
+        { withDate: false }
+      ),
+      {
+        label: "10:15",
+        time: "10:15",
+        voteDate: "2026-11-11",
+        isOvernight: false,
+        sittingLabel: "",
+      }
+    );
+
+    // Across the new year
+    assert.equal(
+      getVotingTimeParts({
+        date: "2027-01-01",
+        sitting_date: "2026-12-31",
+        start_time: "2027-01-01T00:30:00",
+      }).sittingLabel,
+      "31.12. istung"
+    );
+
+    assert.equal(getVotingTimeParts(null).label, "");
   });
 
   await t.test("getVotingSummaryParts", () => {
