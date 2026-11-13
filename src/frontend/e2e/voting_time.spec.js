@@ -8,12 +8,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const readFixture = (name) =>
   JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", name), "utf-8"));
 
-// The fixture sitting (21.10.2026) ran past midnight: this vote happened on 22.10 at 03:40
-const overnight = (voting) => ({
+const nextDay = (isoDate) => {
+  const d = new Date(`${isoDate}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
+const dayMonth = (isoDate) => `${isoDate.slice(8, 10)}.${isoDate.slice(5, 7)}`;
+const fullDate = (isoDate) => `${dayMonth(isoDate)}.${isoDate.slice(0, 4)}`;
+
+// The fixture sitting ran past midnight: its first voting happened at 03:40 the next day
+const SITTING = FIXTURE_IDS.date;
+const VOTE_DAY = nextDay(SITTING);
+const overnight = (voting, sittingDate = SITTING, voteDate = nextDay(sittingDate)) => ({
   ...voting,
-  date: "2026-10-22",
-  start_time: "2026-10-22T03:40:58.373",
-  sitting_date: "2026-10-21",
+  date: voteDate,
+  start_time: `${voteDate}T03:40:58.373`,
+  sitting_date: sittingDate,
 });
 
 const json = (body) => ({
@@ -22,7 +32,7 @@ const json = (body) => ({
   body: JSON.stringify(body),
 });
 
-async function mockOvernightVotings(page) {
+async function mockOvernightVotings(page, sittingDate = SITTING) {
   const list = readFixture("votings_list.json");
   const session = readFixture("session_votings.json");
   const detail = readFixture("voting_detail.json");
@@ -30,12 +40,32 @@ async function mockOvernightVotings(page) {
     const url = new URL(route.request().url());
     const data = url.searchParams.has("sitting_date") ? session : list;
     const [first, ...rest] = data.results;
-    return route.fulfill(json({ ...data, results: [overnight(first), ...rest] }));
+    return route.fulfill(json({ ...data, results: [overnight(first, sittingDate), ...rest] }));
   });
   await page.route(new RegExp(`api\\.e2e\\.test/votings/${FIXTURE_IDS.votingUuid}$`), (route) =>
-    route.fulfill(json(overnight(detail)))
+    route.fulfill(json(overnight(detail, sittingDate)))
   );
 }
+
+// Each part of the time line is nowrap, so a new line can only start with a part
+async function lineStartsWhileNarrowing(time) {
+  return time.evaluate((el) => {
+    const starts = new Set();
+    for (let width = 80; width <= 280; width += 2) {
+      el.style.display = "inline-block";
+      el.style.width = `${width}px`;
+      const parts = [...el.querySelectorAll(".voting-row-time-part")];
+      const tops = parts.map((p) => Math.round(p.getBoundingClientRect().top));
+      parts.forEach((p, i) => {
+        if (i === 0 || tops[i] !== tops[i - 1]) starts.add(p.textContent.trim()[0]);
+      });
+    }
+    return [...starts];
+  });
+}
+
+const hasOverflow = (page) =>
+  page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
 
 test.describe("Overnight voting time", () => {
   test("the votings list leads with when the vote happened and names its sitting", async ({
@@ -46,7 +76,9 @@ test.describe("Overnight voting time", () => {
 
     await page.goto("/haaletused");
     const times = page.locator(".voting-row-time");
-    await expect(times.first()).toHaveText("22.10.2026 03:40 · 21.10. istung");
+    await expect(times.first()).toHaveText(
+      `${fullDate(VOTE_DAY)} 03:40 · ${dayMonth(SITTING)} istung`
+    );
     // A vote on the same day as its sitting shows only its date and time
     await expect(times.nth(1)).toHaveText(/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/);
 
@@ -57,9 +89,9 @@ test.describe("Overnight voting time", () => {
     const mock = await setupApiMock(page);
     await mockOvernightVotings(page);
 
-    await page.goto(`/istung/${FIXTURE_IDS.date}`);
+    await page.goto(`/istung/${SITTING}`);
     const times = page.locator(".voting-row-time");
-    await expect(times.first()).toHaveText("22.10. kell 03:40");
+    await expect(times.first()).toHaveText(`${dayMonth(VOTE_DAY)} kell 03:40`);
     await expect(times.nth(1)).toHaveText(/^\d{2}:\d{2}$/);
 
     mock.verifyNoErrors();
@@ -70,9 +102,25 @@ test.describe("Overnight voting time", () => {
     await mockOvernightVotings(page);
 
     await page.goto(`/haaletus/${FIXTURE_IDS.votingUuid}`);
-    await expect(page.locator(".voting-sitting-link")).toHaveText("Istung 21.10.2026");
-    await expect(page.locator(".voting-meta-row")).toContainText("Hääletus 22.10.2026 kell 03:40");
+    await expect(page.locator(".voting-sitting-link")).toHaveText(`Istung ${fullDate(SITTING)}`);
+    await expect(page.locator(".voting-meta-row")).toContainText(
+      `Hääletus ${fullDate(VOTE_DAY)} kell 03:40`
+    );
     await expect(page.locator(".voting-meta-row")).not.toContainText("Kell");
+
+    mock.verifyNoErrors();
+  });
+
+  test("a sitting on 31 December writes both dates with the year", async ({ page }) => {
+    const mock = await setupApiMock(page);
+    await mockOvernightVotings(page, "2026-12-31");
+    await page.setViewportSize({ width: 320, height: 800 });
+
+    await page.goto("/haaletused");
+    const time = page.locator(".voting-row-time").first();
+    await expect(time).toHaveText("01.01.2027 03:40 · 31.12.2026 istung");
+    expect(await lineStartsWhileNarrowing(time)).not.toContain("·");
+    expect(await hasOverflow(page)).toBe(false);
 
     mock.verifyNoErrors();
   });
@@ -84,28 +132,9 @@ test.describe("Overnight voting time", () => {
 
     await page.goto("/haaletused");
     const time = page.locator(".voting-row-time").first();
-    await expect(time).toHaveText(/21\.10\. istung/);
-
-    const lineStarts = await time.evaluate((el) => {
-      const starts = new Set();
-      for (let width = 80; width <= 280; width += 2) {
-        el.style.display = "inline-block";
-        el.style.width = `${width}px`;
-        const parts = [...el.querySelectorAll(".voting-row-time-part")];
-        const tops = parts.map((p) => Math.round(p.getBoundingClientRect().top));
-        // Each part is nowrap, so a new line can only start with a part
-        parts.forEach((p, i) => {
-          if (i === 0 || tops[i] !== tops[i - 1]) starts.add(p.textContent.trim()[0]);
-        });
-      }
-      return [...starts];
-    });
-    expect(lineStarts).not.toContain("·");
-
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
-    );
-    expect(overflow).toBe(false);
+    await expect(time).toContainText(`${dayMonth(SITTING)} istung`);
+    expect(await lineStartsWhileNarrowing(time)).not.toContain("·");
+    expect(await hasOverflow(page)).toBe(false);
 
     mock.verifyNoErrors();
   });

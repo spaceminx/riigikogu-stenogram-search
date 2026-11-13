@@ -91,15 +91,15 @@ test("voting utilities", async (t) => {
       time: "03:40",
       voteDate: "2026-11-12",
       isOvernight: true,
-      sittingLabel: "11.11. istung",
+      sittingLabel: "11.11 istung",
     });
-    assert.equal(getVotingTimeParts(overnight, { withDate: false }).label, "12.11. kell 03:40");
+    assert.equal(getVotingTimeParts(overnight, { withDate: false }).label, "12.11 kell 03:40");
 
     // Without `date` the vote date comes from start_time; a bare time falls back to the sitting
     assert.equal(
       getVotingTimeParts({ sitting_date: "2026-11-11", start_time: "2026-11-12T00:43:00" })
         .sittingLabel,
-      "11.11. istung"
+      "11.11 istung"
     );
     assert.deepEqual(
       getVotingTimeParts(
@@ -115,15 +115,20 @@ test("voting utilities", async (t) => {
       }
     );
 
-    // Across the new year
-    assert.equal(
-      getVotingTimeParts({
-        date: "2027-01-01",
-        sitting_date: "2026-12-31",
-        start_time: "2027-01-01T00:30:00",
-      }).sittingLabel,
-      "31.12. istung"
-    );
+    // Across the new year both dates carry the year, or "31.12" would read as 31.12.2027
+    const newYear = {
+      date: "2027-01-01",
+      sitting_date: "2026-12-31",
+      start_time: "2027-01-01T00:30:00",
+    };
+    assert.deepEqual(getVotingTimeParts(newYear), {
+      label: "01.01.2027 00:30",
+      time: "00:30",
+      voteDate: "2027-01-01",
+      isOvernight: true,
+      sittingLabel: "31.12.2026 istung",
+    });
+    assert.equal(getVotingTimeParts(newYear, { withDate: false }).label, "01.01.2027 kell 00:30");
 
     assert.equal(getVotingTimeParts(null).label, "");
   });
