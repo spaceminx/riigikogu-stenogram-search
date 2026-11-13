@@ -674,6 +674,8 @@ def test_methodology_attendance_two_metrics_text():
     assert "Kohalolekut näidatakse kahe mõõdikuna." in att_methodology
     assert "Registreerus kohalolekukontrollis" in att_methodology
     assert "Osales hääletustel" in att_methodology
+    assert "mitte fraktsiooni kohtade arvu" in att_methodology
+    assert "oma viimase fraktsiooni alla" in att_methodology
 
 
 def test_fetch_attendance_cli_takes_a_date_range():
