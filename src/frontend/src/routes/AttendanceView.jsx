@@ -377,13 +377,21 @@ export function AttendanceView({
           requestSort={requestSort}
         />
       ) : (
-        <AttendanceFactionsTable
-          sortedFactionStats={sortedFactionStats}
-          factionSortConfig={factionSortConfig}
-          requestFactionSort={requestFactionSort}
-          onSelectFaction={handleSelectFactionDrilldown}
-          role={selectedRole}
-        />
+        <>
+          <AttendanceFactionsTable
+            sortedFactionStats={sortedFactionStats}
+            factionSortConfig={factionSortConfig}
+            requestFactionSort={requestFactionSort}
+            onSelectFaction={handleSelectFactionDrilldown}
+            role={selectedRole}
+          />
+          <p className="att-table-note">
+            <em>Saadikuid</em> –{" "}
+            {activeOnly
+              ? "praegused Riigikogu liikmed, kes on arvestatud oma viimase fraktsiooni alla valitud perioodil ja rollis. Kõik nende selle perioodi kontrollid ja hääletused arvestatakse selle fraktsiooni juurde, ka need, mis toimusid eelmise fraktsiooni liikmena."
+              : "erinevad inimesed, kes kuulusid valitud perioodil vähemalt ühe kohalolekukontrolli ajal sellesse fraktsiooni, sh asendusliikmed. Fraktsiooni vahetanud saadik on arvestatud igas fraktsioonis, kuhu ta kuulus. See ei ole fraktsiooni kohtade arv."}
+          </p>
+        </>
       )}
     </div>
   );
