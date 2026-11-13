@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { fetchPlenarySession, fetchVotings } from "../lib/api";
+import { fetchAllSittingVotings, fetchPlenarySession } from "../lib/api";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 import SpeechCard from "../components/SpeechCard";
 import VotingRow from "../components/VotingRow";
@@ -37,7 +37,7 @@ export function SessionView() {
 
   const { data: votingsData } = useSWR(
     isValidDate ? `session-votings-${date}` : null,
-    () => fetchVotings({ sittingDate: date, limit: 100 }),
+    () => fetchAllSittingVotings(date),
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
