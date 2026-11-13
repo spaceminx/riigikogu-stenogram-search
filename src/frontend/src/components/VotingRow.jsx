@@ -1,20 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { formatDate } from "../lib/calendarUtils";
 import {
   formatDocumentReference,
-  formatOvernightTime,
   getVotingHeading,
   getVotingSummaryParts,
+  getVotingTimeParts,
 } from "../lib/votingUtils";
 import VoteBar from "./VoteBar";
 
 export function VotingRow({ voting, showDate = true, showDocument = true }) {
   if (!voting) return null;
 
-  const timeFormatted = formatOvernightTime(voting.start_time, voting.sitting_date, voting.date);
-  const dateFormatted = showDate ? formatDate(voting.sitting_date) : "";
-  const timeDisplay = dateFormatted ? `${dateFormatted} ${timeFormatted}`.trim() : timeFormatted;
+  const { label: timeLabel, sittingLabel } = getVotingTimeParts(voting, { withDate: showDate });
+  // On a session page (no date) the sitting is the page itself
+  const showSitting = showDate && sittingLabel;
   const summaryParts = getVotingSummaryParts(voting.totals);
   const { title, stage } = getVotingHeading(voting, { showDocument });
   const reference = showDocument ? formatDocumentReference(voting.related_document) : "";
@@ -23,7 +22,20 @@ export function VotingRow({ voting, showDate = true, showDocument = true }) {
     <Link to={`/haaletus/${voting.uuid}`} className="voting-row-link">
       <div className="voting-row-main">
         <div className="voting-row-meta">
-          <span className="voting-row-time">{timeDisplay}</span>
+          {timeLabel && (
+            <span className="voting-row-time">
+              {/* The separator stays with the time so a wrapped line never starts with it */}
+              <span className="voting-row-time-part">
+                {showSitting ? `${timeLabel} ·` : timeLabel}
+              </span>
+              {showSitting && (
+                <>
+                  {" "}
+                  <span className="voting-row-time-part voting-row-sitting">{sittingLabel}</span>
+                </>
+              )}
+            </span>
+          )}
           {stage && <span className="voting-stage">{stage}</span>}
           <div className="voting-badges">
             {voting.type === "SALAJANE" && (

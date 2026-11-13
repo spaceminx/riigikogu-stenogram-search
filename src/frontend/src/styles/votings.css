@@ -155,6 +155,10 @@
   font-weight: 500;
 }
 
+.voting-row-time-part {
+  white-space: nowrap;
+}
+
 .voting-badges {
   display: inline-flex;
   gap: 0.4rem;

@@ -9,8 +9,8 @@ import {
   formatDecision,
   formatDocumentReference,
   formatMajorityPosition,
-  formatOvernightTime,
   getVotingHeading,
+  getVotingTimeParts,
 } from "../lib/votingUtils";
 import { usePageMeta } from "../lib/usePageMeta";
 
@@ -158,7 +158,11 @@ export function VotingView() {
     );
   }
 
-  const timeDisplay = formatOvernightTime(voting.start_time, voting.sitting_date, voting.date);
+  const votingTime = getVotingTimeParts(voting, { withDate: false });
+  // An overnight vote names its own date; the sitting link next to it carries the sitting's date
+  const timeDisplay = votingTime.isOvernight
+    ? `Hääletus ${formatDate(votingTime.voteDate)}${votingTime.time ? ` kell ${votingTime.time}` : ""}`
+    : votingTime.time && `Kell ${votingTime.time}`;
   const isSecret = voting.type === "SALAJANE";
   const notVotedCount = computeNotVoted(voting.totals);
 
@@ -201,7 +205,7 @@ export function VotingView() {
               Istung {formatDate(voting.sitting_date)}
             </Link>
           )}
-          {timeDisplay && <span className="voting-meta-item">Kell {timeDisplay}</span>}
+          {timeDisplay && <span className="voting-meta-item">{timeDisplay}</span>}
           {voting.chairman_name && (
             <span className="voting-meta-item">Juhataja: {voting.chairman_name}</span>
           )}
