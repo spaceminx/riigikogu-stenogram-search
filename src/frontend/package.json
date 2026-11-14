@@ -22,8 +22,8 @@
     "@fontsource-variable/source-code-pro": "5.3.1",
     "@fontsource-variable/source-sans-3": "5.3.1",
     "@fontsource-variable/source-serif-4": "5.3.1",
-    "@vercel/functions": "3.10.6",
-    "lucide-react": "^1.68.0",
+    "@vercel/functions": "3.11.1",
+    "lucide-react": "^1.72.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5",
@@ -32,17 +32,17 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "1.64.1",
+    "@playwright/test": "1.65.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.2.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.14.0",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.0",
     "react-is": "19.3.1",
-    "vite": "^8.3.5"
+    "vite": "^8.3.8"
   },
   "engines": {
     "node": "24.x"
