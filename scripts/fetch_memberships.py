@@ -47,6 +47,35 @@ def roman_numeral(n: int) -> str:
     return roman_num
 
 
+def build_memberships_map(items: list[dict]) -> dict[str, dict]:
+    """Map the API's membership list to {number: membership} with each mandate's end date.
+
+    A mandate runs until the next membership convenes (its start date minus one day), not until
+    its last regular session (`endDate` upstream, kept as `sessionEndDate`). The newest membership
+    is open-ended (XV: its last session is 2027-02-25, but it stays in office until XVI convenes).
+    """
+    sorted_items = sorted(
+        [it for it in items if it.get("number") and it.get("startDate")],
+        key=lambda x: int(x["number"]),
+    )
+    memberships_map: dict[str, dict] = {}
+    for i, item in enumerate(sorted_items):
+        num = int(item["number"])
+        if i + 1 < len(sorted_items):
+            next_start = datetime.strptime(sorted_items[i + 1]["startDate"], "%Y-%m-%d")
+            mandate_end = (next_start - timedelta(days=1)).strftime("%Y-%m-%d")
+        else:
+            mandate_end = "2099-12-31"
+        memberships_map[str(num)] = {
+            "number": num,
+            "name": f"{roman_numeral(num)} Riigikogu",
+            "startDate": item["startDate"],
+            "endDate": mandate_end,
+            "sessionEndDate": item.get("endDate"),
+        }
+    return memberships_map
+
+
 def fetch_memberships() -> bool:
     """Fetch official Riigikogu parliamentary membership start and end dates from API."""
     Path(OUTPUT_DIR_PROCESSED).mkdir(parents=True, exist_ok=True)
@@ -99,33 +128,7 @@ def fetch_memberships() -> bool:
         os.replace(tmp_file, out_file)
         return False
 
-    sorted_items = sorted(
-        [it for it in data if it.get("number") and it.get("startDate")],
-        key=lambda x: int(x["number"]),
-    )
-    memberships_map: dict[str, dict] = {}
-    for i, item in enumerate(sorted_items):
-        num = int(item["number"])
-        start = item["startDate"]
-        session_end = item.get("endDate")
-        if i + 1 < len(sorted_items):
-            next_start = sorted_items[i + 1]["startDate"]
-            mandate_end = (datetime.strptime(next_start, "%Y-%m-%d") - timedelta(days=1)).strftime(
-                "%Y-%m-%d"
-            )
-        else:
-            # The newest membership's mandate runs until the next one convenes, not until its
-            # last regular session ends (XV: 2027-02-25), so leave it open-ended.
-            mandate_end = "2099-12-31"
-
-        roman = roman_numeral(num)
-        memberships_map[str(num)] = {
-            "number": num,
-            "name": f"{roman} Riigikogu",
-            "startDate": start,
-            "endDate": mandate_end,
-            "sessionEndDate": session_end,
-        }
+    memberships_map = build_memberships_map(data)
 
     with open(tmp_file, "w", encoding="utf-8") as f:
         json.dump(memberships_map, f, ensure_ascii=False, indent=2)
