@@ -120,7 +120,7 @@ export function VotingView() {
         className="glass-panel"
         style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <p style={{ color: "var(--text-secondary)" }}>Laen hääletuse andmeid...</p>
+        <p style={{ color: "var(--color-text-muted)" }}>Laen hääletuse andmeid...</p>
       </div>
     );
   }
@@ -140,7 +140,7 @@ export function VotingView() {
         <h1 className="detail-error-title">
           {is404 ? "Hääletust ei leitud" : "Hääletuse laadimine ebaõnnestus."}
         </h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--color-text-muted)", marginBottom: "1.5rem" }}>
           {error?.message ||
             (is404
               ? "Hääletust sellise identifikaatoriga ei leitud."
@@ -364,7 +364,7 @@ export function VotingView() {
             {filteredVotes.length === 0 ? (
               <p
                 style={{
-                  color: "var(--text-secondary)",
+                  color: "var(--color-text-muted)",
                   margin: "1.5rem 0",
                   textAlign: "center",
                 }}

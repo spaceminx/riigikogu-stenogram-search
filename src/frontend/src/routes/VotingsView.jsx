@@ -148,7 +148,7 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
 
       {isLoading && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)" }}>Laen hääletusi...</p>
+          <p style={{ color: "var(--color-text-muted)" }}>Laen hääletusi...</p>
         </div>
       )}
 
@@ -163,7 +163,7 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
 
       {!isLoading && !error && results.length === 0 && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>Hääletusi ei leitud.</p>
+          <p style={{ color: "var(--color-text-muted)", margin: 0 }}>Hääletusi ei leitud.</p>
         </div>
       )}
 

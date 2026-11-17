@@ -1,13 +1,5 @@
 :root {
   color-scheme: light;
-  --bg-color: var(--color-bg);
-  --panel-bg: var(--color-surface);
-  --panel-border: var(--color-border);
-  --text-primary: var(--color-text);
-  --text-secondary: var(--color-text-muted);
-  --accent-primary: var(--color-accent);
-  --accent-secondary: var(--color-accent);
-  --accent-gradient: var(--color-accent);
   font-family: var(--font-sans);
 }
 
