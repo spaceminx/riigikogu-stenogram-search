@@ -10,7 +10,7 @@ import pytest
 import scripts.fetch_stenograms_api as fetch_stenograms_api
 from scripts.fetch_agenda import process_agenda_and_verbatims
 from scripts.fetch_factions import extract_electoral_district, extract_photo_url
-from scripts.fetch_memberships import roman_numeral
+from scripts.fetch_memberships import build_memberships_map
 from scripts.fetch_stenograms_api import parse_meeting_speeches
 from scripts.fetch_votes import parse_and_validate_voting
 from src.fetch_models import (
@@ -380,29 +380,9 @@ def test_unknown_extra_fields_allowed():
 def test_memberships_transform_golden():
     with open(FIXTURES_DIR / "memberships.json", encoding="utf-8") as f:
         m_data = json.load(f)
-
-    sorted_items = sorted(
-        [it for it in m_data if it.get("number") and it.get("startDate")],
-        key=lambda x: int(x["number"]),
-    )
-    m_map = {}
-    for _i, item in enumerate(sorted_items):
-        num = int(item["number"])
-        start = item["startDate"]
-        session_end = item.get("endDate")
-        mandate_end = session_end or "2099-12-31"
-        roman = roman_numeral(num)
-        m_map[str(num)] = {
-            "number": num,
-            "name": f"{roman} Riigikogu",
-            "startDate": start,
-            "endDate": mandate_end,
-            "sessionEndDate": session_end,
-        }
-
     with open(GOLDENS_DIR / "memberships_transformed.json", encoding="utf-8") as f:
         expected = json.load(f)
-    assert m_map == expected
+    assert build_memberships_map(m_data) == expected
 
 
 def test_persons_transform_golden():

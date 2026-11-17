@@ -191,6 +191,51 @@ def verify_release_assets(release_id: int, files: list[Path], token: str) -> Non
         )
 
 
+# Record counts shown in the release description, by asset name prefix
+RELEASE_NOTE_COUNTS = [
+    ("speeches_", "speeches"),
+    ("votings.", "votings"),
+    ("votes.", "individual votes"),
+    ("attendance.", "attendance records"),
+    ("drafts.", "drafts"),
+]
+
+
+def build_release_notes(date_version: str, manifest: dict) -> str:
+    """Short English description for the GitHub release page.
+
+    The full bilingual README.md and DATA_DICTIONARY.md ship as assets; the description only
+    says what the snapshot holds and under which licence.
+    """
+    files = manifest.get("files") or {}
+    counts = []
+    for prefix, label in RELEASE_NOTE_COUNTS:
+        total = sum(int(v.get("count") or 0) for k, v in files.items() if k.startswith(prefix))
+        if total:
+            counts.append(f"{total:,} {label}")
+
+    speeches = (manifest.get("date_range") or {}).get("speeches") or {}
+    period = (
+        f"from {speeches['start']} to {speeches['end']}"
+        if speeches.get("start") and speeches.get("end")
+        else f"as of {date_version}"
+    )
+    lines = [
+        f"Riigivaade dataset of the Estonian Parliament (Riigikogu) plenary sittings {period}."
+    ]
+    if counts:
+        lines.append(" · ".join(counts))
+    lines.append(
+        "Gzip-compressed JSON Lines (UTF-8). Fields are described in `DATA_DICTIONARY.md`, "
+        "checksums are in `SHA256SUMS`."
+    )
+    lines.append(
+        "License: CC BY-SA 3.0. Source: Riigikogu open data (api.riigikogu.ee), "
+        "processed by [Riigivaade](https://www.riigivaade.me)."
+    )
+    return "\n\n".join(lines) + "\n"
+
+
 def publish_release(
     release_dir: Path,
     replace: bool = False,
@@ -204,22 +249,15 @@ def publish_release(
 
     # 1. Determine tag name from manifest or directory name
     manifest_file = release_dir / "manifest.json"
+    manifest_data: dict = {}
     if manifest_file.exists():
         with open(manifest_file, encoding="utf-8") as f:
             manifest_data = json.load(f)
-        date_version = manifest_data.get("version", release_dir.name)
-    else:
-        date_version = release_dir.name
+    date_version = manifest_data.get("version", release_dir.name)
 
     tag = f"data-{date_version}"
     release_title = f"Riigivaade Open Data ({date_version})"
-
-    # Read README.md for release notes body if present
-    readme_file = release_dir / "README.md"
-    if readme_file.exists():
-        body = readme_file.read_text(encoding="utf-8")
-    else:
-        body = f"Riigivaade open dataset release for {date_version}."
+    body = build_release_notes(date_version, manifest_data)
 
     files_to_upload = sorted(
         [f for f in release_dir.iterdir() if f.is_file() and not f.name.startswith(".")]
@@ -229,6 +267,7 @@ def publish_release(
         print(f"[DRY-RUN] Target repo: {REPO}")
         print(f"[DRY-RUN] Release tag: {tag}")
         print(f"[DRY-RUN] Title: {release_title}")
+        print(f"[DRY-RUN] Description:\n{body}")
         print(f"[DRY-RUN] Found {len(files_to_upload)} files to upload:")
         for f in files_to_upload:
             print(f"  - {f.name} ({f.stat().st_size} bytes)")

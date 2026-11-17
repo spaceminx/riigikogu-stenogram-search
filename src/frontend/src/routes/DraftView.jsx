@@ -230,7 +230,7 @@ export function DraftView() {
         className="glass-panel"
         style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <p style={{ color: "var(--text-secondary)" }}>Laen eelnõu andmeid...</p>
+        <p style={{ color: "var(--color-text-muted)" }}>Laen eelnõu andmeid...</p>
       </div>
     );
   }
@@ -250,7 +250,7 @@ export function DraftView() {
         <h1 className="detail-error-title">
           {is404 ? "Eelnõud ei leitud" : "Eelnõu laadimine ebaõnnestus."}
         </h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--color-text-muted)", marginBottom: "1.5rem" }}>
           {error?.message ||
             (is404
               ? "Eelnõud sellise identifikaatoriga ei leitud."
@@ -338,7 +338,7 @@ export function DraftView() {
           </div>
         ) : (
           <div className="glass-panel" style={{ padding: "1.5rem", textAlign: "center" }}>
-            <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+            <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
               Selle eelnõu lugemisi ega arutelusid ei leitud.
             </p>
           </div>

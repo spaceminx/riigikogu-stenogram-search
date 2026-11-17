@@ -254,7 +254,7 @@ export function DraftsView({ memberships = [] }) {
 
       {isLoading && !data && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)" }}>Laen eelnõusid...</p>
+          <p style={{ color: "var(--color-text-muted)" }}>Laen eelnõusid...</p>
         </div>
       )}
 
@@ -269,7 +269,7 @@ export function DraftsView({ memberships = [] }) {
 
       {data && !error && results.length === 0 && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>
+          <p style={{ color: "var(--color-text-muted)", margin: 0 }}>
             {hasFilters ? "Nende valikutega eelnõusid ei leitud." : "Eelnõusid ei leitud."}
           </p>
         </div>
