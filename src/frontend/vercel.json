@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/rss/:path*",
-      "destination": "https://api.riigivaade.me/rss/:path*"
-    },
-    {
       "source": "/sitemap.xml",
       "destination": "https://api.riigivaade.me/sitemap.xml"
     },

@@ -123,6 +123,14 @@ def test_root_status():
     assert response.json() == {"status": "ok"}
 
 
+def test_rss_feeds_are_gone():
+    """The RSS feeds were removed (2026-11); their paths are plain 404s with a JSON body."""
+    for path in ("/rss/search?q=eelarve", "/rss/saadik/some-person-uuid"):
+        response = client.get(path)
+        assert response.status_code == 404
+        assert response.headers["content-type"].startswith("application/json")
+
+
 def test_dashboard_overview_shape():
     from src.api.search import _OVERVIEW_CACHE
 
