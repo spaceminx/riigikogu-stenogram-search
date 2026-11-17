@@ -279,6 +279,22 @@ export async function fetchVotings(options = {}) {
   return handleResponse(res);
 }
 
+// The API returns at most 100 votings per request, and a long sitting can hold more (the record
+// keeps growing: 70 in 2016, 79 in 2024, 90 on 11.11.2026), so page until every voting is loaded.
+// maxPages only guards against a runaway loop.
+export async function fetchAllSittingVotings(sittingDate, { pageSize = 100, maxPages = 20 } = {}) {
+  const results = [];
+  let total = 0;
+  for (let page = 0; page < maxPages; page++) {
+    const data = await fetchVotings({ sittingDate, limit: pageSize, offset: page * pageSize });
+    const batch = data?.results ?? [];
+    total = data?.total ?? results.length + batch.length;
+    results.push(...batch);
+    if (batch.length < pageSize || results.length >= total) break;
+  }
+  return { total, results };
+}
+
 export async function fetchVoting(uuid) {
   const res = await fetch(`${BASE_URL}/votings/${encodeURIComponent(uuid)}`);
   return handleResponse(res);

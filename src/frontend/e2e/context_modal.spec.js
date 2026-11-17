@@ -52,11 +52,16 @@ test.describe("Speech context modal", () => {
     await expect(target.locator(".transcript-row-speaker")).toHaveText(targetSpeech.speaker);
     await expect(target.locator(".target-speech-badge")).toHaveText("Otsitud kõne");
 
-    // Filtering inside the modal matches speaker names and text
-    const term = "Riisalo";
-    const expected = context.speeches.filter((s) =>
-      `${s.speaker} ${s.text}`.toLowerCase().includes(term.toLowerCase())
-    ).length;
+    // Filtering inside the modal matches speaker names and text; the term is a speaker's surname
+    // that matches some rows but not all, whatever session the fixture was captured from
+    const matching = (term) =>
+      context.speeches.filter((s) =>
+        `${s.speaker} ${s.text}`.toLowerCase().includes(term.toLowerCase())
+      ).length;
+    const term = [...new Set(context.speeches.map((s) => s.speaker.split(" ").at(-1)))].find(
+      (t) => matching(t) > 0 && matching(t) < context.speeches.length
+    );
+    const expected = matching(term);
     expect(expected).toBeGreaterThan(0);
     expect(expected).toBeLessThan(context.speeches.length);
     await dialog.getByRole("textbox", { name: "Otsi sellest istungist" }).fill(term);

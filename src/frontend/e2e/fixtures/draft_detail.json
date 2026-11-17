@@ -1,61 +1,95 @@
 {
-  "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
-  "mark": 980,
-  "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+  "uuid": "69d7eeac-a478-4f29-935b-5a79beb0f0db",
+  "mark": 982,
+  "title": "Mootorsõidukimaksu seaduse kehtetuks tunnistamise ja liiklusseaduses sõiduautode registreerimistasu kehtetuks tunnistamise seadus",
   "membership": 15,
   "type_code": "SE",
-  "stage": "TEINE_LUGEMINE",
-  "status": "I_LUGEMINE_LOPETATUD",
-  "status_date": "2026-10-21",
-  "proceeding_status": "IN_PROCESS",
-  "status_group": "in_process",
+  "stage": "TAGASI_LYKATUD",
+  "status": "TAGASI_LYKATUD",
+  "status_date": "2026-11-12",
+  "proceeding_status": "PROCESSED",
+  "status_group": "rejected",
   "initiated": "2026-06-18",
   "leading_committee": {
-    "uuid": "44584179-67a8-ce54-da37-569f1a480919",
-    "name": "Sotsiaalkomisjon"
+    "uuid": "527a03f5-d564-70f2-6266-70c1cdb5535f",
+    "name": "Rahanduskomisjon"
   },
   "readings": [
     {
-      "agenda_item_uuid": "34149feb-a62c-4381-9921-894a5cbed030",
-      "sitting_date": "2026-10-21",
-      "source_file": "2026-10-21_1400.api",
-      "steno_title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seaduse (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine) eelnõu (980 SE) esimene lugemine",
+      "agenda_item_uuid": "bea278be-9713-4bff-b5f4-13c716802895",
+      "sitting_date": "2026-11-12",
+      "source_file": "2026-11-12_1000.api",
+      "steno_title": "Mootorsõidukimaksu seaduse kehtetuks tunnistamise ja liiklusseaduses sõiduautode registreerimistasu kehtetuks tunnistamise seaduse eelnõu (982 SE) esimene lugemine",
       "stage": "ESIMENE_LUGEMINE",
-      "decision_value": "Esimene lugemine lõpetatud",
-      "speech_count": 34,
-      "voting_uuids": ["3943e6d1-4259-4435-bb44-644bc6ce6105"]
+      "decision_value": "Tagasilükkamine",
+      "speech_count": 197,
+      "voting_uuids": [
+        "4f49d6cb-1118-4e96-806c-2578d33c0569",
+        "e1d00318-97c8-4c2a-b9cd-34232dad5b22"
+      ]
     }
   ],
   "votings": [
     {
-      "uuid": "3943e6d1-4259-4435-bb44-644bc6ce6105",
-      "voting_number": 104346,
+      "uuid": "4f49d6cb-1118-4e96-806c-2578d33c0569",
+      "voting_number": 104476,
       "type": "AVALIK",
       "is_technical": false,
-      "description": "Tagasi lükkamine",
-      "date": "2026-10-21",
-      "start_time": "2026-10-21T23:01:51.823",
-      "end_time": "2026-10-21T23:02:11.817",
-      "sitting_date": "2026-10-21",
-      "sitting_datetime": "2026-10-21T14:00:00",
-      "session_source_file": "2026-10-21_1400.api",
+      "description": "Tööaja pikendamine",
+      "date": "2026-11-12",
+      "start_time": "2026-11-12T11:42:10.29",
+      "end_time": "2026-11-12T11:42:30.283",
+      "sitting_date": "2026-11-12",
+      "sitting_datetime": "2026-11-12T10:00:00",
+      "session_source_file": "2026-11-12_1000.api",
       "membership": 15,
-      "sitting_uuid": "b558482d-4683-4ac0-a42c-2e7946b3b248",
-      "sitting_title": "Täiskogu korraline istung kolmapäev, 21.10.2026 14:00",
+      "sitting_uuid": "e3394191-f782-4c9e-b622-98c6eb6bf91c",
+      "sitting_title": "Täiskogu korraline istung neljapäev, 12.11.2026 10:00",
       "related_document": {
-        "uuid": "c6ccd71d-8bd6-4400-bf17-830ea1913485",
-        "reference": "980",
-        "title": "Okupatsioonirežiimide poolt represseeritud isiku seaduse muutmise ja sotsiaalhoolekande seaduse muutmise seadus (represseeritute ja tuumakatastroofi tagajärgede likvideerijate toetuse suurendamine)",
+        "uuid": "69d7eeac-a478-4f29-935b-5a79beb0f0db",
+        "reference": "982",
+        "title": "Mootorsõidukimaksu seaduse kehtetuks tunnistamise ja liiklusseaduses sõiduautode registreerimistasu kehtetuks tunnistamise seadus",
         "type": "DRAFT"
       },
       "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
       "totals": {
-        "present": 90,
-        "absent": 11,
-        "in_favor": 0,
-        "against": 18,
+        "present": 70,
+        "absent": 31,
+        "in_favor": 7,
+        "against": 36,
         "neutral": 0,
-        "abstained": 83
+        "abstained": 58
+      }
+    },
+    {
+      "uuid": "e1d00318-97c8-4c2a-b9cd-34232dad5b22",
+      "voting_number": 104477,
+      "type": "AVALIK",
+      "is_technical": false,
+      "description": "Tagasi lükkamine",
+      "date": "2026-11-12",
+      "start_time": "2026-11-12T12:36:47.117",
+      "end_time": "2026-11-12T12:37:07.11",
+      "sitting_date": "2026-11-12",
+      "sitting_datetime": "2026-11-12T10:00:00",
+      "session_source_file": "2026-11-12_1000.api",
+      "membership": 15,
+      "sitting_uuid": "e3394191-f782-4c9e-b622-98c6eb6bf91c",
+      "sitting_title": "Täiskogu korraline istung neljapäev, 12.11.2026 10:00",
+      "related_document": {
+        "uuid": "69d7eeac-a478-4f29-935b-5a79beb0f0db",
+        "reference": "982",
+        "title": "Mootorsõidukimaksu seaduse kehtetuks tunnistamise ja liiklusseaduses sõiduautode registreerimistasu kehtetuks tunnistamise seadus",
+        "type": "DRAFT"
+      },
+      "chairman_uuid": "a39c4392-bbc8-4036-b923-0f5f2b3d9766",
+      "totals": {
+        "present": 75,
+        "absent": 26,
+        "in_favor": 25,
+        "against": 13,
+        "neutral": 1,
+        "abstained": 62
       }
     }
   ]

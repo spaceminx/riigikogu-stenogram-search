@@ -120,16 +120,32 @@ test.describe("Drafts list", () => {
 
   test("a row opens the draft page, whose header shows the draft list fields", async ({ page }) => {
     const mock = await setupApiMock(page);
+    // A law in its second reading whose status (first reading done) says more than its stage;
+    // pinned here because the captured draft can be in any stage
+    const pinned = {
+      ...draft,
+      type_code: "SE",
+      membership: 15,
+      stage: "TEINE_LUGEMINE",
+      status: "I_LUGEMINE_LOPETATUD",
+      status_date: "2026-10-21",
+      leading_committee: draft.leading_committee ?? { uuid: "committee", name: "Rahanduskomisjon" },
+    };
     const summary = {
       ...list.results[0],
-      ...Object.fromEntries(Object.entries(draft).filter(([k]) => k in list.results[0])),
+      ...Object.fromEntries(Object.entries(pinned).filter(([k]) => k in list.results[0])),
     };
-    await page.route(/api\.e2e\.test\/drafts\?/, (route) =>
+    const json = (route, body) =>
       route.fulfill({
         contentType: "application/json",
         headers: { "access-control-allow-origin": "*" },
-        body: JSON.stringify({ ...list, results: [summary] }),
-      })
+        body: JSON.stringify(body),
+      });
+    await page.route(/api\.e2e\.test\/drafts\?/, (route) =>
+      json(route, { ...list, results: [summary] })
+    );
+    await page.route(new RegExp(`api\\.e2e\\.test/drafts/${FIXTURE_IDS.draftUuid}$`), (route) =>
+      json(route, pinned)
     );
 
     await page.goto("/eelnoud");
@@ -137,13 +153,13 @@ test.describe("Drafts list", () => {
     await expect(page).toHaveURL(new RegExp(`/eelnou/${FIXTURE_IDS.draftUuid}`));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(draft.title);
 
-    await expect(page.locator(".draft-mark-badge")).toHaveText(`${draft.mark} ${draft.type_code}`);
+    await expect(page.locator(".draft-mark-badge")).toHaveText(`${draft.mark} SE`);
     const facts = page.locator(".draft-facts");
     await expect(facts).toContainText("Seadus");
     await expect(facts).toContainText("XV koosseis");
     await expect(facts).toContainText("Teine lugemine");
     await expect(facts).toContainText("I lugemine lõpetatud, 21.10.2026");
-    await expect(facts).toContainText(draft.leading_committee.name);
+    await expect(facts).toContainText(pinned.leading_committee.name);
 
     await page.getByRole("button", { name: "← Tagasi" }).click();
     await expect(page).toHaveURL(/\/eelnoud$/);

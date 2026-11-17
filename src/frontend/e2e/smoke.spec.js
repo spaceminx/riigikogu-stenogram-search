@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { test, expect } from "@playwright/test";
 import { setupApiMock, FIXTURE_IDS } from "./support/api.js";
+import { formatSpeakingTime } from "../src/lib/activityUtils.js";
 import { ROUTES } from "./support/routes.js";
 
 test.describe("Smoke tests for all routes", () => {
@@ -56,13 +57,15 @@ test.describe("Smoke tests for all routes", () => {
   }) => {
     const mock = await setupApiMock(page);
     await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
-    const card = page.locator(".person-metric-card", { hasText: "Kõneaeg saadikuna" });
-    await expect(card.locator(".person-metric-value")).toHaveText("24 h 27 min");
-
-    // A XIII-only member: the source has no start times before 2020-09-14
     const stats = JSON.parse(
       fs.readFileSync(new URL("./fixtures/person_stats.json", import.meta.url))
     );
+    const card = page.locator(".person-metric-card", { hasText: "Kõneaeg saadikuna" });
+    await expect(card.locator(".person-metric-value")).toHaveText(
+      formatSpeakingTime(stats.duration, stats.last_speech_date)
+    );
+
+    // A XIII-only member: the source has no start times before 2020-09-14
     await page.route(
       (url) => url.pathname.endsWith(`/persons/${FIXTURE_IDS.personUuid}/stats`),
       (route) =>

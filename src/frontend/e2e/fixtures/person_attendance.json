@@ -1,30 +1,30 @@
 {
   "uuid": "6b45cfb5-8a17-481c-b674-80fc00c6cf5d",
   "member_name": "Jaak Aab",
-  "total_sessions": 654,
-  "present_sessions": 428,
-  "absent_sessions": 226,
-  "attendance_percentage": 65.4,
+  "total_sessions": 665,
+  "present_sessions": 434,
+  "absent_sessions": 231,
+  "attendance_percentage": 65.3,
   "votes": {
-    "voted": 1448,
-    "not_voted": 754,
-    "absent": 119,
-    "total": 2321,
-    "voted_pct": 62.4
+    "voted": 1528,
+    "not_voted": 789,
+    "absent": 120,
+    "total": 2437,
+    "voted_pct": 62.7
   },
   "by_membership": [
     {
       "membership": "15",
-      "total_sessions": 535,
-      "present_sessions": 332,
-      "absent_sessions": 203,
-      "attendance_percentage": 62.1,
+      "total_sessions": 546,
+      "present_sessions": 338,
+      "absent_sessions": 208,
+      "attendance_percentage": 61.9,
       "votes": {
-        "voted": 1060,
-        "not_voted": 628,
-        "absent": 80,
-        "total": 1768,
-        "voted_pct": 60
+        "voted": 1140,
+        "not_voted": 663,
+        "absent": 81,
+        "total": 1884,
+        "voted_pct": 60.5
       }
     },
     {
