@@ -178,6 +178,31 @@ test("voting utilities", async (t) => {
       "OE 12"
     );
     assert.equal(formatDocumentReference({ title: "Ilma numbrita" }), "");
+
+    // An agenda item document has no reference; the mark is at the end of its title
+    const agendaDoc = {
+      uuid: "7c878495-f160-459f-a5ca-b311b3156ff5",
+      reference: "",
+      title: "2027. aasta riigieelarve seaduse eelnõu (1037 SE I)",
+      type: "plenaryAgendaItemDocument",
+    };
+    assert.equal(formatDocumentReference(agendaDoc), "Eelnõu 1037");
+    assert.equal(
+      formatDocumentReference({
+        reference: "",
+        title: "Abipolitseiniku seaduse (COVID-19 meetmed) eelnõu (170 SE II)",
+      }),
+      "Eelnõu 170"
+    );
+    assert.equal(
+      formatDocumentReference({
+        reference: "",
+        title: "Seaduse muutmise seaduse eelnõu (17 SE II) (usaldusküsimusega seotud eelnõu)",
+      }),
+      "Eelnõu 17"
+    );
+    // A bracketed number without a draft type is not a mark
+    assert.equal(formatDocumentReference({ reference: "", title: "Seaduse (2019) muutmine" }), "");
     assert.equal(formatDocumentReference(null), "");
   });
 

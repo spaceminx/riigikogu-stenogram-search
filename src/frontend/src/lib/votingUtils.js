@@ -96,9 +96,15 @@ export function getVotingHeading(voting, { showDocument = true } = {}) {
   return { title: voting?.description || "Hääletus", stage: null };
 }
 
+// An agenda item's document (about 8 % of votings) has no reference, but its title carries the
+// draft mark and reading: "2027. aasta riigieelarve seaduse eelnõu (1037 SE I)", sometimes
+// followed by a note: "… eelnõu (17 SE II) (usaldusküsimusega seotud eelnõu)"
+const DRAFT_MARK_IN_TITLE = /\((\d+)\s+(?:SE|OE|AE|UA|PE)(?:\s+[IVX]+)?\)/g;
+
 export function formatDocumentReference(doc) {
-  if (!doc?.reference) return "";
-  return doc.type === "DRAFT" ? `Eelnõu ${doc.reference}` : doc.reference;
+  if (doc?.reference) return doc.type === "DRAFT" ? `Eelnõu ${doc.reference}` : doc.reference;
+  const marks = [...(doc?.title ?? "").matchAll(DRAFT_MARK_IN_TITLE)];
+  return marks.length ? `Eelnõu ${marks.at(-1)[1]}` : "";
 }
 
 export function getVoteBarSegments(totals) {

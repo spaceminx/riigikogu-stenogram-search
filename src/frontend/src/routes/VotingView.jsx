@@ -184,7 +184,7 @@ export function VotingView() {
         {heading.stage && <p className="voting-stage voting-detail-stage">{heading.stage}</p>}
         <h1 className="voting-detail-title">{heading.title}</h1>
 
-        {voting.related_document?.reference && (
+        {formatDocumentReference(voting.related_document) && (
           <div className="voting-related-doc">
             <FileText size={16} className="voting-doc-icon" aria-hidden="true" />
             {voting.related_document.type === "DRAFT" && voting.related_document.uuid ? (
