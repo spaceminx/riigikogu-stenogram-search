@@ -65,7 +65,7 @@ export function SpeechView() {
         className="glass-panel"
         style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <p style={{ color: "var(--text-secondary, #64748b)" }}>Laen kõne andmeid...</p>
+        <p style={{ color: "var(--color-text-muted)" }}>Laen kõne andmeid...</p>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export function SpeechView() {
         <h1 className="detail-error-title">
           {notFound ? "Kõnet ei leitud" : "Kõne laadimine ebaõnnestus"}
         </h1>
-        <p style={{ color: "var(--text-secondary, #64748b)", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--color-text-muted)", marginBottom: "1.5rem" }}>
           {notFound
             ? "Kõnet sellise identifikaatoriga ei leitud."
             : error?.message || "Proovi hiljem uuesti."}
@@ -119,7 +119,7 @@ export function SpeechView() {
         </button>
         <nav
           aria-label="Leivapuru"
-          style={{ fontSize: "0.85rem", color: "var(--text-secondary, #64748b)" }}
+          style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}
         >
           <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
             Avaleht
@@ -164,7 +164,7 @@ export function SpeechView() {
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
-              color: "var(--text-secondary, #64748b)",
+              color: "var(--color-text-muted)",
             }}
           >
             <Calendar size={14} aria-hidden="true" />
@@ -217,7 +217,7 @@ export function SpeechView() {
 
         <footer
           className="speech-card-actions"
-          style={{ borderTop: "1px solid var(--panel-border, #e2e8f0)", paddingTop: "1rem" }}
+          style={{ borderTop: "1px solid var(--color-border)", paddingTop: "1rem" }}
         >
           <Link
             to={`/istung/${speech.date}${publicSpeechId ? `#speech-${publicSpeechId}` : ""}`}

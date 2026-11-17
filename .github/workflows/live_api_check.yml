@@ -26,9 +26,15 @@ jobs:
       - name: Run Live API Check
         run: python3 scripts/check_live_api.py
 
+      # Only the upstream check needs a package (src/fetch_models); take Pydantic and its
+      # dependencies at the versions pinned in requirements.txt, so Dependabot keeps them current
       - name: Install Pydantic for Upstream Check
         if: always()
-        run: pip install pydantic==2.14.1
+        run: |
+          grep -E '^(pydantic|pydantic-core|annotated-types|typing-extensions|typing-inspection)=='             requirements.txt > /tmp/pydantic-requirements.txt
+          test "$(wc -l < /tmp/pydantic-requirements.txt)" -eq 5
+          pip install --no-deps -r /tmp/pydantic-requirements.txt
+          pip check
 
       - name: Run Upstream Riigikogu API Check
         if: always()

@@ -8,7 +8,7 @@ export function Footer({ onOpenMethodology }) {
       style={{
         textAlign: "center",
         padding: "2rem 1rem",
-        color: "var(--text-secondary)",
+        color: "var(--color-text-muted)",
         fontSize: "0.85rem",
       }}
     >

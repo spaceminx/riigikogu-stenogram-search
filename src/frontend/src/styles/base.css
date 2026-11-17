@@ -10,7 +10,7 @@ h3,
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0;
-  background: var(--accent-gradient);
+  background: var(--color-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: flex;
@@ -127,7 +127,7 @@ h3,
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--color-text-muted);
 }
 
 .empty-state svg {

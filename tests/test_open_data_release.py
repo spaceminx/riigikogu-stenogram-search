@@ -9,6 +9,7 @@ import pytest
 
 from scripts.build_open_data_release import build_open_data_release, describe_coverage
 from scripts.publish_open_data_release import (
+    build_release_notes,
     load_env_pipeline,
     publish_release,
 )
@@ -566,3 +567,63 @@ def test_describe_coverage_lists_every_membership():
         "Riigikogu XIII, XIV ja XV koosseisu (alates 2015. aastast)"
     )
     assert describe_coverage([16], None)[0] == "Riigikogu XVI koosseisu"
+
+
+def test_release_notes_are_short_and_in_english():
+    manifest = {
+        "version": "2026-12-01",
+        "date_range": {"speeches": {"start": "2015-03-30", "end": "2026-11-27"}},
+        "files": {
+            "speeches_2015.jsonl.gz": {"count": 12000},
+            "speeches_2026.jsonl.gz": {"count": 28000},
+            "votings.jsonl.gz": {"count": 5400},
+            "votes.jsonl.gz": {"count": 690012},
+            "attendance.jsonl.gz": {"count": 193920},
+            "attendance_checks.jsonl.gz": {"count": 2000},
+            "drafts.jsonl.gz": {"count": 1912},
+            "README.md": {"size": 2131},
+        },
+    }
+    notes = build_release_notes("2026-12-01", manifest)
+    assert notes == (
+        "Riigivaade dataset of the Estonian Parliament (Riigikogu) plenary sittings "
+        "from 2015-03-30 to 2026-11-27.\n\n"
+        "40,000 speeches · 5,400 votings · 690,012 individual votes · "
+        "193,920 attendance records · 1,912 drafts\n\n"
+        "Gzip-compressed JSON Lines (UTF-8). Fields are described in `DATA_DICTIONARY.md`, "
+        "checksums are in `SHA256SUMS`.\n\n"
+        "License: CC BY-SA 3.0. Source: Riigikogu open data (api.riigikogu.ee), "
+        "processed by [Riigivaade](https://www.riigivaade.me).\n"
+    )
+    assert len(notes.splitlines()) <= 8
+
+    # Without a manifest the description still names the version and the licence
+    bare = build_release_notes("2026-12-01", {})
+    assert bare.startswith(
+        "Riigivaade dataset of the Estonian Parliament (Riigikogu) plenary sittings as of 2026-12-01."
+    )
+    assert "CC BY-SA 3.0" in bare
+
+
+def test_publish_sends_the_short_notes_not_the_readme(tmp_path: Path):
+    release_dir = tmp_path / "2026-12-01"
+    release_dir.mkdir()
+    (release_dir / "README.md").write_text("# Pikk eestikeelne README\n", encoding="utf-8")
+    (release_dir / "manifest.json").write_text(
+        json.dumps({"version": "2026-12-01", "files": {"votings.jsonl.gz": {"count": 3}}}),
+        encoding="utf-8",
+    )
+    created = MagicMock()
+    created.__enter__.return_value.read.return_value = json.dumps(
+        {"id": 1, "upload_url": "https://uploads.github.com/x/assets{?name,label}"}
+    ).encode("utf-8")
+    listed = MagicMock()
+    listed.__enter__.return_value.read.return_value = b"[]"
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.side_effect = [listed, created, RuntimeError("stop after create")]
+        with pytest.raises(RuntimeError, match="stop after create"):
+            publish_release(release_dir=release_dir, token="ghp_testtoken", dry_run=False)
+    create_request = mock_urlopen.call_args_list[1].args[0]
+    body = json.loads(create_request.data.decode("utf-8"))["body"]
+    assert body == build_release_notes("2026-12-01", {"files": {"votings.jsonl.gz": {"count": 3}}})
+    assert "Pikk eestikeelne README" not in body

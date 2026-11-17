@@ -77,7 +77,7 @@ export function SessionView() {
         className="glass-panel"
         style={{ padding: "3rem", textAlign: "center", marginTop: "1rem" }}
       >
-        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--color-text-muted)", marginBottom: "1.5rem" }}>
           Sellist kuupäeva ei ole. Istungi aadress on kujul /istung/AAAA-KK-PP.
         </p>
         <Link
@@ -167,7 +167,7 @@ export function SessionView() {
 
       {loading && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)" }}>Laen istungi stenogrammi...</p>
+          <p style={{ color: "var(--color-text-muted)" }}>Laen istungi stenogrammi...</p>
         </div>
       )}
 
@@ -185,7 +185,9 @@ export function SessionView() {
 
       {!loading && !error && speeches.length === 0 && (
         <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ color: "var(--text-secondary)" }}>Sellel kuupäeval stenogramme ei leitud.</p>
+          <p style={{ color: "var(--color-text-muted)" }}>
+            Sellel kuupäeval stenogramme ei leitud.
+          </p>
         </div>
       )}
 
