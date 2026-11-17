@@ -1,9 +1,15 @@
 version: 2
+# Version updates wait until a release is 7 days old: newer releases are the riskiest (a
+# compromised or broken release is usually pulled within days), and the maintainer's machine
+# ignores packages younger than 7 days (uv exclude-newer), so a PR can then be tested locally.
+# Security updates are not delayed by the cooldown.
 updates:
   - package-ecosystem: "npm"
     directory: "/src/frontend"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 3
     groups:
       npm-dependencies:
@@ -14,6 +20,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 3
     groups:
       pip-dependencies:
@@ -24,6 +32,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 3
     groups:
       actions-dependencies:
@@ -34,4 +44,6 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 2
