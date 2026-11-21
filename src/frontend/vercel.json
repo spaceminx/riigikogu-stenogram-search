@@ -25,6 +25,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/saadikud",
+      "destination": "/index.html"
+    },
+    {
       "source": "/eelnoud",
       "destination": "/index.html"
     },

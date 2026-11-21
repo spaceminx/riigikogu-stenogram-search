@@ -2406,6 +2406,7 @@ def _generate_sitemap_xml(session) -> str:
     add_url(f"{base_url}/eelnoud")
     add_url(f"{base_url}/kohalolek")
     add_url(f"{base_url}/fraktsioonid")
+    add_url(f"{base_url}/saadikud")
     add_url(f"{base_url}/andmed")
 
     # 2. Sittings / istung/{date}

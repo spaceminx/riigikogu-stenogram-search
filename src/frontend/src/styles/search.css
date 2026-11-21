@@ -23,7 +23,6 @@
   transition: all 0.2s;
 }
 
-.filter-select:hover,
 .filter-group-item.speaker-filter-item {
   flex: 1;
   min-width: 0;
@@ -43,7 +42,6 @@
   transition: all 0.2s;
 }
 
-.filter-text-input:hover,
 .filter-clear-icon-btn {
   position: absolute;
   right: 0.5rem;

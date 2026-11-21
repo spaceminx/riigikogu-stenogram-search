@@ -23,6 +23,7 @@ const SearchView = lazy(() => import("./routes/SearchView"));
 const SessionView = lazy(() => import("./routes/SessionView"));
 const AttendanceView = lazy(() => import("./routes/AttendanceView"));
 const FactionsView = lazy(() => import("./routes/FactionsView"));
+const MembersView = lazy(() => import("./routes/MembersView"));
 const SpeechView = lazy(() => import("./routes/SpeechView"));
 const PersonView = lazy(() => import("./routes/PersonView"));
 const PrivacyView = lazy(() => import("./routes/PrivacyView"));
@@ -76,6 +77,8 @@ function PageTitlebar({ memberships = [] }) {
     title = "Kohaloleku andmed";
   } else if (pathname.startsWith("/fraktsioonid")) {
     title = "Fraktsioonid";
+  } else if (pathname.startsWith("/saadikud")) {
+    title = "Saadikud";
   } else if (pathname.startsWith("/andmed")) {
     title = "Andmed ja privaatsus";
   } else if (pathname.startsWith("/otsing")) {
@@ -219,6 +222,12 @@ function AppContent() {
               />
               <Route path="/kone/:id" element={<SpeechView />} />
               <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
+              <Route
+                path="/saadikud"
+                element={
+                  <MembersView memberships={memberships} membershipsLoading={membershipsLoading} />
+                }
+              />
               <Route path="/haaletused" element={<VotingsView memberships={memberships} />} />
               <Route
                 path="/fraktsioonid"

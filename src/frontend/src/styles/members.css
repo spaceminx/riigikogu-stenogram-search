@@ -1,0 +1,149 @@
+/* /saadikud: Riigikogu members of one membership */
+
+@media (min-width: 641px) {
+  .members-controls {
+    align-items: center;
+  }
+}
+
+/* Qualified by the row: search.css (imported later) sets .filter-input-wrap { flex: 1 } */
+.members-controls .members-search-wrap {
+  flex: 1 1 260px;
+  max-width: 360px;
+}
+
+.members-checkbox {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--color-text-soft);
+  font-size: var(--text-field);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.members-count {
+  margin: 1rem 0 0.5rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+}
+
+.members-list {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-block);
+  background: var(--color-surface);
+}
+
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.members-table th,
+.members-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.members-table thead th {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--color-border-strong);
+  background: var(--color-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.members-table tbody tr:hover {
+  background: var(--color-subtle);
+}
+
+.members-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.members-name-cell {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.members-photo {
+  flex: none;
+  width: 36px;
+  height: 45px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tag);
+  background: var(--color-subtle);
+}
+
+.members-photo-empty {
+  display: inline-block;
+}
+
+.members-name-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.members-name-link {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-name);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.members-name-link:hover,
+.members-name-link:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.members-name-meta {
+  display: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+
+.members-col-faction,
+.members-col-district {
+  color: var(--color-text-soft);
+  font-size: var(--text-field);
+}
+
+.members-former {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+
+@media (max-width: 640px) {
+  .members-table th,
+  .members-table td {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .members-col-faction,
+  .members-col-district {
+    display: none;
+  }
+
+  .members-name-meta {
+    display: block;
+  }
+
+  /* The row is a column here: a flex basis sets the height, and flex: 1 (basis 0) let the box
+     collapse to 0 and flicker under the pointer */
+  .members-controls .members-search-wrap {
+    flex: none;
+    max-width: none;
+  }
+}

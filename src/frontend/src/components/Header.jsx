@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   Activity,
   CalendarDays,
+  Contact,
   Database,
   Files,
   ExternalLink,
@@ -39,6 +40,8 @@ export function Header({
   const isDrafts = pathname.startsWith("/eelnou");
   const isAttendance = pathname.startsWith("/kohalolek");
   const isFactions = pathname.startsWith("/fraktsioonid");
+  // The list and every member's own page (/saadik/…)
+  const isMembers = pathname.startsWith("/saadik");
   const isSearchOrDashboard = pathname === "/" || pathname.startsWith("/otsing");
 
   return (
@@ -97,6 +100,13 @@ export function Header({
           aria-current={isFactions ? "page" : undefined}
         >
           Fraktsioonid
+        </Link>
+        <Link
+          to="/saadikud"
+          className={`nav-btn ${isMembers ? "active" : ""}`}
+          aria-current={isMembers ? "page" : undefined}
+        >
+          Saadikud
         </Link>
       </nav>
       <details className="header-menu">
@@ -161,6 +171,17 @@ export function Header({
             >
               <UsersRound aria-hidden="true" />
               <span>Fraktsioonid</span>
+            </Link>
+            <Link
+              to="/saadikud"
+              className={`menu-link ${isMembers ? "active" : ""}`}
+              onClick={() => {
+                const details = document.querySelector(".header-menu");
+                if (details) details.removeAttribute("open");
+              }}
+            >
+              <Contact aria-hidden="true" />
+              <span>Saadikud</span>
             </Link>
             <div className="menu-divider" />
           </div>
