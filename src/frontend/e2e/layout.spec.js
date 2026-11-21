@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
-import { setupApiMock } from "./support/api.js";
+import { setupApiMock, FIXTURE_IDS } from "./support/api.js";
 import { ROUTES } from "./support/routes.js";
 
 test.describe("Mobile viewport 390px layout", { tag: "@mobile-only" }, () => {
@@ -219,5 +219,25 @@ test.describe("Search timeline and speakers", { tag: "@desktop-only" }, () => {
     expect(Math.abs(wide.railHeight - Math.max(wide.chartHeight, 320))).toBeLessThanOrEqual(1);
     const narrow = await sizesAt(page, 390);
     expect(Math.abs(narrow.railHeight - 320)).toBeLessThanOrEqual(1);
+  });
+});
+
+test.describe("Person role tabs", () => {
+  test("the count badge keeps a gap from its label, active tab included", async ({ page }) => {
+    const mock = await setupApiMock(page);
+
+    await page.goto(`/saadik/${FIXTURE_IDS.personUuid}`);
+    const tabs = page.locator('.segmented-control[aria-label="Kõnede rollid"] .segmented-btn');
+    await expect(tabs).toHaveCount(2);
+
+    for (const tab of await tabs.all()) {
+      const gap = await tab.evaluate((button) => {
+        const [label, count] = button.querySelectorAll("span");
+        return count.getBoundingClientRect().left - label.getBoundingClientRect().right;
+      });
+      expect(gap).toBeGreaterThanOrEqual(6);
+    }
+
+    mock.verifyNoErrors();
   });
 });

@@ -262,7 +262,9 @@
   margin-bottom: 1.5rem;
 }
 
+/* The label and the count are adjacent spans with no whitespace between them in the JSX */
 .person-tab-count {
+  margin-inline-start: 0.5rem;
   background: var(--color-subtle);
   color: inherit;
   padding: 0.1rem 0.45rem;

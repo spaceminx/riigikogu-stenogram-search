@@ -1,4 +1,20 @@
+# SEO and marketing crawlers
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: MJ12bot
+User-agent: DotBot
+User-agent: BLEXBot
+User-agent: DataForSeoBot
+User-agent: Barkrowler
+User-agent: SeekportBot
+User-agent: serpstatbot
+User-agent: PetalBot
+Disallow: /
+
 User-agent: *
 Allow: /
+Allow: /favicon.svg
 Disallow: /otsing
+Disallow: /*?
+
 Sitemap: https://www.riigivaade.me/sitemap.xml
