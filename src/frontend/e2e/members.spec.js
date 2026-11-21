@@ -27,6 +27,22 @@ test.describe("Members page", () => {
     mock.verifyNoErrors();
   });
 
+  test("requests no photos from the Riigikogu API", async ({ page }) => {
+    // api.riigikogu.ee allows about one request per second per IP; a photo per row got 429s
+    const photoRequests = [];
+    page.on("request", (req) => {
+      if (new URL(req.url()).host === "api.riigikogu.ee") photoRequests.push(req.url());
+    });
+    const mock = await setupApiMock(page);
+
+    await page.goto("/saadikud?sd_all=1");
+    await expect(rows(page)).toHaveCount(19);
+    await expect(page.locator(".members-table img")).toHaveCount(0);
+    expect(photoRequests).toEqual([]);
+
+    mock.verifyNoErrors();
+  });
+
   test("filters by name, faction and former members, and keeps them in the URL", async ({
     page,
   }) => {
