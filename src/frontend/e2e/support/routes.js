@@ -14,6 +14,7 @@ export const ROUTES = [
   },
   { path: "/haaletused", name: "Hääletused", contentSelector: ".votings-view-container" },
   { path: "/fraktsioonid", name: "Fraktsioonid", contentSelector: ".faction-card" },
+  { path: "/saadikud", name: "Saadikud", contentSelector: ".members-table" },
   {
     path: `/haaletus/${FIXTURE_IDS.votingUuid}`,
     name: "Hääletus",

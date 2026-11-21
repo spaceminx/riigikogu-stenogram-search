@@ -74,8 +74,28 @@ test.describe("Voting summary wrapping at 390px", { tag: "@mobile-only" }, () =>
 });
 
 test.describe("Header between the mobile menu and full width", { tag: "@desktop-only" }, () => {
-  for (const width of [641, 700, 720, 721, 736, 760, 761, 785, 800, 801]) {
-    test(`the five nav links fit at ${width}px`, async ({ page }) => {
+  // Up to 760px the six links live in the menu
+  for (const width of [641, 700, 760]) {
+    test(`the nav links are in the menu at ${width}px`, async ({ page }) => {
+      const mock = await setupApiMock(page);
+      await page.setViewportSize({ width, height: 800 });
+
+      await page.goto("/fraktsioonid");
+      await expect(page.locator(".faction-card").first()).toBeVisible();
+      await expect(page.locator("nav.nav-links")).toBeHidden();
+      await page.locator(".header-menu-trigger").click();
+      await expect(page.locator(".mobile-menu-nav a")).toHaveCount(6);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+      );
+      expect(overflow).toBe(false);
+
+      mock.verifyNoErrors();
+    });
+  }
+
+  for (const width of [761, 785, 800, 801, 860, 861, 900, 901, 960, 961, 1024]) {
+    test(`the six nav links fit at ${width}px`, async ({ page }) => {
       const mock = await setupApiMock(page);
       await page.setViewportSize({ width, height: 800 });
 
@@ -91,7 +111,7 @@ test.describe("Header between the mobile menu and full width", { tag: "@desktop-
       // The tagline is hidden or on one line; a wrapped one is at least two font sizes tall
       expect(height).toBeLessThan(fontSize * 2);
       expect(overflow).toBe(false);
-      await expect(page.locator("nav.nav-links a")).toHaveCount(5);
+      await expect(page.locator("nav.nav-links a")).toHaveCount(6);
       // The last link ends before the menu button
       const [linkRight, menuLeft] = await page.evaluate(() => [
         [...document.querySelectorAll("nav.nav-links a")].pop().getBoundingClientRect().right,

@@ -10,6 +10,9 @@ const indexData = JSON.parse(fs.readFileSync(path.join(FIXTURES_DIR, "index.json
 
 export const FIXTURE_IDS = indexData.ids;
 
+const PHOTO_STUB =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="45"><rect width="36" height="45" fill="#c4c8d0"/></svg>';
+
 // Pre-load fixtures into memory
 const fixtureCache = new Map();
 for (const entry of indexData.endpoints) {
@@ -95,6 +98,12 @@ export async function setupApiMock(page, options = {}) {
     const req = route.request();
     const url = new URL(req.url());
     const host = url.host;
+
+    // Member photos come from the Riigikogu API (allowed by the CSP); a local stand-in keeps the
+    // tests offline
+    if (host === "api.riigikogu.ee" && url.pathname.startsWith("/api/files/")) {
+      return route.fulfill({ status: 200, contentType: "image/svg+xml", body: PHOTO_STUB });
+    }
 
     if (host !== "localhost:4173" && host !== "127.0.0.1:4173" && host !== "api.e2e.test") {
       externalRequests.push(req.url());
