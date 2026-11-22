@@ -2,6 +2,8 @@
 
 Production deployments run automatically on push to `master` (after CI succeeds) or via manual trigger (`workflow_dispatch`) through `.github/workflows/deploy.yml`.
 
+An automatic deploy checks out exactly the commit its CI run tested. If `master` has moved on by then, it deploys nothing and leaves it to the newer commit's CI run, so a commit whose CI is still running or has failed never reaches the server. A manual run deploys the current `origin/master`.
+
 ## Deployment Configuration
 The self-hosted deployment runner requires the repository secret `DEPLOY_DIR` to be configured in GitHub:
 - Go to repository **Settings** -> **Secrets and variables** -> **Actions** -> **Secrets**.
