@@ -32,7 +32,6 @@ export function buildMemberRows(factions = []) {
       fullName: member.full_name,
       firstName: member.first_name ?? "",
       lastName: member.last_name ?? "",
-      photoUrl: member.photo_url || null,
       district: member.electoral_district || "",
       faction,
       formerFactions: [...new Set(sorted.slice(1).map((e) => e.faction))].filter(

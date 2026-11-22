@@ -67,26 +67,6 @@
   border-bottom: none;
 }
 
-.members-name-cell {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.members-photo {
-  flex: none;
-  width: 36px;
-  height: 45px;
-  object-fit: cover;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-tag);
-  background: var(--color-subtle);
-}
-
-.members-photo-empty {
-  display: inline-block;
-}
-
 .members-name-text {
   display: flex;
   flex-direction: column;

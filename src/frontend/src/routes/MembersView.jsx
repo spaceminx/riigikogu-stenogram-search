@@ -18,33 +18,20 @@ function membershipLabel(info) {
   return `(${info.name}${years})`;
 }
 
+// No photos here: api.riigikogu.ee answers about one request per second per IP and the rest of a
+// hundred thumbnails got 429 (shown as broken images). The person page loads just the one.
 function MemberRow({ row }) {
   return (
     <tr>
       <td className="members-col-name">
-        <span className="members-name-cell">
-          {row.photoUrl ? (
-            <img
-              className="members-photo"
-              src={row.photoUrl}
-              alt=""
-              width="36"
-              height="45"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <span className="members-photo members-photo-empty" aria-hidden="true" />
-          )}
-          <span className="members-name-text">
-            <Link to={`/saadik/${encodeURIComponent(row.uuid)}`} className="members-name-link">
-              {row.fullName}
-            </Link>
-            {/* On narrow screens the faction and district columns fold under the name */}
-            <span className="members-name-meta">
-              {formatFactionName(row.faction)}
-              {row.district && ` · ${row.district}`}
-            </span>
+        <span className="members-name-text">
+          <Link to={`/saadik/${encodeURIComponent(row.uuid)}`} className="members-name-link">
+            {row.fullName}
+          </Link>
+          {/* On narrow screens the faction and district columns fold under the name */}
+          <span className="members-name-meta">
+            {formatFactionName(row.faction)}
+            {row.district && ` · ${row.district}`}
           </span>
         </span>
       </td>
