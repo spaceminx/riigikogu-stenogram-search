@@ -44,7 +44,8 @@ def _get_last_sync_at(session) -> str | None:
 
 
 EXPANSION_CACHE_MAX_SIZE = 50_000
-ACTIVITY_DENOMINATOR_CACHE_MAX_SIZE = 2_048
+# One entry is a per-day map (~1,700 dates, ~140 KB); 256 entries stay under ~40 MB
+ACTIVITY_DENOMINATOR_CACHE_MAX_SIZE = 256
 
 _EXPANSION_CACHE: dict = {
     "last_sync_at": _UNSET,
@@ -1070,59 +1071,84 @@ def get_activity_denominator(
     exclude_chair: bool = False,
     speech_category: str | None = None,
 ) -> dict[str, int]:
-    """Calculate and return denominator speech counts per period for the given speech filters."""
+    """Calculate and return denominator speech counts per period for the given speech filters.
+
+    The cache holds one per-day map for the other filters; the date range and the interval are
+    applied to it here. Keying the cache on raw dates let one client fill it with a full-size
+    entry per distinct pre-archive date.
+    """
+    daily = _daily_denominators(
+        session,
+        membership=membership,
+        faction=faction,
+        speaker=speaker,
+        speaker_uuid=speaker_uuid,
+        exclude_chair=exclude_chair,
+        speech_category=speech_category,
+    )
+
+    denom_map: dict[str, int] = {}
+    for day, count in daily.items():
+        # Same text comparison as the SQL filter Speech.date >= start_date
+        if start_date and day < start_date:
+            continue
+        if end_date and day > end_date:
+            continue
+        if interval == "daily":
+            period = day
+        elif interval == "monthly":
+            period = day[:7]
+        else:
+            period = _week_monday(day)
+        denom_map[period] = denom_map.get(period, 0) + count
+    return denom_map
+
+
+@functools.lru_cache(maxsize=16_384)
+def _week_monday(day: str) -> str:
+    """Week key of a speech date, as SQLite strftime('%Y-%W') plus week_key_to_monday gave it."""
+    return week_key_to_monday(datetime.fromisoformat(day[:10]).strftime("%Y-%W")).isoformat()
+
+
+def _daily_denominators(
+    session,
+    membership: str,
+    faction: str | None,
+    speaker: str | None,
+    speaker_uuid: str | None,
+    exclude_chair: bool,
+    speech_category: str | None,
+) -> dict[str, int]:
+    """Speech count per date for the given filters (no date range), cached until the next sync."""
     last_sync = _get_last_sync_at(session)
     if _ACTIVITY_DENOMINATOR_CACHE["last_sync_at"] != last_sync:
         _ACTIVITY_DENOMINATOR_CACHE["last_sync_at"] = last_sync
         _ACTIVITY_DENOMINATOR_CACHE["denominators"].clear()
 
     cache_key = (
-        interval,
         str(membership),
         faction,
         speaker.strip() if speaker else None,
         speaker_uuid.strip() if speaker_uuid else None,
-        start_date,
-        end_date,
         bool(exclude_chair),
         speech_category,
     )
-    cached = _ACTIVITY_DENOMINATOR_CACHE["denominators"].get(cache_key, MISSING)
-    if cached is not MISSING:
-        return cached
-
-    if interval == "daily":
-        date_group = Speech.date
-    elif interval == "monthly":
-        date_group = func.strftime("%Y-%m", Speech.date)
-    else:
-        date_group = func.strftime("%Y-%W", Speech.date)
-
     speech_filters = build_speech_filters(
         membership=membership,
         faction=faction,
         speaker=speaker,
         speaker_uuid=speaker_uuid,
-        start_date=start_date,
-        end_date=end_date,
         exclude_chair=exclude_chair,
         speech_category=speech_category,
     )
-    query = session.query(date_group.label("period"), func.count(Speech.id).label("total_count"))
-    if speech_filters:
-        query = query.filter(*speech_filters)
-    denom_results = query.group_by(date_group).all()
 
-    if interval in ("weekly", "week"):
-        denom_map: dict[str, int] = {}
-        for period, count in denom_results:
-            m = week_key_to_monday(period).isoformat()
-            denom_map[m] = denom_map.get(m, 0) + int(count)
-    else:
-        denom_map = {period: int(count) for period, count in denom_results}
+    def compute() -> dict[str, int]:
+        query = session.query(Speech.date, func.count(Speech.id))
+        if speech_filters:
+            query = query.filter(*speech_filters)
+        return {day: int(count) for day, count in query.group_by(Speech.date).all()}
 
-    _ACTIVITY_DENOMINATOR_CACHE["denominators"][cache_key] = denom_map
-    return denom_map
+    return _ACTIVITY_DENOMINATOR_CACHE["denominators"].get_or_compute(cache_key, compute)
 
 
 def keyword_activity(

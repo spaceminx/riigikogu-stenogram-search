@@ -232,7 +232,9 @@ def attendance_stats(
     membership: str | None = Query(
         None, description="Riigikogu koosseis (number või all)", pattern=r"^(\d+|all)$"
     ),
-    faction: str | None = Query(None, description="Filtreeri fraktsiooni nime järgi"),
+    faction: str | None = Query(
+        None, max_length=120, description="Filtreeri fraktsiooni nime järgi"
+    ),
     active_only: bool = Query(False, description="Ainult praegu aktiivsed saadikud"),
     exclude_infotund: bool = Query(False, description="Jäta infotunnid välja"),
     role: str | None = Query(

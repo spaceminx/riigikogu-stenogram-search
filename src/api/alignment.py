@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, func
 from sqlalchemy.orm import aliased
 
-from src.api.lru import MISSING, LRUDict
+from src.api.lru import LRUDict
 from src.api.roles import NO_FACTION
 from src.api.votings import format_session_source_file, is_technical_voting_clause
 from src.load.models import Person, Speech, SystemMeta, Vote, Voting
@@ -218,9 +218,13 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
         if it["membership"] is not None:
             items_by_mem[it["membership"]].append(it)
 
+    # The cache keeps the per-membership summaries and the differences only; holding every
+    # ballot (all_items) cost up to ~7.5 MB per person.
+    summary_by_mem = {m: _summarize_items(items) for m, items in items_by_mem.items()}
+
     by_membership = []
-    for m in sorted(items_by_mem.keys(), reverse=True):
-        m_summary = _summarize_items(items_by_mem[m])
+    for m in sorted(summary_by_mem.keys(), reverse=True):
+        m_summary = summary_by_mem[m]
         by_membership.append(
             {
                 "membership": int(m),
@@ -233,11 +237,10 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
     overall = _summarize_items(all_items)
 
     return {
-        "all_items": all_items,
         "overall": overall,
         "by_membership": by_membership,
         "differences": differences,
-        "items_by_mem": items_by_mem,
+        "summary_by_mem": summary_by_mem,
     }
 
 
@@ -248,13 +251,9 @@ def get_cached_person_alignment(session, person_uuid: str) -> dict:
         _ALIGNMENT_CACHE["last_sync_at"] = last_sync
         _ALIGNMENT_CACHE["persons"].clear()
 
-    cached = _ALIGNMENT_CACHE["persons"].get(person_uuid, MISSING)
-    if cached is not MISSING:
-        return cached
-
-    data = compute_person_alignment(session, person_uuid)
-    _ALIGNMENT_CACHE["persons"][person_uuid] = data
-    return data
+    return _ALIGNMENT_CACHE["persons"].get_or_compute(
+        person_uuid, lambda: compute_person_alignment(session, person_uuid)
+    )
 
 
 def get_faction_alignment(session, person_uuid: str, membership: str = "all") -> dict:
@@ -264,9 +263,7 @@ def get_faction_alignment(session, person_uuid: str, membership: str = "all") ->
     if not membership or membership == "all":
         summary = data["overall"]
     else:
-        mem_int = int(membership)
-        m_items = data.get("items_by_mem", {}).get(mem_int, [])
-        summary = _summarize_items(m_items)
+        summary = data["summary_by_mem"].get(int(membership)) or _summarize_items([])
 
     return {
         "same": summary["same"],

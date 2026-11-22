@@ -770,6 +770,22 @@ def test_membership_filter():
     resp_bad = client.get("/persons/mp-main-1/faction-alignment?membership=999")
     assert resp_bad.status_code == 422
 
+    # A membership the person has no ballots in gives zeros, not an error
+    resp_13 = client.get("/persons/mp-main-1/faction-alignment?membership=13")
+    assert resp_13.status_code == 200
+    assert (resp_13.json()["same"], resp_13.json()["different"]) == (0, 0)
+
+
+def test_alignment_cache_keeps_no_ballot_list():
+    from src.api.alignment import _ALIGNMENT_CACHE
+
+    assert client.get("/persons/mp-main-1/faction-alignment").status_code == 200
+    entry = _ALIGNMENT_CACHE["persons"].get("mp-main-1")
+    assert entry is not None
+    # Every ballot of a long-serving member took up to ~7.5 MB per cache entry
+    assert set(entry) == {"overall", "by_membership", "differences", "summary_by_mem"}
+    assert all(item["result_type"] == "different" for item in entry["differences"])
+
 
 def test_differences_endpoint_order_and_paging():
     # mp-main-1 in mem 15 has 2 differences:

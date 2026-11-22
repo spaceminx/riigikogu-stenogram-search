@@ -12,7 +12,11 @@ from src.api.roles import (
     faction_names,
     role_condition,
 )
-from src.api.votings import get_faction_vote_participation, get_member_vote_participation
+from src.api.votings import (
+    _get_last_sync_at,
+    get_faction_vote_participation,
+    get_member_vote_participation,
+)
 from src.load.database import SessionLocal
 from src.load.models import Attendance, AttendanceCheck
 
@@ -42,6 +46,33 @@ def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]
         return set(), {}, {}
 
 
+_KNOWN_FACTIONS_CACHE: dict = {"last_sync_at": None, "names": None}
+
+
+def clear_known_factions_cache() -> None:
+    _KNOWN_FACTIONS_CACHE["last_sync_at"] = None
+    _KNOWN_FACTIONS_CACHE["names"] = None
+
+
+def _known_factions(session) -> set[str]:
+    """Canonical names of every faction in the attendance rows or the current factions map."""
+    last_sync = _get_last_sync_at(session)
+    names = _KNOWN_FACTIONS_CACHE["names"]
+    if names is None or _KNOWN_FACTIONS_CACHE["last_sync_at"] != last_sync:
+        rows = (
+            session.query(canonical_faction_expression(Attendance.faction))
+            .filter(Attendance.faction != "", Attendance.faction.isnot(None))
+            .distinct()
+            .all()
+        )
+        names = {r[0] for r in rows}
+        names.update(get_active_members_data()[2].values())
+        names.add(NO_FACTION)
+        _KNOWN_FACTIONS_CACHE["names"] = names
+        _KNOWN_FACTIONS_CACHE["last_sync_at"] = last_sync
+    return names
+
+
 def get_attendance_stats(
     membership: str | None = None,
     faction: str | None = None,
@@ -54,6 +85,10 @@ def get_attendance_stats(
         membership = latest_membership()
     session = SessionLocal()
     try:
+        # Any text was accepted here: each unseen value ran three aggregate scans (~1 s on prod)
+        # and added a cache entry. An unknown faction has no members, so answer without a query.
+        if faction and canonical_faction(faction) not in _known_factions(session):
+            return []
         from src.load.models import Person
 
         member_key = func.coalesce(Attendance.member_uuid, Attendance.member_name)
