@@ -925,21 +925,46 @@ def search_by_keyword(
         all_lemmas = [lemma for group in groups for term in group for lemma in term]
 
         if sort_by == "match_count_desc":
-            base_query = (
-                session.query(Speech, func.sum(SpeechTerm.count).label("match_count"))
-                .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
+            # Sum the counts on speech_terms alone and sort ids, then load one page of rows.
+            # Grouping whole Speech rows (text, text_lemmas) before LIMIT took 7-17 s on prod.
+            counts = (
+                session.query(
+                    SpeechTerm.speech_id.label("speech_id"),
+                    func.sum(SpeechTerm.count).label("match_count"),
+                )
                 .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-                .filter(or_(*matching_conditions))
                 .filter(Lemma.lemma.in_(all_lemmas))
+                .group_by(SpeechTerm.speech_id)
+                .subquery()
+            )
+            page_query = (
+                session.query(Speech.id, counts.c.match_count)
+                .join(counts, counts.c.speech_id == Speech.id)
+                .filter(or_(*matching_conditions))
             )
             if speech_filters:
-                base_query = base_query.filter(*speech_filters)
+                page_query = page_query.filter(*speech_filters)
 
-            grouped_query = base_query.group_by(Speech.id)
-            ordered_query = grouped_query.order_by(
-                func.sum(SpeechTerm.count).desc(), Speech.date.desc(), Speech.id.desc()
+            page = (
+                page_query.order_by(
+                    counts.c.match_count.desc(), Speech.date.desc(), Speech.id.desc()
+                )
+                .offset(offset)
+                .limit(limit)
+                .all()
             )
-            results = ordered_query.offset(offset).limit(limit).all()
+            if page:
+                page_ids = [row[0] for row in page]
+                speeches_by_id = {
+                    s.id: s for s in session.query(Speech).filter(Speech.id.in_(page_ids)).all()
+                }
+                results = [
+                    (speeches_by_id[s_id], match_count)
+                    for s_id, match_count in page
+                    if s_id in speeches_by_id
+                ]
+            else:
+                results = []
         else:
             base_query = session.query(Speech.id).filter(or_(*matching_conditions))
             if speech_filters:
