@@ -12,7 +12,7 @@ asttokens==3.0.2
     # via stack-data
 beautifulsoup4==4.15.0
     # via bs4
-boto3==1.44.0
+boto3==1.44.3
     # via -r requirements.in
 botocore==1.44.3
     # via
@@ -46,7 +46,7 @@ estnltk-core==1.7.5
     # via estnltk
 executing==2.3.0
     # via stack-data
-fastapi==0.162.4
+fastapi==0.162.7
     # via -r requirements.in
 fonttools==4.67.0
     # via matplotlib
