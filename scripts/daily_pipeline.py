@@ -11,7 +11,8 @@ Executes under a single database/.sync.lock:
 6. upload_to_b2.py (skipped with --no-upload, or when a required step has failed)
 7. Restore blocked_files from snapshot before DB sync
 8. sync_database(skip_download=True, skip_lock=True) in-process (skipped with --no-sync)
-9. Print summary and exit (0 only if all required steps succeeded, else 1)
+9. Print summary and exit (0 only if all required steps succeeded and no warning-only step
+   has failed 3 runs in a row, else 1)
 """
 
 import argparse
@@ -26,7 +27,14 @@ import time
 # Ensure project root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from config import DATABASE_DIR, OUTPUT_DIR_PROCESSED, PROJECT_ROOT, active_years
+from config import (
+    DATABASE_DIR,
+    OUTPUT_DIR_PROCESSED,
+    PROJECT_ROOT,
+    STALE_AFTER_FAILURES,
+    WARNING_STEP_FAILURES_FILE,
+    active_years,
+)
 from scripts.sync_database import sync_database
 from scripts.verify_pipeline_integrity import INTEGRITY_UNVERIFIED_EXIT_CODE
 from src.load.lock import sync_lock
@@ -85,6 +93,61 @@ def warning_step_note(ok: bool, err: str) -> str:
     if ok:
         return ""
     return err if err == SCHEMA_CHANGE_ERROR else "warning only"
+
+
+FAILURE_COUNTS_FILE = WARNING_STEP_FAILURES_FILE
+
+
+def load_failure_counts(path: str) -> dict[str, int]:
+    """Consecutive failures per warning-only step, kept between runs."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        return {k: int(v) for k, v in data.items()}
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def save_failure_counts(path: str, counts: dict[str, int]) -> None:
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = f"{path}.tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(counts, f, indent=2, sort_keys=True)
+        os.replace(tmp, path)
+    except OSError as e:
+        print(f"Warning: Could not save warning-step failure counts to {path}: {e}")
+
+
+def run_warning_step(
+    name: str,
+    script_rel_path: str,
+    step_records: list[dict],
+    required_failures: list[str],
+    stale_steps: list[str],
+    failure_counts: dict[str, int],
+) -> None:
+    """Run a step whose single failure is only a warning.
+
+    These datasets change rarely, so one failed fetch (a 429, a timeout) keeps yesterday's file
+    and should not page anyone. A schema change fails the run at once. Failing every day, though,
+    left /eelnoud, /fraktsioonid and the agenda links stale with no signal, so the run fails
+    once a step has failed STALE_AFTER_FAILURES runs in a row.
+    """
+    ok, dur, err = run_subprocess_step(script_rel_path)
+    count = 0 if ok else failure_counts.get(name, 0) + 1
+    failure_counts[name] = count
+    note = warning_step_note(ok, err)
+    if not ok:
+        print(f"Warning: {name} failed ({err}). Continuing.")
+        if err == SCHEMA_CHANGE_ERROR:
+            required_failures.append(name)
+        elif count >= STALE_AFTER_FAILURES:
+            stale_steps.append(name)
+            note = f"failed {count} runs in a row"
+    step_records.append(
+        {"name": name, "status": "ok" if ok else "failed", "duration": dur, "note": note}
+    )
 
 
 def snapshot_processed_files(source_dir: str, target_dir: str) -> int:
@@ -149,6 +212,8 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
     """Run the daily pipeline. Returns exit code (0 on success, 1 on failure)."""
     step_records: list[dict] = []
     required_failures: list[str] = []
+    # Warning-only steps that failed too many runs in a row: the run fails, the upload still runs
+    stale_steps: list[str] = []
 
     # a. Acquire lock
     print("Acquiring sync lock for daily pipeline...")
@@ -179,66 +244,23 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
             print(f"Snapshotted {snap_count} files from processed directory to {snapshot_dir}")
 
             # d. Fetch steps
-            # Warning only steps:
+            # Warning only steps (fail the run after STALE_AFTER_FAILURES failures in a row):
+            counts_path = os.path.join(DATABASE_DIR, FAILURE_COUNTS_FILE)
+            failure_counts = load_failure_counts(counts_path)
+            warning_args = (step_records, required_failures, stale_steps, failure_counts)
             print("\n--- Step 2: Fetch Parliamentary Memberships ---")
-            m_ok, m_dur, m_err = run_subprocess_step("scripts/fetch_memberships.py")
-            step_records.append(
-                {
-                    "name": "fetch_memberships",
-                    "status": "ok" if m_ok else "failed",
-                    "duration": m_dur,
-                    "note": warning_step_note(m_ok, m_err),
-                }
-            )
-            if not m_ok:
-                print(f"Warning: fetch_memberships failed ({m_err}). Continuing.")
-                if m_err == SCHEMA_CHANGE_ERROR:
-                    required_failures.append("fetch_memberships")
+            run_warning_step("fetch_memberships", "scripts/fetch_memberships.py", *warning_args)
 
             print("\n--- Step 3: Fetch Member Factions ---")
-            f_ok, f_dur, f_err = run_subprocess_step("scripts/fetch_factions.py")
-            step_records.append(
-                {
-                    "name": "fetch_factions",
-                    "status": "ok" if f_ok else "failed",
-                    "duration": f_dur,
-                    "note": warning_step_note(f_ok, f_err),
-                }
-            )
-            if not f_ok:
-                print(f"Warning: fetch_factions failed ({f_err}). Continuing.")
-                if f_err == SCHEMA_CHANGE_ERROR:
-                    required_failures.append("fetch_factions")
+            run_warning_step("fetch_factions", "scripts/fetch_factions.py", *warning_args)
 
             print("\n--- Step 3b: Fetch Faction Leaders ---")
-            fl_ok, fl_dur, fl_err = run_subprocess_step("scripts/fetch_faction_leaders.py")
-            step_records.append(
-                {
-                    "name": "fetch_faction_leaders",
-                    "status": "ok" if fl_ok else "failed",
-                    "duration": fl_dur,
-                    "note": warning_step_note(fl_ok, fl_err),
-                }
+            run_warning_step(
+                "fetch_faction_leaders", "scripts/fetch_faction_leaders.py", *warning_args
             )
-            if not fl_ok:
-                print(f"Warning: fetch_faction_leaders failed ({fl_err}). Continuing.")
-                if fl_err == SCHEMA_CHANGE_ERROR:
-                    required_failures.append("fetch_faction_leaders")
 
             print("\n--- Step 3c: Fetch Drafts ---")
-            dr_ok, dr_dur, dr_err = run_subprocess_step("scripts/fetch_drafts.py")
-            step_records.append(
-                {
-                    "name": "fetch_drafts",
-                    "status": "ok" if dr_ok else "failed",
-                    "duration": dr_dur,
-                    "note": warning_step_note(dr_ok, dr_err),
-                }
-            )
-            if not dr_ok:
-                print(f"Warning: fetch_drafts failed ({dr_err}). Continuing.")
-                if dr_err == SCHEMA_CHANGE_ERROR:
-                    required_failures.append("fetch_drafts")
+            run_warning_step("fetch_drafts", "scripts/fetch_drafts.py", *warning_args)
 
             # Required fetch steps (continue on error, but record failure):
             print("\n--- Step 4: Fetch Stenograms API ---")
@@ -281,19 +303,8 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
                 required_failures.append("fetch_votes")
 
             print("\n--- Step 6b: Fetch Agenda Items ---")
-            ag_ok, ag_dur, ag_err = run_subprocess_step("scripts/fetch_agenda.py")
-            step_records.append(
-                {
-                    "name": "fetch_agenda",
-                    "status": "ok" if ag_ok else "failed",
-                    "duration": ag_dur,
-                    "note": warning_step_note(ag_ok, ag_err),
-                }
-            )
-            if not ag_ok:
-                print(f"Warning: fetch_agenda failed ({ag_err}). Continuing.")
-                if ag_err == SCHEMA_CHANGE_ERROR:
-                    required_failures.append("fetch_agenda")
+            run_warning_step("fetch_agenda", "scripts/fetch_agenda.py", *warning_args)
+            save_failure_counts(counts_path, failure_counts)
 
             # e. verify_pipeline_integrity.py (failure recorded, but continue)
             print("\n--- Step 7: Verify Pipeline Integrity ---")
@@ -404,7 +415,11 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
         finally:
             shutil.rmtree(snapshot_dir, ignore_errors=True)
 
-        overall_success = len(required_failures) == 0
+        if stale_steps:
+            print(
+                f"Stale data: {', '.join(stale_steps)} failed {STALE_AFTER_FAILURES}+ runs in a row."
+            )
+        overall_success = not required_failures and not stale_steps
         print_pipeline_summary(step_records, overall_success=overall_success)
         return 0 if overall_success else 1
 
