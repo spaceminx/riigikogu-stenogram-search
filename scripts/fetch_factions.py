@@ -200,7 +200,6 @@ def fetch_factions() -> bool:
             "full_name": full_name,
             "gender": m.get("gender"),
             "date_of_birth": m.get("dateOfBirth"),
-            "email": m.get("email"),
             "photo_url": extract_photo_url(m),
             "electoral_district": extract_electoral_district(m),
             "seniority_days": m.get("parliamentSeniority"),

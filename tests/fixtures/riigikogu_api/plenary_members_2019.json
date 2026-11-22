@@ -5,8 +5,6 @@
     "lastName": "Aab",
     "firstName": "Jaak",
     "active": true,
-    "email": "jaak.aab@riigikogu.ee",
-    "phone": "+372 6316693",
     "electoralDistrictHistory": [
       {
         "membership": 14,
@@ -238,7 +236,7 @@
     ],
     "gender": "MALE",
     "parliamentSeniority": 3484,
-    "dateOfBirth": "1960-04-09",
+    "dateOfBirth": "1960-01-01",
     "dateOfDeath": null,
     "agesInParliament": [
       {
@@ -258,7 +256,6 @@
         "userAge": 58
       }
     ],
-    "upn": "jaab@riigikogu.ee",
     "_links": {
       "self": {
         "href": "https://api.riigikogu.ee/api/plenary-members/6b45cfb5-8a17-481c-b674-80fc00c6cf5d?querySteno=true&includeInactive=false&lang=ET"
@@ -271,8 +268,6 @@
     "lastName": "Aart",
     "firstName": "Merry",
     "active": false,
-    "email": "merry.aart@riigikogu.ee",
-    "phone": "+372 6316454",
     "electoralDistrictHistory": [
       {
         "membership": 14,
@@ -455,7 +450,7 @@
     ],
     "gender": "FEMALE",
     "parliamentSeniority": 1463,
-    "dateOfBirth": "1953-03-31",
+    "dateOfBirth": "1953-01-01",
     "dateOfDeath": null,
     "agesInParliament": [
       {
@@ -463,7 +458,6 @@
         "userAge": 65
       }
     ],
-    "upn": "maart@riigikogu.ee",
     "_links": {
       "self": {
         "href": "https://api.riigikogu.ee/api/plenary-members/d8909ed8-ac93-4223-a3ec-55e1bb4ec8a9?querySteno=true&includeInactive=false&lang=ET"
@@ -476,8 +470,6 @@
     "lastName": "Aas",
     "firstName": "Arto",
     "active": false,
-    "email": "arto.aas@riigikogu.ee",
-    "phone": "6316660",
     "electoralDistrictHistory": [
       {
         "membership": 13,
@@ -590,7 +582,7 @@
     ],
     "gender": "MALE",
     "parliamentSeniority": 2382,
-    "dateOfBirth": "1980-06-09",
+    "dateOfBirth": "1980-01-01",
     "dateOfDeath": null,
     "agesInParliament": [
       {
@@ -606,7 +598,6 @@
         "userAge": 34
       }
     ],
-    "upn": "aaas@riigikogu.ee",
     "_links": {
       "self": {
         "href": "https://api.riigikogu.ee/api/plenary-members/fe748f4d-3f50-4af8-8069-92a460978d2b?querySteno=true&includeInactive=false&lang=ET"
@@ -619,8 +610,6 @@
     "lastName": "Aas",
     "firstName": "Taavi",
     "active": false,
-    "email": "taavi.aas@riigikogu.ee",
-    "phone": "+372 6316478",
     "electoralDistrictHistory": [
       {
         "membership": 14,
@@ -831,7 +820,7 @@
     ],
     "gender": "MALE",
     "parliamentSeniority": 327,
-    "dateOfBirth": "1966-01-10",
+    "dateOfBirth": "1966-01-01",
     "dateOfDeath": null,
     "agesInParliament": [
       {
@@ -839,7 +828,6 @@
         "userAge": 53
       }
     ],
-    "upn": "taas@riigikogu.ee",
     "_links": {
       "self": {
         "href": "https://api.riigikogu.ee/api/plenary-members/9f3d840c-3a49-43de-8c5d-d1990933b692?querySteno=true&includeInactive=false&lang=ET"
@@ -852,8 +840,6 @@
     "lastName": "Akkermann",
     "firstName": "Annely",
     "active": true,
-    "email": "annely.akkermann@riigikogu.ee",
-    "phone": "+372 6316420",
     "electoralDistrictHistory": [
       {
         "membership": 14,
@@ -1022,7 +1008,7 @@
     ],
     "gender": "FEMALE",
     "parliamentSeniority": 4057,
-    "dateOfBirth": "1972-10-05",
+    "dateOfBirth": "1972-01-01",
     "dateOfDeath": null,
     "agesInParliament": [
       {
@@ -1038,7 +1024,6 @@
         "userAge": 38
       }
     ],
-    "upn": "aakkermann@riigikogu.ee",
     "_links": {
       "self": {
         "href": "https://api.riigikogu.ee/api/plenary-members/7655e8d3-b658-49f0-8e09-f6cbc4a2c714?querySteno=true&includeInactive=false&lang=ET"

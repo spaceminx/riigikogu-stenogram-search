@@ -48,6 +48,7 @@ class Person(Base):
     full_name = Column(Text, nullable=False)
     gender = Column(Text, nullable=True)
     date_of_birth = Column(Text, nullable=True)
+    # Not fetched or stored since migration 0009; kept so older databases load unchanged
     email = Column(Text, nullable=True)
     photo_url = Column(Text, nullable=True)
     electoral_district = Column(Text, nullable=True)
