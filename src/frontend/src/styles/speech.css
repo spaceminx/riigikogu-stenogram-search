@@ -95,12 +95,6 @@
   gap: 0.5rem;
 }
 
-.export-label {
-  font-size: var(--text-label);
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
 .export-btn-link {
   display: inline-flex;
   align-items: center;

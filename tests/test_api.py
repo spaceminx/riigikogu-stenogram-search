@@ -394,67 +394,9 @@ def test_speech_context():
     assert not_found_res.status_code == 404
 
 
-def test_search_export():
-    import csv
-    import io
-
-    # Test CSV export
-    res_csv = client.get("/search/export?q=kliimamuutus&format=csv")
-    assert res_csv.status_code == 200
-    assert "text/csv" in res_csv.headers["content-type"]
-    assert "attachment" in res_csv.headers["content-disposition"]
-    assert res_csv.headers["X-License"] == "CC BY-SA 3.0"
-
-    # Verify CSV first line comment, header and row content
-    csv_text = res_csv.content.decode("utf-8-sig")
-    lines = csv_text.splitlines()
-    assert (
-        lines[0]
-        == "# Allikas: Riigikogu avaandmed (api.riigikogu.ee) – töödeldud: riigivaade.me – litsents: CC BY-SA 3.0"
-    )
-    reader = list(csv.reader(io.StringIO("\n".join(lines[1:]))))
-    assert len(reader) >= 1
-    header = reader[0]
-    expected_header = [
-        "ID",
-        "Link",
-        "Kuupäev",
-        "Kellaaeg",
-        "Kõneleja",
-        "Kõneleja UUID",
-        "Roll",
-        "Fraktsioon",
-        "Leitud märksõnu",
-        "Päevakorrapunkt",
-        "Allikas",
-        "Video",
-        "Tekst",
-    ]
-    assert header == expected_header
-
-    if len(reader) > 1:
-        row = reader[1]
-        pub_id = row[header.index("ID")]
-        link = row[header.index("Link")]
-        assert link == f"https://www.riigivaade.me/kone/{pub_id}"
-
-    # Test JSON export
-    res_json = client.get("/search/export?q=kliimamuutus&format=json")
-    assert res_json.status_code == 200
-    assert "application/json" in res_json.headers["content-type"]
-    assert res_json.headers["X-License"] == "CC BY-SA 3.0"
-    json_data = res_json.json()
-    assert json_data["source"] == "Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me"
-    assert json_data["license"] == "CC BY-SA 3.0"
-    assert json_data["license_url"] == "https://creativecommons.org/licenses/by-sa/3.0/"
-    results = json_data["results"]
-    if results:
-        assert "external_id" in results[0]
-        assert "speaker_uuid" in results[0]
-
-    # Test invalid format
-    res_inv = client.get("/search/export?q=kliimamuutus&format=xml")
-    assert res_inv.status_code == 400
+def test_search_export_removed():
+    # Export loaded up to 5000 full speeches into memory per request; removed until redesigned
+    assert client.get("/search/export?q=kliimamuutus&format=csv").status_code == 404
 
 
 def test_attendance_stats_default():
@@ -567,18 +509,6 @@ def test_format_stenogram_url_and_normalization():
     raw_url = "https://stenogrammid.riigikogu.ee/202609171000#PKP-1319712"
     normalized = normalize_source_url(raw_url)
     assert normalized == "https://stenogrammid.riigikogu.ee/et/202609171000#PKP-1319712"
-
-
-def test_search_export_special_characters():
-    # Test CSV export with Estonian umlauts and special characters
-    res_csv = client.get("/search/export?q=õpetaja&format=csv")
-    assert res_csv.status_code == 200
-    assert "filename*=UTF-8''" in res_csv.headers["content-disposition"]
-
-    # Test JSON export with special characters (š, ž)
-    res_json = client.get("/search/export?q=šüžee&format=json")
-    assert res_json.status_code == 200
-    assert "filename*=UTF-8''" in res_json.headers["content-disposition"]
 
 
 def test_search_date_validation():
@@ -1387,7 +1317,7 @@ def test_speech_category_speeches_and_procedural(filter_test_speeches):
 
 def test_speech_category_invalid_yields_422():
     # Invalid category must return 422
-    for endpoint in ("/search", "/search/activity", "/search/speakers", "/search/export"):
+    for endpoint in ("/search", "/search/activity", "/search/speakers"):
         res = client.get(f"{endpoint}?q=filtrikatse&speech_category=invalid_category")
         assert res.status_code == 422
 
@@ -1547,11 +1477,6 @@ def test_unknown_membership_returns_422_in_all_search_endpoints():
     res_spk = client.get("/search/speakers?q=riigikogu&membership=99")
     assert res_spk.status_code == 422
     assert res_spk.json()["detail"] == "Tundmatu koosseis"
-
-    # /search/export
-    res_exp = client.get("/search/export?q=riigikogu&membership=99")
-    assert res_exp.status_code == 422
-    assert res_exp.json()["detail"] == "Tundmatu koosseis"
 
     # /attendance/stats
     res_att = client.get("/attendance/stats?membership=99")
@@ -1823,13 +1748,6 @@ def test_same_name_different_persons_uuid_filter_and_endpoints():
     assert len(speakers1) == 1
     assert speakers1[0]["speaker_uuid"] == u1
     assert speakers1[0]["speaker"] == "Katsenimi Sama"
-
-    # /search/export with speaker_uuid
-    res_exp1 = client.get(f"/search/export?q={lemma_val}&speaker_uuid={u1}&format=json")
-    assert res_exp1.status_code == 200
-    assert res_exp1.headers["X-License"] == "CC BY-SA 3.0"
-    assert len(res_exp1.json()["results"]) == 1
-    assert res_exp1.json()["results"][0]["speaker_uuid"] == u1
 
     # /persons/{uuid}/speeches
     res_psp1 = client.get(f"/persons/{u1}/speeches")

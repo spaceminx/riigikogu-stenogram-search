@@ -284,16 +284,6 @@ def test_speakers_honour_phrase():
     assert "Urmas Reinsalu" not in speakers
 
 
-def test_export_honours_phrase():
-    resp = client.get('/search/export?q="riigi eelarve"&format=json')
-    assert resp.status_code == 200
-    assert resp.headers["X-License"] == "CC BY-SA 3.0"
-    results = resp.json()["results"]
-    ids = {r["id"] for r in results}
-    assert ids == {101, 107}
-    assert resp.headers["X-Total-Count"] == "2"
-
-
 def test_context_honours_phrase_and_matched_words():
     # Context for 101 in session 2024-02-01_1000.api: contains 101 and 102
     resp = client.get('/speeches/101/context?q="riigi eelarve"')

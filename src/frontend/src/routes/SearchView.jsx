@@ -422,20 +422,6 @@ export function SearchView({
 
   const totalPages = Math.max(1, Math.ceil(currentTotalCount / PAGE_SIZE));
 
-  const exportParams = {
-    query: queryParam,
-    membership: membershipParam,
-    faction: factionParam || null,
-    speaker: speakerParam || null,
-    speakerUuid: speakerUuidParam || null,
-    startDate: startDateParam || null,
-    endDate: endDateParam || null,
-    sortBy: sortParam,
-    excludeChair: excludeChairParam,
-    speechCategory: speechCategoryParam || null,
-    expand: !exactMatchParam,
-  };
-
   return (
     <div style={{ marginTop: "0.5rem" }}>
       {speakerUuidParam && (
@@ -535,7 +521,6 @@ export function SearchView({
           totalCount={currentTotalCount}
           sortParam={sortParam}
           onSortChange={handleSortChange}
-          exportParams={exportParams}
         />
 
         {!hasSearchQuery ? (
