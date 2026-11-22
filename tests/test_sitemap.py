@@ -168,3 +168,15 @@ def test_sitemap_xml_endpoint():
     third_response = client.get("/sitemap.xml")
     assert third_response.status_code == 200
     assert _SITEMAP_CACHE["last_sync_at"] == "2024-03-15T12:00:00Z"
+
+
+def test_sitemap_is_cacheable():
+    res = client.get("/sitemap.xml")
+    assert res.status_code == 200
+    assert res.headers["cache-control"] == "public, max-age=3600, s-maxage=86400"
+
+
+def test_api_robots_disallows_everything():
+    res = client.get("/robots.txt")
+    assert res.status_code == 200
+    assert res.text == "User-agent: *\nDisallow: /\n"
