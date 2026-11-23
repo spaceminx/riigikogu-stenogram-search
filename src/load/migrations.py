@@ -345,6 +345,36 @@ def _verify_0009_clear_person_email(conn: Connection) -> None:
         raise RuntimeError(f"Migration verification failed: {left} persons still have an e-mail")
 
 
+def _up_0010_faction_joining_windows(conn: Connection) -> None:
+    conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS faction_joining_windows (
+                id INTEGER PRIMARY KEY,
+                member_uuid TEXT NOT NULL,
+                start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                faction TEXT NOT NULL
+            )
+            """
+        )
+    )
+    conn.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_faction_joining_member "
+            "ON faction_joining_windows (member_uuid, start_date)"
+        )
+    )
+
+
+def _verify_0010_faction_joining_windows(conn: Connection) -> None:
+    tables = {
+        row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    if "faction_joining_windows" not in tables:
+        raise RuntimeError("Migration verification failed: missing table 'faction_joining_windows'")
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
@@ -357,6 +387,12 @@ MIGRATIONS: list[MigrationTuple] = [
     ("0007", "attendance_checks", _up_0007_attendance_checks, _verify_0007_attendance_checks),
     ("0008", "drafts", _up_0008_drafts, _verify_0008_drafts),
     ("0009", "clear_person_email", _up_0009_clear_person_email, _verify_0009_clear_person_email),
+    (
+        "0010",
+        "faction_joining_windows",
+        _up_0010_faction_joining_windows,
+        _verify_0010_faction_joining_windows,
+    ),
 ]
 
 

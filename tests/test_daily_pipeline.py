@@ -482,6 +482,29 @@ def test_unverified_integrity_fails_run_and_skips_upload(tmp_path, monkeypatch):
     assert sync_called is True
 
 
+def test_missing_votings_fail_run_but_upload_still_runs(tmp_path, monkeypatch):
+    """Integrity exit 4 (votings or attendance checks missing) fails the run, but B2 still gets
+    the day's files and the database is synced."""
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
+    calls = []
+
+    def mock_run(cmd, *args, **kwargs):
+        script_name = os.path.basename(cmd[1])
+        calls.append(script_name)
+        if script_name == "verify_pipeline_integrity.py":
+            return subprocess.CompletedProcess(args=cmd, returncode=4)
+        return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+    sync_calls = []
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", lambda **kw: sync_calls.append(kw) or True)
+
+    assert dp.run_daily_pipeline() == 1
+    assert "upload_to_b2.py" in calls
+    assert len(sync_calls) == 1
+
+
 def _pipeline_with_failing(monkeypatch, tmp_path, failing: set[str]):
     """Point the pipeline at tmp_path and make the scripts named in `failing` exit 1."""
     monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))

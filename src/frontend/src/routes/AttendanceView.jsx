@@ -389,7 +389,7 @@ export function AttendanceView({
             <em>Saadikuid</em> –{" "}
             {activeOnly
               ? "praegused Riigikogu liikmed, kes on arvestatud oma viimase fraktsiooni alla valitud perioodil ja rollis. Kõik nende selle perioodi kontrollid ja hääletused arvestatakse selle fraktsiooni juurde, ka need, mis toimusid eelmise fraktsiooni liikmena."
-              : "erinevad inimesed, kes kuulusid valitud perioodil vähemalt ühe kohalolekukontrolli ajal sellesse fraktsiooni, sh asendusliikmed. Fraktsiooni vahetanud saadik on arvestatud igas fraktsioonis, kuhu ta kuulus. See ei ole fraktsiooni kohtade arv."}
+              : "erinevad inimesed, kes kuulusid valitud perioodil vähemalt ühe kohalolekukontrolli ajal sellesse fraktsiooni, sh asendusliikmed. Fraktsiooni vahetanud saadik on arvestatud igas fraktsioonis, kuhu ta kuulus. Fraktsiooni vastuvõtmist ootav uus liige on arvestatud fraktsiooni juurde, kuhu ta astus. See ei ole fraktsiooni kohtade arv."}
           </p>
         </>
       )}

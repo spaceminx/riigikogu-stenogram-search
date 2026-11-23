@@ -7,12 +7,13 @@ Executes under a single database/.sync.lock:
 3. fetch_memberships.py, fetch_factions.py, fetch_faction_leaders.py, fetch_drafts.py
    (warning-only on failure)
 4. fetch_stenograms_api.py, fetch_attendance.py, fetch_votes.py, fetch_agenda.py (warning-only)
-5. verify_pipeline_integrity.py
+5. verify_pipeline_integrity.py (missing votings or attendance checks fail the run without
+   holding back the upload)
 6. upload_to_b2.py (skipped with --no-upload, or when a required step has failed)
 7. Restore blocked_files from snapshot before DB sync
 8. sync_database(skip_download=True, skip_lock=True) in-process (skipped with --no-sync)
-9. Print summary and exit (0 only if all required steps succeeded and no warning-only step
-   has failed 3 runs in a row, else 1)
+9. Print summary and exit (0 only if all required steps succeeded, no warning-only step
+   has failed 3 runs in a row and no voting or attendance check is missing, else 1)
 """
 
 import argparse
@@ -36,7 +37,10 @@ from config import (
     active_years,
 )
 from scripts.sync_database import sync_database
-from scripts.verify_pipeline_integrity import INTEGRITY_UNVERIFIED_EXIT_CODE
+from scripts.verify_pipeline_integrity import (
+    INTEGRITY_UNVERIFIED_EXIT_CODE,
+    RECORDS_GAP_EXIT_CODE,
+)
 from src.load.lock import sync_lock
 
 STEP_TIMEOUT_SECONDS = 30 * 60  # 30 minutes per step
@@ -44,6 +48,9 @@ UPSTREAM_SCHEMA_EXIT_CODE = 2  # fetchers exit 2 on UpstreamSchemaError
 SCHEMA_CHANGE_ERROR = f"upstream API schema changed (exit code {UPSTREAM_SCHEMA_EXIT_CODE})"
 INTEGRITY_UNVERIFIED_ERROR = (
     f"integrity could not be verified (exit code {INTEGRITY_UNVERIFIED_EXIT_CODE})"
+)
+RECORDS_GAP_ERROR = (
+    f"votings or attendance checks missing or not compared (exit code {RECORDS_GAP_EXIT_CODE})"
 )
 
 
@@ -75,6 +82,8 @@ def run_subprocess_step(
             return False, duration, SCHEMA_CHANGE_ERROR
         if proc.returncode == INTEGRITY_UNVERIFIED_EXIT_CODE:
             return False, duration, INTEGRITY_UNVERIFIED_ERROR
+        if proc.returncode == RECORDS_GAP_EXIT_CODE:
+            return False, duration, RECORDS_GAP_ERROR
         return False, duration, f"exited with code {proc.returncode}"
     except subprocess.TimeoutExpired:
         duration = time.time() - t0
@@ -214,6 +223,8 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
     required_failures: list[str] = []
     # Warning-only steps that failed too many runs in a row: the run fails, the upload still runs
     stale_steps: list[str] = []
+    # Votings or attendance checks missing: the run fails, the upload still runs
+    record_gaps: list[str] = []
 
     # a. Acquire lock
     print("Acquiring sync lock for daily pipeline...")
@@ -325,7 +336,10 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
                 }
             )
             if not int_ok:
-                required_failures.append("verify_pipeline_integrity")
+                if int_err == RECORDS_GAP_ERROR:
+                    record_gaps.append("verify_pipeline_integrity")
+                else:
+                    required_failures.append("verify_pipeline_integrity")
 
             # f. upload_to_b2.py (skips blocked_files automatically)
             print("\n--- Step 8: Upload to Backblaze B2 ---")
@@ -419,7 +433,9 @@ def run_daily_pipeline(no_upload: bool = False, no_sync: bool = False) -> int:
             print(
                 f"Stale data: {', '.join(stale_steps)} failed {STALE_AFTER_FAILURES}+ runs in a row."
             )
-        overall_success = not required_failures and not stale_steps
+        if record_gaps:
+            print("Missing data: votings or attendance checks are missing or were not compared.")
+        overall_success = not required_failures and not stale_steps and not record_gaps
         print_pipeline_summary(step_records, overall_success=overall_success)
         return 0 if overall_success else 1
 

@@ -2,9 +2,15 @@
 
 from sqlalchemy import and_, case, func
 
+from src.api.factions import effective_faction_expression
 from src.api.lru import LRUDict
 from src.api.roles import canonical_faction_expression, faction_names, role_condition
 from src.load.models import SystemMeta, Vote, Voting
+
+
+def _vote_faction():
+    """Faction of a ballot, with the wait before joining a faction under that faction."""
+    return effective_faction_expression(Vote.faction, Vote.member_uuid, Voting.sitting_date)
 
 
 def is_technical_voting(
@@ -188,10 +194,10 @@ def _compute_member_vote_participation(
             pass
 
     if role_filter:
-        query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
+        query = query.filter(role_condition(_vote_faction(), Voting.sitting_date, role_filter))
 
     if faction:
-        query = query.filter(Vote.faction.in_(faction_names(faction)))
+        query = query.filter(_vote_faction().in_(faction_names(faction)))
 
     results = query.group_by(Vote.member_uuid).all()
 
@@ -241,7 +247,7 @@ def _compute_faction_vote_participation(
     session, cache_key_mem: str, role_filter: str | None
 ) -> dict[str, dict]:
     is_tech_sql = is_technical_voting_clause()
-    faction_key = canonical_faction_expression(Vote.faction)
+    faction_key = canonical_faction_expression(_vote_faction())
     query = (
         session.query(
             faction_key,
@@ -269,7 +275,7 @@ def _compute_faction_vote_participation(
             pass
 
     if role_filter:
-        query = query.filter(role_condition(Vote.faction, Voting.sitting_date, role_filter))
+        query = query.filter(role_condition(_vote_faction(), Voting.sitting_date, role_filter))
 
     results = query.group_by(faction_key).all()
 

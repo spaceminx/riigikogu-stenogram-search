@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import case, func
 
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
+from src.api.factions import effective_faction_expression
 from src.api.roles import (
     NO_FACTION,
     canonical_faction,
@@ -19,6 +20,13 @@ from src.api.votings import (
 )
 from src.load.database import SessionLocal
 from src.load.models import Attendance, AttendanceCheck
+
+
+def _attendance_faction():
+    """Faction of an attendance row, with the wait before joining a faction under that faction."""
+    return effective_faction_expression(
+        Attendance.faction, Attendance.member_uuid, func.substr(Attendance.session_date, 1, 10)
+    )
 
 
 def get_active_members_data() -> tuple[set[str], dict[str, int], dict[str, str]]:
@@ -108,7 +116,7 @@ def get_attendance_stats(
 
         f_query = session.query(
             member_key.label("member_key"),
-            Attendance.faction,
+            _attendance_faction(),
             func.max(Attendance.session_date),
         ).filter(Attendance.faction != "", Attendance.faction.isnot(None))
         if membership in MEMBERSHIP_DATES:
@@ -122,7 +130,7 @@ def get_attendance_stats(
         if role in ("coalition", "opposition"):
             f_query = f_query.filter(
                 role_condition(
-                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                    _attendance_faction(), func.substr(Attendance.session_date, 1, 10), role
                 )
             )
         f_rows = f_query.group_by(member_key).all()
@@ -151,7 +159,7 @@ def get_attendance_stats(
         if role in ("coalition", "opposition"):
             query = query.filter(
                 role_condition(
-                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                    _attendance_faction(), func.substr(Attendance.session_date, 1, 10), role
                 )
             )
 
@@ -178,7 +186,7 @@ def get_attendance_stats(
                 else:
                     query = query.filter(Attendance.member_name.in_(active_members))
         elif faction:
-            query = query.filter(Attendance.faction.in_(faction_names(faction)))
+            query = query.filter(_attendance_faction().in_(faction_names(faction)))
 
         results = query.group_by(member_key).all()
 
@@ -249,7 +257,7 @@ def _compute_person_attendance_data(
     if target_role in ("coalition", "opposition"):
         overall_query = overall_query.filter(
             role_condition(
-                Attendance.faction, func.substr(Attendance.session_date, 1, 10), target_role
+                _attendance_faction(), func.substr(Attendance.session_date, 1, 10), target_role
             )
         )
     overall_row = overall_query.first()
@@ -281,7 +289,7 @@ def _compute_person_attendance_data(
         if target_role in ("coalition", "opposition"):
             mem_query = mem_query.filter(
                 role_condition(
-                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), target_role
+                    _attendance_faction(), func.substr(Attendance.session_date, 1, 10), target_role
                 )
             )
         mem_row = mem_query.first()
@@ -404,7 +412,7 @@ def get_faction_attendance_stats(
             if active_uuids:
                 f_query = session.query(
                     member_key,
-                    Attendance.faction,
+                    _attendance_faction(),
                     func.max(Attendance.session_date),
                 ).filter(
                     Attendance.faction != "",
@@ -421,7 +429,7 @@ def get_faction_attendance_stats(
                 if role in ("coalition", "opposition"):
                     f_query = f_query.filter(
                         role_condition(
-                            Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                            _attendance_faction(), func.substr(Attendance.session_date, 1, 10), role
                         )
                     )
                 latest_factions = {
@@ -446,7 +454,7 @@ def get_faction_attendance_stats(
                 if role in ("coalition", "opposition"):
                     query = query.filter(
                         role_condition(
-                            Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                            _attendance_faction(), func.substr(Attendance.session_date, 1, 10), role
                         )
                     )
                 query = query.filter(Attendance.member_uuid.in_(active_uuids))
@@ -555,7 +563,7 @@ def get_faction_attendance_stats(
                 if role in ("coalition", "opposition"):
                     query = query.filter(
                         role_condition(
-                            Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                            _attendance_faction(), func.substr(Attendance.session_date, 1, 10), role
                         )
                     )
 
@@ -597,7 +605,7 @@ def get_faction_attendance_stats(
                 stats.sort(key=lambda x: x["attendance_percentage"], reverse=True)
                 return stats
 
-        faction_key = canonical_faction_expression(Attendance.faction)
+        faction_key = canonical_faction_expression(_attendance_faction())
         query = session.query(
             faction_key,
             func.count(func.distinct(member_key)).label("member_count"),
@@ -618,7 +626,7 @@ def get_faction_attendance_stats(
         if role in ("coalition", "opposition"):
             query = query.filter(
                 role_condition(
-                    Attendance.faction, func.substr(Attendance.session_date, 1, 10), role
+                    _attendance_faction(), func.substr(Attendance.session_date, 1, 10), role
                 )
             )
 

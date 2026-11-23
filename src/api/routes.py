@@ -1185,6 +1185,8 @@ def get_person_votes(
         )
         if membership and membership != "all":
             q_results = q_results.filter(Voting.membership == int(membership))
+        # The list keeps technical votings that the summary leaves out, so page by its own count
+        list_total = q_results.order_by(None).count()
 
         items = (
             q_results.order_by(
@@ -1248,7 +1250,7 @@ def get_person_votes(
                 "photo_url": person.photo_url,
             },
             "summary": summary,
-            "total": summary["total"],
+            "total": list_total,
             "limit": limit,
             "offset": offset,
             "results": results,
@@ -1944,7 +1946,7 @@ def system_status():
                 "attendance": (
                     "Kohalolekut näidatakse kahe mõõdikuna. „Registreerus kohalolekukontrollis“ näitab, kui suure osa kohalolekukontrollidest saadik end hääletussüsteemis kohalolijaks registreeris; registreerimata jätmine ei tähenda alati, et saadik polnud istungil (ta võis tulla hiljem või jätta end teadlikult registreerimata). „Osales hääletustel“ näitab, kui suures osas avalikest hääletustest saadik hääletas poolt, vastu või erapooletult; eraldi on näidatud, kui sageli ta oli kohal, kuid ei hääletanud, ja kui sageli puudus. Salajased ja tehnilised hääletused ei lähe arvesse. Infotunnid (kolmapäevased küsimuste tunnid) saab registreerimise mõõdikust välja jätta, sest neil osaleb tavaliselt väiksem osa saadikutest. "
                     "Koalitsiooni ja opositsiooni jaotus põhineb valitsuste ametiaegadel (allikad: valitsus.ee, ERR ja Wikipedia; perioodid on avaandmete failis governments.json); iga hääl ja kohalolekukontroll arvestatakse selle fraktsiooni rolli järgi, kuhu saadik sel päeval kuulus. Tagasi astunud valitsuse ajutine ametiaeg loetakse selle valitsuse koalitsiooni alla. Fraktsiooni mittekuuluvad saadikud ei kuulu kumbagi rühma. Isamaa ja Res Publica Liidu fraktsioon (IRL) jätkas alates 31.07.2018 Isamaa fraktsiooni nime all, seepärast näidatakse neid ühe fraktsioonina. "
-                    "Fraktsioonide tabelis näitab „Saadikuid“ erinevate inimeste arvu, kes kuulusid valitud perioodil ja rollis vähemalt ühe kohalolekukontrolli ajal sellesse fraktsiooni (sh asendusliikmed), mitte fraktsiooni kohtade arvu; fraktsiooni vahetanud saadik on arvestatud igas fraktsioonis, kuhu ta kuulus, ning iga kontroll ja hääl selle fraktsiooni juures, kuhu ta sel päeval kuulus. Valikuga „Ainult praegused aktiivsed saadikud“ on iga praegune liige arvestatud oma viimase fraktsiooni alla ning kõik tema valitud perioodi kontrollid ja hääletused arvestatakse selle fraktsiooni juurde."
+                    "Fraktsioonide tabelis näitab „Saadikuid“ erinevate inimeste arvu, kes kuulusid valitud perioodil ja rollis vähemalt ühe kohalolekukontrolli ajal sellesse fraktsiooni (sh asendusliikmed), mitte fraktsiooni kohtade arvu; fraktsiooni vahetanud saadik on arvestatud igas fraktsioonis, kuhu ta kuulus, ning iga kontroll ja hääl selle fraktsiooni juures, kuhu ta sel päeval kuulus. Uus või naasev liige on mõne päeva fraktsiooni mittekuuluv, kuni fraktsioon ta vastu võtab; need kontrollid ja hääled arvestatakse fraktsiooni juurde, kuhu ta astus, nagu fraktsioonide lehelgi. Valikuga „Ainult praegused aktiivsed saadikud“ on iga praegune liige arvestatud oma viimase fraktsiooni alla ning kõik tema valitud perioodi kontrollid ja hääletused arvestatakse selle fraktsiooni juurde."
                 ),
                 "votes": "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja). Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse.",
                 "speeches": "Kõned, repliigid ja küsimused pärinevad Riigikogu stenogrammidest. Istungi juhataja roll (Esimees, Aseesimees) on stenogrammis märgitud eraldi ametinimetusena.",

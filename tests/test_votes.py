@@ -286,29 +286,56 @@ def test_build_full_database_expected_files():
     assert "attendance.jsonl" in files
 
 
-def test_verify_votes_integrity():
-    with patch("requests.get") as mock_get:
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = [
-            {
-                "votings": [
-                    {
-                        "uuid": "voting-test-uuid-1",
-                        "type": {"code": "AVALIK"},
-                        "description": "Desc",
-                    },
-                    {
-                        "uuid": "att-check",
-                        "type": {"code": "KOHALOLEKU_KONTROLL"},
-                        "description": "Att",
-                    },
-                ]
-            }
-        ]
-        mock_get.return_value = mock_resp
-        ok = verify_votes_integrity(days=14, fail_on_missing=False)
-        assert ok is True
+def _votings_payload(*votings):
+    return [{"votings": list(votings)}]
+
+
+def _official(uuid, code, days_ago):
+    from datetime import datetime, timedelta
+
+    ts = (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%dT%H:%M:%S")
+    return {"uuid": uuid, "type": {"code": code}, "description": uuid, "startDateTime": ts}
+
+
+def _write_local(tmp_path, voting_uuids, check_uuids):
+    from datetime import datetime
+
+    year = datetime.now().year
+    (tmp_path / f"votes_{year}.jsonl").write_text(
+        "".join(json.dumps({"voting_uuid": u}) + "\n" for u in voting_uuids), encoding="utf-8"
+    )
+    (tmp_path / "attendance.jsonl").write_text(
+        "".join(json.dumps({"voting_uuid": u, "member_name": "A"}) + "\n" for u in check_uuids),
+        encoding="utf-8",
+    )
+
+
+def test_verify_votes_integrity(tmp_path):
+    """Votings and attendance checks in the files pass; recent missing ones are only reported."""
+    _write_local(tmp_path, ["v-1"], ["att-1"])
+    payload = _votings_payload(
+        _official("v-1", "AVALIK", 5),
+        _official("att-1", "KOHALOLEKU_KONTROLL", 5),
+        _official("v-today", "AVALIK", 0),
+        _official("att-today", "KOHALOLEKU_KONTROLL", 1),
+    )
+    with (
+        patch("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("requests.get", return_value=MagicMock(status_code=200, json=lambda: payload)),
+    ):
+        assert verify_votes_integrity(days=14) is True
+
+
+@pytest.mark.parametrize("code", ["AVALIK", "SALAJANE", "KOHALOLEKU_KONTROLL"])
+def test_verify_votes_integrity_fails_on_old_missing_record(tmp_path, code):
+    """A voting or attendance check older than the grace period that is not in the files fails."""
+    _write_local(tmp_path, ["v-1"], ["att-1"])
+    payload = _votings_payload(_official("v-1", "AVALIK", 5), _official("gone", code, 3))
+    with (
+        patch("scripts.verify_pipeline_integrity.OUTPUT_DIR_PROCESSED", str(tmp_path)),
+        patch("requests.get", return_value=MagicMock(status_code=200, json=lambda: payload)),
+    ):
+        assert verify_votes_integrity(days=14) is False
 
 
 def test_fetch_votes_detail_failure_partial_write(tmp_path):
@@ -545,46 +572,57 @@ def test_load_votes_to_database_db_error_and_sync_database(tmp_path):
         mock_meta_session.commit.assert_not_called()
 
 
-def test_verify_votes_integrity_warning_only():
-    # 1. Missing votes do not fail verify_pipeline_integrity
+def test_missing_votes_do_not_fail_speech_integrity():
+    """verify_pipeline_integrity checks speeches only; votings are main()'s second step."""
     with (
         patch("scripts.verify_pipeline_integrity.load_local_sessions_from_jsonl", return_value={}),
         patch("requests.get") as mock_get,
     ):
-        mock_verbatims = MagicMock(status_code=200, json=lambda: [])
-        mock_votings = MagicMock(
-            status_code=200,
-            json=lambda: [
-                {
-                    "votings": [
-                        {
-                            "uuid": "missing-vote-uuid-999",
-                            "type": {"code": "AVALIK"},
-                            "description": "Missing vote",
-                            "startDateTime": "2026-10-10T12:00:00",
-                        }
-                    ]
-                }
-            ],
-        )
+        mock_get.return_value = MagicMock(status_code=200, json=lambda: [])
+        assert verify_pipeline_integrity(days=14, fail_on_missing=True) is True
+        assert all("votings" not in str(c) for c in mock_get.call_args_list)
 
-        def get_dispatcher(url, *args, **kwargs):
-            if "votings" in url:
-                return mock_votings
-            return mock_verbatims
 
-        mock_get.side_effect = get_dispatcher
-        ok = verify_pipeline_integrity(days=14, fail_on_missing=True)
-        assert ok is True
+@pytest.mark.parametrize(
+    "speeches, votings, expected",
+    [
+        ("ok", "ok", 0),
+        ("missing", "ok", 1),
+        ("unverified", "ok", 3),
+        ("ok", "missing", 4),
+        ("ok", "unverified", 4),
+    ],
+)
+def test_integrity_main_exit_codes(monkeypatch, speeches, votings, expected):
+    import scripts.verify_pipeline_integrity as vpi
 
-    # 2. API error in verify_votes_integrity prints SKIPPED and returns True
-    with patch("requests.get") as mock_get, patch("builtins.print") as mock_print:
-        mock_get.return_value = MagicMock(status_code=500)
-        ok = verify_votes_integrity(days=14)
-        assert ok is True
-        mock_print.assert_any_call(
-            "SKIPPED: Votings API returned HTTP 500. Skipping votes verification."
-        )
+    def fake_speeches(**kw):
+        if speeches == "unverified":
+            raise vpi.IntegrityUnverifiedError("verbatims API returned HTTP 429 after 3 attempts")
+        return speeches == "ok"
+
+    def fake_votings(**kw):
+        if votings == "unverified":
+            raise vpi.IntegrityUnverifiedError("votings API returned HTTP 429 after 3 attempts")
+        return votings == "ok"
+
+    monkeypatch.setattr(vpi, "verify_pipeline_integrity", fake_speeches)
+    monkeypatch.setattr(vpi, "verify_votes_integrity", fake_votings)
+    monkeypatch.setattr(vpi.time, "sleep", lambda *a: None)
+    assert vpi.main() == expected
+
+
+def test_votings_list_429_is_retried_then_unverified(tmp_path, monkeypatch):
+    """A 429 from the votings list is retried, and a lasting one raises instead of passing."""
+    import scripts.verify_pipeline_integrity as vpi
+
+    monkeypatch.setattr(vpi, "OUTPUT_DIR_PROCESSED", str(tmp_path))
+    sleeps = []
+    monkeypatch.setattr(vpi.time, "sleep", sleeps.append)
+    with patch("requests.get", return_value=MagicMock(status_code=429, headers={})):
+        with pytest.raises(vpi.IntegrityUnverifiedError, match="votings API returned HTTP 429"):
+            vpi.verify_votes_integrity(days=14)
+    assert sleeps == [15, 30]
 
 
 def test_indexes_no_duplicates():
@@ -1382,6 +1420,8 @@ def test_technical_votings():
         assert summary["in_favor"] == 1
         assert summary["absent"] == 0  # v_tech had PUUDUB, but it is excluded from summary
         assert summary["total"] == 1
+        # The pager total counts the list rows, technical votings included
+        assert data_p["total"] == len(data_p["results"]) == 2
 
         # Technical voting stays in person's results list with is_technical=True
         results_map = {item["voting_uuid"]: item for item in data_p["results"]}
