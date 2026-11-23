@@ -12,7 +12,7 @@ from src.api.votings import clear_vote_participation_cache
 from src.load import loader
 from src.load.database import SessionLocal
 from src.load.loader import create_tables, load_faction_joining_windows
-from src.load.models import Attendance, FactionJoiningWindow, Vote, Voting
+from src.load.models import Attendance, FactionJoiningWindow, Person, Vote, Voting
 
 client = TestClient(app)
 
@@ -191,3 +191,109 @@ def test_wait_is_booked_to_the_faction_joined(seeded):
     row = next(r for r in members if r["member_uuid"] == MEMBER)
     assert row["total_checks"] == 5
     assert row["votes_total"] == 5
+
+
+ALIGN_MEMBER = "joining-align-member"
+ALIGN_PEERS = ["joining-align-peer-1", "joining-align-peer-2", "joining-align-peer-3"]
+ALIGN_VOTINGS = ["joining-align-v1", "joining-align-v2"]
+
+
+@pytest.fixture
+def alignment_seeded():
+    create_tables()
+    session = SessionLocal()
+
+    def cleanup():
+        session.query(Vote).filter(Vote.voting_uuid.in_(ALIGN_VOTINGS)).delete()
+        session.query(Voting).filter(Voting.uuid.in_(ALIGN_VOTINGS)).delete()
+        session.query(Person).filter(Person.uuid.in_([ALIGN_MEMBER, *ALIGN_PEERS])).delete()
+        session.query(FactionJoiningWindow).delete()
+        session.commit()
+
+    cleanup()
+    for i, uuid in enumerate([ALIGN_MEMBER, *ALIGN_PEERS]):
+        session.add(
+            Person(uuid=uuid, first_name="Ootaja", last_name=str(i), full_name=f"Ootaja {i}")
+        )
+    for i, (uuid, day) in enumerate(zip(ALIGN_VOTINGS, ["2026-11-03", "2026-11-10"], strict=True)):
+        session.add(
+            Voting(
+                uuid=uuid,
+                voting_number=950 + i,
+                type="AVALIK",
+                description="Ootetest",
+                date=day,
+                start_time=f"{day}T11:00:00",
+                sitting_date=day,
+                sitting_datetime=f"{day}T10:00:00",
+                membership=15,
+                in_favor=4,
+                against=0,
+                neutral=0,
+            )
+        )
+    # v1: the member waits to be admitted; three faction members vote for
+    session.add(
+        Vote(
+            voting_uuid="joining-align-v1",
+            member_uuid=ALIGN_MEMBER,
+            faction=NO_FACTION,
+            decision="POOLT",
+        )
+    )
+    for peer in ALIGN_PEERS:
+        session.add(
+            Vote(
+                voting_uuid="joining-align-v1", member_uuid=peer, faction=FACTION, decision="POOLT"
+            )
+        )
+    # v2: the member is in the faction; the third peer now waits to be admitted
+    session.add(
+        Vote(
+            voting_uuid="joining-align-v2",
+            member_uuid=ALIGN_MEMBER,
+            faction=FACTION,
+            decision="VASTU",
+        )
+    )
+    for peer in ALIGN_PEERS:
+        fac = NO_FACTION if peer == ALIGN_PEERS[2] else FACTION
+        session.add(
+            Vote(voting_uuid="joining-align-v2", member_uuid=peer, faction=fac, decision="VASTU")
+        )
+    session.commit()
+    try:
+        yield session
+    finally:
+        cleanup()
+        session.close()
+
+
+def test_alignment_books_the_wait_to_the_faction_joined(alignment_seeded):
+    from src.api.alignment import compute_person_alignment
+
+    before = compute_person_alignment(alignment_seeded, ALIGN_MEMBER)["overall"]
+    assert before["same"] == 0
+    assert before["excluded"]["no_faction"] == 1
+    assert before["excluded"]["too_few"] == 1
+
+    alignment_seeded.add_all(
+        [
+            FactionJoiningWindow(
+                member_uuid=ALIGN_MEMBER,
+                start_date="2026-11-02",
+                end_date="2026-11-04",
+                faction=FACTION,
+            ),
+            FactionJoiningWindow(
+                member_uuid=ALIGN_PEERS[2],
+                start_date="2026-11-09",
+                end_date="2026-11-11",
+                faction=FACTION,
+            ),
+        ]
+    )
+    alignment_seeded.commit()
+    after = compute_person_alignment(alignment_seeded, ALIGN_MEMBER)["overall"]
+    assert after["same"] == 2
+    assert after["excluded"] == {"absent": 0, "split": 0, "too_few": 0, "no_faction": 0}

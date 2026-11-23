@@ -94,7 +94,15 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
           </div>
 
           <div className="methodology-section">
-            <h3>2. Kõnede ja sõnavõttude loendamine</h3>
+            <h3>2. Hääletused</h3>
+            <p>
+              {systemStatus?.methodology?.votes ||
+                "Hääletuste andmed pärinevad Riigikogu ametlikust API-st (api.riigikogu.ee). Kajastatud on avalikud ja salajased hääletused (v.a kohalolekukontrollid, mida käsitletakse eraldi kohaloleku all). API koondsummas tähendab 'abstained' (mittehääletanud) kategooriat 'ei hääletanud' + 'puudub' (mitte sisulist otsust 'erapooletu'). Salajastel hääletustel nimelisi hääli pole. Hääletused on seotud istungi kuupäevaga ning öised hääletused (pärast keskööd) kuuluvad eelmise päeva istungile. Hääletustulemused ja saadikute otsused esitatakse faktilise ja kirjeldava statistikana ilma hinnanguteta. Saadikuprofiilil näidatakse, kui sageli hääletas ta samamoodi kui tema fraktsiooni enamus (arvestatakse avalikke hääletusi; puudumised, viigiseisud ja fraktsioonid, kus peale saadiku enda oli kohal alla kolme liikme, jäetakse välja, samuti hääled, mil saadik ei kuulunud fraktsiooni). Kohal olnud, kuid hääletamata jätnud saadik („ei hääletanud“) loetakse eraldi seisukohaks nii saadiku kui ka fraktsiooni enamuse puhul. Fraktsiooni vastuvõtmist ootava uue liikme hääled arvestatakse fraktsiooni juurde, kuhu ta astus. Hääletused, kus keegi ei hääletanud poolt, vastu ega erapooletult, märgitakse tehniliseks kirjeks ega lähe saadiku hääletuskokkuvõttesse."}
+            </p>
+          </div>
+
+          <div className="methodology-section">
+            <h3>3. Kõnede ja sõnavõttude loendamine</h3>
             <p>
               Kõned ja sõnavõtud pärinevad Riigikogu ametlikest stenogrammidest. Istungi juhataja
               ametikoht (Esimees, Aseesimees) on stenogrammis eraldi rollitunnusena talletatud.
@@ -114,7 +122,7 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
           </div>
 
           <div className="methodology-section">
-            <h3>3. Toimetamata vs toimetatud stenogrammid</h3>
+            <h3>4. Toimetamata vs toimetatud stenogrammid</h3>
             <p>
               Vahetult pärast istungit avaldatakse stenogramm toimetamata kujul. Toimetatud ja
               kinnitatud lõpliku stenogrammi valmimisel asendab andmetoru teksti automaatselt
@@ -123,7 +131,7 @@ export function MethodologyModal({ isOpen, onClose, systemStatus }) {
           </div>
 
           <div className="methodology-section">
-            <h3>4. Erapooletus ja avaandmete allikad</h3>
+            <h3>5. Erapooletus ja avaandmete allikad</h3>
             <p>
               Kõik andmed pärinevad ametlikest Riigikogu avaandmetest (
               <a href="https://api.riigikogu.ee" target="_blank" rel="noreferrer">

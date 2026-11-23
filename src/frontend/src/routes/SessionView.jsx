@@ -6,6 +6,7 @@ import { fetchAllSittingVotings, fetchPlenarySession } from "../lib/api";
 import { formatDateTime, normalizeSourceUrl } from "../lib/formatters";
 import SpeechCard from "../components/SpeechCard";
 import VotingRow from "../components/VotingRow";
+import { SectionError } from "../components/SectionError";
 import { formatDate, isValidDateKey } from "../lib/calendarUtils";
 import { usePageMeta } from "../lib/usePageMeta";
 
@@ -35,14 +36,14 @@ export function SessionView() {
     shouldRetryOnError: false,
   });
 
-  const { data: votingsData } = useSWR(
-    isValidDate ? `session-votings-${date}` : null,
-    () => fetchAllSittingVotings(date),
-    {
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    }
-  );
+  const {
+    data: votingsData,
+    error: votingsError,
+    mutate: retryVotings,
+  } = useSWR(isValidDate ? `session-votings-${date}` : null, () => fetchAllSittingVotings(date), {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
   const votings = votingsData?.results || [];
   const displayedVotings = votings.length > 5 && !showAllVotings ? votings.slice(0, 5) : votings;
 
@@ -131,6 +132,19 @@ export function SessionView() {
           )}
         </div>
       </div>
+
+      {votingsError && !votingsData && sessionData && (
+        <section
+          className="session-votings-section glass-panel"
+          style={{ marginBottom: "1.5rem", padding: "1.5rem" }}
+          aria-label="Hääletused"
+        >
+          <SectionError
+            message="Selle istungi hääletuste laadimine ebaõnnestus."
+            onRetry={() => retryVotings()}
+          />
+        </section>
+      )}
 
       {votings.length > 0 && (
         <section
