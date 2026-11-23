@@ -90,10 +90,10 @@ export function PrivacyView({ onOpenMethodology }) {
             <p style={{ margin: 0, color: "var(--color-text-muted)" }}>
               Stenogrammid, hääletused, kohalolek ja saadikute andmed: Riigikogu avaandmed
               (api.riigikogu.ee), litsents CC BY-SA 3.0. Saadikute fotod: Riigikogu. Videod:
-              Riigikogu YouTube&apos;i kanal, litsents CC BY-SA. Riigivaate töödeldud andmed, sh
-              otsingutulemuste eksport, on samuti CC BY-SA litsentsi all. Kirjatüübid Source Serif
-              4, Source Sans 3 ja Source Code Pro (Adobe) on SIL Open Font License 1.1 litsentsi all
-              ja need laaditakse Riigivaate enda serverist, mitte välisest teenusest.
+              Riigikogu YouTube&apos;i kanal, litsents CC BY-SA. Riigivaate töödeldud andmed on
+              samuti CC BY-SA litsentsi all. Kirjatüübid Source Serif 4, Source Sans 3 ja Source
+              Code Pro (Adobe) on SIL Open Font License 1.1 litsentsi all ja need laaditakse
+              Riigivaate enda serverist, mitte välisest teenusest.
             </p>
           </section>
 

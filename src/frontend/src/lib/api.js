@@ -109,12 +109,6 @@ export async function fetchSpeechContext(speechId, query = null, expand = true) 
   return handleResponse(res);
 }
 
-export function getExportUrl(options) {
-  const qs = buildSearchQueryString(options);
-  const format = options.format || "csv";
-  return `${BASE_URL}/search/export?${qs}&format=${format}`;
-}
-
 export async function fetchAttendance({
   membership = null,
   faction = null,

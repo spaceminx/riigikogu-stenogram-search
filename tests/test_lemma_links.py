@@ -498,12 +498,6 @@ def test_distinct_search_count_single_term_alternatives():
     activity_sum = sum(item["count"] for item in activity)
     assert activity_sum == data["total_count"]
 
-    # Export header X-Total-Count must equal total_count
-    exp_resp = client.get("/search/export?q=eelarve&format=json")
-    assert exp_resp.status_code == 200
-    assert exp_resp.headers["X-Total-Count"] == str(data["total_count"])
-    assert len(exp_resp.json()["results"]) == data["total_count"]
-
     # Filtered search (e.g. speaker) must also match exactly total_count
     resp_filtered = client.get("/search?q=eelarve&speaker=Kallas")
     assert resp_filtered.status_code == 200

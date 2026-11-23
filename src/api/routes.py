@@ -1,12 +1,9 @@
-import csv
-import io
 import json
 import logging
 import os
 import time
 from datetime import UTC, date, datetime
 from typing import Annotated
-from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import AfterValidator
@@ -626,155 +623,6 @@ def speech_context(
         raise HTTPException(
             status_code=500,
             detail="Kõne konteksti päring ebaõnnestus.",
-        ) from e
-
-
-@router.get("/search/export")
-def search_export(
-    q: str = Query(..., min_length=1, max_length=1000),
-    format: str = Query("csv", description="Ekspordi formaat: 'csv' või 'json'"),
-    membership: str = Query("all", pattern=r"^(\d+|all)$"),
-    faction: str | None = Query(None),
-    speaker: str | None = Query(None),
-    speaker_uuid: str | None = Query(None, description="Filtreeri esineja UUID järgi"),
-    start_date: iso_date_query() = None,
-    end_date: iso_date_query() = None,
-    sort_by: str = Query("date_desc", pattern="^(date_desc|date_asc|match_count_desc)$"),
-    limit: int = Query(2000, ge=1, le=5000),
-    exclude_chair: bool = Query(False, description="Jäta istungi juhataja välja"),
-    speech_category: str | None = Query(
-        None,
-        description="Filtreeri sõnavõtu liigi järgi (speeches, questions, procedural)",
-        pattern=r"^(speeches|questions|procedural)$",
-    ),
-    expand: bool = Query(True, description="Laienda otsingut liitsõnade ja nimevormidega"),
-):
-    if format not in ("csv", "json"):
-        raise HTTPException(status_code=400, detail="Formaat peab olema 'csv' või 'json'.")
-    q = sanitize_query(q)
-    validate_membership(membership)
-
-    try:
-        results, total_count = search_by_keyword(
-            query=q,
-            limit=limit,
-            offset=0,
-            membership=membership,
-            faction=faction,
-            speaker=speaker,
-            speaker_uuid=speaker_uuid,
-            start_date=start_date,
-            end_date=end_date,
-            sort_by=sort_by,
-            include_matched_words=False,
-            exclude_chair=exclude_chair,
-            speech_category=speech_category,
-            expand=expand,
-        )
-
-        safe_q = "".join(c for c in q if c.isalnum() or c in ("-", "_")).strip() or "otsing"
-        ascii_fallback = (
-            "".join(c for c in safe_q if c.isascii() and (c.isalnum() or c in ("-", "_"))).strip()
-            or "otsing"
-        )
-        encoded_json_filename = quote(f"riigikogu_{safe_q}.json")
-        encoded_csv_filename = quote(f"riigikogu_{safe_q}.csv")
-
-        is_truncated = "true" if total_count > len(results) else "false"
-        common_headers = {
-            "X-Total-Count": str(total_count),
-            "X-Export-Count": str(len(results)),
-            "X-Export-Truncated": is_truncated,
-            "X-License": "CC BY-SA 3.0",
-        }
-
-        if format == "json":
-            payload = {
-                "source": "Riigikogu avaandmed (api.riigikogu.ee), töödeldud: riigivaade.me",
-                "license": "CC BY-SA 3.0",
-                "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
-                "results": results,
-            }
-            return Response(
-                content=json.dumps(payload, ensure_ascii=False, indent=2),
-                media_type="application/json; charset=utf-8",
-                headers={
-                    **common_headers,
-                    "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.json\"; filename*=UTF-8''{encoded_json_filename}",
-                },
-            )
-
-        output = io.StringIO()
-        output.write(
-            "# Allikas: Riigikogu avaandmed (api.riigikogu.ee) – töödeldud: riigivaade.me – litsents: CC BY-SA 3.0\n"
-        )
-        writer = csv.writer(output)
-        writer.writerow(
-            [
-                "ID",
-                "Link",
-                "Kuupäev",
-                "Kellaaeg",
-                "Kõneleja",
-                "Kõneleja UUID",
-                "Roll",
-                "Fraktsioon",
-                "Leitud märksõnu",
-                "Päevakorrapunkt",
-                "Allikas",
-                "Video",
-                "Tekst",
-            ]
-        )
-        for r in results:
-            public_id = r.get("external_id") or r.get("speech_key") or r.get("id", "")
-            link = f"https://www.riigivaade.me/kone/{public_id}" if public_id else ""
-            writer.writerow(
-                [
-                    public_id,
-                    link,
-                    r.get("date", ""),
-                    r.get("time", ""),
-                    r.get("speaker", ""),
-                    r.get("speaker_uuid", "") or "",
-                    r.get("speaker_role", "") or "",
-                    r.get("speaker_faction", "") or "",
-                    r.get("count", 0),
-                    r.get("agenda_title", "") or "",
-                    r.get("source_url", ""),
-                    r.get("video_url", "") or "",
-                    r.get("text", ""),
-                ]
-            )
-
-        csv_bytes = output.getvalue().encode("utf-8-sig")
-        return Response(
-            content=csv_bytes,
-            media_type="text/csv; charset=utf-8",
-            headers={
-                **common_headers,
-                "Content-Disposition": f"attachment; filename=\"riigikogu_{ascii_fallback}.csv\"; filename*=UTF-8''{encoded_csv_filename}",
-            },
-        )
-    except LemmatizerUnavailableError as e:
-        raise HTTPException(
-            status_code=503,
-            detail="Otsingu keeletöötlus pole hetkel saadaval.",
-        ) from e
-    except (ValueError, RecursionError) as e:
-        status_code = 422 if str(e) == "Tundmatu koosseis" else 400
-        detail = "Päring on liiga keeruline." if isinstance(e, RecursionError) else str(e)
-        raise HTTPException(status_code=status_code, detail=detail) from e
-    except OperationalError as e:
-        raise HTTPException(
-            status_code=503,
-            detail="Andmebaas või otsingutabelid ei ole initsialiseeritud.",
-        ) from e
-    except SQLAlchemyError as e:
-        logger.error("Export query failed for %r: %s", q, e, exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail="Eksport ebaõnnestus.",
         ) from e
 
 
