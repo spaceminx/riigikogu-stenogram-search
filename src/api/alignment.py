@@ -8,9 +8,10 @@ import logging
 from collections import defaultdict
 
 from fastapi import HTTPException
-from sqlalchemy import and_, func
+from sqlalchemy import func
 from sqlalchemy.orm import aliased
 
+from src.api.factions import effective_faction_expression
 from src.api.lru import LRUDict
 from src.api.roles import NO_FACTION
 from src.api.votings import format_session_source_file, is_technical_voting_clause
@@ -65,6 +66,8 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
         raise HTTPException(status_code=404, detail="Saadikut ei leitud.")
 
     is_tech_sql = is_technical_voting_clause()
+    # A new member's non-affiliated wait counts with the faction joined, as in attendance and votes
+    vote_faction = effective_faction_expression(Vote.faction, Vote.member_uuid, Voting.sitting_date)
     mv_query = (
         session.query(
             Voting.uuid.label("voting_uuid"),
@@ -77,7 +80,7 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
             Voting.related_document_title,
             Voting.membership,
             Vote.decision.label("member_decision"),
-            Vote.faction.label("member_faction"),
+            vote_faction.label("member_faction"),
         )
         .join(Voting, Vote.voting_uuid == Voting.uuid)
         .filter(Vote.member_uuid == person_uuid)
@@ -102,21 +105,20 @@ def compute_person_alignment(session, person_uuid: str) -> dict:
 
     # Query counts of decisions among other members of the same faction on each voting
     MemberVote = aliased(Vote)
+    # Here Vote is another member's ballot and MemberVote the person's own one
+    person_faction = effective_faction_expression(
+        MemberVote.faction, MemberVote.member_uuid, Voting.sitting_date
+    )
     other_counts = (
         session.query(
             Vote.voting_uuid,
             Vote.decision,
             func.count(Vote.decision),
         )
-        .join(
-            MemberVote,
-            and_(
-                Vote.voting_uuid == MemberVote.voting_uuid,
-                Vote.faction == MemberVote.faction,
-            ),
-        )
+        .join(MemberVote, Vote.voting_uuid == MemberVote.voting_uuid)
         .join(Voting, Vote.voting_uuid == Voting.uuid)
         .filter(MemberVote.member_uuid == person_uuid)
+        .filter(vote_faction == person_faction)
         .filter(Vote.member_uuid != person_uuid)
         .filter(Voting.type == "AVALIK")
         .filter(~is_tech_sql)
