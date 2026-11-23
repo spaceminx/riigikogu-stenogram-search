@@ -327,6 +327,24 @@ def _verify_0008_drafts(conn: Connection) -> None:
             raise RuntimeError(f"Migration verification failed: missing column 'drafts.{col}'")
 
 
+def _persons_has_email(conn: Connection) -> bool:
+    return "email" in {row[1] for row in conn.execute(text("PRAGMA table_info(persons)"))}
+
+
+def _up_0009_clear_person_email(conn: Connection) -> None:
+    # Nothing reads the e-mail addresses; they only travelled into backups and B2
+    if _persons_has_email(conn):
+        conn.execute(text("UPDATE persons SET email = NULL WHERE email IS NOT NULL"))
+
+
+def _verify_0009_clear_person_email(conn: Connection) -> None:
+    if not _persons_has_email(conn):
+        return
+    left = conn.execute(text("SELECT COUNT(*) FROM persons WHERE email IS NOT NULL")).scalar()
+    if left:
+        raise RuntimeError(f"Migration verification failed: {left} persons still have an e-mail")
+
+
 MigrationTuple = tuple[str, str, Callable[[Connection], None], Callable[[Connection], None]]
 
 MIGRATIONS: list[MigrationTuple] = [
@@ -338,6 +356,7 @@ MIGRATIONS: list[MigrationTuple] = [
     ("0006", "lemma_pos", _up_0006_lemma_pos, _verify_0006_lemma_pos),
     ("0007", "attendance_checks", _up_0007_attendance_checks, _verify_0007_attendance_checks),
     ("0008", "drafts", _up_0008_drafts, _verify_0008_drafts),
+    ("0009", "clear_person_email", _up_0009_clear_person_email, _verify_0009_clear_person_email),
 ]
 
 

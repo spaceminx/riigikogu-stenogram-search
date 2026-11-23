@@ -30,10 +30,29 @@ def trim_list(data: list, max_items: int = 5) -> list:
     return data[:max_items]
 
 
+# Contact details are not used anywhere; the site shows the birth year only
+CONTACT_FIELDS = ("email", "phone", "upn")
+
+
+def scrub_person(member: dict) -> dict:
+    """Drop contact fields and keep only the year of the date of birth."""
+    m = {k: v for k, v in member.items() if k not in CONTACT_FIELDS}
+    dob = m.get("dateOfBirth")
+    if dob:
+        m["dateOfBirth"] = f"{str(dob)[:4]}-01-01"
+    return m
+
+
+def trim_plenary_members(data: list, max_items: int = 5) -> list:
+    return [scrub_person(m) for m in trim_list(data, max_items)]
+
+
 def trim_voting_detail(detail: dict, max_voters: int = 5) -> dict:
     d = dict(detail)
     if "voters" in d and isinstance(d["voters"], list):
-        d["voters"] = d["voters"][:max_voters]
+        d["voters"] = [scrub_person(v) for v in d["voters"][:max_voters]]
+    if isinstance(d.get("chairman"), dict):
+        d["chairman"] = scrub_person(d["chairman"])
     return d
 
 
@@ -119,12 +138,12 @@ def main() -> None:
         (
             "plenary_members_recent.json",
             "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=15",
-            trim_list,
+            trim_plenary_members,
         ),
         (
             "plenary_members_2019.json",
             "https://api.riigikogu.ee/api/plenary-members?status=ALL&membership=14",
-            trim_list,
+            trim_plenary_members,
         ),
         (
             "votings_recent.json",
