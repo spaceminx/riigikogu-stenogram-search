@@ -13,7 +13,14 @@ from pydantic import AfterValidator
 from sqlalchemy import and_, case, exists, func, or_, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
-from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED, latest_membership
+from config import (
+    DATABASE_DIR,
+    MEMBERSHIP_DATES,
+    OUTPUT_DIR_PROCESSED,
+    STALE_AFTER_FAILURES,
+    WARNING_STEP_FAILURES_FILE,
+    latest_membership,
+)
 from src.api.alignment import (
     get_faction_alignment,
     get_faction_alignment_differences,
@@ -1917,6 +1924,40 @@ _STATUS_CACHE: dict = {
 }
 _STATUS_CACHE_TTL: float = 300.0
 
+# Warning-only pipeline steps and the data they keep current
+_WARNING_STEP_DATASETS = {
+    "fetch_memberships": "koosseisud",
+    "fetch_factions": "fraktsioonid",
+    "fetch_faction_leaders": "fraktsioonide juhid",
+    "fetch_drafts": "eelnõud",
+    "fetch_agenda": "päevakorrad",
+}
+
+
+def _stale_datasets() -> list[dict]:
+    """Warning-only pipeline steps that failed STALE_AFTER_FAILURES or more runs in a row.
+
+    Read from the counter file the daily pipeline writes. File mtimes cannot tell this: the B2
+    download rewrites some of these files even when their fetch failed.
+    """
+    path = os.path.join(DATABASE_DIR, WARNING_STEP_FAILURES_FILE)
+    try:
+        with open(path, encoding="utf-8") as f:
+            counts = json.load(f)
+    except (OSError, ValueError):
+        return []
+    if not isinstance(counts, dict):
+        return []
+    stale = []
+    for step, dataset in _WARNING_STEP_DATASETS.items():
+        try:
+            failed = int(counts.get(step, 0))
+        except (TypeError, ValueError):
+            continue
+        if failed >= STALE_AFTER_FAILURES:
+            stale.append({"dataset": dataset, "step": step, "failed_runs_in_a_row": failed})
+    return stale
+
 
 @router.get("/system/status")
 def system_status():
@@ -2011,7 +2052,13 @@ def system_status():
             except Exception:
                 pass
 
-        warning = sync_warning
+        stale_datasets = _stale_datasets()
+        stale_warning = None
+        if stale_datasets:
+            names = ", ".join(d["dataset"] for d in stale_datasets)
+            stale_warning = f"Andmete uuendamine on mitu korda järjest ebaõnnestunud: {names}."
+
+        warning = " ".join(w for w in (sync_warning, stale_warning) if w) or None
 
         return {
             "status": "ok",
@@ -2025,6 +2072,7 @@ def system_status():
             "total_persons": total_persons,
             "active_persons": active_persons,
             "warning": warning,
+            "stale_datasets": stale_datasets,
             "totals": {
                 "sessions": total_sessions,
                 "speeches": total_speeches,

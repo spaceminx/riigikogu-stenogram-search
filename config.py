@@ -21,6 +21,11 @@ DATABASE_DIR = os.environ.get("DATABASE_DIR", os.path.join(PROJECT_ROOT, "databa
 DATABASE_PATH = os.environ.get("DATABASE_PATH", os.path.join(DATABASE_DIR, "riigikogu.sqlite"))
 DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DATABASE_PATH}")
 
+# The daily pipeline counts consecutive failures of its warning-only fetch steps in this file
+# (under DATABASE_DIR); the run fails, and /system/status warns, from this many on
+WARNING_STEP_FAILURES_FILE = "warning_step_failures.json"
+STALE_AFTER_FAILURES = 3
+
 B2_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL", "https://s3.eu-central-003.backblazeb2.com")
 B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "riigikogu-stenograms")
 

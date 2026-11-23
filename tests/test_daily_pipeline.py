@@ -480,3 +480,56 @@ def test_unverified_integrity_fails_run_and_skips_upload(tmp_path, monkeypatch):
     assert dp.run_daily_pipeline() == 1
     assert upload_called is False
     assert sync_called is True
+
+
+def _pipeline_with_failing(monkeypatch, tmp_path, failing: set[str]):
+    """Point the pipeline at tmp_path and make the scripts named in `failing` exit 1."""
+    monkeypatch.setattr(dp, "DATABASE_DIR", str(tmp_path / "db"))
+    monkeypatch.setattr(dp, "OUTPUT_DIR_PROCESSED", str(tmp_path / "processed"))
+    calls = []
+
+    def mock_run(cmd, *args, **kwargs):
+        script_name = os.path.basename(cmd[1])
+        calls.append(script_name)
+        return subprocess.CompletedProcess(args=cmd, returncode=1 if script_name in failing else 0)
+
+    monkeypatch.setattr(dp.subprocess, "run", mock_run)
+    monkeypatch.setattr(dp, "sync_database", lambda **kw: True)
+    return calls
+
+
+def test_warning_step_failing_three_runs_in_a_row_fails_the_run(tmp_path, monkeypatch):
+    """Two failed fetch_drafts runs stay warnings; the third fails the run but still uploads."""
+    calls = _pipeline_with_failing(monkeypatch, tmp_path, {"fetch_drafts.py"})
+
+    assert dp.run_daily_pipeline() == 0
+    assert dp.run_daily_pipeline() == 0
+    calls.clear()
+    assert dp.run_daily_pipeline() == 1
+    # The other datasets are fine, so B2 still gets them
+    assert "upload_to_b2.py" in calls
+
+    counts = json.loads((tmp_path / "db" / dp.FAILURE_COUNTS_FILE).read_text(encoding="utf-8"))
+    assert counts["fetch_drafts"] == 3
+    assert counts["fetch_agenda"] == 0
+
+
+def test_warning_step_success_resets_the_count(tmp_path, monkeypatch):
+    _pipeline_with_failing(monkeypatch, tmp_path, {"fetch_agenda.py"})
+    assert dp.run_daily_pipeline() == 0
+    assert dp.run_daily_pipeline() == 0
+
+    _pipeline_with_failing(monkeypatch, tmp_path, set())
+    assert dp.run_daily_pipeline() == 0
+
+    _pipeline_with_failing(monkeypatch, tmp_path, {"fetch_agenda.py"})
+    assert dp.run_daily_pipeline() == 0
+    counts = json.loads((tmp_path / "db" / dp.FAILURE_COUNTS_FILE).read_text(encoding="utf-8"))
+    assert counts["fetch_agenda"] == 1
+
+
+def test_unreadable_failure_counts_start_from_zero(tmp_path, monkeypatch):
+    _pipeline_with_failing(monkeypatch, tmp_path, {"fetch_factions.py"})
+    (tmp_path / "db").mkdir(parents=True)
+    (tmp_path / "db" / dp.FAILURE_COUNTS_FILE).write_text("not json", encoding="utf-8")
+    assert dp.run_daily_pipeline() == 0
