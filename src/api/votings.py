@@ -2,7 +2,7 @@
 
 from sqlalchemy import and_, case, func
 
-from src.api.lru import MISSING, LRUDict
+from src.api.lru import LRUDict
 from src.api.roles import canonical_faction_expression, faction_names, role_condition
 from src.load.models import SystemMeta, Vote, Voting
 
@@ -153,10 +153,15 @@ def get_member_vote_participation(
 
     cache_key_mem, role_filter = _normalize_cache_key(membership, role)
     cache_key = (cache_key_mem, role_filter, faction or None)
-    cached = _VOTE_PARTICIPATION_CACHE["members"].get(cache_key, MISSING)
-    if cached is not MISSING:
-        return cached
+    return _VOTE_PARTICIPATION_CACHE["members"].get_or_compute(
+        cache_key,
+        lambda: _compute_member_vote_participation(session, cache_key_mem, role_filter, faction),
+    )
 
+
+def _compute_member_vote_participation(
+    session, cache_key_mem: str, role_filter: str | None, faction: str | None
+) -> dict[str, dict]:
     is_tech_sql = is_technical_voting_clause()
     query = (
         session.query(
@@ -205,7 +210,6 @@ def get_member_vote_participation(
             "voted_pct": pct,
         }
 
-    _VOTE_PARTICIPATION_CACHE["members"][cache_key] = stats
     return stats
 
 
@@ -228,11 +232,14 @@ def get_faction_vote_participation(
         _VOTE_PARTICIPATION_CACHE["factions"].clear()
 
     cache_key = _normalize_cache_key(membership, role)
-    cached = _VOTE_PARTICIPATION_CACHE["factions"].get(cache_key, MISSING)
-    if cached is not MISSING:
-        return cached
+    return _VOTE_PARTICIPATION_CACHE["factions"].get_or_compute(
+        cache_key, lambda: _compute_faction_vote_participation(session, *cache_key)
+    )
 
-    cache_key_mem, role_filter = cache_key
+
+def _compute_faction_vote_participation(
+    session, cache_key_mem: str, role_filter: str | None
+) -> dict[str, dict]:
     is_tech_sql = is_technical_voting_clause()
     faction_key = canonical_faction_expression(Vote.faction)
     query = (
@@ -283,5 +290,4 @@ def get_faction_vote_participation(
             "voted_pct": pct,
         }
 
-    _VOTE_PARTICIPATION_CACHE["factions"][cache_key] = stats
     return stats

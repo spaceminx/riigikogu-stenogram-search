@@ -18,6 +18,34 @@ class LRUDict(OrderedDict):
         super().__init__()
         self.maxsize = maxsize
         self._lock = threading.Lock()
+        # key -> [lock, number of threads holding or waiting for it]
+        self._key_locks: dict = {}
+        self._key_locks_guard = threading.Lock()
+
+    def get_or_compute(self, key, compute):
+        """Return the cached value, or compute and store it once.
+
+        After a sync clears the caches, concurrent first requests for the same key used to
+        each run the same aggregate; now one computes and the others wait for its result.
+        """
+        value = self.get(key, MISSING)
+        if value is not MISSING:
+            return value
+        with self._key_locks_guard:
+            entry = self._key_locks.setdefault(key, [threading.Lock(), 0])
+            entry[1] += 1
+        try:
+            with entry[0]:
+                value = self.get(key, MISSING)
+                if value is MISSING:
+                    value = compute()
+                    self[key] = value
+                return value
+        finally:
+            with self._key_locks_guard:
+                entry[1] -= 1
+                if entry[1] == 0:
+                    del self._key_locks[key]
 
     def get(self, key, default=None):
         with self._lock:
