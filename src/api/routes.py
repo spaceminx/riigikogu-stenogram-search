@@ -2504,6 +2504,18 @@ def get_sitemap():
         return Response(
             content=_SITEMAP_CACHE["xml"],
             media_type="application/xml; charset=utf-8",
+            # Lets Vercel's rewrite and Cloudflare cache the 1.3 MB file; it changes once a day
+            headers={"Cache-Control": "public, max-age=3600, s-maxage=86400"},
         )
     finally:
         session.close()
+
+
+@router.get("/robots.txt", response_class=Response)
+def get_robots():
+    """The API host is not for crawlers; the site's own robots.txt is served by www."""
+    return Response(
+        content="User-agent: *\nDisallow: /\n",
+        media_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
