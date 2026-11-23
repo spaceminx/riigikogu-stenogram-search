@@ -484,6 +484,15 @@ def link_speech_aliases(old_speeches: list[dict], new_speeches: list[dict]) -> l
     return new_speeches
 
 
+# Fields save_session_to_jsonl adds (permalink aliases) or derives from the text
+_DERIVED_SPEECH_FIELDS = ("previous_external_ids", "previous_speech_keys", "text_lemmas")
+
+
+def _session_content(speeches: list[dict]) -> list[dict]:
+    """A sitting's speeches without derived fields, to tell whether upstream changed it."""
+    return [{k: v for k, v in s.items() if k not in _DERIVED_SPEECH_FIELDS} for s in speeches]
+
+
 def save_session_to_jsonl(year_str: str, source_file_key: str, speeches: list[dict]) -> None:
     """Save or update session speeches in yearly JSONL dataset using atomic file writes."""
     out_file = os.path.join(OUTPUT_DIR_PROCESSED, f"{year_str}.jsonl")
@@ -915,6 +924,7 @@ def fetch_and_process_stenograms(
     unedited_meeting_codes = set()
     unedited_source_files = set()
     unedited_sessions: dict[str, dict] = {}
+    unedited_records: dict[str, list[dict]] = {}
     total_existing_records = 0
     latest_existing_date = None
     unedited_refetch_cutoff = (datetime.now() - timedelta(days=UNEDITED_REFETCH_DAYS)).strftime(
@@ -964,7 +974,10 @@ def fetch_and_process_stenograms(
                                     "date": rec_date,
                                     "year": y_str,
                                     "status": status,
+                                    "from_file": True,
                                 }
+                            if src_file:
+                                unedited_records.setdefault(src_file, []).append(record)
                         else:
                             if src_file:
                                 processed_source_files.add(src_file)
@@ -1182,14 +1195,23 @@ def fetch_and_process_stenograms(
                 continue
 
             is_edited = rich_meeting.get("meetingStatus") == "EDITED"
+            # A sitting saved in an earlier run that is still unedited upstream is saved again
+            # when upstream changed it (video links are often published days later). Entries
+            # without "from_file" were already saved by this run's date-window pass.
+            old_records = unedited_records.get(src_file_key) if info.get("from_file") else None
 
-            if is_edited or info.get("status") is None:
+            if is_edited or info.get("status") is None or old_records:
                 time_str = "0000"
                 if src_file_key and "_" in src_file_key:
                     t_cand = src_file_key.split("_")[1].split(".")[0]
                     if t_cand.isdigit() and len(t_cand) == 4:
                         time_str = t_cand
 
+                lemma_cache = {
+                    r["text"]: r["text_lemmas"]
+                    for r in old_records or []
+                    if r.get("text") and r.get("text_lemmas")
+                }
                 speeches_to_save, determined_status = parse_meeting_speeches(
                     rich_meeting=rich_meeting,
                     verbatim=None,
@@ -1202,7 +1224,15 @@ def fetch_and_process_stenograms(
                     person_name_map=person_name_map,
                     known_person_uuids=known_person_uuids,
                     uuid_to_name_map=uuid_to_name_map,
+                    lemma_cache=lemma_cache,
                 )
+
+                if (
+                    old_records
+                    and determined_status == "UNEDITED"
+                    and _session_content(speeches_to_save) == _session_content(old_records)
+                ):
+                    continue
 
                 if speeches_to_save:
                     save_session_to_jsonl(
