@@ -34,11 +34,26 @@ jobs:
           fi
 
       - name: Pull latest code and rebuild Docker
+        env:
+          # The commit this CI run tested; empty for a manual run
+          CI_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           DEPLOY_DIR="${{ secrets.DEPLOY_DIR }}"
           git config --global --add safe.directory "$DEPLOY_DIR"
           cd "$DEPLOY_DIR" || exit 1
-          git fetch origin master && git reset --hard origin/master
+          git fetch origin master
+          if [ -n "$CI_SHA" ]; then
+            # Deploy only the commit CI passed. If master has moved on, the newer commit's own
+            # CI run deploys it once it passes; resetting to origin/master here would ship a
+            # commit whose CI may still be running or may fail.
+            if [ "$(git rev-parse origin/master)" != "$CI_SHA" ]; then
+              echo "master is past $CI_SHA; leaving the deploy to the CI run of the newer commit."
+              exit 0
+            fi
+            git reset --hard "$CI_SHA"
+          else
+            git reset --hard origin/master
+          fi
 
           # Wait for database sync to finish before rebuilding/restarting Docker.
           # The pipeline holds a kernel lock (flock) on the file; a file left by a killed run
