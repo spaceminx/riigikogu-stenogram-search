@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from sqlalchemy import text
+from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
 
 from config import OUTPUT_DIR_PROCESSED
@@ -14,6 +14,7 @@ from src.load.models import (
     Attendance,
     AttendanceCheck,
     Draft,
+    FactionJoiningWindow,
     Person,
     Speech,
     SpeechAlias,
@@ -161,8 +162,35 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
     print(f"Loading attendance records from {attendance_file.name}...")
     session = SessionLocal()
 
-    # Query existing voting_uuid set to quickly skip records already in database
-    existing_uuids = set(r[0] for r in session.query(Attendance.voting_uuid).distinct().all())
+    # A check is complete when the database has as many rows for it as the file. A load
+    # that died between two commits can leave a check part-loaded; only those are re-read.
+    file_counts: dict[str, int] = {}
+    with open(attendance_file, encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                v_uuid = json.loads(line).get("voting_uuid")
+            except json.JSONDecodeError:
+                continue
+            file_counts[v_uuid] = file_counts.get(v_uuid, 0) + 1
+
+    db_counts = dict(
+        session.query(Attendance.voting_uuid, func.count(Attendance.id))
+        .group_by(Attendance.voting_uuid)
+        .all()
+    )
+    complete_uuids = {u for u, n in db_counts.items() if n >= file_counts.get(u, 0)}
+    partial_uuids = [u for u in db_counts if u not in complete_uuids]
+    existing_rows: set[tuple[str, str]] = set()
+    for i in range(0, len(partial_uuids), 500):
+        existing_rows.update(
+            session.query(Attendance.voting_uuid, Attendance.member_name)
+            .filter(Attendance.voting_uuid.in_(partial_uuids[i : i + 500]))
+            .all()
+        )
+    if partial_uuids:
+        print(f"Completing {len(partial_uuids)} part-loaded attendance check(s)...")
 
     batch = []
     total_loaded = 0
@@ -181,7 +209,7 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
                 continue
 
             v_uuid = data.get("voting_uuid")
-            if v_uuid in existing_uuids:
+            if v_uuid in complete_uuids or (v_uuid, data.get("member_name")) in existing_rows:
                 continue
 
             try:
@@ -234,6 +262,46 @@ def load_attendance_to_database(batch_size: int = 2000) -> None:
 
     session.close()
     print(f"Done loading attendance ({total_loaded} records added).")
+
+
+def load_faction_joining_windows() -> int:
+    """Rebuild faction_joining_windows from person_factions.json; returns the row count.
+
+    Keeps the table as it is when the file is missing or unreadable.
+    """
+    from src.api.factions import joining_windows
+
+    pf_file = Path(OUTPUT_DIR_PROCESSED) / "person_factions.json"
+    if not pf_file.exists():
+        return 0
+    try:
+        with open(pf_file, encoding="utf-8") as f:
+            periods_by_uuid = json.load(f)
+    except (OSError, ValueError) as e:
+        print(f"Warning: Could not read {pf_file.name}: {e}")
+        return 0
+    if not isinstance(periods_by_uuid, dict):
+        return 0
+
+    rows = [
+        {"member_uuid": uuid, "start_date": start, "end_date": end, "faction": faction}
+        for uuid, periods in sorted(periods_by_uuid.items())
+        if isinstance(periods, list)
+        for start, end, faction in joining_windows(periods)
+    ]
+    session = SessionLocal()
+    try:
+        session.query(FactionJoiningWindow).delete()
+        if rows:
+            session.execute(FactionJoiningWindow.__table__.insert(), rows)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+    print(f"Faction joining windows: {len(rows)}")
+    return len(rows)
 
 
 def load_persons_to_database() -> None:
@@ -295,6 +363,8 @@ def load_persons_to_database() -> None:
         raise
     finally:
         session.close()
+
+    load_faction_joining_windows()
 
     # Check for missing speaker_uuid on speeches (read-only audit)
     matchable = backfill_speaker_uuids()

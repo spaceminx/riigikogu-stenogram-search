@@ -6,10 +6,12 @@ import os
 from datetime import date, datetime, timedelta
 from typing import Any
 
+from sqlalchemy import case, func, select
+
 from config import MEMBERSHIP_DATES, OUTPUT_DIR_PROCESSED
 from src.api.roles import NO_FACTION, canonical_faction, government_at, role
 from src.load.database import SessionLocal
-from src.load.models import Person
+from src.load.models import FactionJoiningWindow, Person
 
 logger = logging.getLogger(__name__)
 
@@ -37,16 +39,13 @@ def _shift(day: str, days: int) -> str:
     return (date.fromisoformat(day) + timedelta(days=days)).isoformat()
 
 
-def normalize_periods(periods: list[dict]) -> list[dict]:
-    """Drop the non-affiliated waiting time before joining a faction and join split periods.
-
-    Periods end on the day the next one starts, so `end` is treated as exclusive. A renamed
-    faction's periods are joined under its later name.
-    """
-    items = sorted(
+def _sorted_periods(periods: list[dict]) -> list[dict]:
+    return sorted(
         (
             {
                 "faction": canonical_faction(p.get("faction")) or NO_FACTION,
+                # The name at the time: governments.json lists the coalition under it
+                "recorded": p.get("faction") or NO_FACTION,
                 "start": p["start"],
                 "end": p.get("end") or OPEN_END,
             }
@@ -56,26 +55,90 @@ def normalize_periods(periods: list[dict]) -> list[dict]:
         key=lambda p: (p["start"], p["end"]),
     )
 
-    def is_joining(p: dict) -> bool:
-        if p["faction"] != NO_FACTION or p["end"] >= OPEN_END:
-            return False
-        if p["end"] > _shift(p["start"], JOINING_DAYS):
-            return False
-        joined_by = _shift(p["end"], 1)
-        return any(
-            q["faction"] != NO_FACTION and p["start"] <= q["start"] <= joined_by for q in items
-        )
+
+def _joined_period(p: dict, items: list[dict]) -> dict | None:
+    """The faction period a short non-affiliated period `p` led into, or None."""
+    if p["faction"] != NO_FACTION or p["end"] >= OPEN_END:
+        return None
+    if p["end"] > _shift(p["start"], JOINING_DAYS):
+        return None
+    joined_by = _shift(p["end"], 1)
+    return next(
+        (q for q in items if q["faction"] != NO_FACTION and p["start"] <= q["start"] <= joined_by),
+        None,
+    )
+
+
+def normalize_periods(periods: list[dict]) -> list[dict]:
+    """Drop the non-affiliated waiting time before joining a faction and join split periods.
+
+    Periods end on the day the next one starts, so `end` is treated as exclusive. A renamed
+    faction's periods are joined under its later name.
+    """
+    items = _sorted_periods(periods)
 
     merged: list[dict] = []
     for p in items:
-        if is_joining(p):
+        if _joined_period(p, items):
             continue
         prev = next((m for m in reversed(merged) if m["faction"] == p["faction"]), None)
         if prev and prev["end"] < OPEN_END and p["start"] <= _shift(prev["end"], 1):
             prev["end"] = max(prev["end"], p["end"])
             continue
-        merged.append(dict(p))
+        merged.append({"faction": p["faction"], "start": p["start"], "end": p["end"]})
     return merged
+
+
+def joining_windows(periods: list[dict]) -> list[tuple[str, str, str]]:
+    """(first day, last day, faction joined) of each wait before a faction admitted the member.
+
+    A window covers the non-affiliated period that normalize_periods drops, and in any case the
+    first day of a faction stint and the day after: upstream's checks and votes sometimes still
+    list the member as non-affiliated then although the faction period has begun. Only rows
+    recorded as non-affiliated are moved, so the extra day never takes a row from another faction.
+    The faction is the name it had then, so the government role of the day still applies.
+    """
+    items = _sorted_periods(periods)
+    waits = {}
+    for p in items:
+        q = _joined_period(p, items)
+        if q:
+            waits.setdefault(id(q), p["start"])
+    windows = []
+    for q in items:
+        if q["faction"] == NO_FACTION:
+            continue
+        continues = any(
+            r is not q
+            and r["faction"] != NO_FACTION
+            and r["start"] < q["start"] <= _shift(r["end"], 1)
+            for r in items
+        )
+        if continues and id(q) not in waits:
+            continue
+        windows.append((waits.get(id(q), q["start"]), _shift(q["start"], 1), q["recorded"]))
+    return windows
+
+
+def effective_faction_expression(faction_col, member_col, date_col):
+    """SQL faction of an attendance or vote row, with the joining wait under the faction joined.
+
+    Riigikogu lists a new or returning member as non-affiliated for the first checks and votes
+    until their faction admits them. The faction rosters leave that wait out (normalize_periods);
+    this books the same rows to the faction the member joined (faction_joining_windows, rebuilt
+    at every sync). Other rows keep their recorded faction. `date_col` must be YYYY-MM-DD.
+    """
+    joined = (
+        select(FactionJoiningWindow.faction)
+        .where(
+            FactionJoiningWindow.member_uuid == member_col,
+            FactionJoiningWindow.start_date <= date_col,
+            FactionJoiningWindow.end_date >= date_col,
+        )
+        .limit(1)
+        .scalar_subquery()
+    )
+    return case((faction_col == NO_FACTION, func.coalesce(joined, faction_col)), else_=faction_col)
 
 
 def build_factions_overview(

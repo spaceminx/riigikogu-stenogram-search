@@ -19,6 +19,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import IGNORED_VERBATIMS, OUTPUT_DIR_PROCESSED, UNEDITED_REFETCH_DAYS
 
 INTEGRITY_UNVERIFIED_EXIT_CODE = 3
+# Speeches are fine, but votings or attendance checks are missing or could not be compared.
+# The pipeline alerts on it without holding back the B2 upload.
+RECORDS_GAP_EXIT_CODE = 4
+# Upstream may publish a voting a little after the sitting; only older ones count as missing
+RECORDS_GRACE_DAYS = 2
+# api.riigikogu.ee was just asked for the verbatims list
+RECORDS_CHECK_PAUSE_SECONDS = 2
 
 
 class IntegrityUnverifiedError(Exception):
@@ -36,6 +43,7 @@ def get_with_retry(url: str, params: dict, attempts: int = RETRY_ATTEMPTS) -> re
     The check runs right after the fetchers, so the Riigikogu API often answers 429 at first.
     Waits Retry-After seconds when given, otherwise 15 s × attempt.
     """
+    name = url.rstrip("/").split("/")[-1]
     for attempt in range(1, attempts + 1):
         try:
             resp = requests.get(url, params=params, timeout=(5, 25))
@@ -50,10 +58,10 @@ def get_with_retry(url: str, params: dict, attempts: int = RETRY_ATTEMPTS) -> re
         if resp.status_code == 200:
             return resp
         if resp.status_code != 429 and resp.status_code < 500:
-            raise IntegrityUnverifiedError(f"verbatims API returned HTTP {resp.status_code}")
+            raise IntegrityUnverifiedError(f"{name} API returned HTTP {resp.status_code}")
         if attempt == attempts:
             raise IntegrityUnverifiedError(
-                f"verbatims API returned HTTP {resp.status_code} after {attempts} attempts"
+                f"{name} API returned HTTP {resp.status_code} after {attempts} attempts"
             )
 
         retry_after = resp.headers.get("Retry-After", "")
@@ -62,10 +70,10 @@ def get_with_retry(url: str, params: dict, attempts: int = RETRY_ATTEMPTS) -> re
             if retry_after.isdigit()
             else RETRY_BASE_WAIT_SECONDS * attempt
         )
-        print(f"Warning: Verbatims API returned HTTP {resp.status_code}. Retrying in {wait}s...")
+        print(f"Warning: {name} API returned HTTP {resp.status_code}. Retrying in {wait}s...")
         time.sleep(wait)
 
-    raise IntegrityUnverifiedError("verbatims API request did not complete")
+    raise IntegrityUnverifiedError(f"{name} API request did not complete")
 
 
 def load_local_sessions_from_jsonl(years: list[int]) -> dict[str, dict]:
@@ -272,29 +280,16 @@ def verify_pipeline_integrity(
     except Exception as e:
         print(f"Warning: Could not write integrity report: {e}")
 
-    # Check votes integrity (warning only; does not affect pipeline integrity)
-    verify_votes_integrity(days=days, fail_on_missing=False)
-
     if not is_ok and fail_on_missing:
         return False
 
     return True
 
 
-def verify_votes_integrity(
-    days: int = UNEDITED_REFETCH_DAYS,
-    fail_on_missing: bool = False,
-) -> bool:
-    """Compare recent official Riigikogu votings against processed votes_{YYYY}.jsonl files."""
-    end_dt = datetime.now()
-    start_dt = end_dt - timedelta(days=days)
-    start_str = start_dt.strftime("%Y-%m-%d")
-    end_str = end_dt.strftime("%Y-%m-%d")
-
-    years_to_check = sorted(list({start_dt.year, end_dt.year}))
-    local_uuids = set()
-    for yr in years_to_check:
-        fpath = Path(OUTPUT_DIR_PROCESSED) / f"votes_{yr}.jsonl"
+def _local_uuids(file_names: list[str]) -> set[str]:
+    uuids: set[str] = set()
+    for name in file_names:
+        fpath = Path(OUTPUT_DIR_PROCESSED) / name
         if not fpath.exists():
             continue
         with open(fpath, encoding="utf-8") as f:
@@ -303,64 +298,92 @@ def verify_votes_integrity(
                 if not line:
                     continue
                 try:
-                    data = json.loads(line)
-                    v_uuid = data.get("voting_uuid")
-                    if v_uuid:
-                        local_uuids.add(v_uuid)
+                    v_uuid = json.loads(line).get("voting_uuid")
                 except json.JSONDecodeError:
                     continue
+                if v_uuid:
+                    uuids.add(v_uuid)
+    return uuids
 
-    url = f"https://api.riigikogu.ee/api/votings?startDate={start_str}&endDate={end_str}"
+
+def verify_votes_integrity(
+    days: int = UNEDITED_REFETCH_DAYS,
+    grace_days: int = RECORDS_GRACE_DAYS,
+) -> bool:
+    """Compare recent official votings and attendance checks against the processed files.
+
+    Returns False when a voting (votes_{YYYY}.jsonl) or an attendance check (attendance.jsonl)
+    older than grace_days is missing. Raises IntegrityUnverifiedError when the list cannot be read.
+    """
+    end_dt = datetime.now()
+    start_dt = end_dt - timedelta(days=days)
+    start_str = start_dt.strftime("%Y-%m-%d")
+    end_str = end_dt.strftime("%Y-%m-%d")
+    cutoff = (end_dt - timedelta(days=grace_days)).strftime("%Y-%m-%dT%H:%M:%S")
+
+    years_to_check = sorted(list({start_dt.year, end_dt.year}))
+    local_votings = _local_uuids([f"votes_{yr}.jsonl" for yr in years_to_check])
+    local_checks = _local_uuids(["attendance.jsonl"])
+
+    url = "https://api.riigikogu.ee/api/votings"
     print(f"\nChecking official votings from {start_str} to {end_str} via {url}...")
+    resp = get_with_retry(url, params={"startDate": start_str, "endDate": end_str})
     try:
-        resp = requests.get(url, timeout=(5, 25))
-        if resp.status_code != 200:
-            print(
-                f"SKIPPED: Votings API returned HTTP {resp.status_code}. Skipping votes verification."
-            )
-            return True
         sittings = resp.json()
-    except Exception as e:
-        print(f"SKIPPED: Could not connect to Riigikogu API: {e}. Skipping votes verification.")
-        return True
-
+    except ValueError as e:
+        raise IntegrityUnverifiedError(f"invalid JSON from votings API: {e}") from e
     if not isinstance(sittings, list):
-        print("SKIPPED: Unexpected response from votings API (not a list).")
-        return True
+        raise IntegrityUnverifiedError("unexpected response from votings API (not a list)")
 
-    official_votings = []
-    for s in sittings:
-        for v in s.get("votings", []):
-            if v.get("type", {}).get("code") != "KOHALOLEKU_KONTROLL":
-                official_votings.append(v)
-
-    matched = []
+    matched = 0
     missing = []
-    for v in official_votings:
-        v_uuid = v.get("uuid")
-        if v_uuid in local_uuids:
-            matched.append(v)
-        else:
-            missing.append(v)
+    pending = []
+    for s in sittings:
+        for v in s.get("votings", []) or []:
+            is_check = (v.get("type") or {}).get("code") == "KOHALOLEKU_KONTROLL"
+            if v.get("uuid") in (local_checks if is_check else local_votings):
+                matched += 1
+            elif (v.get("startDateTime") or "") < cutoff:
+                missing.append((is_check, v))
+            else:
+                pending.append((is_check, v))
 
-    print(f"Votes Verification Results (last {days} days):")
-    print(f"  Matched votings in archive: {len(matched)}")
-    print(f"  Missing votings:            {len(missing)}")
+    print(f"Votings and attendance checks (last {days} days):")
+    print(f"  Matched in archive:                {matched}")
+    print(f"  Missing, older than {grace_days} days:      {len(missing)}")
+    print(f"  Not yet in archive, newer:         {len(pending)}")
 
-    if missing:
-        print("\nAlert: The following official votings are missing from local JSONL:")
-        for v in missing:
-            print(f"  - [{v.get('startDateTime')}] UUID: {v.get('uuid')} | {v.get('description')}")
-        if fail_on_missing:
-            return False
+    for label, rows in (("missing", missing), ("not yet in archive", pending)):
+        for is_check, v in rows:
+            kind = "attendance check" if is_check else "voting"
+            print(
+                f"  - {label}: {kind} [{v.get('startDateTime')}] UUID: {v.get('uuid')}"
+                f" | {v.get('description')}"
+            )
 
-    return True
+    return not missing
 
 
-if __name__ == "__main__":
+def main() -> int:
     try:
         ok = verify_pipeline_integrity(days=UNEDITED_REFETCH_DAYS, fail_on_missing=True)
     except IntegrityUnverifiedError as e:
         print(f"Error: Integrity could not be verified: {e}", file=sys.stderr)
-        sys.exit(INTEGRITY_UNVERIFIED_EXIT_CODE)
-    sys.exit(0 if ok else 1)
+        return INTEGRITY_UNVERIFIED_EXIT_CODE
+    if not ok:
+        return 1
+
+    time.sleep(RECORDS_CHECK_PAUSE_SECONDS)
+    try:
+        records_ok = verify_votes_integrity(days=UNEDITED_REFETCH_DAYS)
+    except IntegrityUnverifiedError as e:
+        print(f"Error: Votings could not be compared: {e}", file=sys.stderr)
+        return RECORDS_GAP_EXIT_CODE
+    if not records_ok:
+        print("Error: Votings or attendance checks are missing.", file=sys.stderr)
+        return RECORDS_GAP_EXIT_CODE
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

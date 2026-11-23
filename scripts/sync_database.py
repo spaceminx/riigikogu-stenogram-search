@@ -29,9 +29,55 @@ from src.load.models import Speech, SpeechAlias, SpeechTerm, SystemMeta
 from src.transform.lemmatizer import build_missing_lemmas
 from src.transform.term_builder import build_missing_terms, update_lemma_df
 
+# Fields copied from the JSONL into speeches unchanged; duration_seconds is recomputed on load
+# and text_lemmas is derived, so neither tells whether upstream changed the sitting.
+COMPARED_SPEECH_FIELDS = (
+    "date",
+    "time",
+    "source_url",
+    "agenda_title",
+    "video_url",
+    "speaker",
+    "speaker_role",
+    "speaker_faction",
+    "speaker_uuid",
+    "ems_id",
+    "speech_type",
+    "external_id",
+    "start_time",
+    "end_time",
+    "speech_key",
+    "text",
+)
+# An unedited sitting is not replaced by a file with fewer than this share of its speeches:
+# such a file is more likely a truncated fetch than speeches removed upstream.
+UNEDITED_SHRINK_LIMIT = 0.8
+
+
+def _field_value(value):
+    return None if value is None else str(value)
+
+
+def _file_fingerprint(raw_speeches: list[dict]) -> list[tuple]:
+    defaults = {"speaker": "Tundmatu"}
+    return [
+        tuple(_field_value(d.get(f, defaults.get(f))) for f in COMPARED_SPEECH_FIELDS)
+        for d in raw_speeches
+    ]
+
+
+def _db_fingerprint(session, src_file: str) -> list[tuple]:
+    columns = [getattr(Speech, f) for f in COMPARED_SPEECH_FIELDS]
+    rows = session.query(*columns).filter(Speech.source_file == src_file).order_by(Speech.id).all()
+    return [tuple(_field_value(v) for v in row) for row in rows]
+
 
 def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) -> list[str]:
     """Load new or updated speeches from JSONL files into SQLite session-by-session.
+
+    An edited sitting is final. An unedited one is replaced whenever its file differs from the
+    stored rows (a video link, corrected text, a speech added or removed), so the database
+    follows the daily re-fetch instead of keeping the first version until the edited one.
 
     Returns:
         list[str]: List of source_file paths/identifiers that failed to sync.
@@ -98,8 +144,14 @@ def sync_current_year_speeches(year: str | None = None, batch_size: int = 2000) 
                     if new_status == "EDITED":
                         needs_update = True
                         is_replacement = True
-                    elif new_count_session > existing_info["count"]:
-                        # Incomplete unedited session received more speeches (e.g. overnight meeting completed next day)
+                    elif new_count_session < existing_info["count"] * UNEDITED_SHRINK_LIMIT:
+                        print(
+                            f"Warning: Not replacing unedited session {src_file}: file has "
+                            f"{new_count_session} speeches, database {existing_info['count']}."
+                        )
+                    elif _file_fingerprint(raw_speeches) != _db_fingerprint(session, src_file):
+                        # Upstream changed the unedited sitting: a link, text, speaker, or a
+                        # speech added (an overnight sitting completed next day) or removed
                         needs_update = True
                         is_replacement = True
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Index, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -91,6 +91,23 @@ class Attendance(Base):
     status = Column(Text, nullable=False)
 
     __table_args__ = (UniqueConstraint("voting_uuid", "member_name", name="uq_attendance"),)
+
+
+class FactionJoiningWindow(Base):
+    """Days on which a member's non-affiliated checks and votes belong to the faction joined.
+
+    Rebuilt from person_factions.json at every sync (src.api.factions.joining_windows).
+    """
+
+    __tablename__ = "faction_joining_windows"
+
+    id = Column(Integer, primary_key=True)
+    member_uuid = Column(Text, nullable=False)
+    start_date = Column(Text, nullable=False)
+    end_date = Column(Text, nullable=False)
+    faction = Column(Text, nullable=False)
+
+    __table_args__ = (Index("idx_faction_joining_member", "member_uuid", "start_date"),)
 
 
 class AttendanceCheck(Base):
