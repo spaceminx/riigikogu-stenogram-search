@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import {
@@ -26,6 +26,7 @@ import { formatMetricRatio, formatPercent, formatVoteSplit, toRoman } from "../l
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
+import { SectionError } from "../components/SectionError";
 import { usePageMeta } from "../lib/usePageMeta";
 import { chartColors } from "../lib/chartColors";
 
@@ -50,7 +51,7 @@ const ROLE_LABELS = {
   director: "Juhatamisi",
 };
 
-export function PersonView({ theme = "light" }) {
+export function PersonView({ theme = "light", onOpenMethodology }) {
   const { uuid } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,6 +60,7 @@ export function PersonView({ theme = "light" }) {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [activeSpeechContext, setActiveSpeechContext] = useState(null);
   const [contextError, setContextError] = useState(null);
+  const speechListRef = useRef(null);
 
   // imgError and other states are reset on uuid change via key={uuid} on route element
   // Read role and page from URL parameters
@@ -124,8 +126,16 @@ export function PersonView({ theme = "light" }) {
   const [alignmentMembership, setAlignmentMembership] = useState("all");
   const [extraDifferences, setExtraDifferences] = useState([]);
   const [diffsLoadingMore, setDiffsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  // The membership on screen when a "Näita rohkem" response arrives; a response for another
+  // membership is dropped so two memberships never mix in one list
+  const alignmentMembershipRef = useRef(alignmentMembership);
 
-  const { data: factionAlignment } = useSWR(
+  const {
+    data: factionAlignment,
+    error: alignmentError,
+    mutate: retryAlignment,
+  } = useSWR(
     uuid ? `person-faction-alignment-${uuid}-${alignmentMembership}` : null,
     () => fetchFactionAlignment(uuid, alignmentMembership),
     {
@@ -145,7 +155,12 @@ export function PersonView({ theme = "light" }) {
     alignmentComparable > 0 ||
     Boolean(factionAlignment?.by_membership?.some((m) => m.same + m.different > 0));
 
-  const { data: initialDifferences, isLoading: diffsInitialLoading } = useSWR(
+  const {
+    data: initialDifferences,
+    error: diffsError,
+    isLoading: diffsInitialLoading,
+    mutate: retryDiffs,
+  } = useSWR(
     uuid ? `person-faction-diffs-${uuid}-${alignmentMembership}` : null,
     () =>
       fetchFactionAlignmentDifferences(uuid, {
@@ -174,25 +189,30 @@ export function PersonView({ theme = "light" }) {
   }, [initialDifferences, differences]);
 
   const handleAlignmentMembershipChange = (m) => {
+    alignmentMembershipRef.current = m;
     setAlignmentMembership(m);
     setExtraDifferences([]);
+    setLoadMoreError(false);
   };
 
   const handleLoadMoreDifferences = async () => {
     if (diffLoading || !uuid) return;
+    const requested = alignmentMembership;
     setDiffsLoadingMore(true);
+    setLoadMoreError(false);
     try {
       const res = await fetchFactionAlignmentDifferences(uuid, {
-        membership: alignmentMembership,
+        membership: requested,
         limit: 10,
         offset: differences.length,
       });
+      if (alignmentMembershipRef.current !== requested) return;
       const nextItems = res?.results || [];
       if (nextItems.length > 0) {
         setExtraDifferences((prev) => [...prev, ...nextItems]);
       }
     } catch {
-      // Ignored
+      if (alignmentMembershipRef.current === requested) setLoadMoreError(true);
     } finally {
       setDiffsLoadingMore(false);
     }
@@ -240,7 +260,7 @@ export function PersonView({ theme = "light" }) {
       next.set("leht", String(newPage));
     }
     setSearchParams(next);
-    window.scrollTo({ top: 600, behavior: "smooth" });
+    speechListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleNoInfotundChange = (checked) => {
@@ -987,6 +1007,20 @@ export function PersonView({ theme = "light" }) {
       )}
 
       {/* 5. Faction Majority Alignment Panel */}
+      {alignmentError && !factionAlignment && (
+        <section className="glass-panel" aria-label="Hääletamine fraktsiooni enamusega">
+          <div className="chart-header" style={{ marginBottom: "1rem" }}>
+            <div>
+              <span className="section-kicker">HÄÄLETAMINE FRAKTSIOONIGA</span>
+              <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Hääletamine fraktsiooni enamusega</h2>
+            </div>
+          </div>
+          <SectionError
+            message="Fraktsiooniga hääletamise andmete laadimine ebaõnnestus."
+            onRetry={() => retryAlignment()}
+          />
+        </section>
+      )}
       {showAlignmentPanel && (
         <section className="glass-panel" aria-label="Hääletamine fraktsiooni enamusega">
           <div className="chart-header" style={{ marginBottom: "1rem" }}>
@@ -1052,7 +1086,14 @@ export function PersonView({ theme = "light" }) {
             Välja arvatud: {factionAlignment.excluded?.absent ?? 0} puudumist,{" "}
             {factionAlignment.excluded?.split ?? 0} viigiseisu,{" "}
             {factionAlignment.excluded?.too_few ?? 0} alla 3 liikmega hääletust,{" "}
-            {factionAlignment.excluded?.no_faction ?? 0} fraktsioonita.
+            {factionAlignment.excluded?.no_faction ?? 0} fraktsioonita. Kohal olnud, kuid
+            hääletamata jätmine („ei hääletanud“) on eraldi seisukoht nii saadiku kui ka fraktsiooni
+            enamuse puhul.{" "}
+            {onOpenMethodology && (
+              <button type="button" className="attendance-intro-link" onClick={onOpenMethodology}>
+                Loe metoodika kohta
+              </button>
+            )}
           </p>
 
           {/* Differences list */}
@@ -1068,7 +1109,12 @@ export function PersonView({ theme = "light" }) {
                 Erinevad hääletused {totalDifferences > 0 ? `(${totalDifferences})` : ""}
               </h3>
 
-              {differences.length === 0 ? (
+              {diffsError && !initialDifferences ? (
+                <SectionError
+                  message="Erinevate hääletuste laadimine ebaõnnestus."
+                  onRetry={() => retryDiffs()}
+                />
+              ) : differences.length === 0 ? (
                 <p className="sidebar-empty-state">
                   {diffLoading ? "Laen erinevaid hääletusi…" : "Erinevaid hääletusi ei leitud."}
                 </p>
@@ -1129,6 +1175,10 @@ export function PersonView({ theme = "light" }) {
                 </div>
               )}
 
+              {loadMoreError && (
+                <SectionError message="Järgmiste hääletuste laadimine ebaõnnestus." />
+              )}
+
               {hasMoreDiffs && (
                 <div className="alignment-load-more">
                   <button
@@ -1147,7 +1197,7 @@ export function PersonView({ theme = "light" }) {
       )}
 
       {/* 6. Speeches List with Role Tabs & Pagination */}
-      <section className="glass-panel" aria-label="Saadiku kõnede loend">
+      <section className="glass-panel" aria-label="Saadiku kõnede loend" ref={speechListRef}>
         <div className="chart-header" style={{ marginBottom: "1rem" }}>
           <div>
             <span className="section-kicker">KÕNEDE NIMEKIRI</span>

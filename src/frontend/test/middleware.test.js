@@ -2,10 +2,13 @@ import fs from "node:fs";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import middleware, {
+  config,
   injectOpenGraphTags,
+  LIST_PAGES,
   isBotUserAgent,
   isValidSittingDate,
   parseRouteInfo,
+  resolveListPageMetadata,
   resolveOgMetadata,
 } from "../middleware.js";
 
@@ -267,8 +270,71 @@ describe("Open Graph middleware helpers", () => {
     });
   });
 
+  describe("list pages", () => {
+    it("every list page runs the middleware and is an SPA route", () => {
+      const vercel = JSON.parse(
+        fs.readFileSync(new URL("../vercel.json", import.meta.url), "utf8")
+      );
+      const rewrites = vercel.rewrites.map((r) => r.source);
+      for (const path of Object.keys(LIST_PAGES)) {
+        assert.ok(config.matcher.includes(path), path);
+        assert.ok(rewrites.includes(path), path);
+      }
+    });
+
+    it("gives a list page its own address and title, keeping the filters", () => {
+      const meta = resolveListPageMetadata("/kohalolek", "?koosseis=15");
+      assert.strictEqual(meta.title, "Kohalolek — Riigivaade");
+      assert.strictEqual(meta.url, "https://www.riigivaade.me/kohalolek?koosseis=15");
+      assert.strictEqual(
+        resolveListPageMetadata("/kohalolek/", "").url,
+        "https://www.riigivaade.me/kohalolek"
+      );
+      assert.strictEqual(resolveListPageMetadata("/", ""), null);
+      assert.strictEqual(resolveListPageMetadata("/saadik/x", ""), null);
+    });
+
+    it("names the search query in a shared search", () => {
+      const meta = resolveListPageMetadata("/otsing", "?q=eelarve");
+      assert.strictEqual(meta.title, "eelarve — otsing — Riigivaade");
+      assert.strictEqual(resolveListPageMetadata("/otsing", "").title, "Otsing — Riigivaade");
+    });
+
+    it("the shell has no fixed og:url, so an unhandled page is not shared as the home page", () => {
+      const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+      assert.ok(!indexHtml.includes('property="og:url"'));
+    });
+  });
+
   describe("middleware execution", () => {
     const originalFetch = globalThis.fetch;
+
+    it("serves a list page to a preview bot with its own tags and no API call", async () => {
+      const fetchCalls = [];
+      const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+      globalThis.fetch = async (url) => {
+        fetchCalls.push(String(url));
+        return new Response(indexHtml, { status: 200, headers: { "content-type": "text/html" } });
+      };
+      try {
+        const req = new Request("https://www.riigivaade.me/kohalolek?koosseis=15", {
+          headers: { "user-agent": "facebookexternalhit/1.1" },
+        });
+        const resp = await middleware(req);
+        assert.strictEqual(resp.status, 200);
+        const body = await resp.text();
+        assert.ok(
+          body.includes(
+            '<meta property="og:url" content="https://www.riigivaade.me/kohalolek?koosseis=15" />'
+          )
+        );
+        assert.ok(body.includes("<title>Kohalolek — Riigivaade</title>"));
+        assert.strictEqual((body.match(/property="og:title"/g) || []).length, 1);
+        assert.deepStrictEqual(fetchCalls, ["https://www.riigivaade.me/index.html"]);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
 
     it("handles /istung/:date without calling any API endpoint", async () => {
       const fetchCalls = [];

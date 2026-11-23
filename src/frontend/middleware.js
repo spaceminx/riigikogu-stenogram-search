@@ -7,8 +7,76 @@ export const config = {
     "/eelnou/:path*",
     "/haaletus/:path*",
     "/istung/:path*",
+    "/otsing",
+    "/kohalolek",
+    "/haaletused",
+    "/fraktsioonid",
+    "/saadikud",
+    "/eelnoud",
+    "/andmed",
   ],
 };
+
+// Link previews of the list pages: the same title and description the page sets in the browser
+// (usePageMeta), so a shared /kohalolek is not shown as the home page. No API call is needed.
+export const LIST_PAGES = {
+  "/kohalolek": {
+    title: "Kohalolek — Riigivaade",
+    description:
+      "Riigikogu saadikute ja fraktsioonide kohalolekukontrollide ja hääletusel osalemise statistika.",
+  },
+  "/haaletused": {
+    title: "Hääletused — Riigivaade",
+    description:
+      "Riigikogu täiskogu hääletuste tulemused, saadikute hääled ja fraktsioonide jaotused.",
+  },
+  "/fraktsioonid": {
+    title: "Fraktsioonid — Riigivaade",
+    description:
+      "Riigikogu fraktsioonid ja nende liikmed koosseisude kaupa, koos valitsuskoalitsiooni jaotusega.",
+  },
+  "/saadikud": {
+    title: "Saadikud — Riigivaade",
+    description:
+      "Riigikogu liikmed koosseisude kaupa: otsi saadikut nime järgi ja ava tema kõned, hääletused ja kohalolek.",
+  },
+  "/eelnoud": {
+    title: "Eelnõud — Riigivaade",
+    description:
+      "Riigikogu eelnõud: menetlusetapp, juhtivkomisjon, täiskogu arutelud ja hääletused.",
+  },
+  "/andmed": {
+    title: "Andmed ja privaatsus — Riigivaade",
+    description:
+      "Teave Riigivaate andmeallikate, privaatsuspõhimõtete ja avaandmete litsentside kohta.",
+  },
+  "/otsing": {
+    title: "Otsing — Riigivaade",
+    description: "Otsi Riigikogu stenogrammidest märksõnade, fraktsioonide ja saadikute kaupa.",
+  },
+};
+
+/** Preview metadata for a list page, or null. The address keeps the query (filters, search). */
+export function resolveListPageMetadata(pathname, search = "") {
+  const path = pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
+  const page = LIST_PAGES[path];
+  if (!page) return null;
+  let { title, description } = page;
+  if (path === "/otsing") {
+    const q = (new URLSearchParams(search).get("q") || "").trim();
+    if (q) {
+      title = `${q} — otsing — Riigivaade`;
+      description = `Otsingu „${q}“ tulemused Riigikogu stenogrammidest ja sõnavõttudest.`;
+    }
+  }
+  return {
+    title,
+    description,
+    url: `https://www.riigivaade.me${path}${search || ""}`,
+    type: "website",
+    image: null,
+  };
+}
 
 // Known bot user-agent pattern: link-preview bots (Facebook, X, Slack, LinkedIn, Discord, Telegram,
 // WhatsApp, Reddit, Mastodon, Bluesky, Embedly/Iframely, Skype, VK) and search engine crawlers
@@ -195,15 +263,33 @@ export function getApiPath(routeType, id) {
 export default async function middleware(request) {
   const url = new URL(request.url);
   const route = parseRouteInfo(url.pathname);
+  const listMeta = route ? null : resolveListPageMetadata(url.pathname, url.search);
 
   // If not one of the targeted shared link routes, continue
-  if (!route) {
+  if (!route && !listMeta) {
     return next();
   }
 
   const userAgent = request.headers.get("user-agent") || "";
   if (!isBotUserAgent(userAgent)) {
     return next();
+  }
+
+  if (listMeta) {
+    try {
+      const indexResp = await fetch(new URL("/index.html", request.url));
+      if (!indexResp.ok) return next();
+      const html = await indexResp.text();
+      return new Response(injectOpenGraphTags(html, listMeta), {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "x-robots-tag": "all",
+        },
+      });
+    } catch {
+      return next();
+    }
   }
 
   // Special handling for /istung/:date: do NOT call the API (GET /sessions/{date} is heavy).

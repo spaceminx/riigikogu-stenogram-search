@@ -115,9 +115,9 @@ function PageTitlebar({ memberships = [] }) {
   );
 }
 
-function PersonRoute({ theme }) {
+function PersonRoute({ theme, onOpenMethodology }) {
   const { uuid } = useParams();
-  return <PersonView key={uuid} theme={theme} />;
+  return <PersonView key={uuid} theme={theme} onOpenMethodology={onOpenMethodology} />;
 }
 
 function getInitialTheme() {
@@ -221,7 +221,15 @@ function AppContent() {
                 }
               />
               <Route path="/kone/:id" element={<SpeechView />} />
-              <Route path="/saadik/:uuid" element={<PersonRoute theme={theme} />} />
+              <Route
+                path="/saadik/:uuid"
+                element={
+                  <PersonRoute
+                    theme={theme}
+                    onOpenMethodology={() => setShowMethodologyModal(true)}
+                  />
+                }
+              />
               <Route
                 path="/saadikud"
                 element={
