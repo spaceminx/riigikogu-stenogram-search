@@ -5,7 +5,10 @@ import { renderToString } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { createServer } from "vite";
 
-describe("SearchView SSR regression tests", () => {
+// Effects do not run in renderToString, so no search is made and no results are shown: this
+// only guards the first render (e.g. a temporal dead zone or reference error). The result list
+// and the filters are tested in e2e/filters.spec.js.
+describe("SearchView first render", () => {
   it("renders /otsing?q=eelarve without throwing and offers no RSS feed", async () => {
     const server = await createServer({
       server: { middlewareMode: true },
@@ -16,48 +19,23 @@ describe("SearchView SSR regression tests", () => {
       const { SWRConfig } = await server.ssrLoadModule("swr");
       const { default: SearchView } = await server.ssrLoadModule("src/routes/SearchView.jsx");
 
-      const mockSearchData = {
-        total_count: 1,
-        count: 1,
-        offset: 0,
-        limit: 50,
-        results: [
-          {
-            id: 99901,
-            speaker: "Jaan Tamm",
-            speaker_faction: "Eesti 200 fraktsioon",
-            date: "2026-10-15",
-            time: "1000",
-            agenda_title: "Riigieelarve arutelu",
-            text: "Riigi eelarve arutelu stenogrammis.",
-            matched_words: ["eelarve"],
-          },
-        ],
-      };
-
-      const fallback = {
-        "/search?q=eelarve&membership=all&sort_by=date_desc&limit=50&offset=0": mockSearchData,
-      };
-
-      // Assert render does not throw (guards against temporal dead zone / reference errors)
       let html = "";
       assert.doesNotThrow(() => {
         html = renderToString(
           React.createElement(
             SWRConfig,
-            { value: { provider: () => new Map(), fallback } },
+            { value: { provider: () => new Map() } },
             React.createElement(
               MemoryRouter,
               { initialEntries: ["/otsing?q=eelarve"] },
-              React.createElement(SearchView, { isOnline: true })
+              React.createElement(SearchView, {})
             )
           )
         );
       });
 
-      assert.ok(html.length > 0, "Rendered output should not be empty");
-      assert.ok(html.includes("Leitud stenogrammid"), "Rendered output should include the results");
-      assert.ok(!html.includes("/rss/"), "Rendered output should not link to an RSS feed");
+      assert.ok(html.includes("Leitud stenogrammid"), "the result header renders");
+      assert.ok(!html.includes("/rss/"), "no RSS feed link");
     } finally {
       await server.close();
     }
