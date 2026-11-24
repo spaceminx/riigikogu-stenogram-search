@@ -28,6 +28,35 @@ test.describe("Member page", () => {
     await expect.poll(async () => Math.abs(await listTop())).toBeLessThan(50);
   });
 
+  test("the current page stays on screen while the next one loads", async ({ page }) => {
+    await setupApiMock(page);
+    let release;
+    const held = new Promise((resolve) => (release = resolve));
+    await page.route(/api\.e2e\.test\/persons\/[^/]+\/speeches\?.*offset=20/, async (route) => {
+      await held;
+      await route.fallback();
+    });
+    await page.goto(PERSON_URL);
+    const list = page.locator('section[aria-label="Saadiku kõnede loend"]');
+    const cards = list.locator(".person-speeches-list");
+    const docHeight = () => page.evaluate(() => document.documentElement.scrollHeight);
+    const next = list.getByRole("button", { name: /Järgmine/ });
+    await next.scrollIntoViewIfNeeded();
+    const heightBefore = await docHeight();
+    await next.click();
+
+    // A short placeholder here shrank the page mid-scroll and left the viewport blank
+    await expect(cards).toHaveAttribute("aria-busy", "true");
+    await expect(list.getByText("Laen kõnesid…")).toHaveCount(0);
+    expect(await docHeight()).toBe(heightBefore);
+    await expect
+      .poll(() => list.evaluate((el) => Math.abs(Math.round(el.getBoundingClientRect().top))))
+      .toBeLessThan(50);
+
+    release();
+    await expect(cards).toHaveAttribute("aria-busy", "false");
+  });
+
   test("a late 'Näita rohkem' answer is not added to another membership (C-4)", async ({
     page,
   }) => {

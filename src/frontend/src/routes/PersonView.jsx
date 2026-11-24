@@ -108,6 +108,7 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
     data: speechesData,
     error: speechesError,
     isLoading: speechesLoading,
+    isValidating: speechesValidating,
   } = useSWR(
     uuid ? `person-speeches-${uuid}-${currentRole}-${currentPage}` : null,
     () =>
@@ -119,6 +120,9 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
     {
       revalidateOnFocus: false,
       shouldRetryOnError: false,
+      // Keep the current page on screen while the next one loads: swapping a long list for a
+      // short placeholder mid smooth-scroll shrank the page and left a blank viewport
+      keepPreviousData: true,
     }
   );
 
@@ -1248,7 +1252,7 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
         )}
 
         {/* Speeches Cards */}
-        {speechesLoading ? (
+        {speechesLoading && !speechesData ? (
           <div style={{ padding: "3rem 1rem", textAlign: "center" }}>
             <p className="sidebar-empty-state">Laen kõnesid…</p>
           </div>
@@ -1264,7 +1268,7 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
           </div>
         ) : (
           <>
-            <div className="person-speeches-list">
+            <div className="person-speeches-list" aria-busy={speechesValidating}>
               {speechesData.results.map((speech) => (
                 <SpeechCard
                   key={speech.id}
