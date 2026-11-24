@@ -353,6 +353,10 @@ td.person-stats-col-num {
   gap: 1rem;
 }
 
+.person-speeches-list[aria-busy="true"] {
+  opacity: 0.6;
+}
+
 @media (max-width: 900px) {
   .person-metrics-grid {
     grid-template-columns: repeat(2, 1fr) !important;
