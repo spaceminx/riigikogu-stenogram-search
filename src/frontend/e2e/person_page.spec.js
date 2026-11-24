@@ -18,14 +18,14 @@ test.describe("Member page", () => {
     await page.goto(PERSON_URL);
     const list = page.locator('section[aria-label="Saadiku kõnede loend"]');
     const next = list.getByRole("button", { name: /Järgmine/ });
+    const listTop = () => list.evaluate((el) => Math.round(el.getBoundingClientRect().top));
     await next.scrollIntoViewIfNeeded();
+    expect(await listTop()).toBeLessThan(-50);
     await next.click();
 
     await expect(page).toHaveURL(/leht=2/);
-    await expect
-      .poll(() => list.evaluate((el) => Math.round(el.getBoundingClientRect().top)))
-      .toBeLessThan(50);
-    expect(await list.evaluate((el) => el.getBoundingClientRect().top)).toBeGreaterThan(-50);
+    // One condition, so a list still above the viewport mid-scroll does not pass.
+    await expect.poll(async () => Math.abs(await listTop())).toBeLessThan(50);
   });
 
   test("a late 'Näita rohkem' answer is not added to another membership (C-4)", async ({
