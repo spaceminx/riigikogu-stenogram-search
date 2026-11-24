@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import DateRangeCalendar from "../DateRangeCalendar";
 import { formatFactionName } from "../lib/formatters";
 import { fetchFactionsList } from "../lib/api";
-import { archiveStartYear } from "../lib/calendarUtils";
+import { archiveStartYear, currentMembershipId, rangeWithinMembership } from "../lib/calendarUtils";
 
 export function SearchFilters({
   searchMembership,
@@ -37,14 +37,22 @@ export function SearchFilters({
 
   const searchFactionsList =
     propFactionsList && propFactionsList.length > 0 ? propFactionsList : fetchedFactions;
+  const defaultMembership = currentMembershipId(memberships) || "all";
   const hasActiveFilters =
-    searchMembership !== "all" ||
+    searchMembership !== defaultMembership ||
     searchFaction !== "" ||
     searchSpeaker.trim() !== "" ||
     searchExcludeChair ||
     searchExactMatch ||
     searchSpeechCategory !== "" ||
     Boolean(searchDateRange.startDate || searchDateRange.endDate);
+
+  // Dates outside the chosen membership would find nothing there, so the dates win
+  const handleDateRangeChange = (range) => {
+    setSearchDateRange(range);
+    const selected = memberships.find((m) => String(m.id) === String(searchMembership));
+    if (selected && !rangeWithinMembership(range, selected)) setSearchMembership("all");
+  };
 
   return (
     <div className="search-filters-row">
@@ -90,7 +98,7 @@ export function SearchFilters({
         dates={plenaryDates}
         memberships={memberships}
         value={searchDateRange}
-        onChange={setSearchDateRange}
+        onChange={handleDateRangeChange}
       />
 
       <div className="filter-group-item speaker-filter-item">

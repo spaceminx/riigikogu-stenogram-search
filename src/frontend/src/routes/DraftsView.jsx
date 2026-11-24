@@ -8,6 +8,7 @@ import { toRoman } from "../lib/formatters";
 import Pagination from "../components/Pagination";
 import DraftRow from "../components/DraftRow";
 import { usePageMeta } from "../lib/usePageMeta";
+import { currentMembershipId } from "../lib/calendarUtils";
 
 const PAGE_SIZE = 50;
 
@@ -15,7 +16,7 @@ function withCount(label, count) {
   return count === undefined ? label : `${label} (${count.toLocaleString("et-EE")})`;
 }
 
-export function DraftsView({ memberships = [] }) {
+export function DraftsView({ memberships = [], membershipsLoading = false }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   usePageMeta(
@@ -24,7 +25,12 @@ export function DraftsView({ memberships = [] }) {
   );
 
   const qParam = searchParams.get("q") || "";
+  // No membership in the URL means the current one and "all" means every membership
   const membershipParam = searchParams.get("membership") || "";
+  const defaultMembership = currentMembershipId(memberships);
+  const membership = membershipParam || defaultMembership || "all";
+  // Wait for the memberships rather than list every draft first and the current ones after
+  const membershipKnown = Boolean(membershipParam || defaultMembership || !membershipsLoading);
   const typeParam = searchParams.get("type") || "";
   const statusParam = searchParams.get("status") || "";
   const committeeParam = searchParams.get("committee") || "";
@@ -70,19 +76,21 @@ export function DraftsView({ memberships = [] }) {
   };
 
   const { data, error, isLoading, isValidating } = useSWR(
-    [
-      "drafts-list",
-      membershipParam,
-      typeParam,
-      statusParam,
-      committeeParam,
-      qParam,
-      sortParam,
-      pageParam,
-    ],
+    membershipKnown
+      ? [
+          "drafts-list",
+          membership,
+          typeParam,
+          statusParam,
+          committeeParam,
+          qParam,
+          sortParam,
+          pageParam,
+        ]
+      : null,
     () =>
       fetchDrafts({
-        membership: membershipParam || null,
+        membership: membership === "all" ? null : membership,
         type: typeParam || null,
         status: statusParam || null,
         committee: committeeParam || null,
@@ -118,7 +126,11 @@ export function DraftsView({ memberships = [] }) {
   const membershipOptions = [...memberships].sort((a, b) => b.number - a.number);
 
   const hasFilters = Boolean(
-    qParam || membershipParam || typeParam || statusParam || committeeParam
+    qParam ||
+    (membershipParam && membershipParam !== defaultMembership) ||
+    typeParam ||
+    statusParam ||
+    committeeParam
   );
 
   return (
@@ -159,10 +171,14 @@ export function DraftsView({ memberships = [] }) {
             <select
               id="filter-draft-membership"
               className="filter-select"
-              value={membershipParam}
-              onChange={(e) => updateFilters({ membership: e.target.value })}
+              value={membership}
+              onChange={(e) =>
+                updateFilters({
+                  membership: e.target.value === defaultMembership ? null : e.target.value,
+                })
+              }
             >
-              <option value="">Kõik</option>
+              <option value="all">Kõik</option>
               {membershipOptions.map((m) => (
                 <option key={m.number} value={String(m.number)}>
                   {toRoman(m.number)} koosseis

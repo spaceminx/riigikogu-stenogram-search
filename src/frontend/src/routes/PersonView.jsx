@@ -283,7 +283,10 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
     if (!uuid) return;
     const q = searchKeyword.trim();
     if (!q) return;
-    navigate(`/otsing?q=${encodeURIComponent(q)}&speaker_uuid=${encodeURIComponent(uuid)}`);
+    // The member page covers every membership, so the search does too
+    navigate(
+      `/otsing?q=${encodeURIComponent(q)}&speaker_uuid=${encodeURIComponent(uuid)}&membership=all`
+    );
   };
 
   // Compute available role tabs based on counts > 0

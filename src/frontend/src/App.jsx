@@ -53,6 +53,8 @@ function LegacyRedirectHandler() {
       if (startDate && startDate === endDate && !q) {
         navigate(`/istung/${startDate}`, { replace: true });
       } else {
+        // Old links searched every membership; the search now opens on the current one
+        if (!nextParams.has("membership")) nextParams.set("membership", "all");
         const qs = nextParams.toString();
         navigate(`/otsing${qs ? `?${qs}` : ""}`, { replace: true });
       }
@@ -207,7 +209,13 @@ function AppContent() {
               />
               <Route
                 path="/otsing"
-                element={<SearchView memberships={memberships} theme={theme} />}
+                element={
+                  <SearchView
+                    memberships={memberships}
+                    membershipsLoading={membershipsLoading}
+                    theme={theme}
+                  />
+                }
               />
               <Route path="/istung/:date" element={<SessionView />} />
               <Route
@@ -244,7 +252,12 @@ function AppContent() {
                 }
               />
               <Route path="/haaletus/:uuid" element={<VotingView />} />
-              <Route path="/eelnoud" element={<DraftsView memberships={memberships} />} />
+              <Route
+                path="/eelnoud"
+                element={
+                  <DraftsView memberships={memberships} membershipsLoading={membershipsLoading} />
+                }
+              />
               <Route path="/eelnou/:uuid" element={<DraftView />} />
               <Route
                 path="/andmed"
