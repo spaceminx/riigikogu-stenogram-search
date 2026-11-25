@@ -2,10 +2,12 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   archiveStartYear,
+  currentMembershipId,
   getQuickPresets,
   getPresetRange,
   isValidDateKey,
   QUICK_PRESETS,
+  rangeWithinMembership,
   visibleMemberships,
 } from "../src/lib/calendarUtils.js";
 
@@ -161,5 +163,55 @@ describe("date keys", () => {
     ]) {
       assert.equal(isValidDateKey(value), false, String(value));
     }
+  });
+});
+
+describe("current membership", () => {
+  const memberships = [
+    { id: "14", number: 14, start_date: "2019-04-04", end_date: "2023-04-09" },
+    { id: "15", number: 15, start_date: "2023-04-10", end_date: null },
+    { id: "13", number: 13, start_date: "2015-03-30", end_date: "2019-04-03" },
+  ];
+
+  it("is the latest membership whatever the order", () => {
+    assert.equal(currentMembershipId(memberships), "15");
+  });
+
+  it("is unknown before the memberships load", () => {
+    assert.equal(currentMembershipId([]), null);
+    assert.equal(currentMembershipId(undefined), null);
+  });
+});
+
+describe("date range inside a membership", () => {
+  const xiv = { start_date: "2019-04-04", end_date: "2023-04-09" };
+  const xv = { start_date: "2023-04-10", end_date: null };
+
+  it("accepts no dates and dates inside the term", () => {
+    assert.equal(rangeWithinMembership({ startDate: "", endDate: "" }, xiv), true);
+    assert.equal(
+      rangeWithinMembership({ startDate: "2020-01-01", endDate: "2020-12-31" }, xiv),
+      true
+    );
+    assert.equal(
+      rangeWithinMembership({ startDate: "2024-01-01", endDate: "2026-11-24" }, xv),
+      true
+    );
+  });
+
+  it("rejects dates partly or wholly outside the term", () => {
+    assert.equal(
+      rangeWithinMembership({ startDate: "2019-01-01", endDate: "2020-01-01" }, xiv),
+      false
+    );
+    assert.equal(
+      rangeWithinMembership({ startDate: "2020-01-01", endDate: "2024-01-01" }, xiv),
+      false
+    );
+    assert.equal(
+      rangeWithinMembership({ startDate: "2019-04-04", endDate: "2023-04-09" }, xv),
+      false
+    );
+    assert.equal(rangeWithinMembership({ startDate: "2024-01-01", endDate: "" }, xiv), false);
   });
 });

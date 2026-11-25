@@ -19,11 +19,13 @@ import ContextModal from "../components/ContextModal";
 import SpeechesHeader from "../components/SpeechesHeader";
 import Pagination from "../components/Pagination";
 import { usePageMeta } from "../lib/usePageMeta";
+import { currentMembershipId } from "../lib/calendarUtils";
 
 const PAGE_SIZE = 50;
 
 export function SearchView({
   memberships = [],
+  membershipsLoading = false,
   searchFactionsList = [],
   plenaryDates = [],
   theme = "light",
@@ -32,7 +34,11 @@ export function SearchView({
 
   // Search parameters from URL
   const queryParam = searchParams.get("q") || "";
-  const membershipParam = searchParams.get("membership") || "all";
+  // No membership in the URL means the current one and "all" means every membership; "" while
+  // the memberships load, so the search does not run once for the wrong period
+  const defaultMembership = currentMembershipId(memberships);
+  const membershipParam =
+    searchParams.get("membership") || defaultMembership || (membershipsLoading ? "" : "all");
   const factionParam = searchParams.get("faction") || "";
   const speakerParam = searchParams.get("speaker") || "";
   const speakerUuidParam = searchParams.get("speaker_uuid") || "";
@@ -127,6 +133,7 @@ export function SearchView({
   }
 
   const hasSearchQuery = Boolean(queryParam.trim());
+  const canSearch = hasSearchQuery && membershipParam !== "";
 
   // Filters shared by the search, activity and speakers requests
   const filterParams = {
@@ -145,7 +152,7 @@ export function SearchView({
 
   // Main search effect: triggered only when search parameters change (excluding interval)
   useEffect(() => {
-    if (!hasSearchQuery) {
+    if (!canSearch) {
       return;
     }
 
@@ -203,13 +210,13 @@ export function SearchView({
     excludeChairParam,
     speechCategoryParam,
     exactMatchParam,
-    hasSearchQuery,
+    canSearch,
   ]);
 
   // The timeline and speaker panels fetch again only when the query or filters change
   // (not on paging or sorting).
   useEffect(() => {
-    if (!hasSearchQuery) {
+    if (!canSearch) {
       return;
     }
     if (activityAbortRef.current) {
@@ -250,10 +257,10 @@ export function SearchView({
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelDataKey, hasSearchQuery]);
+  }, [panelDataKey, canSearch]);
 
   useEffect(() => {
-    if (!hasSearchQuery) {
+    if (!canSearch) {
       return;
     }
     const abortController = new AbortController();
@@ -280,7 +287,7 @@ export function SearchView({
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelDataKey, hasSearchQuery]);
+  }, [panelDataKey, canSearch]);
 
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
@@ -295,7 +302,10 @@ export function SearchView({
 
     const next = new URLSearchParams();
     if (queryString) next.set("q", queryString);
-    if (filterMembership && filterMembership !== "all") next.set("membership", filterMembership);
+    const chosenMembership = filterMembership || defaultMembership;
+    if (chosenMembership && chosenMembership !== defaultMembership) {
+      next.set("membership", chosenMembership);
+    }
     if (filterFaction) next.set("faction", filterFaction);
     if (filterSpeaker.trim()) next.set("speaker", filterSpeaker.trim());
     if (speakerUuidParam) next.set("speaker_uuid", speakerUuidParam);
@@ -336,7 +346,7 @@ export function SearchView({
     }
     setSearchParams(next, { replace: true });
 
-    if (hasSearchQuery) {
+    if (canSearch) {
       if (activityAbortRef.current) {
         activityAbortRef.current.abort();
       }
@@ -394,7 +404,7 @@ export function SearchView({
   };
 
   const handleResetFilters = () => {
-    setFilterMembership("all");
+    setFilterMembership(defaultMembership || "all");
     setFilterFaction("");
     setFilterSpeaker("");
     setFilterDateRange({ startDate: "", endDate: "" });
@@ -414,6 +424,8 @@ export function SearchView({
   };
 
   const bannerError = error || contextError;
+  // Also while the memberships load and the search waits for the current one
+  const searching = loading || (hasSearchQuery && !canSearch);
 
   const currentTotalCount = hasSearchQuery ? totalCount : 0;
   const currentSpeeches = hasSearchQuery ? speeches : [];
@@ -448,10 +460,10 @@ export function SearchView({
         inputValue={inputValue}
         setInputValue={setInputValue}
         onSearch={handleSearchSubmit}
-        loading={loading}
+        loading={searching}
       >
         <SearchFilters
-          searchMembership={filterMembership}
+          searchMembership={filterMembership || defaultMembership || "all"}
           setSearchMembership={setFilterMembership}
           memberships={memberships}
           searchFaction={filterFaction}
@@ -527,7 +539,7 @@ export function SearchView({
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Sisesta otsisõna või vali huvipakkuv teema stenogrammidest otsimiseks.</p>
           </div>
-        ) : loading ? (
+        ) : searching ? (
           <div className="empty-state" style={{ padding: "3rem 1rem" }}>
             <p>Otsin stenogramme...</p>
           </div>

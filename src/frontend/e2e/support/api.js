@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { expect } from "@playwright/test";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,6 +69,24 @@ function findFixture(method, pathname, queryParams) {
   }
 
   return null;
+}
+
+/**
+ * Waits until the last request to `pathname` carries `params`. The mock serves one fixture
+ * whatever the query says, so a page alone cannot show that a filter reached the API.
+ * A null value means the parameter must be absent; parameters not named are not checked.
+ */
+export async function expectLastRequest(mock, pathname, params) {
+  await expect
+    .poll(
+      () => {
+        const last = mock.requestsTo(pathname).at(-1);
+        if (!last) return `no request to ${pathname}`;
+        return Object.fromEntries(Object.keys(params).map((k) => [k, last[k] ?? null]));
+      },
+      { message: `last request to ${pathname}` }
+    )
+    .toEqual(params);
 }
 
 /**
@@ -153,6 +172,10 @@ export async function setupApiMock(page, options = {}) {
     interceptedRequests,
     errors,
     externalRequests,
+    /** Query parameters of every request to `pathname`, oldest first. */
+    requestsTo(pathname) {
+      return interceptedRequests.filter((r) => r.pathname === pathname).map((r) => r.queryParams);
+    },
     verifyNoErrors() {
       if (externalRequests.length > 0) {
         throw new Error(`external request: ${externalRequests.join(", ")}`);

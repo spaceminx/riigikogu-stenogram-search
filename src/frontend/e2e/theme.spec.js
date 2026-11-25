@@ -142,27 +142,18 @@ test.describe("Theme toggle and contrast check", () => {
       }, selector);
     };
 
-    // Spot-check headings
-    const headingInfo = await getElementContrast("h1");
-    if (headingInfo) {
-      expect(headingInfo.ratio).toBeGreaterThanOrEqual(headingInfo.isLarge ? 3.0 : 4.5);
-    }
-
-    // Spot-check nav button elements (.nav-btn and .nav-btn.active)
-    const navBtnInfo = await getElementContrast(".nav-btn:not(.active)");
-    if (navBtnInfo) {
-      expect(navBtnInfo.ratio).toBeGreaterThanOrEqual(navBtnInfo.isLarge ? 3.0 : 4.5);
-    }
-
-    const activeNavBtnInfo = await getElementContrast(".nav-btn.active");
-    if (activeNavBtnInfo) {
-      expect(activeNavBtnInfo.ratio).toBeGreaterThanOrEqual(activeNavBtnInfo.isLarge ? 3.0 : 4.5);
-    }
-
-    // Spot-check attendance header / table header
-    const thInfo = await getElementContrast(".attendance-table th");
-    if (thInfo) {
-      expect(thInfo.ratio).toBeGreaterThanOrEqual(thInfo.isLarge ? 3.0 : 4.5);
+    // Every checked element must exist: a missing one used to skip its assertion silently
+    // (the attendance table was measured before it had rendered)
+    await expect(page.locator(".attendance-table th").first()).toBeVisible();
+    for (const selector of [
+      "h1",
+      ".nav-btn:not(.active)",
+      ".nav-btn.active",
+      ".attendance-table th",
+    ]) {
+      const info = await getElementContrast(selector);
+      expect(info, `${selector} on the page`).not.toBeNull();
+      expect(info.ratio, `${selector} contrast`).toBeGreaterThanOrEqual(info.isLarge ? 3.0 : 4.5);
     }
 
     mock.verifyNoErrors();

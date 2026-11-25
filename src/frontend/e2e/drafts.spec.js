@@ -72,7 +72,7 @@ test.describe("Drafts list", () => {
     const mock = await setupApiMock(page);
     await page.goto("/eelnoud");
     await expect(page.locator(".draft-row-link").first()).toBeVisible();
-    expect(draftRequests(mock).at(-1)).toEqual({ limit: "50", offset: "0" });
+    expect(draftRequests(mock).at(-1)).toEqual({ membership: "15", limit: "50", offset: "0" });
 
     const adopted = list.facets.status.adopted.toLocaleString("et-EE");
     await expect(page.locator("#filter-draft-status option[value='adopted']")).toHaveText(
@@ -88,7 +88,7 @@ test.describe("Drafts list", () => {
 
     const committee = list.facets.committee[0];
     await page.locator("#filter-draft-committee").selectOption(committee.uuid);
-    await page.locator("#filter-draft-membership").selectOption("15");
+    await page.locator("#filter-draft-membership").selectOption("14");
     await page.locator("#filter-draft-sort").selectOption("initiated");
 
     await page
@@ -100,7 +100,7 @@ test.describe("Drafts list", () => {
     await expect
       .poll(() => draftRequests(mock).at(-1))
       .toEqual({
-        membership: "15",
+        membership: "14",
         type: "SE",
         status: "adopted",
         committee: committee.uuid,
@@ -115,6 +115,23 @@ test.describe("Drafts list", () => {
     await expect(page.locator("#filter-draft-status")).toHaveValue("adopted");
     await expect(page.locator("#filter-draft-committee")).toHaveValue(committee.uuid);
     await expect(page.locator("#filter-draft-sort")).toHaveValue("initiated");
+    mock.verifyNoErrors();
+  });
+
+  test("opens on the current membership; 'Kõik' lists every membership", async ({ page }) => {
+    const mock = await setupApiMock(page);
+    await page.goto("/eelnoud");
+    await expect(page.locator(".draft-row-link").first()).toBeVisible();
+    await expect(page.locator("#filter-draft-membership")).toHaveValue("15");
+    // One request, already for the current membership, not every draft first
+    expect(draftRequests(mock)).toEqual([{ membership: "15", limit: "50", offset: "0" }]);
+
+    await page.locator("#filter-draft-membership").selectOption("all");
+    await expect(page).toHaveURL(/membership=all/);
+    await expect.poll(() => draftRequests(mock).at(-1)).toEqual({ limit: "50", offset: "0" });
+
+    await page.locator("#filter-draft-membership").selectOption("15");
+    await expect(page).not.toHaveURL(/membership=/);
     mock.verifyNoErrors();
   });
 

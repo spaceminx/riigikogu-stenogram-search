@@ -96,6 +96,30 @@ export function visibleMemberships(memberships, today = new Date()) {
   );
 }
 
+// The membership sitting now (the latest one that has convened), as the id the filters use.
+// The search and drafts lists open on it; null while the memberships are not known.
+export function currentMembershipId(memberships) {
+  const started = (memberships || []).filter((m) => m.start_date || m.startDate);
+  if (started.length === 0) return null;
+  const latest = started.reduce((a, b) =>
+    Number(b.number || b.id) > Number(a.number || a.id) ? b : a
+  );
+  return String(latest.id || latest.number);
+}
+
+// Whether a date range lies inside a membership's term; an open end counts as inside
+export function rangeWithinMembership(range, membership) {
+  if (!membership) return true;
+  const start = membership.start_date || membership.startDate;
+  const end = membership.end_date || membership.endDate;
+  const { startDate, endDate } = range || {};
+  if (startDate && start && startDate < start) return false;
+  if (endDate && end && endDate > end) return false;
+  if (startDate && end && startDate > end) return false;
+  if (endDate && start && endDate < start) return false;
+  return true;
+}
+
 // Year the archive starts, from the first covered membership ("alates 2015")
 export function archiveStartYear(memberships) {
   const starts = (memberships || [])

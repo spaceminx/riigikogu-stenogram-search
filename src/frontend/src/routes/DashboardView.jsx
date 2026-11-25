@@ -16,7 +16,7 @@ import {
   normalizeSourceUrl,
   serializeGroupsToQuery,
 } from "../lib/formatters";
-import { archiveStartYear } from "../lib/calendarUtils";
+import { archiveStartYear, currentMembershipId } from "../lib/calendarUtils";
 
 export function DashboardView({
   dashboardOverview: propOverview,
@@ -68,7 +68,10 @@ export function DashboardView({
   }
   const [groups, setGroups] = useState([[]]);
   const [inputValue, setInputValue] = useState("");
-  const [searchMembership, setSearchMembership] = useState("all");
+  // null = the current membership, which is known only once the memberships load
+  const [chosenMembership, setSearchMembership] = useState(null);
+  const defaultMembership = currentMembershipId(memberships);
+  const searchMembership = chosenMembership || defaultMembership || "all";
   const [searchFaction, setSearchFaction] = useState("");
   const [searchDateRange, setSearchDateRange] = useState({ startDate: "", endDate: "" });
   const [searchSpeaker, setSearchSpeaker] = useState("");
@@ -92,7 +95,9 @@ export function DashboardView({
 
     const params = new URLSearchParams();
     if (queryString) params.set("q", queryString);
-    if (searchMembership && searchMembership !== "all") params.set("membership", searchMembership);
+    if (chosenMembership && chosenMembership !== defaultMembership) {
+      params.set("membership", chosenMembership);
+    }
     if (searchFaction) params.set("faction", searchFaction);
     if (searchSpeaker.trim()) params.set("speaker", searchSpeaker.trim());
     if (searchDateRange.startDate) params.set("start_date", searchDateRange.startDate);
@@ -106,7 +111,7 @@ export function DashboardView({
   };
 
   const handleResetFilters = () => {
-    setSearchMembership("all");
+    setSearchMembership(null);
     setSearchFaction("");
     setSearchDateRange({ startDate: "", endDate: "" });
     setSearchSpeaker("");
