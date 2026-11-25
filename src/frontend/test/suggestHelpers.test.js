@@ -64,20 +64,20 @@ describe("suggestHelpers", () => {
   });
 
   describe("formatSuggestionCount", () => {
-    it("formats 1 as singular '1 kõne'", () => {
-      assert.strictEqual(formatSuggestionCount(1), "1 kõne");
+    it("formats 1 as singular '1 sõnavõtt'", () => {
+      assert.strictEqual(formatSuggestionCount(1), "1 sõnavõtt");
     });
 
-    it("formats 0 and other numbers as plural '... kõnet'", () => {
-      assert.strictEqual(formatSuggestionCount(0), "0 kõnet");
-      assert.strictEqual(formatSuggestionCount(2), "2 kõnet");
-      assert.strictEqual(formatSuggestionCount(15), "15 kõnet");
+    it("formats 0 and other numbers as plural '... sõnavõttu'", () => {
+      assert.strictEqual(formatSuggestionCount(0), "0 sõnavõttu");
+      assert.strictEqual(formatSuggestionCount(2), "2 sõnavõttu");
+      assert.strictEqual(formatSuggestionCount(15), "15 sõnavõttu");
     });
 
     it("formats thousands with space separator", () => {
-      assert.strictEqual(formatSuggestionCount(1040), "1 040 kõnet");
-      assert.strictEqual(formatSuggestionCount(1953), "1 953 kõnet");
-      assert.strictEqual(formatSuggestionCount(124258), "124 258 kõnet");
+      assert.strictEqual(formatSuggestionCount(1040), "1 040 sõnavõttu");
+      assert.strictEqual(formatSuggestionCount(1953), "1 953 sõnavõttu");
+      assert.strictEqual(formatSuggestionCount(124258), "124 258 sõnavõttu");
     });
 
     it("handles invalid inputs gracefully", () => {

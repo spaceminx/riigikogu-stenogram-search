@@ -23,7 +23,7 @@
   --color-surface: #ffffff;
   --color-subtle: #f1f2f5;
   --color-border: #dadce2;
-  --color-border-strong: #8b919d; /* field outlines, 3:1 on the surface */
+  --color-border-strong: #848a96; /* field outlines, 3:1 on the surface and on the subtle filter bars */
   --color-accent: #2e3f78; /* Protokoll: links and the active tab */
   --color-accent-fill: #2e3f78; /* primary button background */
   --color-accent-fill-hover: #24315f;

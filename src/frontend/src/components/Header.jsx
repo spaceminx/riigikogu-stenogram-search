@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Activity,
@@ -43,6 +43,34 @@ export function Header({
   // The list and every member's own page (/saadik/…)
   const isMembers = pathname.startsWith("/saadik");
   const isSearchOrDashboard = pathname === "/" || pathname.startsWith("/otsing");
+
+  const menuRef = useRef(null);
+  const closeMenu = () => menuRef.current?.removeAttribute("open");
+
+  // Close on every navigation, also through the desktop links or the browser's Back
+  useEffect(() => {
+    menuRef.current?.removeAttribute("open");
+  }, [location.key]);
+
+  // Close on Escape and on a press outside the menu
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const menu = menuRef.current;
+      if (e.key !== "Escape" || !menu?.open) return;
+      menu.removeAttribute("open");
+      menu.querySelector("summary")?.focus();
+    };
+    const onPointerDown = (e) => {
+      const menu = menuRef.current;
+      if (menu?.open && !menu.contains(e.target)) menu.removeAttribute("open");
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
 
   return (
     <header className="header">
@@ -109,7 +137,7 @@ export function Header({
           Saadikud
         </Link>
       </nav>
-      <details className="header-menu">
+      <details className="header-menu" ref={menuRef}>
         <summary className="header-menu-trigger" aria-label="Ava andmevaate menüü">
           <Menu aria-hidden="true" />
           <span>Menüü</span>
@@ -120,10 +148,7 @@ export function Header({
             <Link
               to="/"
               className={`menu-link ${isSearchOrDashboard ? "active" : ""}`}
-              onClick={() => {
-                const details = document.querySelector(".header-menu");
-                if (details) details.removeAttribute("open");
-              }}
+              onClick={closeMenu}
             >
               <FileText aria-hidden="true" />
               <span>Kõneotsing</span>
@@ -131,10 +156,7 @@ export function Header({
             <Link
               to="/kohalolek"
               className={`menu-link ${isAttendance ? "active" : ""}`}
-              onClick={() => {
-                const details = document.querySelector(".header-menu");
-                if (details) details.removeAttribute("open");
-              }}
+              onClick={closeMenu}
             >
               <Users aria-hidden="true" />
               <span>Kohalolek</span>
@@ -142,10 +164,7 @@ export function Header({
             <Link
               to="/haaletused"
               className={`menu-link ${isVotings ? "active" : ""}`}
-              onClick={() => {
-                const details = document.querySelector(".header-menu");
-                if (details) details.removeAttribute("open");
-              }}
+              onClick={closeMenu}
             >
               <Vote aria-hidden="true" />
               <span>Hääletused</span>
@@ -153,10 +172,7 @@ export function Header({
             <Link
               to="/eelnoud"
               className={`menu-link ${isDrafts ? "active" : ""}`}
-              onClick={() => {
-                const details = document.querySelector(".header-menu");
-                if (details) details.removeAttribute("open");
-              }}
+              onClick={closeMenu}
             >
               <Files aria-hidden="true" />
               <span>Eelnõud</span>
@@ -164,10 +180,7 @@ export function Header({
             <Link
               to="/fraktsioonid"
               className={`menu-link ${isFactions ? "active" : ""}`}
-              onClick={() => {
-                const details = document.querySelector(".header-menu");
-                if (details) details.removeAttribute("open");
-              }}
+              onClick={closeMenu}
             >
               <UsersRound aria-hidden="true" />
               <span>Fraktsioonid</span>
@@ -175,10 +188,7 @@ export function Header({
             <Link
               to="/saadikud"
               className={`menu-link ${isMembers ? "active" : ""}`}
-              onClick={() => {
-                const details = document.querySelector(".header-menu");
-                if (details) details.removeAttribute("open");
-              }}
+              onClick={closeMenu}
             >
               <Contact aria-hidden="true" />
               <span>Saadikud</span>
@@ -267,8 +277,7 @@ export function Header({
             className="menu-action"
             onClick={() => {
               onOpenMethodology();
-              const details = document.querySelector(".header-menu");
-              if (details) details.removeAttribute("open");
+              closeMenu();
             }}
           >
             <Info aria-hidden="true" />

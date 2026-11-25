@@ -33,7 +33,7 @@ export function getNextHighlightedIndex(currentIndex, delta, totalCount) {
 }
 
 /**
- * Format speech occurrence count in Estonian (e.g. "1 953 kõnet", "1 kõne").
+ * Format the number of utterances a suggestion occurs in (e.g. "1 953 sõnavõttu", "1 sõnavõtt").
  *
  * @param {number} count
  * @returns {string}
@@ -43,6 +43,6 @@ export function formatSuggestionCount(count) {
   const numStr = Math.round(count)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  const unit = count === 1 ? "kõne" : "kõnet";
+  const unit = count === 1 ? "sõnavõtt" : "sõnavõttu";
   return `${numStr} ${unit}`;
 }

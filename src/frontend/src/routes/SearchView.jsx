@@ -424,8 +424,9 @@ export function SearchView({
   };
 
   const bannerError = error || contextError;
-  // Also while the memberships load and the search waits for the current one
-  const searching = loading || (hasSearchQuery && !canSearch);
+  // Also while the memberships load and the search waits for the current one. Only with a query:
+  // a search aborted by going back to the empty page never clears `loading`
+  const searching = hasSearchQuery && (loading || !canSearch);
 
   const currentTotalCount = hasSearchQuery ? totalCount : 0;
   const currentSpeeches = hasSearchQuery ? speeches : [];

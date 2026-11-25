@@ -121,12 +121,15 @@ export function MembersView({ memberships = [], membershipsLoading = false }) {
 
   const rows = useMemo(() => buildMemberRows(data?.factions ?? []), [data]);
   const factionNames = useMemo(() => (data?.factions ?? []).map((f) => f.faction), [data]);
+  // A faction this membership does not have (a hand-edited address) would list nobody while the
+  // select shows "Kõik"
+  const activeFaction = data && faction && !factionNames.includes(faction) ? "" : faction;
   const scoped = useMemo(() => filterMemberRows(rows, { currentOnly }), [rows, currentOnly]);
   const visible = useMemo(
-    () => filterMemberRows(rows, { query, faction, currentOnly }),
-    [rows, query, faction, currentOnly]
+    () => filterMemberRows(rows, { query, faction: activeFaction, currentOnly }),
+    [rows, query, activeFaction, currentOnly]
   );
-  const filtered = Boolean(query || faction);
+  const filtered = Boolean(query || activeFaction);
 
   if (membershipsLoading && (!memberships || memberships.length === 0)) {
     return (
@@ -196,7 +199,7 @@ export function MembersView({ memberships = [], membershipsLoading = false }) {
             <select
               id="members-faction-select"
               className="attendance-select"
-              value={faction}
+              value={activeFaction}
               onChange={(e) => setFaction(e.target.value)}
             >
               <option value="">Kõik</option>

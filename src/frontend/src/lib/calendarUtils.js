@@ -64,6 +64,31 @@ export function shiftMonth(date, amount) {
   return new Date(date.getFullYear(), date.getMonth() + amount, 1);
 }
 
+/**
+ * The day a key moves the calendar focus to (YYYY-MM-DD), or null for any other key: arrows move
+ * a day or a week, Home and End to the week's Monday and Sunday, Page Up and Page Down a month
+ * (to the same day, or the month's last day when it is shorter).
+ */
+export function dateKeyAfterKey(dateKey, key) {
+  const date = fromDateKey(dateKey);
+  if (!date) return null;
+  const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+  if (key in steps) {
+    date.setDate(date.getDate() + steps[key]);
+  } else if (key === "Home" || key === "End") {
+    const weekday = (date.getDay() + 6) % 7;
+    date.setDate(date.getDate() + (key === "Home" ? -weekday : 6 - weekday));
+  } else if (key === "PageUp" || key === "PageDown") {
+    const target = shiftMonth(date, key === "PageUp" ? -1 : 1);
+    const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+    target.setDate(Math.min(date.getDate(), lastDay));
+    return toDateKey(target);
+  } else {
+    return null;
+  }
+  return toDateKey(date);
+}
+
 export function formatDate(value) {
   if (!value) return "";
   const [year, month, day] = value.split("-");

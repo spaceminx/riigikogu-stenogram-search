@@ -20,6 +20,7 @@ const FOCUSABLE_SELECTOR = [
  * - On open: saves previously focused element, moves focus into dialog (first focusable or container).
  * - On Tab / Shift+Tab: wraps focus within the modal container.
  * - On Escape: invokes onClose callback.
+ * - While open: the page behind does not scroll (a wheel over the backdrop moved it).
  * - On close / unmount: restores focus back to the previously active element.
  */
 export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
@@ -37,6 +38,16 @@ export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
     if (!isOpen) return undefined;
 
     previousActiveElementRef.current = document.activeElement;
+
+    // Lock the page; the padding keeps it from shifting sideways when its scrollbar goes away
+    const { body } = document;
+    const previousBodyStyle = {
+      overflow: body.style.overflow,
+      paddingRight: body.style.paddingRight,
+    };
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
 
     const container = containerRef.current;
     if (container) {
@@ -100,6 +111,8 @@ export function useFocusTrap({ isOpen = true, onClose, initialFocusRef } = {}) {
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      body.style.overflow = previousBodyStyle.overflow;
+      body.style.paddingRight = previousBodyStyle.paddingRight;
       const prev = previousActiveElementRef.current;
       const isVisible = (el) => {
         if (!el || !document.contains(el)) return false;

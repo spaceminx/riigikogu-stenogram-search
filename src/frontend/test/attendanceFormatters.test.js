@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -6,7 +7,11 @@ import {
   formatVoteSplit,
   getChecksBarSegments,
   getVotesBarSegments,
+  isFewChecks,
+  isFewVotes,
   isSmallSample,
+  SMALL_SAMPLE_CHECKS,
+  SMALL_SAMPLE_VOTES,
   sortAttendanceItems,
 } from "../src/lib/attendanceFormatters.js";
 
@@ -104,6 +109,23 @@ describe("attendanceFormatters", () => {
       assert.strictEqual(isSmallSample({ total_checks: 19 }, "registered_pct"), true);
       assert.strictEqual(isSmallSample({ total_checks: 20 }, "registered_pct"), false);
       assert.strictEqual(isSmallSample({ total_sessions: 5 }, "registered_pct"), true);
+    });
+  });
+
+  describe("small-sample rule", () => {
+    it("is one rule for checks and one for votes, wherever a table uses it", () => {
+      assert.strictEqual(isFewChecks(SMALL_SAMPLE_CHECKS - 1), true);
+      assert.strictEqual(isFewChecks(SMALL_SAMPLE_CHECKS), false);
+      assert.strictEqual(isFewVotes(SMALL_SAMPLE_VOTES - 1), true);
+      assert.strictEqual(isFewVotes(SMALL_SAMPLE_VOTES), false);
+    });
+
+    it("is stated with the same numbers in the methodology text", () => {
+      const sentence = `vähem kui ${SMALL_SAMPLE_CHECKS} kohalolekukontrollil või vähem kui ${SMALL_SAMPLE_VOTES} hääletusel`;
+      for (const file of ["../../api/routes.py", "../src/components/MethodologyModal.jsx"]) {
+        const text = fs.readFileSync(new URL(file, import.meta.url), "utf8");
+        assert.ok(text.includes(sentence), file);
+      }
     });
   });
 

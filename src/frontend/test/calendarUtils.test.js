@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   archiveStartYear,
   currentMembershipId,
+  dateKeyAfterKey,
   getQuickPresets,
   getPresetRange,
   isValidDateKey,
@@ -213,5 +214,30 @@ describe("date range inside a membership", () => {
       false
     );
     assert.equal(rangeWithinMembership({ startDate: "2024-01-01", endDate: "" }, xiv), false);
+  });
+
+  describe("dateKeyAfterKey", () => {
+    it("moves a day with the side arrows and a week with up and down, across months", () => {
+      assert.equal(dateKeyAfterKey("2026-11-30", "ArrowRight"), "2026-12-01");
+      assert.equal(dateKeyAfterKey("2026-12-01", "ArrowLeft"), "2026-11-30");
+      assert.equal(dateKeyAfterKey("2026-12-29", "ArrowDown"), "2027-01-05");
+      assert.equal(dateKeyAfterKey("2026-11-03", "ArrowUp"), "2026-10-27");
+    });
+
+    it("goes to the week's Monday and Sunday with Home and End", () => {
+      // 2026-11-25 is a Wednesday
+      assert.equal(dateKeyAfterKey("2026-11-25", "Home"), "2026-11-23");
+      assert.equal(dateKeyAfterKey("2026-11-25", "End"), "2026-11-29");
+    });
+
+    it("moves a month with Page Up and Down, keeping the day where the month has it", () => {
+      assert.equal(dateKeyAfterKey("2026-11-25", "PageDown"), "2026-12-25");
+      assert.equal(dateKeyAfterKey("2026-03-31", "PageUp"), "2026-02-28");
+    });
+
+    it("ignores other keys", () => {
+      assert.equal(dateKeyAfterKey("2026-11-25", "Enter"), null);
+      assert.equal(dateKeyAfterKey("2026-11-25", "a"), null);
+    });
   });
 });

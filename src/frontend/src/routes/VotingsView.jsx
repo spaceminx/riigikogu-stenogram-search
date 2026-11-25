@@ -6,6 +6,7 @@ import { fetchVotings } from "../lib/api";
 import DateRangeCalendar from "../DateRangeCalendar";
 import Pagination from "../components/Pagination";
 import VotingRow from "../components/VotingRow";
+import { useClampPage } from "../lib/useClampPage";
 import { usePageMeta } from "../lib/usePageMeta";
 
 const PAGE_SIZE = 50;
@@ -76,6 +77,7 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
   const results = data?.results || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  useClampPage("page", pageParam, data ? totalPages : null);
 
   return (
     <div className="votings-view-container">
@@ -138,11 +140,13 @@ export function VotingsView({ plenaryDates = [], memberships = [] }) {
       <div className="votings-results-header">
         <h2 className="votings-heading">
           Hääletused
-          {!isLoading && (
-            <span className="results-badge">
-              {total.toLocaleString("et-EE")} {total === 1 ? "tulemus" : "tulemust"}
-            </span>
-          )}
+          <span className="results-live" aria-live="polite">
+            {!isLoading && (
+              <span className="results-badge">
+                {total.toLocaleString("et-EE")} {total === 1 ? "tulemus" : "tulemust"}
+              </span>
+            )}
+          </span>
         </h2>
       </div>
 

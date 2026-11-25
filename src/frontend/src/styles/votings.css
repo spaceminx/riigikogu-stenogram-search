@@ -91,6 +91,12 @@
   color: var(--color-text);
 }
 
+/* Announces the count; stays in place while the count itself comes and goes */
+.results-live {
+  display: inline-flex;
+  align-items: center;
+}
+
 .votings-list {
   display: flex;
   flex-direction: column;
