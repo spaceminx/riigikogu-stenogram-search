@@ -1403,29 +1403,40 @@ def get_dashboard_overview() -> dict:
                 }
             )
 
-        # Fast lookup for top 3 recent sessions using date index
-        recent_speeches = (
-            session.query(Speech.source_file, Speech.date, Speech.source_url)
+        # The three latest sitting dates. A day with two sittings (e.g. 12:00 and 14:00) has
+        # one page, /istung/{date}, so it is one row; its topics come from both sittings.
+        recent_dates = [
+            row[0]
+            for row in session.query(Speech.date)
             .filter(Speech.source_file.isnot(None), Speech.source_file != "")
-            .order_by(Speech.date.desc(), Speech.id.desc())
-            .limit(1000)
+            .distinct()
+            .order_by(Speech.date.desc())
+            .limit(3)
             .all()
+        ]
+        # Sittings of those dates, the earliest of each day first: its link opens the day
+        sitting_rows = (
+            session.query(Speech.source_file, Speech.date, func.min(Speech.source_url))
+            .filter(
+                Speech.date.in_(recent_dates),
+                Speech.source_file.isnot(None),
+                Speech.source_file != "",
+            )
+            .group_by(Speech.source_file, Speech.date)
+            .order_by(Speech.date.desc(), func.min(Speech.id))
+            .all()
+            if recent_dates
+            else []
         )
-        session_map: dict[str, dict] = {}
-        for sp in recent_speeches:
-            if sp.source_file not in session_map:
-                session_map[sp.source_file] = {
-                    "source_file": sp.source_file,
-                    "date": sp.date,
-                    "source_url": sp.source_url,
-                }
-                if len(session_map) == 3:
-                    break
+        date_by_source: dict[str, str] = {}
+        source_url_by_date: dict[str, str | None] = {}
+        for source_file, sitting_date, source_url in sitting_rows:
+            date_by_source[source_file] = sitting_date
+            if not source_url_by_date.get(sitting_date):
+                source_url_by_date[sitting_date] = source_url
+        topics_by_date: dict[str, list[str]] = {d: [] for d in recent_dates}
 
-        source_files = list(session_map.keys())
-        topics_by_source: dict[str, list[str]] = {source_file: [] for source_file in source_files}
-
-        if source_files:
+        if date_by_source:
             total_speeches = session.query(func.count(Speech.id)).scalar() or 0
             topic_rows = (
                 session.query(
@@ -1437,13 +1448,14 @@ def get_dashboard_overview() -> dict:
                 )
                 .join(SpeechTerm, Speech.id == SpeechTerm.speech_id)
                 .join(Lemma, SpeechTerm.lemma_id == Lemma.id)
-                .filter(Speech.source_file.in_(source_files))
+                .filter(Speech.source_file.in_(list(date_by_source)))
                 .group_by(Speech.source_file, Lemma.id, Lemma.lemma, Lemma.df, Lemma.pos)
                 .all()
             )
             stopwords = {word.casefold() for word in STOPWORDS}
-            candidates_by_source: dict[str, list[tuple[float, str]]] = {
-                sf: [] for sf in source_files
+            # Occurrences per date and lemma, summed over the day's sittings
+            occurrences_by_date: dict[str, dict[str, tuple[int, int]]] = {
+                d: {} for d in recent_dates
             }
             for source_file, lemma, df, pos, occurrences in topic_rows:
                 normalized = lemma.casefold()
@@ -1458,22 +1470,29 @@ def get_dashboard_overview() -> dict:
                     continue
                 if pos is not None and pos not in ("S", "H"):
                     continue
-                score = float(occurrences) * math.log(total_speeches / df)
-                candidates_by_source[source_file].append((score, lemma))
+                day = occurrences_by_date[date_by_source[source_file]]
+                previous = day.get(lemma, (0, df))[0]
+                day[lemma] = (previous + int(occurrences), df)
 
-            for source_file, candidates in candidates_by_source.items():
+            for sitting_date, lemmas in occurrences_by_date.items():
+                candidates = [
+                    (float(occ) * math.log(total_speeches / df), lemma)
+                    for lemma, (occ, df) in lemmas.items()
+                ]
                 candidates.sort(key=lambda item: (-item[0], item[1]))
-                topics_by_source[source_file] = [lemma for _, lemma in candidates[:3]]
+                topics_by_date[sitting_date] = [lemma for _, lemma in candidates[:3]]
 
         sessions = [
             {
-                "date": row["date"],
+                "date": sitting_date,
                 "source_url": normalize_source_url(
-                    row["source_url"].split("#")[0] if row["source_url"] else None
+                    source_url_by_date[sitting_date].split("#")[0]
+                    if source_url_by_date.get(sitting_date)
+                    else None
                 ),
-                "topics": topics_by_source.get(row["source_file"], []),
+                "topics": topics_by_date.get(sitting_date, []),
             }
-            for row in session_map.values()
+            for sitting_date in recent_dates
         ]
 
         # Monthly speech counts for past 24 months, excluding chair DIRECTOR

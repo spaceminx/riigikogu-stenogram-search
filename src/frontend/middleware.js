@@ -183,7 +183,7 @@ export function resolveOgMetadata(routeType, id, data) {
     const description =
       snippet ||
       (dateFormatted
-        ? `Riigikogu saadiku ${speaker} sõnavõtt ${dateFormatted} toimunud istungil.`
+        ? `${speaker}: sõnavõtt Riigikogu istungil ${dateFormatted}.`
         : "Riigikogu istungi kõne stenogramm.");
     return {
       title,
@@ -258,6 +258,45 @@ export function getApiPath(routeType, id) {
 }
 
 /**
+ * 404.html with status 404 and noindex, or a plain 404 when the page cannot be read.
+ */
+async function notFound(request) {
+  try {
+    const resp = await fetch(new URL("/404.html", request.url));
+    if (resp.ok) {
+      return new Response(await resp.text(), {
+        status: 404,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "x-robots-tag": "noindex",
+        },
+      });
+    }
+  } catch {
+    // Fall through to the plain response
+  }
+  return new Response("Not Found", { status: 404, headers: { "x-robots-tag": "noindex" } });
+}
+
+/**
+ * Whether a sitting took place on `date`: true or false, or null when the list could not be read.
+ */
+export async function isKnownSittingDate(apiBase, date) {
+  try {
+    const resp = await fetch(`${apiBase}/sessions/dates`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(1500),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (!Array.isArray(data?.dates)) return null;
+    return data.dates.includes(date);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Vercel Routing Middleware handler for Edge Runtime.
  */
 export default async function middleware(request) {
@@ -292,41 +331,31 @@ export default async function middleware(request) {
     }
   }
 
-  // Special handling for /istung/:date: do NOT call the API (GET /sessions/{date} is heavy).
-  // Validate YYYY-MM-DD date and build OG tags purely from the valid date.
+  const apiBase =
+    process.env.API_BASE_URL || process.env.VITE_API_URL || "https://api.riigivaade.me";
+
+  // /istung/:date: GET /sessions/{date} is heavy, so the date is checked against the small,
+  // edge-cached list of sitting dates instead
   if (route.routeType === "istung") {
-    if (!isValidSittingDate(route.id)) {
-      try {
-        const notFoundResp = await fetch(new URL("/404.html", request.url));
-        if (notFoundResp.ok) {
-          const html404 = await notFoundResp.text();
-          return new Response(html404, {
-            status: 404,
-            headers: {
-              "content-type": "text/html; charset=utf-8",
-              "x-robots-tag": "noindex",
-            },
-          });
-        }
-      } catch {
-        return new Response("Not Found", { status: 404 });
-      }
-      return new Response("Not Found", { status: 404 });
-    }
+    if (!isValidSittingDate(route.id)) return notFound(request);
 
     try {
-      const indexResp = await fetch(new URL("/index.html", request.url));
+      const [indexResp, known] = await Promise.all([
+        fetch(new URL("/index.html", request.url)),
+        isKnownSittingDate(apiBase, route.id),
+      ]);
+      if (known === false) return notFound(request);
       if (!indexResp.ok) return next();
       const html = await indexResp.text();
       const ogMeta = resolveOgMetadata("istung", route.id, null);
       if (!ogMeta) return next();
 
-      const modifiedHtml = injectOpenGraphTags(html, ogMeta);
-      return new Response(modifiedHtml, {
+      return new Response(injectOpenGraphTags(html, ogMeta), {
         status: 200,
         headers: {
           "content-type": "text/html; charset=utf-8",
-          "x-robots-tag": "all",
+          // Unchecked when the date list could not be read: not worth indexing a possible dead end
+          "x-robots-tag": known ? "all" : "noindex",
         },
       });
     } catch {
@@ -339,9 +368,6 @@ export default async function middleware(request) {
     return next();
   }
 
-  const apiBase =
-    process.env.API_BASE_URL || process.env.VITE_API_URL || "https://api.riigivaade.me";
-
   try {
     const indexPromise = fetch(new URL("/index.html", request.url));
     const dataPromise = fetch(`${apiBase}${apiPath}`, {
@@ -353,22 +379,7 @@ export default async function middleware(request) {
 
     // If the API answers 404 (or 422 for a malformed id), serve 404.html with status 404
     if (dataResp.status === 404 || dataResp.status === 422) {
-      try {
-        const notFoundResp = await fetch(new URL("/404.html", request.url));
-        if (notFoundResp.ok) {
-          const html404 = await notFoundResp.text();
-          return new Response(html404, {
-            status: 404,
-            headers: {
-              "content-type": "text/html; charset=utf-8",
-              "x-robots-tag": "noindex",
-            },
-          });
-        }
-      } catch {
-        return new Response("Not Found", { status: 404 });
-      }
-      return new Response("Not Found", { status: 404 });
+      return notFound(request);
     }
 
     if (!indexResp.ok || !dataResp.ok) return next();
