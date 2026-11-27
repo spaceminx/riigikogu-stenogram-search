@@ -38,7 +38,7 @@ export function SpeechView() {
         : "Kõne — Riigivaade";
   const pageDesc =
     speakerName && formattedDate
-      ? `Riigikogu saadiku ${speakerName} sõnavõtt ${formattedDate} toimunud istungil.`
+      ? `${speakerName}: sõnavõtt Riigikogu istungil ${formattedDate}.`
       : "Riigikogu istungil peetud kõne stenogramm ja salvestis.";
 
   usePageMeta(pageTitle, pageDesc);

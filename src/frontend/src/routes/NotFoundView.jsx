@@ -32,7 +32,7 @@ export function NotFoundView() {
       >
         <HelpCircle size={48} color="var(--color-accent)" />
       </div>
-      <h2 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>404 – Lehekülge ei leitud</h2>
+      <h1 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>404 – Lehekülge ei leitud</h1>
       <p style={{ color: "var(--color-text-muted)", marginBottom: "2rem", lineHeight: 1.6 }}>
         Otsitud aadressi ei eksisteeri või on see teisaldatud.
       </p>

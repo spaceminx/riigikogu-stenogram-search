@@ -1,16 +1,6 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { lazy, Suspense, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import {
   fetchFactionAlignment,
   fetchFactionAlignmentDifferences,
@@ -22,13 +12,23 @@ import {
 } from "../lib/api";
 import { formatSpeakingTime } from "../lib/activityUtils";
 import { formatDate } from "../lib/calendarUtils";
-import { formatMetricRatio, formatPercent, formatVoteSplit, toRoman } from "../lib/formatters";
+import {
+  formatMetricRatio,
+  formatPercent,
+  formatVoteSplit,
+  isFewChecks,
+  isFewVotes,
+  toRoman,
+} from "../lib/formatters";
 import { SpeechCard } from "../components/SpeechCard";
 import { Pagination } from "../components/Pagination";
 import { ContextModal } from "../components/ContextModal";
 import { SectionError } from "../components/SectionError";
+import { useClampPage } from "../lib/useClampPage";
 import { usePageMeta } from "../lib/usePageMeta";
-import { chartColors } from "../lib/chartColors";
+
+// The chart library is loaded only when the chart is drawn
+const PersonYearChart = lazy(() => import("../components/PersonYearChart"));
 
 const SPEECHES_PER_PAGE = 20;
 
@@ -65,7 +65,7 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
   // imgError and other states are reset on uuid change via key={uuid} on route element
   // Read role and page from URL parameters
   const currentRole = searchParams.get("roll") || "mp";
-  const currentPage = parseInt(searchParams.get("leht") || "1", 10) || 1;
+  const currentPage = Math.max(1, parseInt(searchParams.get("leht") || "1", 10) || 1);
   const noInfotund = searchParams.get("no_infotund") === "1";
   const offset = (currentPage - 1) * SPEECHES_PER_PAGE;
 
@@ -373,6 +373,15 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
     return rows;
   }, [attendance]);
 
+  const totalSpeechesInCurrentTab =
+    availableRoleTabs.find((t) => t.id === currentRole)?.count || speechesData?.total_count || 0;
+  const totalPages = Math.max(1, Math.ceil(totalSpeechesInCurrentTab / SPEECHES_PER_PAGE));
+  useClampPage(
+    "leht",
+    currentPage,
+    speechesData && totalSpeechesInCurrentTab > 0 ? totalPages : null
+  );
+
   // Handle 404 and error states for Person
   if (personLoading) {
     return (
@@ -420,30 +429,8 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
     .join("")
     .toUpperCase();
 
-  const totalSpeechesInCurrentTab =
-    availableRoleTabs.find((t) => t.id === currentRole)?.count || speechesData?.total_count || 0;
-  const totalPages = Math.max(1, Math.ceil(totalSpeechesInCurrentTab / SPEECHES_PER_PAGE));
-
   const hasUnclassified = (stats?.totals?.mp?.unclassified || 0) > 0;
   const hasDirector = (stats?.director || 0) > 0;
-
-  // Theming for chart tooltip, axes and grid lines
-  const colors = chartColors(theme);
-  const axisStroke = colors.border;
-  const tickColor = colors.muted;
-  const gridStroke = colors.border;
-
-  const chartTooltipStyle = {
-    contentStyle: {
-      backgroundColor: colors.surface,
-      color: colors.text,
-      border: `1px solid ${colors.border}`,
-      borderRadius: "4px",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-    },
-    itemStyle: { fontWeight: 600 },
-    labelStyle: { color: colors.muted, marginBottom: "4px" },
-  };
 
   // Helper for metrics when stats load or fail
   const getMetricValue = (val) => {
@@ -765,9 +752,9 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
               <tbody>
                 {roleBreakdownRows.map((row) => {
                   const checksTotal = row.total_sessions ?? 0;
-                  const isChecksSmall = checksTotal < 50;
+                  const isChecksSmall = isFewChecks(checksTotal);
                   const votesTotal = row.votes?.total ?? 0;
-                  const isVotesSmall = votesTotal < 50;
+                  const isVotesSmall = isFewVotes(votesTotal);
                   const notVotedCount = row.votes?.not_voted ?? 0;
                   const absentCount = row.votes?.absent ?? 0;
                   const notVotedPct = votesTotal > 0 ? (notVotedCount / votesTotal) * 100 : null;
@@ -827,48 +814,10 @@ export function PersonView({ theme = "light", onOpenMethodology }) {
             </div>
           </div>
 
-          <div className="person-chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
-                <XAxis
-                  dataKey="year"
-                  stroke={axisStroke}
-                  tick={{ fill: tickColor, fontSize: 12 }}
-                />
-                <YAxis
-                  stroke={axisStroke}
-                  tick={{ fill: tickColor, fontSize: 12 }}
-                  allowDecimals={false}
-                />
-                <Tooltip {...chartTooltipStyle} />
-                <Legend
-                  wrapperStyle={{ paddingTop: "10px" }}
-                  formatter={(value) => <span style={{ color: colors.text }}>{value}</span>}
-                />
-                <Bar dataKey="speeches" name="Kõned" stackId="mp" fill={colors.series[0]} />
-                <Bar
-                  dataKey="questions"
-                  name="Küsimused ja repliigid"
-                  stackId="mp"
-                  fill={colors.series[1]}
-                />
-                <Bar
-                  dataKey="procedural"
-                  name="Protseduurilised"
-                  stackId="mp"
-                  fill={colors.series[2]}
-                />
-                {hasUnclassified && (
-                  <Bar
-                    dataKey="unclassified"
-                    name="Liigitamata"
-                    stackId="mp"
-                    fill={colors.series[3]}
-                  />
-                )}
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="person-chart-container" aria-hidden="true">
+            <Suspense fallback={null}>
+              <PersonYearChart data={chartData} hasUnclassified={hasUnclassified} theme={theme} />
+            </Suspense>
           </div>
 
           <div className="table-responsive-container">

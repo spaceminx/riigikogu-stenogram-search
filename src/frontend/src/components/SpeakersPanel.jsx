@@ -15,7 +15,9 @@ export function SpeakersPanel({
       <div className="chart-header">
         <div>
           <span className="section-kicker">ARUTELUDE PÕHJAL</span>
-          <h2 id="members-title">Kõige rohkem sõnavõtte</h2>
+          <h2 id="members-title">
+            {showingArchiveSpeakers ? "Kõige rohkem sõnavõtte" : "Kõige rohkem mainimisi"}
+          </h2>
         </div>
         <span className="member-total">{speakers.length || "—"}</span>
       </div>
@@ -52,7 +54,7 @@ export function SpeakersPanel({
                   )}
                   <span className="speaker-count-caption">
                     {Number(sp.count || 0).toLocaleString("et-EE")}{" "}
-                    {showingArchiveSpeakers ? "kõnet" : "teemakohast mainimist"}
+                    {showingArchiveSpeakers ? "sõnavõttu" : "teemakohast mainimist"}
                   </span>
                   <span className="profile-meter">
                     <i

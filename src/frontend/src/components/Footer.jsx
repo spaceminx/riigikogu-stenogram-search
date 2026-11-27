@@ -25,6 +25,7 @@ export function Footer({ onOpenMethodology }) {
         {" · "}
         <button
           type="button"
+          className="footer-link-btn"
           onClick={onOpenMethodology}
           style={{
             background: "none",

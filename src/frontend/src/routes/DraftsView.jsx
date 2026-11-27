@@ -9,6 +9,7 @@ import Pagination from "../components/Pagination";
 import DraftRow from "../components/DraftRow";
 import { usePageMeta } from "../lib/usePageMeta";
 import { currentMembershipId } from "../lib/calendarUtils";
+import { useClampPage } from "../lib/useClampPage";
 
 const PAGE_SIZE = 50;
 
@@ -109,6 +110,7 @@ export function DraftsView({ memberships = [], membershipsLoading = false }) {
   const results = data?.results || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  useClampPage("page", pageParam, data ? totalPages : null);
   const facets = data?.facets || {};
 
   // Options come from the facets; a selected value stays listed even when nothing matches it
@@ -264,7 +266,9 @@ export function DraftsView({ memberships = [], membershipsLoading = false }) {
       <div className="votings-results-header">
         <h2 className="votings-heading">
           Eelnõud
-          {data && <span className="results-badge">{total.toLocaleString("et-EE")} eelnõu</span>}
+          <span className="results-live" aria-live="polite">
+            {data && <span className="results-badge">{total.toLocaleString("et-EE")} eelnõu</span>}
+          </span>
         </h2>
       </div>
 

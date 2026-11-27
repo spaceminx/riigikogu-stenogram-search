@@ -149,6 +149,49 @@ def test_dashboard_overview_shape():
         assert {"date", "source_url", "topics"} <= data["sessions"][0].keys()
 
 
+def test_overview_lists_a_day_with_two_sittings_once():
+    """Two sittings on one date share /istung/{date}: one row, linked to the earlier sitting."""
+    from src.api.search import _OVERVIEW_CACHE
+
+    _OVERVIEW_CACHE["data"] = None
+    rows = [
+        # (id, date, source_file, source_url)
+        (8811, "2099-01-07", "s-0107-1400", "https://stenogrammid.riigikogu.ee/et/209901071400"),
+        (8812, "2099-01-06", "s-0106-1200", "https://stenogrammid.riigikogu.ee/et/209901061200"),
+        (8813, "2099-01-06", "s-0106-1400", "https://stenogrammid.riigikogu.ee/et/209901061400"),
+        (8814, "2099-01-05", "s-0105-1000", "https://stenogrammid.riigikogu.ee/et/209901051000"),
+        (8815, "2099-01-04", "s-0104-1000", "https://stenogrammid.riigikogu.ee/et/209901041000"),
+    ]
+    session = SessionLocal()
+    for speech_id, speech_date, source_file, source_url in rows:
+        session.merge(
+            Speech(
+                id=speech_id,
+                speech_key=f"overview-{speech_id}",
+                date=speech_date,
+                time="1000",
+                source_file=source_file,
+                source_url=f"{source_url}#para1",
+                speaker="Test Kõneleja",
+                speech_type="SPEECH",
+                text="Sõnavõtt",
+            )
+        )
+    session.commit()
+    try:
+        res = client.get("/overview")
+        assert res.status_code == 200
+        sessions = res.json()["sessions"]
+        assert [str(s["date"]) for s in sessions] == ["2099-01-07", "2099-01-06", "2099-01-05"]
+        assert sessions[1]["source_url"].endswith("209901061200")
+        assert all(isinstance(s["topics"], list) for s in sessions)
+    finally:
+        session = SessionLocal()
+        session.query(Speech).filter(Speech.id.in_([r[0] for r in rows])).delete()
+        session.commit()
+        _OVERVIEW_CACHE["data"] = None
+
+
 def test_overview_activity_excludes_director():
     from datetime import datetime
 

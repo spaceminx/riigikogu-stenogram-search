@@ -70,6 +70,10 @@ function LegacyRedirectHandler() {
   return null;
 }
 
+// Paths with a route of their own; anything else is the 404 page
+const KNOWN_PATH =
+  /^\/(otsing|kohalolek|haaletused|fraktsioonid|saadikud|eelnoud|andmed|(istung|kone|saadik|haaletus|eelnou)\/[^/]+)?\/?$/i;
+
 function PageTitlebar({ memberships = [] }) {
   const location = useLocation();
   const pathname = location.pathname;
@@ -103,14 +107,21 @@ function PageTitlebar({ memberships = [] }) {
   const memText =
     memberships && memberships.length > 0 ? `alates ${archiveStartYear(memberships)}` : null;
 
+  // The 404 page names itself; this label would otherwise call it "Kõnede analüüs"
+  const isKnownPath = KNOWN_PATH.test(pathname);
+  if (!isKnownPath) title = "Lehekülge ei leitud";
+
   // Detail views render their own <h1> (person, speech, vote, bill, privacy page), so the
-  // section label here must not be a second one.
+  // section label here must not be a second one. Neither must it on the 404 page.
   const viewHasOwnHeading =
-    /^\/(kone|saadik|haaletus|eelnou)\//.test(pathname) || pathname.startsWith("/andmed");
+    !isKnownPath ||
+    /^\/(kone|saadik|haaletus|eelnou)\//.test(pathname) ||
+    pathname.startsWith("/andmed");
   const TitleTag = viewHasOwnHeading ? "p" : "h1";
 
   return (
-    <div className="page-titlebar">
+    // The skip link's target: the page heading, then the content
+    <div className="page-titlebar" id="sisu" tabIndex={-1}>
       <TitleTag className="page-title">{title}</TitleTag>
       <span>Riigikogu stenogrammid{memText ? ` · ${memText}` : ""}</span>
     </div>
@@ -181,6 +192,18 @@ function AppContent() {
   return (
     <div className="app-container">
       <LegacyRedirectHandler />
+
+      {/* Focus moves without a "#sisu" in the address, which the router would take as navigation */}
+      <a
+        href="#sisu"
+        className="skip-link"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById("sisu")?.focus();
+        }}
+      >
+        Liigu sisu juurde
+      </a>
 
       <Header
         theme={theme}

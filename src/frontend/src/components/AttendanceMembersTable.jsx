@@ -6,6 +6,8 @@ import {
   formatVoteSplit,
   getChecksBarSegments,
   getVotesBarSegments,
+  isFewChecks,
+  isFewVotes,
   isSmallSample,
 } from "../lib/formatters";
 import VoteBar from "./VoteBar";
@@ -103,9 +105,9 @@ export function AttendanceMembersTable({ sortedStats, sortConfig, requestSort })
           ) : (
             sortedStats.map((stat, idx) => {
               const checksTotal = stat.total_checks ?? stat.total_sessions ?? 0;
-              const isChecksSmall = checksTotal < 20;
+              const isChecksSmall = isFewChecks(checksTotal);
               const votesTotal = stat.votes_total ?? 0;
-              const isVotesSmall = votesTotal < 50;
+              const isVotesSmall = isFewVotes(votesTotal);
               const isRowSmall = isSmallSample(stat, sortConfig.key);
 
               return (

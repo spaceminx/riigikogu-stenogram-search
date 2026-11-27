@@ -33,8 +33,9 @@ test.describe("Smoke tests for all routes", () => {
     await page.goto("/tundmatu-lehe-aadress");
     await page.waitForLoadState("networkidle");
 
-    // Wait for NotFoundView specific content
-    await expect(page.locator("h2:has-text('404 – Lehekülge ei leitud')")).toBeVisible();
+    // The page's one heading names the 404, not the section label "Kõnede analüüs" (audit C-18)
+    await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page.locator("h1")).toHaveText("404 – Lehekülge ei leitud");
 
     const errorAlert = page.locator('.glass-panel[role="alert"]:has-text("Midagi läks valesti")');
     await expect(errorAlert).toHaveCount(0);

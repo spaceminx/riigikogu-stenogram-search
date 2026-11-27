@@ -6,6 +6,7 @@ import {
   CALENDAR_MAX_MONTH,
   CALENDAR_MIN_MONTH,
   clampMonth,
+  dateKeyAfterKey,
   formatDate,
   fromDateKey,
   getMonthDays,
@@ -50,11 +51,77 @@ export default function DateRangeCalendar({
   });
   const rootRef = useRef(null);
   const popoverRef = useRef(null);
+  const triggerRef = useRef(null);
+  // The day with the grid's one tab stop; the arrow keys move it
+  const [focusedKey, setFocusedKey] = useState(null);
+  const moveFocusRef = useRef(false);
   const [popoverPosition, setPopoverPosition] = useState(null);
   const sessionDates = useMemo(() => new Set(effectiveDates), [effectiveDates]);
   const presets = useMemo(() => getQuickPresets(memberships), [memberships]);
   const monthCount = compact ? 1 : 2;
   const months = Array.from({ length: monthCount }, (_, index) => shiftMonth(visibleMonth, index));
+
+  // Closing from inside the calendar returns focus to its button instead of losing it to <body>
+  const closeAndFocusTrigger = () => {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  const isInVisibleMonths = (dateKey) => {
+    const date = fromDateKey(dateKey);
+    return months.some(
+      (m) => date.getFullYear() === m.getFullYear() && date.getMonth() === m.getMonth()
+    );
+  };
+  // Only session days can be picked in the compact calendar
+  const isSelectable = (dateKey) => !compact || sessionDates.has(dateKey);
+
+  const firstVisibleKey = () => {
+    const inMonth = months.flatMap((m) =>
+      getMonthDays(m)
+        .filter((d) => d.getMonth() === m.getMonth())
+        .map(toDateKey)
+    );
+    return inMonth.find((k) => sessionDates.has(k)) || inMonth.find(isSelectable) || inMonth[0];
+  };
+  const activeKey =
+    [focusedKey, value.startDate].find((k) => k && isInVisibleMonths(k) && isSelectable(k)) ||
+    firstVisibleKey();
+
+  const handleDayKeyDown = (event, dateKey) => {
+    let next = dateKeyAfterKey(dateKey, event.key);
+    if (!next) return;
+    event.preventDefault();
+    if (compact) {
+      // Jump to the previous or next session day instead of a disabled one
+      const forward = ["ArrowRight", "ArrowDown", "End", "PageDown"].includes(event.key);
+      const sorted = [...sessionDates].sort();
+      next = forward
+        ? sorted.find((k) => k >= next && k > dateKey)
+        : [...sorted].reverse().find((k) => k <= next && k < dateKey);
+      if (!next) return;
+    }
+    const nextDate = fromDateKey(next);
+    const nextMonth = new Date(nextDate.getFullYear(), nextDate.getMonth(), 1);
+    // Not past the months the calendar offers
+    if (clampMonth(nextMonth) !== nextMonth) return;
+    if (nextMonth < visibleMonth) {
+      setVisibleMonth(nextMonth);
+    } else if (nextMonth > months[months.length - 1]) {
+      setVisibleMonth(shiftMonth(nextMonth, 1 - monthCount));
+    }
+    moveFocusRef.current = true;
+    setFocusedKey(next);
+  };
+
+  // Focus follows the arrow keys, also into a month that has just been shown
+  useEffect(() => {
+    if (!moveFocusRef.current) return;
+    moveFocusRef.current = false;
+    popoverRef.current
+      ?.querySelector(`.calendar-day[data-date="${activeKey}"]:not(.is-outside-month)`)
+      ?.focus();
+  });
 
   const changeVisibleMonth = (amount) => {
     setVisibleMonth((month) => clampMonth(shiftMonth(month, amount)));
@@ -130,7 +197,9 @@ export default function DateRangeCalendar({
       if (!rootRef.current?.contains(event.target)) setIsOpen(false);
     };
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key !== "Escape") return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
     };
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
@@ -259,6 +328,14 @@ export default function DateRangeCalendar({
                 type="button"
                 disabled={compact && !hasSession}
                 key={dateKey}
+                data-date={dateKey}
+                // One tab stop for the whole grid; days spilling over from the next or previous
+                // month are reached by the arrows in their own month
+                tabIndex={isInMonth && dateKey === activeKey ? 0 : -1}
+                onKeyDown={(event) => handleDayKeyDown(event, dateKey)}
+                onFocus={() => {
+                  if (isInMonth) setFocusedKey(dateKey);
+                }}
                 aria-label={
                   hasSession
                     ? tooltip
@@ -269,7 +346,7 @@ export default function DateRangeCalendar({
                 onClick={() => {
                   if (compact) {
                     onSelectDate?.(dateKey);
-                    setIsOpen(false);
+                    closeAndFocusTrigger();
                   } else {
                     selectRangeDate(dateKey);
                   }
@@ -299,6 +376,7 @@ export default function DateRangeCalendar({
       <div className="compact-calendar" ref={rootRef}>
         <button
           type="button"
+          ref={triggerRef}
           className="compact-calendar-toggle"
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
@@ -335,6 +413,7 @@ export default function DateRangeCalendar({
       </label>
       <button
         id="date-range-trigger"
+        ref={triggerRef}
         type="button"
         className={`date-range-trigger${value.startDate ? " has-value" : ""}`}
         aria-expanded={isOpen}
@@ -380,11 +459,7 @@ export default function DateRangeCalendar({
               >
                 Tühjenda
               </button>
-              <button
-                type="button"
-                className="calendar-done-button"
-                onClick={() => setIsOpen(false)}
-              >
+              <button type="button" className="calendar-done-button" onClick={closeAndFocusTrigger}>
                 Valmis
               </button>
             </div>

@@ -1,5 +1,4 @@
-import React from "react";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import React, { lazy, Suspense } from "react";
 import { formatActivityShare, formatActivityTooltip } from "../lib/activityUtils";
 import {
   formatDayAxis,
@@ -9,21 +8,9 @@ import {
   formatWeekAxis,
   formatWeekTooltip,
 } from "../lib/formatters";
-import { chartColors } from "../lib/chartColors";
 
-function ActivityCustomTooltip({ active, payload, label, formatLabel, scale, style }) {
-  if (!active || !payload || payload.length === 0) return null;
-  const row = payload[0]?.payload;
-  const formattedLabel = formatLabel(label, payload);
-  const formattedText = formatActivityTooltip(row, scale);
-
-  return (
-    <div style={style.contentStyle}>
-      <div style={style.labelStyle}>{formattedLabel}</div>
-      <div style={style.itemStyle}>{formattedText}</div>
-    </div>
-  );
-}
+// The chart library (~100 KB gzipped) is loaded only when bars are drawn, not with the page
+const ActivityBars = lazy(() => import("./ActivityBars"));
 
 export function ActivityChart({
   activity = [],
@@ -38,22 +25,6 @@ export function ActivityChart({
   kicker = "TEEMA LÄBI AJA",
   emptyMessage = "Sellele otsingule kõnesid ei leitud.",
 }) {
-  const colors = chartColors(theme);
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: colors.surface,
-      color: colors.text,
-      border: `1px solid ${colors.border}`,
-      borderRadius: "4px",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-    },
-    itemStyle: { color: colors.accent, fontWeight: 600 },
-    labelStyle: { color: colors.muted, marginBottom: "4px" },
-  };
-
-  const axisStroke = colors.border;
-  const axisTickColor = colors.muted;
-
   const formatAxisTick = (tick) => {
     if (!tick) return "";
     if (interval === "monthly") {
@@ -98,6 +69,15 @@ export function ActivityChart({
     }
     return label;
   };
+
+  const xKey =
+    interval === "daily"
+      ? "date"
+      : interval === "weekly"
+        ? activity[0]?.week_start
+          ? "week_start"
+          : "week"
+        : "month";
 
   return (
     <section className="glass-panel timeline-panel" aria-labelledby="timeline-title">
@@ -159,54 +139,40 @@ export function ActivityChart({
         </div>
       ) : activity.length > 0 ? (
         <div className="timeline-chart">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={activity} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
-              <XAxis
-                dataKey={
-                  interval === "daily"
-                    ? "date"
-                    : interval === "weekly"
-                      ? activity[0]?.week_start
-                        ? "week_start"
-                        : "week"
-                      : "month"
-                }
-                stroke={axisStroke}
-                tick={{ fill: axisTickColor, fontSize: 11 }}
-                tickFormatter={formatAxisTick}
-                tickLine={false}
-                axisLine={false}
-                minTickGap={24}
+          {/* The table below carries the same numbers for screen readers */}
+          <div className="timeline-chart-bars" aria-hidden="true">
+            <Suspense fallback={null}>
+              <ActivityBars
+                activity={activity}
+                xKey={xKey}
+                scale={scale}
+                theme={theme}
+                formatAxisTick={formatAxisTick}
+                formatYAxisTick={formatYAxisTick}
+                formatTooltipLabel={formatTooltipLabel}
               />
-              <YAxis
-                stroke={axisStroke}
-                tick={{ fill: axisTickColor, fontSize: 11 }}
-                tickLine={false}
-                axisLine={false}
-                allowDecimals={scale === "share"}
-                tickFormatter={scale === "share" ? formatYAxisTick : undefined}
-              />
-              <Tooltip
-                content={
-                  <ActivityCustomTooltip
-                    formatLabel={formatTooltipLabel}
-                    scale={scale}
-                    style={tooltipStyle}
-                  />
-                }
-                cursor={{
-                  fill: theme === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
-                }}
-              />
-              <Bar
-                dataKey={scale === "share" ? "share" : "count"}
-                name={scale === "share" ? "Osakaal" : "Kõnesid"}
-                fill={colors.accent}
-                radius={[3, 3, 0, 0]}
-                maxBarSize={40}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+            </Suspense>
+          </div>
+          {/* A table ignores width: 1px, so the wrapper hides it */}
+          <div className="visually-hidden">
+            <table>
+              <caption>{title}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Periood</th>
+                  <th scope="col">{scale === "share" ? "Osakaal" : "Sõnavõtte"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.map((row) => (
+                  <tr key={row[xKey]}>
+                    <th scope="row">{formatTooltipLabel(row[xKey], [{ payload: row }])}</th>
+                    <td>{formatActivityTooltip(row, scale)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="chart-empty-state">
@@ -218,7 +184,7 @@ export function ActivityChart({
           <span className="legend-dot" />{" "}
           {scale === "share"
             ? "Otsingule vastavate sõnavõttude osakaal perioodis"
-            : "Kõnede arv valitud perioodis"}
+            : "Sõnavõttude arv valitud perioodis"}
         </div>
       )}
     </section>

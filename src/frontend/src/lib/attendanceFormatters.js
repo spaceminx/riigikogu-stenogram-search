@@ -71,10 +71,19 @@ export function formatVoteSplit(notVoted, absent, total, options = {}) {
   return `ei hääletanud ${nvStr} · puudus ${abStr}`;
 }
 
+// Below these counts a percentage rests on too few cases and is marked "vähe andmeid", on the
+// attendance tables and the member page alike. The methodology text states both numbers
+// (src/api/routes.py, and the fallback in MethodologyModal.jsx): change them together
+export const SMALL_SAMPLE_CHECKS = 20;
+export const SMALL_SAMPLE_VOTES = 50;
+
+export const isFewChecks = (checks) => checks < SMALL_SAMPLE_CHECKS;
+export const isFewVotes = (votes) => votes < SMALL_SAMPLE_VOTES;
+
 /**
  * Check if an item has a small sample for the given metric.
- * - registered_pct: total_checks < 20
- * - votes_voted_pct (default): votes_total < 50
+ * - registered_pct: fewer than SMALL_SAMPLE_CHECKS checks
+ * - votes_voted_pct (default): fewer than SMALL_SAMPLE_VOTES votes
  *
  * @param {Object} item
  * @param {string} [sortKey]
@@ -84,10 +93,9 @@ export function isSmallSample(item, sortKey) {
   if (!item) return false;
   if (sortKey === "registered_pct") {
     const checks = item.total_checks ?? item.total_sessions ?? 0;
-    return checks < 20;
+    return isFewChecks(checks);
   }
-  const votes = item.votes_total ?? 0;
-  return votes < 50;
+  return isFewVotes(item.votes_total ?? 0);
 }
 
 /**

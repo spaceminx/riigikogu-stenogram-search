@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { ArrowLeft, FileText, Info, Search, X } from "lucide-react";
 import { fetchVoting } from "../lib/api";
@@ -26,6 +26,7 @@ const DECISION_FILTER_OPTIONS = [
 export function VotingView() {
   const { uuid } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [memberSearch, setMemberSearch] = useState("");
   const [decisionFilter, setDecisionFilter] = useState("ALL");
@@ -54,10 +55,11 @@ export function VotingView() {
   usePageMeta(votingTitle, votingDesc);
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
+    // Entered directly (or from another site): Back would leave Riigivaade
+    if (location.key === "default" || window.history.length <= 1) {
       navigate("/haaletused");
+    } else {
+      navigate(-1);
     }
   };
 
@@ -317,7 +319,7 @@ export function VotingView() {
             <div className="voting-members-header">
               <h2 id="members-heading" className="voting-section-heading">
                 Saadikute hääled
-                <span className="results-badge">
+                <span className="results-badge" aria-live="polite">
                   {filteredVotes.length} / {voting.votes?.length || 0}
                 </span>
               </h2>

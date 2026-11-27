@@ -58,7 +58,7 @@ export function DashboardView({
 
   const statItems = [];
   if (totalSpeeches !== undefined && totalSpeeches !== null) {
-    statItems.push(`${Number(totalSpeeches).toLocaleString("et-EE")} kõnet`);
+    statItems.push(`${Number(totalSpeeches).toLocaleString("et-EE")} sõnavõttu`);
   }
   if (activePersons !== undefined && activePersons !== null) {
     statItems.push(`${activePersons} saadikut`);

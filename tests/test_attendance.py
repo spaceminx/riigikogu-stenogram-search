@@ -675,6 +675,7 @@ def test_methodology_attendance_two_metrics_text():
     assert "Registreerus kohalolekukontrollis" in att_methodology
     assert "Osales hääletustel" in att_methodology
     assert "mitte fraktsiooni kohtade arvu" in att_methodology
+    assert "vähem kui 20 kohalolekukontrollil või vähem kui 50 hääletusel" in att_methodology
     assert "oma viimase fraktsiooni alla" in att_methodology
 
 

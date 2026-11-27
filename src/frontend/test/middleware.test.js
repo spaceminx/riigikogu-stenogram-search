@@ -336,38 +336,70 @@ describe("Open Graph middleware helpers", () => {
       }
     });
 
-    it("handles /istung/:date without calling any API endpoint", async () => {
-      const fetchCalls = [];
-      globalThis.fetch = async (url) => {
+    // index.html, the list of sitting dates and 404.html; anything else fails the test
+    function sittingFetch(calls, datesResponse) {
+      return async (url) => {
         const urlStr = String(url);
-        fetchCalls.push(urlStr);
-        if (urlStr.includes("/index.html")) {
+        calls.push(urlStr);
+        if (urlStr.endsWith("/index.html")) {
           return new Response("<html><head><title>App</title></head><body></body></html>", {
             status: 200,
             headers: { "content-type": "text/html" },
           });
         }
+        if (urlStr.endsWith("/sessions/dates")) return datesResponse();
+        if (urlStr.endsWith("/404.html")) {
+          return new Response("<html><body>Page not found</body></html>", { status: 200 });
+        }
         throw new Error(`Unexpected fetch call: ${urlStr}`);
       };
+    }
+    const datesList = () =>
+      new Response(JSON.stringify({ dates: ["2026-10-15", "2026-10-14"] }), { status: 200 });
+    const sittingRequest = (date) =>
+      new Request(`https://www.riigivaade.me/istung/${date}`, {
+        headers: { "user-agent": "facebookexternalhit/1.1" },
+      });
 
+    it("serves /istung/:date for a sitting date, reading only the date list", async () => {
+      const calls = [];
+      globalThis.fetch = sittingFetch(calls, datesList);
       try {
-        const req = new Request("https://www.riigivaade.me/istung/2026-10-14", {
-          headers: { "user-agent": "facebookexternalhit/1.1" },
-        });
-
-        const resp = await middleware(req);
-        assert.ok(resp);
+        const resp = await middleware(sittingRequest("2026-10-14"));
         assert.strictEqual(resp.status, 200);
-
+        assert.strictEqual(resp.headers.get("x-robots-tag"), "all");
         const body = await resp.text();
         assert.ok(
           body.includes('<meta property="og:title" content="Istung 14.10.2026 — Riigivaade" />')
         );
-        assert.ok(!body.includes("sessions/2026-10-14"));
+        // Never the heavy /sessions/{date}
+        assert.deepStrictEqual(calls.sort(), [
+          "https://api.riigivaade.me/sessions/dates",
+          "https://www.riigivaade.me/index.html",
+        ]);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
 
-        // Verify only index.html was fetched, zero API calls
-        assert.strictEqual(fetchCalls.length, 1);
-        assert.ok(fetchCalls[0].endsWith("/index.html"));
+    it("returns 404 with noindex for a valid date without a sitting", async () => {
+      globalThis.fetch = sittingFetch([], datesList);
+      try {
+        const resp = await middleware(sittingRequest("2026-11-21"));
+        assert.strictEqual(resp.status, 404);
+        assert.strictEqual(resp.headers.get("x-robots-tag"), "noindex");
+        assert.ok((await resp.text()).includes("Page not found"));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("serves the sitting page with noindex when the date list cannot be read", async () => {
+      globalThis.fetch = sittingFetch([], () => new Response("{}", { status: 503 }));
+      try {
+        const resp = await middleware(sittingRequest("2026-10-14"));
+        assert.strictEqual(resp.status, 200);
+        assert.strictEqual(resp.headers.get("x-robots-tag"), "noindex");
       } finally {
         globalThis.fetch = originalFetch;
       }

@@ -294,6 +294,8 @@ export {
   formatVoteSplit,
   getChecksBarSegments,
   getVotesBarSegments,
+  isFewChecks,
+  isFewVotes,
   isSmallSample,
   sortAttendanceItems,
 } from "./attendanceFormatters.js";
