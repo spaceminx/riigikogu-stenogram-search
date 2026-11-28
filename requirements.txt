@@ -12,9 +12,9 @@ asttokens==3.0.2
     # via stack-data
 beautifulsoup4==4.15.0
     # via bs4
-boto3==1.44.3
+boto3==1.44.9
     # via -r requirements.in
-botocore==1.44.3
+botocore==1.44.13
     # via
     #   boto3
     #   s3transfer
@@ -46,7 +46,7 @@ estnltk-core==1.7.5
     # via estnltk
 executing==2.3.0
     # via stack-data
-fastapi==0.162.7
+fastapi==0.165.0
     # via -r requirements.in
 fonttools==4.67.0
     # via matplotlib
@@ -116,11 +116,11 @@ pure-eval==0.2.4
     # via stack-data
 pyahocorasick==2.3.1
     # via estnltk
-pydantic==2.14.3
+pydantic==2.14.4
     # via
     #   -r requirements.in
     #   fastapi
-pydantic-core==2.50.4
+pydantic-core==2.50.5
     # via pydantic
 pygments==2.21.0
     # via
@@ -154,7 +154,7 @@ six==1.17.0
     #   python-dateutil
 soupsieve==3.0.4
     # via beautifulsoup4
-sqlalchemy==2.1.8
+sqlalchemy==2.1.9
     # via -r requirements.in
 stack-data==0.6.3
     # via ipython
